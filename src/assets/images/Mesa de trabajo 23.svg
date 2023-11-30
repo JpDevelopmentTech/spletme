@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="INFO" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.11 13.14">
+  <defs>
+    <style>
+      .cls-1 {
+        opacity: .2;
+      }
+
+      .cls-1, .cls-2, .cls-3 {
+        fill: #00ff1a;
+        stroke-width: 0px;
+      }
+
+      .cls-2 {
+        opacity: .5;
+      }
+    </style>
+  </defs>
+  <path id="Icon_ionic-ios-arrow-forward" data-name="Icon ionic-ios-arrow-forward" class="cls-3" d="m6.06,2.09L1.47,6.67c-.34.34-.88.34-1.22,0,0,0,0,0,0,0-.34-.34-.34-.89,0-1.23L5.44.25c.33-.33.85-.34,1.19-.03l5.23,5.22c.33.34.33.89-.01,1.22-.34.33-.87.33-1.21,0L6.06,2.09Z"/>
+  <path id="Icon_ionic-ios-arrow-forward-2" data-name="Icon ionic-ios-arrow-forward" class="cls-2" d="m6.06,5.19L1.47,9.78c-.34.34-.88.34-1.22,0,0,0,0,0,0,0-.34-.34-.34-.89,0-1.23L5.44,3.36c.33-.33.85-.34,1.19-.03l5.23,5.22c.33.34.33.89-.01,1.22-.34.33-.87.33-1.21,0l-4.59-4.58Z"/>
+  <path id="Icon_ionic-ios-arrow-forward-3" data-name="Icon ionic-ios-arrow-forward" class="cls-1" d="m6.06,8.3L1.47,12.88c-.34.34-.88.34-1.22,0,0,0,0,0,0,0-.34-.34-.34-.89,0-1.23l5.19-5.19c.33-.33.85-.34,1.19-.03l5.23,5.22c.33.34.33.89-.01,1.22-.34.33-.87.33-1.21,0l-4.59-4.58Z"/>
+</svg>
