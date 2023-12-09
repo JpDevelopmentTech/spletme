@@ -1,14 +1,23 @@
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/images/7 - FULL LOGO.png";
-import React from "react";
+import React, { useEffect } from "react";
 import { AuthService } from "../../services/auth";
 import { useDispatch } from "react-redux";
 import { setAuth } from "../../store/states/authSlice";
+import Splash from "../../components/splash/splash";
 
 
 export default function Login() {
   const dispache = useDispatch()
   const navigate = useNavigate();
+
+  const [splash, setSplash] = React.useState(true);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setSplash(false);
+    }, 4000);
+  }, []);
 
   const login = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +43,7 @@ export default function Login() {
   return (
     <>
       <div className="w-full h-screen flex">
-        <div className="w-1/2 flex justify-center items-center bg-primary h-full ">
+        {splash ? <Splash/> : <><div className="w-1/2 flex justify-center items-center bg-primary h-full ">
           <div className=" bg-black/10 h-96 w-96 rounded-full  flex flex-col items-center justify-center p-12">
             <img src={logo} alt="logo de splet me" />
             <span className="text-white font-bold tracking-widest mt-3 font-custom">
@@ -108,7 +117,8 @@ export default function Login() {
               </span>
             </div>
           </div>
-        </div>
+        </div></>}
+        
       </div>
     </>
   );

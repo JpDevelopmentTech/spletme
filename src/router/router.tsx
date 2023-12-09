@@ -3,6 +3,7 @@ import Login from "../pages/auth/login";
 import Panel from "../pages/panel/panel";
 import Home from "../pages/panel/home/home";
 import GuardedRoute from "../guards/auth";
+import Music from "../pages/panel/music/music";
 
 
 
@@ -22,7 +23,7 @@ const routes = [
       },
       {
         path: "music",
-        element: <h1>Music</h1>,
+        element: <Music/>,
       },
       {
         path: "report",

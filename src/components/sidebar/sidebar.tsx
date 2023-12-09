@@ -19,21 +19,21 @@ export default function Sidebar() {
   return (
     <>
       <div className="w-96  h-full p-9 bg-[#FBFBFB]  flex flex-col overflow-y-auto  ">
-        <div className="w-10 h-10 flex items-center mb-5">
+        <div className="w-8 h-10 flex items-center mb-5">
           <img src={logo} alt="" className="w-full h-full" />
         </div>
         <span className="font-bold text-2xl text-septenary">¡Bienvenido!</span>
         <span className="font-bold text-3xl">{user.name + ' ' + user.surname}</span>
         <span className="mt-2 mb-3 text-septenary">Tu balance actual es:</span>
-        <span className="text-3xl font-bold">$00,00</span>
+        <span className="text-3xl font-bold">$100.000,00</span>
         <div className="w-full h-full flex flex-col mt-6  ">
-          <span className="text-septenary">Musica</span>
+          <span className="text-septenary mb-2">Musica</span>
           <NavLink
             to={"/panel/home"}
             className={({ isActive }) =>
               isActive
-                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-6   "
-                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-3 font-medium"
+                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1   "
+                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-1 font-medium"
             }
           >
             <>
@@ -46,8 +46,8 @@ export default function Sidebar() {
             to={"/panel/music"}
             className={({ isActive }) =>
               isActive
-                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-6   "
-                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-3 font-medium"
+                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1   "
+                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-1 font-medium"
             }
           >
             <>
@@ -56,11 +56,11 @@ export default function Sidebar() {
             </>
           </NavLink>
           <NavLink
-            to={"/panel/report"}
+            to={"/panel/last"}
             className={({ isActive }) =>
               isActive
-                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-6   "
-                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-3 font-medium"
+                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1   "
+                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-1 font-medium"
             }
           >
             <>
@@ -69,10 +69,10 @@ export default function Sidebar() {
             </>
           </NavLink>
           <NavLink
-            to={"/panel/report"}
+            to={"/panel/dealers"}
             className={({ isActive }) =>
               isActive
-                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-6   "
+                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1   "
                 : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6  mt-3 font-medium"
             }
           >
@@ -82,11 +82,11 @@ export default function Sidebar() {
             </>
           </NavLink>
           <NavLink
-            to={"/panel/report"}
+            to={"/panel/collaborators"}
             className={({ isActive }) =>
               isActive
-                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-6   "
-                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-3 font-medium"
+                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1   "
+                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-1 font-medium"
             }
           >
             <>
@@ -95,11 +95,11 @@ export default function Sidebar() {
             </>
           </NavLink>
           <NavLink
-            to={"/panel/report"}
+            to={"/panel/lastyear"}
             className={({ isActive }) =>
               isActive
-                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-6   "
-                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-3 font-medium"
+                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1   "
+                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-1 font-medium"
             }
           >
             <>
@@ -109,14 +109,14 @@ export default function Sidebar() {
           </NavLink>
         </div>
         <div className="w-full h-full flex flex-col mt-6  ">
-          <span className="text-septenary">Reportes</span>
+          <span className="text-septenary mb-2">Reportes</span>
 
           <NavLink
-            to={"/panel/music"}
+            to={"/panel/income"}
             className={({ isActive }) =>
               isActive
-                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-6   "
-                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-3 font-medium"
+                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1   "
+                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-1 font-medium"
             }
           >
             <>
@@ -125,11 +125,11 @@ export default function Sidebar() {
             </>
           </NavLink>
           <NavLink
-            to={"/panel/report"}
+            to={"/panel/bills"}
             className={({ isActive }) =>
               isActive
-                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-6   "
-                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-3 font-medium"
+                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1   "
+                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-1 font-medium"
             }
           >
             <>
@@ -138,11 +138,11 @@ export default function Sidebar() {
             </>
           </NavLink>
           <NavLink
-            to={"/panel/report"}
+            to={"/panel/balance"}
             className={({ isActive }) =>
               isActive
-                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-6   "
-                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-3 font-medium"
+                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1   "
+                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-1 font-medium"
             }
           >
             <>
@@ -151,11 +151,11 @@ export default function Sidebar() {
             </>
           </NavLink>
           <NavLink
-            to={"/panel/report"}
+            to={"/panel/payments"}
             className={({ isActive }) =>
               isActive
-                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-6   "
-                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-3 font-medium"
+                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1   "
+                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-1 font-medium"
             }
           >
             <>
@@ -165,7 +165,7 @@ export default function Sidebar() {
           </NavLink>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-16">
           <span>Descarga nuestra app</span>
           <div className="flex gap-2 mt-2">
             <a href="">
