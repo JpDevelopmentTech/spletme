@@ -15,6 +15,11 @@ export default {
         "senary": "#D3D3D3",
         "septenary": "#6F6F6F",
       },
+      fontSize:{
+        "title": "1.5rem ",
+        "subtitle": "1rem",
+        "normal": "0.8rem",
+      },
       fontFamily:{
         "custom" : ["Poppins", "sans-serif"]
 
@@ -23,7 +28,8 @@ export default {
       backgroundImage:{
         'panel': "url('/src/assets/images/bgsplet.jpg')",
        
-      }
+      },
+
     },
   },
   plugins: [],

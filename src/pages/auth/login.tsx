@@ -1,14 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/images/7 - FULL LOGO.png";
 import React, { useEffect } from "react";
-import { AuthService } from "../../services/auth";
-import { useDispatch } from "react-redux";
-import { setAuth } from "../../store/states/authSlice";
+// import { AuthService } from "../../services/auth";
+// import { useDispatch } from "react-redux";
+// import { setAuth } from "../../store/states/authSlice";
 import Splash from "../../components/splash/splash";
 
 
 export default function Login() {
-  const dispache = useDispatch()
+  // const dispache = useDispatch()
   const navigate = useNavigate();
 
   const [splash, setSplash] = React.useState(true);
@@ -21,23 +21,24 @@ export default function Login() {
 
   const login = async (e: React.FormEvent) => {
     e.preventDefault();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const email = (e.target as any).email.value;
-    //eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const password = (e.target as any).password.value;
+    // // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // const email = (e.target as any).email.value;
+    // //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // const password = (e.target as any).password.value;
     
-    const response = await AuthService.login(email, password);
-    if (response.error) {
-      alert(response.message);
-    } else {
-      localStorage.setItem("user", JSON.stringify(response.data))
-      localStorage.setItem("isAuth", "true")
-      dispache(setAuth({
-        isAuth: "true",
-        user: response.data
-      }))
-      navigate("/panel/home");
-    }
+    // const response = await AuthService.login(email, password);
+    // if (response.error) {
+    //   alert(response.message);
+    // } else {
+    //   localStorage.setItem("user", JSON.stringify(response.data))
+    //   localStorage.setItem("isAuth", "true")
+    //   dispache(setAuth({
+    //     isAuth: "true",
+    //     user: response.data
+    //   }))
+    //   navigate("/panel/home");
+    // }
+    navigate("/panel/home")
   };
 
   return (

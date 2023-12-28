@@ -22,18 +22,18 @@ export default function Sidebar() {
         <div className="w-8 h-10 flex items-center mb-5">
           <img src={logo} alt="" className="w-full h-full" />
         </div>
-        <span className="font-bold text-2xl text-septenary">¡Bienvenido!</span>
-        <span className="font-bold text-3xl">{user.name + ' ' + user.surname}</span>
-        <span className="mt-2 mb-3 text-septenary">Tu balance actual es:</span>
-        <span className="text-3xl font-bold">$100.000,00</span>
+        <span className="font-bold text-subtitle text-septenary">¡Bienvenido!</span>
+        <span className="font-bold text-title">{user.name + ' ' + user.surname}</span>
+        <span className="mt-2 mb-3 text-septenary text-subtitle">Tu balance actual es:</span>
+        <span className="text-title font-bold">$100.000,00</span>
         <div className="w-full h-full flex flex-col mt-6  ">
-          <span className="text-septenary mb-2">Musica</span>
+          <span className="text-septenary mb-2 text-subtitle">Musica</span>
           <NavLink
             to={"/panel/home"}
             className={({ isActive }) =>
               isActive
-                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1   "
-                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-1 font-medium"
+                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1 text-subtitle  "
+                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-1 font-medium text-subtitle"
             }
           >
             <>
@@ -46,8 +46,8 @@ export default function Sidebar() {
             to={"/panel/music"}
             className={({ isActive }) =>
               isActive
-                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1   "
-                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-1 font-medium"
+                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1 text-subtitle  "
+                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-1 font-medium text-subtitle"
             }
           >
             <>
@@ -59,8 +59,8 @@ export default function Sidebar() {
             to={"/panel/last"}
             className={({ isActive }) =>
               isActive
-                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1   "
-                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-1 font-medium"
+                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1 text-subtitle  "
+                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-1 font-medium text-subtitle"
             }
           >
             <>
@@ -72,7 +72,7 @@ export default function Sidebar() {
             to={"/panel/dealers"}
             className={({ isActive }) =>
               isActive
-                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1   "
+                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1 text-subtitle  "
                 : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6  mt-3 font-medium"
             }
           >
@@ -85,8 +85,8 @@ export default function Sidebar() {
             to={"/panel/collaborators"}
             className={({ isActive }) =>
               isActive
-                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1   "
-                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-1 font-medium"
+                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1 text-subtitle  "
+                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-1 font-medium text-subtitle"
             }
           >
             <>
@@ -98,8 +98,8 @@ export default function Sidebar() {
             to={"/panel/lastyear"}
             className={({ isActive }) =>
               isActive
-                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1   "
-                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-1 font-medium"
+                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1 text-subtitle  "
+                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-1 font-medium text-subtitle"
             }
           >
             <>
@@ -115,8 +115,8 @@ export default function Sidebar() {
             to={"/panel/income"}
             className={({ isActive }) =>
               isActive
-                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1   "
-                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-1 font-medium"
+                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1 text-subtitle  "
+                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-1 font-medium text-subtitle"
             }
           >
             <>
@@ -128,8 +128,8 @@ export default function Sidebar() {
             to={"/panel/bills"}
             className={({ isActive }) =>
               isActive
-                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1   "
-                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-1 font-medium"
+                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1 text-subtitle  "
+                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-1 font-medium text-subtitle"
             }
           >
             <>
@@ -141,8 +141,8 @@ export default function Sidebar() {
             to={"/panel/balance"}
             className={({ isActive }) =>
               isActive
-                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1   "
-                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-1 font-medium"
+                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1 text-subtitle  "
+                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-1 font-medium text-subtitle"
             }
           >
             <>
@@ -154,8 +154,8 @@ export default function Sidebar() {
             to={"/panel/payments"}
             className={({ isActive }) =>
               isActive
-                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1   "
-                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-1 font-medium"
+                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1 text-subtitle  "
+                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-1 font-medium text-subtitle"
             }
           >
             <>

@@ -4,6 +4,9 @@ import Panel from "../pages/panel/panel";
 import Home from "../pages/panel/home/home";
 import GuardedRoute from "../guards/auth";
 import Music from "../pages/panel/music/music";
+import Last from "../pages/panel/last/last";
+import Collaborators from "../pages/panel/collaborators/collaborators";
+import Dealers from "../pages/panel/dealers/dealers";
 
 
 
@@ -29,6 +32,18 @@ const routes = [
         path: "report",
         element: <h1>Report</h1>,
       },
+      {
+        path: "last",
+        element: <Last />,
+      },
+      {
+        path: "collaborators",
+        element: <Collaborators />
+      },
+      {
+        path: "dealers",
+        element: <Dealers />,
+      }
     ],
   },
 ];
