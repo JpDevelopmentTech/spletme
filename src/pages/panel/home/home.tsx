@@ -119,44 +119,46 @@ export default function Home() {
   return (
     <>
       <div className="w-full  grid grid-cols-12 gap-6 ">
-        <div className="col-span-12 flex gap-4">
-          <select className="bg-[#E8E8E8] text-normal py-3 px-6 rounded-3xl text-black font-semibold flex gap-2">
+        <div className="col-span-12 flex gap-4 lg:flex-row flex-col">
+          <select className="bg-[#E8E8E8] text-normal py-3 px-6 rounded-3xl text-black font-semibold  gap-2">
             <option value="">Concepto</option>
           </select>
-          <select className="bg-[#E8E8E8]  text-normal py-3 px-6 rounded-3xl text-black font-semibold flex gap-2">
+          <select className="bg-[#E8E8E8]  text-normal py-3 px-6 rounded-3xl text-black font-semibold  gap-2">
             <option value="">Filtro por tiempo</option>
           </select>
-          <select className="bg-[#E8E8E8] text-normal py-3 px-6 rounded-3xl text-black font-semibold flex gap-2">
+          <select className="bg-[#E8E8E8] text-normal py-3 px-6 rounded-3xl text-black font-semibold  gap-2 ">
             <option value="">Formato</option>
           </select>
-          <button className="bg-black py-3  px-6 rounded-3xl">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="1.5em"
-              height="1.5em"
-              viewBox="0 0 24 24"
-              className="text-white"
-            >
-              <path
-                fill="currentColor"
-                d="M18 22q-1.25 0-2.125-.875T15 19q0-.175.025-.363t.075-.337l-7.05-4.1q-.425.375-.95.588T6 15q-1.25 0-2.125-.875T3 12q0-1.25.875-2.125T6 9q.575 0 1.1.213t.95.587l7.05-4.1q-.05-.15-.075-.337T15 5q0-1.25.875-2.125T18 2q1.25 0 2.125.875T21 5q0 1.25-.875 2.125T18 8q-.575 0-1.1-.212t-.95-.588L8.9 11.3q.05.15.075.338T9 12q0 .175-.025.363T8.9 12.7l7.05 4.1q.425-.375.95-.587T18 16q1.25 0 2.125.875T21 19q0 1.25-.875 2.125T18 22Z"
-              />
-            </svg>
-          </button>
-          <button className="bg-black py-3  px-6 rounded-3xl">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="1.5em"
-              height="1.5em"
-              viewBox="0 0 24 24"
-              className="text-white"
-            >
-              <path
-                fill="currentColor"
-                d="m12 16l-5-5l1.4-1.45l2.6 2.6V4h2v8.15l2.6-2.6L17 11l-5 5Zm-6 4q-.825 0-1.413-.588T4 18v-3h2v3h12v-3h2v3q0 .825-.588 1.413T18 20H6Z"
-              />
-            </svg>
-          </button>
+          <div className="flex justify-end gap-3">
+            <button className="bg-black py-3  px-6 rounded-3xl flex justify-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="1.5em"
+                height="1.5em"
+                viewBox="0 0 24 24"
+                className="text-white"
+              >
+                <path
+                  fill="currentColor"
+                  d="M18 22q-1.25 0-2.125-.875T15 19q0-.175.025-.363t.075-.337l-7.05-4.1q-.425.375-.95.588T6 15q-1.25 0-2.125-.875T3 12q0-1.25.875-2.125T6 9q.575 0 1.1.213t.95.587l7.05-4.1q-.05-.15-.075-.337T15 5q0-1.25.875-2.125T18 2q1.25 0 2.125.875T21 5q0 1.25-.875 2.125T18 8q-.575 0-1.1-.212t-.95-.588L8.9 11.3q.05.15.075.338T9 12q0 .175-.025.363T8.9 12.7l7.05 4.1q.425-.375.95-.587T18 16q1.25 0 2.125.875T21 19q0 1.25-.875 2.125T18 22Z"
+                />
+              </svg>
+            </button>
+            <button className="bg-black py-3  px-6 rounded-3xl flex justify-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="1.5em"
+                height="1.5em"
+                viewBox="0 0 24 24"
+                className="text-white"
+              >
+                <path
+                  fill="currentColor"
+                  d="m12 16l-5-5l1.4-1.45l2.6 2.6V4h2v8.15l2.6-2.6L17 11l-5 5Zm-6 4q-.825 0-1.413-.588T4 18v-3h2v3h12v-3h2v3q0 .825-.588 1.413T18 20H6Z"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
         <div
           className="duration-200 hover:scale-105 col-span-12 lg:col-span-6 shadow-lg rounded-2xl row-span-2  p-8 flex flex-col"
@@ -341,7 +343,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-6 mt-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-3">
             <CardSong />
             <CardSong />
           </div>

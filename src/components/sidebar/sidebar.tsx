@@ -12,23 +12,29 @@ import PagosIcon from '../../assets/images/PAGOS.svg'
 import Logo from "../../assets/images/7 - FULL LOGO.png";
 import logo from "../../assets/images/5 - LOGO.png";
 import { useSelector } from "react-redux";
-export default function Sidebar() {
+export default function Sidebar({ close }: { close: () => void}) {
 
+  
+  
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const user = useSelector((state: any) => state.auth.user);
   return (
     <>
-      <div className="w-96  h-full p-9 bg-[#FBFBFB]  flex flex-col overflow-y-auto  ">
-        <div className="w-8 h-10 flex items-center mb-5">
+      <div className="lg:w-96  w-full absolute lg:relative lg:h-full p-9 bg-[#FBFBFB]  lg:flex flex-col overflow-y-auto z-20 animate-fade ">
+        <div className="w-8 h-10 flex items-center mb-5" onClick={close}>
           <img src={logo} alt="" className="w-full h-full" />
         </div>
+        <div className="flex flex-col">
+          
         <span className="font-bold text-subtitle text-septenary">¡Bienvenido!</span>
         <span className="font-bold text-title">{user.name + ' ' + user.surname}</span>
         <span className="mt-2 mb-3 text-septenary text-subtitle">Tu balance actual es:</span>
         <span className="text-title font-bold">$100.000,00</span>
+        </div>
         <div className="w-full h-full flex flex-col mt-6  ">
           <span className="text-septenary mb-2 text-subtitle">Musica</span>
           <NavLink
+          onClick={close}
             to={"/panel/home"}
             className={({ isActive }) =>
               isActive
@@ -43,6 +49,7 @@ export default function Sidebar() {
           </NavLink>
 
           <NavLink
+          onClick={close}
             to={"/panel/music"}
             className={({ isActive }) =>
               isActive
@@ -56,6 +63,7 @@ export default function Sidebar() {
             </>
           </NavLink>
           <NavLink
+          onClick={close}
             to={"/panel/last"}
             className={({ isActive }) =>
               isActive
@@ -69,6 +77,7 @@ export default function Sidebar() {
             </>
           </NavLink>
           <NavLink
+          onClick={close}
             to={"/panel/dealers"}
             className={({ isActive }) =>
               isActive
@@ -82,6 +91,7 @@ export default function Sidebar() {
             </>
           </NavLink>
           <NavLink
+          onClick={close}
             to={"/panel/collaborators"}
             className={({ isActive }) =>
               isActive
@@ -95,6 +105,7 @@ export default function Sidebar() {
             </>
           </NavLink>
           <NavLink
+          onClick={close}
             to={"/panel/lastyear"}
             className={({ isActive }) =>
               isActive
@@ -112,6 +123,7 @@ export default function Sidebar() {
           <span className="text-septenary mb-2">Reportes</span>
 
           <NavLink
+          onClick={close}
             to={"/panel/income"}
             className={({ isActive }) =>
               isActive
@@ -125,6 +137,7 @@ export default function Sidebar() {
             </>
           </NavLink>
           <NavLink
+          onClick={close}
             to={"/panel/bills"}
             className={({ isActive }) =>
               isActive
@@ -138,6 +151,7 @@ export default function Sidebar() {
             </>
           </NavLink>
           <NavLink
+          onClick={close}
             to={"/panel/balance"}
             className={({ isActive }) =>
               isActive
@@ -151,6 +165,7 @@ export default function Sidebar() {
             </>
           </NavLink>
           <NavLink
+          onClick={close}
             to={"/panel/payments"}
             className={({ isActive }) =>
               isActive
