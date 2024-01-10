@@ -1,38 +1,24 @@
-import { useEffect, useState } from "react";
-import Sidebar from "../../components/sidebar/sidebar";
+import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import UserIcon from '../../assets/images/Mesa de trabajo 28.svg'
 import lupaIcon from '../../assets/images/Mesa de trabajo 16.svg'
-import SpletIcon from '../../assets/images/5 - LOGO.png'
+import Sidebar from "../../components/sidebar/sidebar";
 export default function Panel() {
   const [showMenu, setShowMenu] = useState(false);
-  const [showSideBar, setShowSideBar] = useState(false);
 
 
-  const closeSideBar = () => {
-    setShowSideBar(false)
-  }
 
-  const getIfresponsive = () => {
-    if (window.innerWidth > 768) {
-      setShowSideBar(true)
-    }
-  }
-
-  useEffect(() => {
-    getIfresponsive()
-  }, [])
 
 
 
   return (
     <>
       <div className="w-full h-screen bg-[#FFFFFF] bg-no-repeat bg-cover flex font-custom relative">
-        {showSideBar && (<Sidebar close={closeSideBar} />)}
+        <Sidebar />
         <div className="w-full h-full overflow-y-auto">
           <div className="w-full border-b-2 h-24 flex items-center justify-between p-6 gap-12">
             
-          <button ><img className="w-10" src={SpletIcon} alt="" onClick={() => setShowSideBar(!showSideBar)} /></button>
+
           
             <div className="w-1/3 py-3 bg-senary rounded-full flex items-center gap-3 mr-12 px-6">
               

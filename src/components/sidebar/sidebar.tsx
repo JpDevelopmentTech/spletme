@@ -1,10 +1,8 @@
 import { NavLink } from "react-router-dom";
 import HomeIcon from "../../assets/images/1 - HOME ICON.png";
 import MusicIcon from "../../assets/images/CANCIONES.svg";
-import UltimosLanzamientosIcon from '../../assets/images/ULTIMOS_LANZAMIENTOS.svg'
 import DistribuidoresIcon from '../../assets/images/DISTRIBUIDORES.svg'
 import ColaboradoresIcon from '../../assets/images/COLABORADORES.svg'
-import UltimoAnoIcon from '../../assets/images/ULTIMO_ANO.svg'
 import IngresosIcon from '../../assets/images/INGRESOS.svg'
 import GastosIcon from '../../assets/images/GASTOS.svg'
 import BalanceIcon from '../../assets/images/BALANCE.svg'
@@ -12,7 +10,7 @@ import PagosIcon from '../../assets/images/PAGOS.svg'
 import Logo from "../../assets/images/7 - FULL LOGO.png";
 import logo from "../../assets/images/5 - LOGO.png";
 import { useSelector } from "react-redux";
-export default function Sidebar({ close }: { close: () => void}) {
+export default function Sidebar() {
 
   
   
@@ -64,20 +62,6 @@ export default function Sidebar({ close }: { close: () => void}) {
           </NavLink>
           <NavLink
           onClick={close}
-            to={"/panel/last"}
-            className={({ isActive }) =>
-              isActive
-                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1 text-subtitle  "
-                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-1 font-medium text-subtitle"
-            }
-          >
-            <>
-              <img src={UltimosLanzamientosIcon} alt="" className="w-5 h-5 " />
-              <span>Ultimos lanzamientos</span>
-            </>
-          </NavLink>
-          <NavLink
-          onClick={close}
             to={"/panel/dealers"}
             className={({ isActive }) =>
               isActive
@@ -104,20 +88,7 @@ export default function Sidebar({ close }: { close: () => void}) {
               <span>Colaboradores</span>
             </>
           </NavLink>
-          <NavLink
-          onClick={close}
-            to={"/panel/lastyear"}
-            className={({ isActive }) =>
-              isActive
-                ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1 text-subtitle  "
-                : "w-full gap-3  rounded-3xl text-black  flex  items-center p-2   pl-6 mt-1 font-medium text-subtitle"
-            }
-          >
-            <>
-              <img src={UltimoAnoIcon} alt="" className="w-5 h-5 " />
-              <span>Ultimo año</span>
-            </>
-          </NavLink>
+         
         </div>
         <div className="w-full h-full flex flex-col mt-6  ">
           <span className="text-septenary mb-2">Reportes</span>

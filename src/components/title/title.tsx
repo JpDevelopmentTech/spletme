@@ -2,7 +2,7 @@ export default function Title({title, subtitle}: {title: string, subtitle: strin
   return (
     <div className="flex flex-col">
       <span className="text-title font-bold">{title}</span>
-      <span className="text-subtitle">{subtitle}</span>
+      <span className="text-normal">{subtitle}</span>
     </div>
   );
 }

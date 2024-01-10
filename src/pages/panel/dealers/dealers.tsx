@@ -3,12 +3,11 @@ import Behavior from "./components/behavior";
 import HigherPerformance from "./components/higherperformance";
 import Income from "./components/income";
 import NavBar from "./components/navbar";
-import Symphonic from "./components/symphonic";
 import Table from "./components/table";
 
 export default function Dealers() {
   return (
-    <div>
+    <div className="">
       <Title title="Distribuidores" subtitle="subtitulo para distribuidores" />
       <NavBar />
       <Table />
@@ -16,7 +15,6 @@ export default function Dealers() {
       <Behavior />
       <Income />
       <HigherPerformance />
-      <Symphonic />
       </div>
     </div>
   );
