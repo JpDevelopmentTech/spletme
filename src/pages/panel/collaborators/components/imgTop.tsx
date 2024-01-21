@@ -7,8 +7,11 @@ export default function ImgTop({ activeImg }: { activeImg: string }) {
   useEffect(() => {
     const GetDominantColor = () => {
       const img = document.createElement("img");
+      img.crossOrigin = "Anonymous";
 
       img.src = activeImg;
+
+
       const canvas = document.createElement("canvas");
 
       const ctx = canvas.getContext("2d");
