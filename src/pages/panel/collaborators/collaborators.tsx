@@ -9,22 +9,22 @@ export default function Collaborators() {
   const [collaboratorActive, setCollaboratorActive] = useState(0);
   const collaborators = [
     {
-      img: "../../../src/assets/images/collaborator4.webp",
+      img: "/src/assets/images/collaborator4.webp",
     },
     {
-      img: "../../../src/assets/images/collaborator2.jpg",
+      img: "/src/assets/images/collaborator2.jpg",
     },
     {
-      img: "../../../src/assets/images/collaborator1.webp",
+      img: "/src/assets/images/collaborator1.webp",
     },
     {
-      img: "../../../src/assets/images/collaborator3.jpg",
+      img: "/src/assets/images/collaborator3.jpg",
     },
     {
-      img: "../../../src/assets/images/collaborator5.jpeg",
+      img: "/src/assets/images/collaborator5.jpeg",
     },
     {
-      img: "../../../src/assets/images/collaborator6.jpeg",
+      img: "/src/assets/images/collaborator6.jpeg",
     },
   ];
 
