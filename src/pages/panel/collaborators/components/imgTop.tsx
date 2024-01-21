@@ -7,8 +7,6 @@ export default function ImgTop({ activeImg }: { activeImg: string }) {
   useEffect(() => {
     const GetDominantColor = () => {
       const img = document.createElement("img");
-      img.crossOrigin = "Anonymous";
-
       img.src = activeImg;
 
 
