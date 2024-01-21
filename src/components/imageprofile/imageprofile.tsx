@@ -1,6 +1,8 @@
-
+import img from '../../assets/images/collaborator4.webp'
+console.log(img)
 export default function ImageProfile() {
   return (
-    <div className="w-8 h-8 bg-senary rounded-full -ml-3 border-white border"></div>
+    
+      <img src={'/src/assets/images/collaborator4.webp'} alt="" className='w-8 h-8 rounded-full -ml-3' />
   )
 }
