@@ -9,23 +9,23 @@ export default function Collaborators() {
   const [collaboratorActive, setCollaboratorActive] = useState(0);
   const collaborators = [
     {
-      img: "/src/assets/images/collaborator4.webp",
+      img: "https://splitme.s3.us-east-2.amazonaws.com/collaborator1.webp",
     },
     {
-      img: "/src/assets/images/collaborator2.jpg",
+      img: "https://splitme.s3.us-east-2.amazonaws.com/collaborator2.jpg",
     },
     {
-      img: "/src/assets/images/collaborator1.webp",
+      img: "https://splitme.s3.us-east-2.amazonaws.com/collaborator3.jpg",
     },
     {
-      img: "/src/assets/images/collaborator3.jpg",
+      img: "https://splitme.s3.us-east-2.amazonaws.com/collaborator4.webp",
     },
     {
-      img: "/src/assets/images/collaborator5.jpeg",
+      img: "https://splitme.s3.us-east-2.amazonaws.com/collaborator5.jpeg",
     },
     {
-      img: "/src/assets/images/collaborator6.jpeg",
-    },
+      img: "https://splitme.s3.us-east-2.amazonaws.com/collaborator6.jpeg",
+    }
   ];
 
   return (
