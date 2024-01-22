@@ -41,7 +41,7 @@ export default function ImgTop({ activeImg }: { activeImg: string }) {
     };
     setTimeout(() => {
       GetDominantColor();
-    }, 50);
+    }, 100);
   }, [activeImg]);
 
   return (
