@@ -9,7 +9,7 @@ export default function Collaborators() {
   const [collaboratorActive, setCollaboratorActive] = useState(0);
   const collaborators = [
     {
-      img: "/src/assets/iamges/collaborator6-6QStRSqC.jpeg",
+      img: "/assets/iamges/collaborator6-6QStRSqC.jpeg",
     },
     {
       img: "/src/assets/images/collaborator1.webp",
