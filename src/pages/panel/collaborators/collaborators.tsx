@@ -12,19 +12,19 @@ export default function Collaborators() {
       img: "/assets/collaborator6-6QStRSqC.jpeg",
     },
     {
-      img: "/src/assets/images/collaborator1.webp",
+      img: "/assets/collaborator1.webp",
     },
     {
-      img: "/src/assets/images/collaborator3.jpg",
+      img: "/assets/collaborator3.jpg",
     },
     {
-      img: "/src/assets/images/collaborator2.jpg",
+      img: "/assets/collaborator2.jpg",
     },
     {
-      img: "/src/assets/images/collaborator4.webp",
+      img: "/assets/collaborator4.webp",
     },
     {
-      img: "/src/assets/images/collaborator5.jpeg",
+      img: "/assets/collaborator5.jpeg",
     }
   ];
 
