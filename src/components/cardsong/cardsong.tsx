@@ -1,10 +1,11 @@
 import ImageProfile from "../imageprofile/imageprofile";
+import image from "../../assets/images/collaborator6.jpeg"
 
 export default function CardSong() {
   return (
     <div className="shadow-lg p-2 flex gap-3 items-center rounded-2xl duration-200 hover:scale-105">
       <div className="w-44 h-44  bg-septenary rounded-lg">
-        <img src="" alt="" />
+        <img src={image} className="w-full h-full object-cover rounded-lg" alt="" />
       </div>
       <div className="flex flex-col">
         <span className="text-subtitle font-bold">Nombre de la cancion</span>

@@ -1,4 +1,5 @@
 import ImageProfile from "../../../../components/imageprofile/imageprofile";
+import image from '../../../../assets/images/collaborator6.jpeg'
 
 const dealers = [
   {
@@ -134,7 +135,13 @@ export default function Table() {
             <tr className="border-b-2" key={dealer.id}>
               <td className="p-3">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 rounded-lg w-10 bg-septenary"></div>
+                  <div className="h-10 rounded-lg w-10 bg-septenary">
+                    <img
+                      src={image}
+                      className="w-full h-full object-cover rounded-lg"
+                      alt=""
+                    />
+                  </div>
                   <div className="flex flex-col">
                     <span className="text-subtitle font-bold">
                       {dealer.name}

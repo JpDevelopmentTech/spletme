@@ -8,7 +8,7 @@ export default function ImgTop({ activeImg }: { activeImg: string }) {
     const GetDominantColor = () => {
       const img = document.createElement("img");
       img.src = activeImg;
-
+      
 
       const canvas = document.createElement("canvas");
 

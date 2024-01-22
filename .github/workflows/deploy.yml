@@ -1,5 +1,4 @@
-name: Deploy to S3
-
+name: "Deploy to S3",
 on:
   push:
     branches:
@@ -9,15 +8,26 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
+    - name: 'Checkout Repository'
       uses: actions/checkout@v2
-    - name: Setup Node.js
-      uses: actions/setup-node@v1
-      with:
-        node-version: '20.10'
 
-    - name: Install dependencies
+    - name: 'SetUp Node'
+      uses: actions/setup-node@v3 
+      with:
+        node-version: 20
+
+    - name: 'Install Dependencies'
       run: npm install
 
-    - name: Build
+    - name: 'Build'
       run: npm run build
+
+    - name: 'Deploy to S3'
+      uses: jakejarvis/s3-sync-action@master
+      with:
+        aws-key: ${{secrets.ACCESS_AWS}}
+        aws-secret: ${{secrets.KEY_AWS}}
+        aws-region: "us-east-2"
+        source-dir: "build"
+        dest-dir: "splitme"
+

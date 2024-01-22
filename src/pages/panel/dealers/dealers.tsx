@@ -7,7 +7,7 @@ import Table from "./components/table";
 
 export default function Dealers() {
   return (
-    <div className="">
+    <div className="animate-fade-left">
       <Title title="Distribuidores" subtitle="subtitulo para distribuidores" />
       <NavBar />
       <Table />

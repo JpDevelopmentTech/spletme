@@ -2,7 +2,6 @@ import { createBrowserRouter } from "react-router-dom";
 import Login from "../pages/auth/login";
 import Panel from "../pages/panel/panel";
 import Home from "../pages/panel/home/home";
-import GuardedRoute from "../guards/auth";
 import Music from "../pages/panel/music/music";
 import Last from "../pages/panel/last/last";
 import Collaborators from "../pages/panel/collaborators/collaborators";
@@ -18,7 +17,7 @@ const routes = [
 
   {
     path: "/panel",
-    element: <GuardedRoute><Panel /></GuardedRoute>,
+    element: <Panel />,
     children: [
       {
         path: "home",

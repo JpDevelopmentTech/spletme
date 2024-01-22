@@ -50,7 +50,7 @@ export default function Panel() {
               ><img src={UserIcon} alt="" /></button>
             </div>
           </div>
-          <div className="p-6 ">
+          <div className="p-6">
             <Outlet />
           </div>
         </div>

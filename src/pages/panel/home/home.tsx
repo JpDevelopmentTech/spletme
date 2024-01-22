@@ -118,7 +118,7 @@ export default function Home() {
 
   return (
     <>
-      <div className="w-full  grid grid-cols-12 gap-6 ">
+      <div className="w-full  grid grid-cols-12 gap-6 animate-fade-left">
         <div className="col-span-12 flex gap-4 lg:flex-row flex-col">
           <select className="bg-[#E8E8E8] text-normal py-3 px-6 rounded-3xl text-black font-semibold  gap-2">
             <option value="">Concepto</option>
