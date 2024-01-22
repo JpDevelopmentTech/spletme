@@ -1,4 +1,10 @@
 import { useState } from "react";
+import collaborator1 from '../../../assets/images/collaborator1.webp'
+import collaborator2 from '../../../assets/images/collaborator2.jpg'
+import collaborator3 from '../../../assets/images/collaborator3.jpg'
+import collaborator4 from '../../../assets/images/collaborator4.webp'
+import collaborator5 from '../../../assets/images/collaborator5.jpeg'
+import collaborator6 from '../../../assets/images/collaborator6.jpeg'
 
 import ImgCollaborator from "./components/imgCollaborator";
 import AddCollaborator from "./components/addCollaborator";
@@ -9,23 +15,23 @@ export default function Collaborators() {
   const [collaboratorActive, setCollaboratorActive] = useState(0);
   const collaborators = [
     {
-      img: "/assets/collaborator6-6QStRSqC.jpeg",
+      img: collaborator1,
     },
     {
-      img: "/assets/collaborator1.webp",
+      img: collaborator2,
     },
     {
-      img: "/assets/collaborator3.jpg",
+      img: collaborator3,
     },
     {
-      img: "/assets/collaborator2.jpg",
+      img: collaborator4,
     },
     {
-      img: "/assets/collaborator4.webp",
+      img: collaborator5,
     },
     {
-      img: "/assets/collaborator5.jpeg",
-    }
+      img: collaborator6,
+    },
   ];
 
   return (
