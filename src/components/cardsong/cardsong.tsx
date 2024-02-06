@@ -1,9 +1,10 @@
 import ImageProfile from "../imageprofile/imageprofile";
 import image from "../../assets/images/collaborator6.jpeg"
+import { Link } from "react-router-dom";
 
 export default function CardSong() {
   return (
-    <div className="shadow-lg p-2 flex gap-3 items-center rounded-2xl duration-200 hover:scale-105">
+    <Link to={'/panel/song/1'} className="shadow-lg p-2 flex gap-3 items-center rounded-2xl duration-200 hover:scale-105">
       <div className="w-44 h-44  bg-septenary rounded-lg">
         <img src={image} className="w-full h-full object-cover rounded-lg" alt="" />
       </div>
@@ -29,6 +30,6 @@ export default function CardSong() {
             </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

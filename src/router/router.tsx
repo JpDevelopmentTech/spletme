@@ -6,6 +6,7 @@ import Music from "../pages/panel/music/music";
 import Last from "../pages/panel/last/last";
 import Collaborators from "../pages/panel/collaborators/collaborators";
 import Dealers from "../pages/panel/dealers/dealers";
+import Song from "../pages/panel/music/song/song";
 
 
 
@@ -26,6 +27,10 @@ const routes = [
       {
         path: "music",
         element: <Music/>,
+      },
+      {
+        path: "song/:id",
+        element: <Song />,
       },
       {
         path: "report",
