@@ -1,15 +1,16 @@
 import { useState } from "react";
-import collaborator1 from '../../../assets/images/collaborator1.webp'
-import collaborator2 from '../../../assets/images/collaborator2.jpg'
-import collaborator3 from '../../../assets/images/collaborator3.jpg'
-import collaborator4 from '../../../assets/images/collaborator4.webp'
-import collaborator5 from '../../../assets/images/collaborator5.jpeg'
-import collaborator6 from '../../../assets/images/collaborator6.jpeg'
+import collaborator1 from "../../../assets/images/collaborator1.webp";
+import collaborator2 from "../../../assets/images/collaborator2.jpg";
+import collaborator3 from "../../../assets/images/collaborator3.jpg";
+import collaborator4 from "../../../assets/images/collaborator4.webp";
+import collaborator5 from "../../../assets/images/collaborator5.jpeg";
+import collaborator6 from "../../../assets/images/collaborator6.jpeg";
 
 import ImgCollaborator from "./components/imgCollaborator";
 import AddCollaborator from "./components/addCollaborator";
 import ImgTop from "./components/imgTop";
 import Table from "./components/table";
+import Breadcrumb from "../../../components/breadcrumb/breadcrumb";
 export default function Collaborators() {
   const [typeMoney, setTypeMoney] = useState<"in" | "out">("in");
   const [collaboratorActive, setCollaboratorActive] = useState(0);
@@ -36,33 +37,36 @@ export default function Collaborators() {
 
   return (
     <div className="flex flex-col w-full animate-fade-left">
-      <div className="flex items-center gap-6">
-        <div className="flex flex-col">
-          <span className="text-title font-bold">Colaboradores</span>
-          <span className="text-subtitle">Organiza tus colaboradores</span>
+      <div className="flex items-center justify-between gap-6">
+        <div className="flex items-center gap-6">
+          <div className="flex flex-col">
+            <span className="text-title font-bold">Colaboradores</span>
+            <span className="text-subtitle">Organiza tus colaboradores</span>
+          </div>
+          <div className="bg-[#DEDEDE] rounded-full">
+            <button
+              onClick={() => setTypeMoney("in")}
+              className={
+                typeMoney === "in"
+                  ? "p-3 rounded-full bg-[#219EBC] text-white"
+                  : "p-3 rounded-full bg-[#DEDEDE] text-[#8A8A8A]"
+              }
+            >
+              Money in
+            </button>
+            <button
+              onClick={() => setTypeMoney("out")}
+              className={
+                typeMoney === "out"
+                  ? "p-3 rounded-full bg-[#219EBC] text-white"
+                  : "p-3 rounded-full bg-[#DEDEDE] text-[#8A8A8A]"
+              }
+            >
+              Money Out
+            </button>
+          </div>
         </div>
-        <div className="bg-[#DEDEDE] rounded-full">
-          <button
-            onClick={() => setTypeMoney("in")}
-            className={
-              typeMoney === "in"
-                ? "p-3 rounded-full bg-[#219EBC] text-white"
-                : "p-3 rounded-full bg-[#DEDEDE] text-[#8A8A8A]"
-            }
-          >
-            Money in
-          </button>
-          <button
-            onClick={() => setTypeMoney("out")}
-            className={
-              typeMoney === "out"
-                ? "p-3 rounded-full bg-[#219EBC] text-white"
-                : "p-3 rounded-full bg-[#DEDEDE] text-[#8A8A8A]"
-            }
-          >
-            Money Out
-          </button>
-        </div>
+        <Breadcrumb />
       </div>
 
       <div className="grid grid-cols-12 gap-6 w-full mt-6">

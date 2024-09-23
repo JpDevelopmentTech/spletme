@@ -1,22 +1,47 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import ImageProfile from "../imageprofile/imageprofile";
-import image from "../../assets/images/collaborator6.jpeg"
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { SpotifyService } from "../../services/spotify";
 
-export default function CardSong() {
+
+export default function CardSong({ song }: { song: any }) {
+  const [data, setData] = useState<any>();
+
+  useEffect(() => {
+    if (!song) return;
+    const getTrack = async () => {
+      const response = await SpotifyService.getTrack(song?.id);
+      setData(response);
+      console.log(response.images[0].url);
+      console.log(response);
+    };
+
+    getTrack();
+
+    return () => {};
+  }, [song]);
+
   return (
-    <Link to={'/panel/song/1'} className="shadow-lg p-2 flex gap-3 items-center rounded-2xl duration-200 hover:scale-105">
-      <div className="w-44 h-44  bg-septenary rounded-lg">
-        <img src={image} className="w-full h-full object-cover rounded-lg" alt="" />
-      </div>
-      <div className="flex flex-col">
-        <span className="text-subtitle font-bold">Nombre de la cancion</span>
-        <span className="text-normal">Artistas</span>
+    <Link
+      to={"/panel/song/" + song?.id}
+      className="shadow-lg p-2 flex gap-3 items-center rounded-2xl duration-200 hover:scale-105 w-full"
+    >
+        <img
+        src={data?.album.images[0].url}
+          className="w-44 h-44 object-cover rounded-lg"
+          alt=""
+        />
+      <div className="flex flex-col w-1/2 ">
+        <span className="text-subtitle font-bold overflow-hidden whitespace-nowrap overflow-ellipsis w-full">{data?.name}</span>
+        <span className="text-normal">
+          {data?.artists.map((artist: any) => artist.name).join(", ")}
+        </span>
 
         <div className="flex pl-2 mt-2">
-          <ImageProfile />
-          <ImageProfile />
-          <ImageProfile />
-          <ImageProfile />
+          {data?.artists.map((artist: any) => (
+            <ImageProfile key={artist.id} id={artist.id} />
+          ))}
         </div>
 
         <div className="w-full justify-between flex items-center">
@@ -25,9 +50,9 @@ export default function CardSong() {
         </div>
 
         <div className="flex">
-            <div className="text-normal bg-senary p-1 rounded-full">
-                325K Streams
-            </div>
+          <div className="text-normal bg-senary p-1 rounded-full">
+            325K Streams
+          </div>
         </div>
       </div>
     </Link>

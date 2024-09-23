@@ -11,8 +11,28 @@ import YoutubeIcon from "../../../assets/images/Mesa de trabajo 19.svg";
 
 import { Link } from "react-router-dom";
 import CardSong from "../../../components/cardsong/cardsong";
+import { useEffect, useState } from "react";
+import { SpotifyService } from "../../../services/spotify";
+import Breadcrumb from "../../../components/breadcrumb/breadcrumb";
 
 export default function Home() {
+  const [topTracks, setTopTracks] = useState([]);
+  useEffect(() => {
+    
+    const getTopTracks = async () => {
+      const response = await SpotifyService.getTopTracks()
+      setTopTracks(response.tracks)
+    }
+
+    getTopTracks()
+
+    return () => {
+      
+    }
+  }, [])
+  
+  
+
   const series = [
     {
       name: "series1",
@@ -119,7 +139,7 @@ export default function Home() {
   return (
     <>
       <div className="w-full  grid grid-cols-12 gap-6 animate-fade-left">
-        <div className="col-span-12 flex gap-4 lg:flex-row flex-col">
+        <div className="col-span-10 flex gap-4 lg:flex-row flex-col">
           <select className="bg-[#E8E8E8] text-normal py-3 px-6 rounded-3xl text-black font-semibold  gap-2">
             <option value="">Concepto</option>
           </select>
@@ -159,6 +179,9 @@ export default function Home() {
               </svg>
             </button>
           </div>
+        </div>
+        <div className="col-span-2">
+          <Breadcrumb />
         </div>
         <div
           className="duration-200 hover:scale-105 col-span-12 lg:col-span-6 shadow-lg rounded-2xl row-span-2  p-8 flex flex-col"
@@ -344,8 +367,8 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-3">
-            <CardSong />
-            <CardSong />
+            <CardSong song={topTracks[0]}/>
+            <CardSong song={topTracks[1]}/>
           </div>
         </div>
       </div>

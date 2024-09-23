@@ -1,11 +1,17 @@
-export default function Data() {
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export default function Data({ data }: { data: any }) {
   return (
     <div className="col-span-5 border-l px-10">
       <div className="flex justify-between items-center">
         <span className="text-title font-bold">Data</span>
-        <button className="text-quinary font-bold text-subtitle" onClick={() => {
-          document.getElementById('data-valora')?.scrollIntoView({ behavior: 'smooth' });
-        }}>
+        <button
+          className="text-quinary font-bold text-subtitle"
+          onClick={() => {
+            document
+              .getElementById("data-valora")
+              ?.scrollIntoView({ behavior: "smooth" });
+          }}
+        >
           Ver mas
         </button>
       </div>
@@ -20,7 +26,7 @@ export default function Data() {
         </div>
         <div className="flex justify-between items-center">
           <span className="font-bold">ISRC:</span>
-          <span>000000000</span>
+          <span>{data?.external_ids.isrc}</span>
         </div>
         <div className="flex justify-between items-center">
           <span className="font-bold">Lanzamiento:</span>

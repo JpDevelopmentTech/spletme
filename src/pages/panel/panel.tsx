@@ -1,15 +1,21 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
-import UserIcon from '../../assets/images/Mesa de trabajo 28.svg'
-import lupaIcon from '../../assets/images/Mesa de trabajo 16.svg'
+import UserIcon from "../../assets/images/Mesa de trabajo 28.svg";
+import lupaIcon from "../../assets/images/Mesa de trabajo 16.svg";
 import Sidebar from "../../components/sidebar/sidebar";
+import { SpotifyService } from "../../services/spotify";
 export default function Panel() {
   const [showMenu, setShowMenu] = useState(false);
 
+  useEffect(() => {
+    const SignInSpotify = async () => {
+      await SpotifyService.getAccessToken();
+    };
 
+    SignInSpotify();
 
-
-
+    return () => {};
+  }, []);
 
   return (
     <>
@@ -17,12 +23,8 @@ export default function Panel() {
         <Sidebar />
         <div className="w-full h-full overflow-y-auto">
           <div className="w-full border-b-2 h-24 flex items-center justify-between p-6 gap-12">
-            
-
-          
             <div className="w-1/3 py-3 bg-senary rounded-full flex items-center gap-3 mr-12 px-6">
-              
-              <img src={lupaIcon} alt="" className="w-7"/>
+              <img src={lupaIcon} alt="" className="w-7" />
               <input
                 type="text"
                 placeholder="Buscar"
@@ -47,7 +49,9 @@ export default function Panel() {
                 onClick={() => {
                   setShowMenu(!showMenu);
                 }}
-              ><img src={UserIcon} alt="" /></button>
+              >
+                <img src={UserIcon} alt="" />
+              </button>
             </div>
           </div>
           <div className="p-6">
@@ -57,9 +61,13 @@ export default function Panel() {
         {showMenu && (
           <div className="fixed w-full h-screen bg-black/40 z-20">
             <div className="absolute w-96 h-full bg-white right-0 top-0 rounded-2xl ">
-              <button onClick={() => {
-                setShowMenu(!showMenu);
-              }}>Atras</button>
+              <button
+                onClick={() => {
+                  setShowMenu(!showMenu);
+                }}
+              >
+                Atras
+              </button>
             </div>
           </div>
         )}

@@ -137,7 +137,7 @@ export default function Sidebar() {
           </NavLink>
           <NavLink
           onClick={close}
-            to={"/panel/payments"}
+            to={"/panel/pagos"}
             className={({ isActive }) =>
               isActive
                 ? "w-full gap-3  rounded-3xl text-quinary bg-[#F3F3F3] p-2  flex  items-center  font-bold pl-6 mt-1 text-subtitle  "

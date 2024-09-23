@@ -7,6 +7,8 @@ import Last from "../pages/panel/last/last";
 import Collaborators from "../pages/panel/collaborators/collaborators";
 import Dealers from "../pages/panel/dealers/dealers";
 import Song from "../pages/panel/music/song/song";
+import Collaborator from "../pages/panel/collaborators/pages/collaborator";
+import Payments from "../pages/panel/payments/payments";
 
 
 
@@ -47,6 +49,14 @@ const routes = [
       {
         path: "dealers",
         element: <Dealers />,
+      },
+      {
+        path: "collaborators/:id",
+        element: <Collaborator />
+      },
+      {
+        path: "pagos",
+        element: <Payments />
       }
     ],
   },
