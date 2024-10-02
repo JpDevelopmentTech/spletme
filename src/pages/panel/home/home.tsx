@@ -263,7 +263,7 @@ export default function Home() {
                   clip-rule="evenodd"
                 />
               </svg>
-              325K streams
+              325K Views
             </span>
             <span className="bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-full me-2 dark:bg-gray-700 dark:text-gray-400 border  ">
               <svg

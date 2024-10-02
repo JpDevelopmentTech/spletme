@@ -32,13 +32,13 @@ export default function CardSong({ song }: { song: any }) {
           className="w-44 h-44 object-cover rounded-lg"
           alt=""
         />
-      <div className="flex flex-col w-1/2 ">
+      <div className="flex flex-col justify-between w-1/2 h-full">
         <span className="text-subtitle font-bold overflow-hidden whitespace-nowrap overflow-ellipsis w-full">{data?.name}</span>
-        <span className="text-normal">
+        <span className="text-normal overflow-hidden whitespace-nowrap overflow-ellipsis w-full">
           {data?.artists.map((artist: any) => artist.name).join(", ")}
         </span>
 
-        <div className="flex pl-2 mt-2">
+        <div className="flex -space-x-4 rtl:space-x-reverse">
           {data?.artists.map((artist: any) => (
             <ImageProfile key={artist.id} id={artist.id} />
           ))}
@@ -46,7 +46,7 @@ export default function CardSong({ song }: { song: any }) {
 
         <div className="w-full justify-between flex items-center">
           <span className="font-bold text-subtitle">$00,00</span>
-          <span className="p-3 border-l-2">0%</span>
+          <span className="p-3 ">0%</span>
         </div>
 
         <div className="flex">
