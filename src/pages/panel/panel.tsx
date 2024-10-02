@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import UserIcon from "../../assets/images/Mesa de trabajo 28.svg";
-import lupaIcon from "../../assets/images/Mesa de trabajo 16.svg";
 import Sidebar from "../../components/sidebar/sidebar";
 import { SpotifyService } from "../../services/spotify";
 export default function Panel() {
@@ -23,13 +22,46 @@ export default function Panel() {
         <Sidebar />
         <div className="w-full h-full overflow-y-auto">
           <div className="w-full border-b-2 h-24 flex items-center justify-between p-6 gap-12">
-            <div className="w-1/3 py-3 bg-senary rounded-full flex items-center gap-3 mr-12 px-6">
-              <img src={lupaIcon} alt="" className="w-7" />
-              <input
-                type="text"
-                placeholder="Buscar"
-                className="bg-transparent w-full focus-visible:outline-none"
-              />
+          <div className="w-full lg:w-2/3 flex flex-col space-y-3 md:space-y-0 md:flex-row md:items-center">
+              <form className="w-full md:max-w-sm flex-1 md:mr-4">
+                <label
+                  htmlFor="default-search"
+                  className="text-sm font-medium text-gray-900 sr-only dark:text-white"
+                >
+                  Search
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <svg
+                      aria-hidden="true"
+                      className="w-4 h-4 text-gray-500 dark:text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      />
+                    </svg>
+                  </div>
+                  <input
+                    type="search"
+                    id="default-search"
+                    className="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                    placeholder="Search..."
+                  />
+                  <button
+                    type="submit"
+                    className="text-white absolute right-0 bottom-0 top-0 bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-r-lg text-sm px-4 py-2 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+                  >
+                    Search
+                  </button>
+                </div>
+              </form>
             </div>
             <div className="flex gap-6 items-center">
               <svg

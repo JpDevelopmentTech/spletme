@@ -9,13 +9,13 @@ import BalanceIcon from '../../assets/images/BALANCE.svg'
 import PagosIcon from '../../assets/images/PAGOS.svg'
 import Logo from "../../assets/images/7 - FULL LOGO.png";
 import logo from "../../assets/images/5 - LOGO.png";
-import { useSelector } from "react-redux";
+// import { useSelector } from "react-redux";
 export default function Sidebar() {
 
   
   
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const user = useSelector((state: any) => state.auth.user);
+  // const user = useSelector((state: any) => state.auth.user);
   return (
     <>
       <div className="lg:w-96  w-full absolute lg:relative lg:h-full p-9 bg-[#FBFBFB]  lg:flex flex-col overflow-y-auto z-20 animate-fade ">
@@ -25,9 +25,8 @@ export default function Sidebar() {
         <div className="flex flex-col">
           
         <span className="font-bold text-subtitle text-septenary">¡Bienvenido!</span>
-        <span className="font-bold text-title">{user.name + ' ' + user.surname}</span>
-        <span className="mt-2 mb-3 text-septenary text-subtitle">Tu balance actual es:</span>
-        <span className="text-title font-bold">$100.000,00</span>
+        <span className="font-bold text-title">Escorcia Music</span>
+        <span className="text-xs text-neutral-400">ID: #JKE2365</span>
         </div>
         <div className="w-full h-full flex flex-col mt-6  ">
           <span className="text-septenary mb-2 text-subtitle">Musica</span>
