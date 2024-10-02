@@ -1,14 +1,13 @@
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import logo from "../../assets/images/2 - BLANCO.png";
-// import React, { useEffect } from "react";
+import React from "react";
 // import { AuthService } from "../../services/auth";
-// import { useDispatch } from "react-redux";
 // import { setAuth } from "../../store/states/authSlice";
-// import Splash from "../../components/splash/splash";
+// import { useDispatch } from "react-redux";
 
 export default function Login() {
-  //   // const dispache = useDispatch()
-  //   const navigate = useNavigate();
+    //  const dispache = useDispatch()
+     const navigate = useNavigate();
 
   //   const [splash, setSplash] = React.useState(true);
 
@@ -18,27 +17,27 @@ export default function Login() {
   //     }, 4000);
   //   }, []);
 
-  //   const login = async (e: React.FormEvent) => {
-  //     e.preventDefault();
-  //     // // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  //     // const email = (e.target as any).email.value;
-  //     // //eslint-disable-next-line @typescript-eslint/no-explicit-any
-  //     // const password = (e.target as any).password.value;
+    const login = async (e: React.FormEvent) => {
+      e.preventDefault();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // const email = (e.target as any).email.value;
+      // //eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // const password = (e.target as any).password.value;
 
-  //     // const response = await AuthService.login(email, password);
-  //     // if (response.error) {
-  //     //   alert(response.message);
-  //     // } else {
-  //     //   localStorage.setItem("user", JSON.stringify(response.data))
-  //     //   localStorage.setItem("isAuth", "true")
-  //     //   dispache(setAuth({
-  //     //     isAuth: "true",
-  //     //     user: response.data
-  //     //   }))
-  //     //   navigate("/panel/home");
-  //     // }
-  //     navigate("/panel/home")
-  //   };
+      // const response = await AuthService.login(email, password);
+      // if (response.error) {
+      //   alert(response.message);
+      // } else {
+      //   localStorage.setItem("user", JSON.stringify(response.data))
+      //   localStorage.setItem("isAuth", "true")
+      //   dispache(setAuth({
+      //     isAuth: "true",
+      //     user: response.data
+      //   }))
+      //   navigate("/panel/home");
+      // }
+      navigate("/panel/home")
+    };
 
   return (
     <>
@@ -199,7 +198,8 @@ export default function Login() {
                 </div>
                 <button
                   type="submit"
-                  className="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+                  onClick={login}
+                  className="w-full text-white bg-black hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
                 >
                   Sign in to your account
                 </button>
