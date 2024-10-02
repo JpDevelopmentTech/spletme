@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import logo from "../../assets/images/7 - FULL LOGO.png";
+import logo from "../../assets/images/2 - BLANCO.png";
 import React, { useEffect } from "react";
 // import { AuthService } from "../../services/auth";
 // import { useDispatch } from "react-redux";
@@ -47,10 +47,6 @@ export default function Login() {
         {splash ? <Splash/> : <><div className="w-1/2 flex justify-center items-center bg-primary h-full ">
           <div className=" bg-black/10 h-96 w-96 rounded-full  flex flex-col items-center justify-center p-12">
             <img src={logo} alt="logo de splet me" />
-            <span className="text-white font-bold tracking-widest mt-3 font-custom">
-              BY ESCORCIA{" "}
-              <span className="font-normal tracking-[10px]">MUSIC</span>
-            </span>
           </div>
         </div>
         <div className="w-1/2 flex flex-col justify-center items-center">
