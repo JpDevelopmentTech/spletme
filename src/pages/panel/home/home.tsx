@@ -17,20 +17,15 @@ import Breadcrumb from "../../../components/breadcrumb/breadcrumb";
 export default function Home() {
   const [topTracks, setTopTracks] = useState([]);
   useEffect(() => {
-    
     const getTopTracks = async () => {
-      const response = await SpotifyService.getTopTracks()
-      setTopTracks(response.tracks)
-    }
+      const response = await SpotifyService.getTopTracks();
+      setTopTracks(response.tracks);
+    };
 
-    getTopTracks()
+    getTopTracks();
 
-    return () => {
-      
-    }
-  }, [])
-  
-  
+    return () => {};
+  }, []);
 
   const series = [
     {
@@ -138,46 +133,87 @@ export default function Home() {
   return (
     <>
       <div className="w-full  grid grid-cols-12 gap-6 animate-fade-left">
-        <div className="col-span-10 flex gap-4 lg:flex-row flex-col">
-          <select className="bg-[#E8E8E8] text-normal py-3 px-6 rounded-3xl text-black font-semibold  gap-2">
-            <option value="">Concepto</option>
-          </select>
-          <select className="bg-[#E8E8E8]  text-normal py-3 px-6 rounded-3xl text-black font-semibold  gap-2">
-            <option value="">Filtro por tiempo</option>
-          </select>
-          <select className="bg-[#E8E8E8] text-normal py-3 px-6 rounded-3xl text-black font-semibold  gap-2 ">
-            <option value="">Formato</option>
-          </select>
-          <div className="flex justify-end gap-3">
-            <button className="bg-black py-3  px-6 rounded-3xl flex justify-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="1.5em"
-                height="1.5em"
-                viewBox="0 0 24 24"
-                className="text-white"
-              >
-                <path
-                  fill="currentColor"
-                  d="M18 22q-1.25 0-2.125-.875T15 19q0-.175.025-.363t.075-.337l-7.05-4.1q-.425.375-.95.588T6 15q-1.25 0-2.125-.875T3 12q0-1.25.875-2.125T6 9q.575 0 1.1.213t.95.587l7.05-4.1q-.05-.15-.075-.337T15 5q0-1.25.875-2.125T18 2q1.25 0 2.125.875T21 5q0 1.25-.875 2.125T18 8q-.575 0-1.1-.212t-.95-.588L8.9 11.3q.05.15.075.338T9 12q0 .175-.025.363T8.9 12.7l7.05 4.1q.425-.375.95-.587T18 16q1.25 0 2.125.875T21 19q0 1.25-.875 2.125T18 22Z"
-                />
-              </svg>
-            </button>
-            <button className="bg-black py-3  px-6 rounded-3xl flex justify-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="1.5em"
-                height="1.5em"
-                viewBox="0 0 24 24"
-                className="text-white"
-              >
-                <path
-                  fill="currentColor"
-                  d="m12 16l-5-5l1.4-1.45l2.6 2.6V4h2v8.15l2.6-2.6L17 11l-5 5Zm-6 4q-.825 0-1.413-.588T4 18v-3h2v3h12v-3h2v3q0 .825-.588 1.413T18 20H6Z"
-                />
-              </svg>
-            </button>
+        <div className="col-span-10 flex gap-4 lg:flex-row flex-col items-center">
+          <div>
+            <select
+              id="countries"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            >
+              <option selected>Concept</option>
+              <option value="US">United States</option>
+              <option value="CA">Canada</option>
+              <option value="FR">France</option>
+              <option value="DE">Germany</option>
+            </select>
           </div>
+          <div>
+            <select
+              id="countries"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            >
+              <option selected>Filtro por tiempo</option>
+              <option value="US">United States</option>
+              <option value="CA">Canada</option>
+              <option value="FR">France</option>
+              <option value="DE">Germany</option>
+            </select>
+          </div>
+          <div>
+            <select
+              id="countries"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            >
+              <option selected>Formato</option>
+              <option value="US">United States</option>
+              <option value="CA">Canada</option>
+              <option value="FR">France</option>
+              <option value="DE">Germany</option>
+            </select>
+          </div>
+          <button
+            type="button"
+            className="text-white bg-black hover:bg-black/80 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm p-2.5 text-center inline-flex items-center me-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          >
+            <svg
+              className="w-6 h-6 text-white dark:text-white"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M17.5 3a3.5 3.5 0 0 0-3.456 4.06L8.143 9.704a3.5 3.5 0 1 0-.01 4.6l5.91 2.65a3.5 3.5 0 1 0 .863-1.805l-5.94-2.662a3.53 3.53 0 0 0 .002-.961l5.948-2.667A3.5 3.5 0 1 0 17.5 3Z" />
+            </svg>
+
+            <span className="sr-only">Icon description</span>
+          </button>
+          <button
+            type="button"
+            className="text-white bg-black hover:bg-black/80 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm p-2.5 text-center inline-flex items-center me-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          >
+            <svg
+              className="w-6 h-6 text-white dark:text-white"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 15v2a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-2m-8 1V4m0 12-4-4m4 4 4-4"
+              />
+            </svg>
+
+            <span className="sr-only">Icon description</span>
+          </button>
+
+      
         </div>
         <div className="col-span-2">
           <Breadcrumb />
@@ -366,8 +402,8 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-3">
-            <CardSong song={topTracks[0]}/>
-            <CardSong song={topTracks[1]}/>
+            <CardSong song={topTracks[0]} />
+            <CardSong song={topTracks[1]} />
           </div>
         </div>
       </div>
