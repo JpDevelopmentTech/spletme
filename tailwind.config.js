@@ -3,6 +3,7 @@ export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
+    "./node_modules/flowbite/**/*.js"
   ],
   theme: {
     extend: {
@@ -36,7 +37,9 @@ export default {
     // eslint-disable-next-line no-undef
     require('tailwindcss-animated'),
     // eslint-disable-next-line no-undef
-    require('tailwindcss-textshadow')
+    require('tailwindcss-textshadow'),
+    // eslint-disable-next-line no-undef
+    require('flowbite/plugin')
     
   ],
 }

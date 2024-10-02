@@ -68,7 +68,7 @@ const Pay = () => {
       bar: {
         horizontal: false,
         columnWidth: "50%",
-        borderRadius: 30,
+        borderRadius: 15,
       },
     },
     dataLabels: {

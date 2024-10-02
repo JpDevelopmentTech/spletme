@@ -4,7 +4,6 @@ import ReactApexChart from "react-apexcharts";
 import ingresoIcon from "../../../assets/images/Mesa de trabajo 23.svg";
 import egresoIcon from "../../../assets/images/Mesa de trabajo 24.svg";
 import monedaNaranjaIcon from "../../../assets/images/Mesa de trabajo 14.svg";
-import checkIcon from "../../../assets/images/Mesa de trabajo 13.svg";
 import StreamLogo from "../../../assets/images/Mesa de trabajo 20.svg";
 import MoneyIcon from "../../../assets/images/Mesa de trabajo 18.svg";
 import YoutubeIcon from "../../../assets/images/Mesa de trabajo 19.svg";
@@ -212,8 +211,8 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <div className="col-span-12  lg:col-span-3 shadow-lg rounded-2xl  flex items-start p-8 justify-between duration-200 hover:scale-105">
-          <div className="flex flex-col w-full h-full justify-between">
+        <div className="col-span-12  lg:col-span-3 shadow-lg row-span-2 rounded-2xl  flex items-start p-8 justify-between duration-200 hover:scale-105">
+          <div className="flex flex-col w-full h-full justify-start gap-12">
             <div className="flex justify-between items-center">
               <div className="flex flex-col">
                 <span className="font-bold text-title">Balance general</span>
@@ -340,7 +339,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <div className="col-span-12 lg:col-span-3 shadow-lg rounded-3xl p-8 flex flex-col justify-between items-start duration-200 hover:scale-105">
+        {/* <div className="col-span-12 lg:col-span-3 shadow-lg rounded-3xl p-8 flex flex-col justify-between items-start duration-200 hover:scale-105">
           <div className="flex justify-between w-full items-start">
             <div className="flex flex-col">
               <span className="font-bold text-title">En tu Ewallet</span>
@@ -349,7 +348,7 @@ export default function Home() {
           </div>
 
           <span className="text-septenary text-title font-bold">$00,00</span>
-        </div>
+        </div> */}
 
         <div className="col-span-12 lg:col-span-9 flex flex-col ">
           <div className="flex justify-between items-center">

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import ImageProfile from "../imageprofile/imageprofile";
 
 export default function AddDealer() {
   const [showDealersModal, setShowDealersModal] = useState(false);
@@ -7,7 +6,7 @@ export default function AddDealer() {
     <>
       {showDealersModal && (
         <div className="fixed z-20 w-full h-screen flex items-center justify-center bg-black/60 left-0 top-0 ">
-          <div className="bg-white px-10 py-3 rounded-2xl lg:w-96 animate-fade-left">
+          <div className="bg-white px-10 py-3 rounded-2xl  animate-fade-left">
             <div className="w-full flex justify-between items-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -26,31 +25,32 @@ export default function AddDealer() {
                 Añadir distribuidora
               </span>
             </div>
-            <div className="my-6">
-              <button className="flex  items-center justify-start gap-3 py-3 border-b w-full">
-                <ImageProfile />
+            <div className="my-6 grid grid-cols-2 gap-6">
+              <button className="flex  items-center justify-start gap-3 p-3 border w-full rounded-2xl">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSa0EDf2hqneQjVkssK13tE0QjrdXaDA55iEg&s" className="rounded-full w-12" alt="" />
                 <span className="text-subtitle">Distribuidora 1</span>
               </button>
-              <button className="flex  items-center justify-start gap-3 py-3 border-b w-full">
-                <ImageProfile />
-                <span className="text-subtitle">Distribuidora 2</span>
+              <button className="flex  items-center justify-start gap-3 p-3 border w-full rounded-2xl">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSa0EDf2hqneQjVkssK13tE0QjrdXaDA55iEg&s" className="rounded-full w-12" alt="" />
+                <span className="text-subtitle">Distribuidora 1</span>
               </button>
-              <button className="flex  items-center justify-start gap-3 py-3 border-b w-full">
-                <ImageProfile />
-                <span className="text-subtitle">Distribuidora 3</span>
+              <button className="flex  items-center justify-start gap-3 p-3 border w-full rounded-2xl">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSa0EDf2hqneQjVkssK13tE0QjrdXaDA55iEg&s" className="rounded-full w-12" alt="" />
+                <span className="text-subtitle">Distribuidora 1</span>
               </button>
-              <button className="flex  items-center justify-start gap-3 py-3 border-b w-full">
-                <ImageProfile />
-                <span className="text-subtitle">Distribuidora 4</span>
+              <button className="flex  items-center justify-start gap-3 p-3 border w-full rounded-2xl">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSa0EDf2hqneQjVkssK13tE0QjrdXaDA55iEg&s" className="rounded-full w-12" alt="" />
+                <span className="text-subtitle">Distribuidora 1</span>
               </button>
-              <button className="flex  items-center justify-start gap-3 py-3 border-b w-full">
-                <ImageProfile />
-                <span className="text-subtitle">Distribuidora 5</span>
+              <button className="flex  items-center justify-start gap-3 p-3 border w-full rounded-2xl">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSa0EDf2hqneQjVkssK13tE0QjrdXaDA55iEg&s" className="rounded-full w-12" alt="" />
+                <span className="text-subtitle">Distribuidora 1</span>
               </button>
-              <button className="flex  items-center justify-start gap-3 py-3 border-b w-full">
-                <ImageProfile />
-                <span className="text-subtitle">Distribuidora 6</span>
+              <button className="flex  items-center justify-start gap-3 p-3 border w-full rounded-2xl">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSa0EDf2hqneQjVkssK13tE0QjrdXaDA55iEg&s" className="rounded-full w-12" alt="" />
+                <span className="text-subtitle">Distribuidora 1</span>
               </button>
+          
             </div>
           </div>
         </div>
