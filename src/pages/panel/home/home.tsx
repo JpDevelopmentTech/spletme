@@ -4,9 +4,6 @@ import ReactApexChart from "react-apexcharts";
 import ingresoIcon from "../../../assets/images/Mesa de trabajo 23.svg";
 import egresoIcon from "../../../assets/images/Mesa de trabajo 24.svg";
 import monedaNaranjaIcon from "../../../assets/images/Mesa de trabajo 14.svg";
-import StreamLogo from "../../../assets/images/Mesa de trabajo 20.svg";
-import MoneyIcon from "../../../assets/images/Mesa de trabajo 18.svg";
-import YoutubeIcon from "../../../assets/images/Mesa de trabajo 19.svg";
 
 import { Link } from "react-router-dom";
 import CardSong from "../../../components/cardsong/cardsong";
