@@ -54,7 +54,7 @@ export default function Song() {
         </div>
         <div className="flex col-span-5 gap-3 bg-quinary rounded-2xl items-center justify-around">
           <span className="text-subtitle text-white">Pagar a todos</span>
-          <span className="text-white font-bold text-title">$1.159,80</span>
+          <span className="text-white font-semibold text-title">$1.159,80</span>
           <button className="font-bold bg-white rounded-full px-5 py-2">
             Pagar $
           </button>
