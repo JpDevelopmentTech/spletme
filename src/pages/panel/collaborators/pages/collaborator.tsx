@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Breadcrumb from "../../../../components/breadcrumb/breadcrumb";
+
 import image from "../../../../assets/images/collaborator3.jpg";
 import Title from "../../../../components/title/title";
 
@@ -36,7 +36,7 @@ const Collaborator = () => {
             </button>
           </div>
         </div>
-        <Breadcrumb />
+     
       </div>
       <div className="grid grid-cols-12 gap-6">
         <div className="rounded-2xl shadow-lg col-span-7 p-6 flex flex-col ">

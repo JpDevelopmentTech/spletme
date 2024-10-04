@@ -1,39 +1,56 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-const Breadcrumb = () => {
-    const [sections, setSections] = useState<string[]>();
-    useEffect(() => {
-        getSectionsOnUrl()
-    }, [])
-
-    const getSectionsOnUrl = () => {
-        const url = window.location.href;
-        const sections = url.split('/');
-        //agregar desde la posicion 3 porque las primeras 3 posiciones son el protocolo, el dominio y el puerto
-        setSections(sections.slice(4))
-    }
+const Breadcrumb = ({ items }: { items: { label: string; url: string }[] }) => {
   return (
-    <div className="flex gap-2 items-center">
-      <Link to={'/panel/home'}><svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        className="stroke-[#6f6f6f] w-6"
-      >
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path d="M5 12l-2 0l9 -9l9 9l-2 0" />
-        <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
-        <path d="M10 12h4v4h-4z" />
-      </svg></Link>
-      {sections?.map((section) => (
-        <Link className="text-gray-400 capitalize" to={'/panel/' + section}>{section} /</Link>
-      ))}
-    </div>
+    <nav className="flex" aria-label="Breadcrumb">
+      <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
+        {items.map((item, index) => (
+          <li>
+            <div className="flex items-center">
+              {index === 0 ? (
+                <svg
+                  className="w-3 h-3 me-2.5"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z" />
+                </svg>
+              ) : (
+                <svg
+                  className="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 6 10"
+                >
+                  <path
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="m1 9 4-4-4-4"
+                  />
+                </svg>
+              )}
+              {index === items.length - 1 ? (
+                <span className="ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-400">
+                  {item.label}
+                </span>
+              ) : (
+                <Link
+                  to={item.url}
+                  className="ms-1 text-sm font-medium text-gray-700 hover:text-black md:ms-2 dark:text-gray-400 dark:hover:text-white"
+                >
+                  {item.label}
+                </Link>
+              )}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </nav>
   );
 };
 

@@ -10,7 +10,7 @@ import ImgCollaborator from "./components/imgCollaborator";
 import AddCollaborator from "./components/addCollaborator";
 import ImgTop from "./components/imgTop";
 import Table from "./components/table";
-import Breadcrumb from "../../../components/breadcrumb/breadcrumb";
+
 export default function Collaborators() {
   const [typeMoney, setTypeMoney] = useState<"in" | "out">("in");
   const [collaboratorActive, setCollaboratorActive] = useState(0);
@@ -66,7 +66,7 @@ export default function Collaborators() {
             </button>
           </div>
         </div>
-        <Breadcrumb />
+       
       </div>
 
       <div className="grid grid-cols-12 gap-6 w-full mt-6">

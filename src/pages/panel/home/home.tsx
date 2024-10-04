@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 import CardSong from "../../../components/cardsong/cardsong";
 import { useEffect, useState } from "react";
 import { SpotifyService } from "../../../services/spotify";
-import Breadcrumb from "../../../components/breadcrumb/breadcrumb";
+
 
 export default function Home() {
   const [topTracks, setTopTracks] = useState([]);
@@ -211,7 +211,7 @@ export default function Home() {
           </button>
         </div>
         <div className="col-span-2">
-          <Breadcrumb />
+
         </div>
         <div
           className="duration-200 hover:scale-105 col-span-12 lg:col-span-6 shadow-lg rounded-2xl row-span-2  p-8 flex flex-col"

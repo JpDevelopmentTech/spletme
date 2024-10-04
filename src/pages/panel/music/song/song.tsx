@@ -8,15 +8,25 @@ import EspecificData from "./components/especificData";
 import Table from "./components/table";
 import { SpotifyService } from "../../../../services/spotify";
 import { useParams } from "react-router-dom";
+import Breadcrumb from "../../../../components/breadcrumb/breadcrumb";
 
 export default function Song() {
-  const [data, setData] = useState<any>();
   const { id } = useParams();
+  const items = [
+    {
+      label: "Inicio",
+      url: "/panel",
+    },
+    {
+      label: "Cancion",
+      url: "/panel/song" + id,
+    }
+  ];
+  const [data, setData] = useState<any>();
   useEffect(() => {
     const getTrack = async () => {
       const response = await SpotifyService.getTrack(id || "");
       setData(response);
-
     };
 
     getTrack();
@@ -26,10 +36,13 @@ export default function Song() {
 
   return (
     <div>
-      <Title title="Canciones" subtitle="Fecha de vinculacion" />
+      <div className="flex justify-between mb-6">
+        <Title title="Canciones" subtitle="Fecha de vinculacion" />
+        <Breadcrumb items={items} />
+      </div>
       <div className="grid grid-cols-12 gap-8">
-        <CardSong data={data}/>
-        <Data data={data}/>
+        <CardSong data={data} />
+        <Data data={data} />
         <AddCollaborator />
         <div className="flex col-span-4 gap-3 shadow-lg rounded-2xl items-center justify-around">
           <span className="font-bold">

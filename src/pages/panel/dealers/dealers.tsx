@@ -1,4 +1,4 @@
-import Breadcrumb from "../../../components/breadcrumb/breadcrumb";
+
 import Title from "../../../components/title/title";
 import Behavior from "./components/behavior";
 import HigherPerformance from "./components/higherperformance";
@@ -14,7 +14,7 @@ export default function Dealers() {
           title="Distribuidores"
           subtitle="subtitulo para distribuidores"
         />
-        <Breadcrumb />
+      
       </div>
       <NavBar />
       <Table />
