@@ -1,7 +1,7 @@
 import img from "../../../../../assets/images/collaborator2.jpg";
 export default function EspecificData() {
   return (
-    <div className="col-span-12 p-6 rounded-2xl " id="data-valora">
+    <div className="col-span-12 p-6 rounded-2xl shadow-lg" id="data-valora">
       <span className="text-title font-bold ">Data - Valora</span>
       <div className="flex items-center">
         <div className="mt-3 flex gap-6 pr-10">

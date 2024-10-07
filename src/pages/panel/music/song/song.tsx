@@ -9,6 +9,10 @@ import Table from "./components/table";
 import { SpotifyService } from "../../../../services/spotify";
 import { useParams } from "react-router-dom";
 import Breadcrumb from "../../../../components/breadcrumb/breadcrumb";
+import Statistics from "./components/statistics";
+import Platforms from "./components/platforms";
+import Historyofsplits from "./components/historyofsplits";
+import Extraordinarycosts from "./components/extraordinarycosts";
 
 export default function Song() {
   const { id } = useParams();
@@ -36,7 +40,7 @@ export default function Song() {
 
   return (
     <div>
-      <div className="flex justify-between mb-6">
+      <div className="flex justify-between ">
         <Title title="Canciones" subtitle="Fecha de vinculacion" />
         <Breadcrumb items={items} />
       </div>
@@ -61,7 +65,11 @@ export default function Song() {
         </div>
         <Table />
         <Behavior />
+        <Statistics />
+        <Platforms />
         <EspecificData />
+        <Historyofsplits />
+        <Extraordinarycosts />
       </div>
     </div>
   );

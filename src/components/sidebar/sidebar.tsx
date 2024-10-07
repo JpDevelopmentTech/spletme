@@ -18,7 +18,7 @@ export default function Sidebar() {
   // const user = useSelector((state: any) => state.auth.user);
   return (
     <>
-      <div className="lg:w-96  w-full absolute lg:relative lg:h-full p-9 bg-[#FBFBFB]  lg:flex flex-col overflow-y-auto z-20 animate-fade ">
+      <div className="lg:w-80  w-full lg:fixed  left-0 lg:h-full p-9 bg-[#FBFBFB]  lg:flex flex-col overflow-y-auto z-20 animate-fade ">
         <div className="w-8 h-10 flex items-center mb-5" onClick={close}>
           <img src={logo} alt="" className="w-full h-full" />
         </div>

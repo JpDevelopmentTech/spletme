@@ -310,18 +310,18 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <div className="col-span-12 lg:col-span-3 shadow-lg rounded-2xl items-center  lg:row-span-3 p-8 flex flex-col duration-200 hover:scale-105">
-          <span className="text-semibold text-xl font-bold">
+        <div className="col-span-12 lg:col-span-3 shadow-lg rounded-2xl    lg:row-span-3 p-8 flex flex-col duration-200 hover:scale-105">
+          <span className="text-semibold text-xl font-bold text-left">
             Mis plataformas
           </span>
-          <span className="text-septenary ">Comportamiento por plataforma</span>
+          <span className="text-septenary text-sm">Comportamiento por plataforma</span>
           <div className="flex justify-center items-center flex-col gap-6 h-full">
             <ReactApexChart
               options={options2}
               type="radialBar"
               series={series2}
             />
-            <div className="w-full p-3 flex justify-around bg-[#F3F3F3] rounded-3xl">
+            <div className="w-full p-3 flex justify-around bg-[#F3F3F3] rounded-full">
               <button>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

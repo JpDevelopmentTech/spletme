@@ -20,7 +20,7 @@ export default function Panel() {
     <>
       <div className="w-full h-screen bg-[#FFFFFF] bg-no-repeat bg-cover flex font-custom relative">
         <Sidebar />
-        <div className="w-full h-full overflow-y-auto">
+        <div className="w-full h-full ml-80">
           <div className="w-full border-b-2 h-24 flex items-center justify-between p-6 gap-12">
           <div className="w-full lg:w-2/3 flex flex-col space-y-3 md:space-y-0 md:flex-row md:items-center">
               <form className="w-full md:max-w-sm flex-1 md:mr-4">
