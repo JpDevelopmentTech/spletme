@@ -235,7 +235,7 @@ const Historyofpays = () => {
                 </td>
                 <td className="px-4 py-2 whitespace-nowrap text-center">
                 <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
-                    $1.000
+                    $1.003
                   </span>
                 </td>
               </tr>
