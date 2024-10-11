@@ -66,13 +66,31 @@ export default function Collaborators() {
             </button>
           </div>
         </div>
-       
       </div>
 
       <div className="grid grid-cols-12 gap-6 w-full mt-6">
         <div className="flex overflow-x-auto col-span-9 gap-3 w-full items-center">
-          <button onClick={() => setCollaboratorActive(collaboratorActive - 1)}>
-            👈
+          <button
+            className="bg-senary rounded-full p-1"
+            onClick={() => setCollaboratorActive(collaboratorActive - 1)}
+          >
+            <svg
+              className="w-6 h-6 text-gray-800 dark:text-white"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="m15 19-7-7 7-7"
+              />
+            </svg>
           </button>
           {collaborators.map((collaborator, index) => (
             <ImgCollaborator
@@ -83,8 +101,27 @@ export default function Collaborators() {
               index={index}
             />
           ))}
-          <button onClick={() => setCollaboratorActive(collaboratorActive + 1)}>
-            👉
+          <button
+            className="bg-senary rounded-full p-1"
+            onClick={() => setCollaboratorActive(collaboratorActive + 1)}
+          >
+            <svg
+              className="w-6 h-6 text-gray-800 dark:text-white"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="m9 5 7 7-7 7"
+              />
+            </svg>
           </button>
         </div>
         <AddCollaborator />

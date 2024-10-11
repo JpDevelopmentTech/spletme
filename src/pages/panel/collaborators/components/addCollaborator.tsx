@@ -29,7 +29,7 @@ export default function AddCollaborator() {
       )}
 
       <button
-        className="border rounded-2xl col-span-3 flex items-center justify-center gap-3 hover:scale-105 duration-200 shadow-lg h-28"
+        className="border rounded-full col-span-3 flex items-center justify-center gap-3 hover:scale-105 duration-200 shadow-lg h-28"
         onClick={() => setShowCollaboratorsModal(true)}
       >
         <div className="rounded-full w-10 h-10 bg-quinary text-white text-title">

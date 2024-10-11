@@ -48,15 +48,15 @@ export default function Song() {
         <CardSong data={data} />
         <Data data={data} />
         <AddCollaborator />
-        <div className="flex col-span-4 gap-3 shadow-lg rounded-2xl items-center justify-around">
-          <span className="font-bold">
+        <div className="flex col-span-4 gap-3 shadow-lg rounded-full items-center justify-around">
+          <span className="font-bold text-sm">
             Proxima liquidación <br /> estimada
           </span>
-          <span className="bg-quinary text-white p-3 rounded-full">
+          <span className="bg-quinary text-white p-3 rounded-full text-sm">
             10 Julio 2024
           </span>
         </div>
-        <div className="flex col-span-5 gap-3 bg-quinary rounded-2xl items-center justify-around">
+        <div className="flex col-span-5 gap-3 bg-quinary rounded-full items-center justify-around">
           <span className="text-subtitle text-white">Pagar a todos</span>
           <span className="text-white font-semibold text-title">$1.159,80</span>
           <button className="font-bold bg-white rounded-full px-5 py-2">

@@ -92,7 +92,7 @@ const Pay = () => {
     },
   };
   return (
-    <div className="p-12 rounded-2xl border w-full">
+    <div className="p-12 rounded-2xl border w-full col-span-9">
       <div className="flex justify-between items-center">
         <Title title="Pagos" subtitle="Mide el comportamiento de tus pago" />
         <select name="" id="">

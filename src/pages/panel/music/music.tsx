@@ -1,7 +1,7 @@
 import CardSong from "../../../components/cardsong/cardsong";
 import { useEffect, useState } from "react";
 import { SpotifyService } from "../../../services/spotify";
-
+import { Link } from "react-router-dom";
 
 export default function Music() {
   const [topTracks, setTopTracks] = useState([]);
@@ -24,7 +24,6 @@ export default function Music() {
               <span className="text-title font-bold">Top Songs</span>
               <span className="text-subtitle">Aqui tus mejores canciones</span>
             </div>
-      
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <CardSong song={topTracks[0]} />
@@ -144,7 +143,7 @@ export default function Music() {
                   scope="row"
                   className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                 >
-                  Nombre de la cancion
+                  <Link to={"/panel/song/s"}>Nombre de la cancion</Link>
                 </th>
                 <td className="px-4 py-2 whitespace-nowrap text-center">
                   <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
@@ -238,7 +237,7 @@ export default function Music() {
                   scope="row"
                   className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                 >
-                  Nombre de la cancion
+                  <Link to={"/panel/song/s"}>Nombre de la cancion</Link>
                 </th>
                 <td className="px-4 py-2 whitespace-nowrap text-center">
                   <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
@@ -312,7 +311,6 @@ export default function Music() {
                     </svg>
                   </div>
                 </td>
-            
               </tr>
               <tr className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
                 <td className="px-4 py-2 w-4">
@@ -335,7 +333,7 @@ export default function Music() {
                   scope="row"
                   className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                 >
-                  Nombre de la cancion
+                  <Link to={"/panel/song/s"}>Nombre de la cancion</Link>
                 </th>
                 <td className="px-4 py-2 whitespace-nowrap text-center">
                   <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
@@ -429,7 +427,7 @@ export default function Music() {
                   scope="row"
                   className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                 >
-                  Nombre de la cancion
+                  <Link to={"/panel/song/s"}>Nombre de la cancion</Link>
                 </th>
                 <td className="px-4 py-2 whitespace-nowrap text-center">
                   <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
@@ -503,7 +501,6 @@ export default function Music() {
                     </svg>
                   </div>
                 </td>
-            
               </tr>
               <tr className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
                 <td className="px-4 py-2 w-4">
@@ -526,7 +523,7 @@ export default function Music() {
                   scope="row"
                   className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                 >
-                  Nombre de la cancion
+                  <Link to={"/panel/song/s"}>Nombre de la cancion</Link>
                 </th>
                 <td className="px-4 py-2 whitespace-nowrap text-center">
                   <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
@@ -620,7 +617,7 @@ export default function Music() {
                   scope="row"
                   className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                 >
-                  Nombre de la cancion
+                  <Link to={"/panel/song/s"}>Nombre de la cancion</Link>
                 </th>
                 <td className="px-4 py-2 whitespace-nowrap text-center">
                   <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
@@ -694,7 +691,6 @@ export default function Music() {
                     </svg>
                   </div>
                 </td>
-            
               </tr>
               <tr className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
                 <td className="px-4 py-2 w-4">
@@ -717,7 +713,7 @@ export default function Music() {
                   scope="row"
                   className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                 >
-                  Nombre de la cancion
+                  <Link to={"/panel/song/s"}>Nombre de la cancion</Link>
                 </th>
                 <td className="px-4 py-2 whitespace-nowrap text-center">
                   <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
@@ -811,7 +807,7 @@ export default function Music() {
                   scope="row"
                   className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                 >
-                  Nombre de la cancion
+                  <Link to={"/panel/song/s"}>Nombre de la cancion</Link>
                 </th>
                 <td className="px-4 py-2 whitespace-nowrap text-center">
                   <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
@@ -885,7 +881,6 @@ export default function Music() {
                     </svg>
                   </div>
                 </td>
-            
               </tr>
             </tbody>
           </table>

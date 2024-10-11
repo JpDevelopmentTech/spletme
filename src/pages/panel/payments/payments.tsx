@@ -4,11 +4,12 @@ import Table from "./components/table";
 import Highcost from "./components/highcost";
 import Pay from "./components/pay";
 import Accounts from "./components/accounts";
+import Historyofpays from "./components/historyofpays";
 
 const Payments = () => {
   return (
-    <div>
-      <div>
+    <div className="grid grid-cols-12 gap-6">
+      <div className="col-span-12">
         <Title title="Pagos" subtitle="Gestiona tus pagos" />
         <div className="grid grid-cols-12 gap-6 mt-6">
           <div className="bg-[#91CCE8] rounded-2xl col-span-3 p-6 flex justify-between items-center hover:scale-110 duration-150">
@@ -95,14 +96,12 @@ const Payments = () => {
           </Link>
         </div>
       </div>
-      <div>
-        <Table />
-        <Highcost />
-        <div className="mt-6 flex gap-6">
-          <Pay />
-          <Accounts />
-        </div>
-      </div>
+      <Table />
+      <Highcost />
+
+      <Pay />
+      <Accounts />
+      <Historyofpays />
     </div>
   );
 };

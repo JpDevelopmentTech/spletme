@@ -1,12 +1,19 @@
-import Button from "../../../../components/atoms/button";
+import { useState } from "react";
 import Title from "../../../../components/title/title";
+import Button from "../../../../components/atoms/button";
 
-const Highcost = () => {
+const Historyofpays = () => {
+  const [viewSection, setViewSection] = useState(true);
   return (
-    <div className="p-12 rounded-2xl shadow-lg h-full col-span-12">
-      <Title title="Costos extraordinarios" subtitle="" />
-      <div className="flex h-full">
-        <div className="overflow-x-auto col-span-12 w-full">
+    <div className="col-span-12 p-6 rounded-2xl shadow-lg">
+      <div className="flex justify-between">
+        <Title title="Historial de pagos" />
+        <Button onClick={() => setViewSection(!viewSection)} type="primary">
+          {viewSection ? "Ver menos" : "Ver más"}
+        </Button>
+      </div>
+      <div className="flex gap-6 justify-between ">
+      <div className="overflow-x-auto col-span-12 w-full">
           <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
               <tr>
@@ -23,16 +30,16 @@ const Highcost = () => {
                   </div>
                 </th>
                 <th scope="col" className="px-4 py-3">
-                  Concepto
-                </th>
-                <th scope="col" className="px-4 py-3 text-center">
                   Fecha
                 </th>
                 <th scope="col" className="px-4 py-3 text-center">
                   Hora
                 </th>
+                <th scope="col" className="px-4 py-3 text-center">
+                  Concepto
+                </th>
                 <th scope="col" className="px-4 py-3 min-w-[14rem] text-center">
-                  Pendiente por pagar
+                  Valor
                 </th>
               </tr>
             </thead>
@@ -58,24 +65,22 @@ const Highcost = () => {
                   scope="row"
                   className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                 >
-                  <span className="">Video grabacion</span>
+                  <span className="">1 Julio 2024</span>
                 </th>
                 <td className="px-4 py-2 whitespace-nowrap text-center">
-                  <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
-                    1 Julio 2023
-                  </span>
-                </td>
-                <td className="px-4 py-2 font-medium whitespace-nowrap text-center">
                   <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
                     12:35 pm
                   </span>
                 </td>
+                <td className="px-4 py-2 font-medium whitespace-nowrap text-center">
+                  <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
+                    Martha Paredes
+                  </span>
+                </td>
                 <td className="px-4 py-2 whitespace-nowrap text-center">
-                  <div>
-                    <Button onClick={() => {}} type="quinary">
-                      $350,00
-                    </Button>
-                  </div>
+                <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
+                    $1.000
+                  </span>
                 </td>
               </tr>
               <tr className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
@@ -99,24 +104,22 @@ const Highcost = () => {
                   scope="row"
                   className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                 >
-                  <span className="">Video grabacion</span>
+                  <span className="">1 Julio 2024</span>
                 </th>
                 <td className="px-4 py-2 whitespace-nowrap text-center">
-                  <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
-                    1 Julio 2023
-                  </span>
-                </td>
-                <td className="px-4 py-2 font-medium whitespace-nowrap text-center">
                   <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
                     12:35 pm
                   </span>
                 </td>
+                <td className="px-4 py-2 font-medium whitespace-nowrap text-center">
+                  <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
+                    Martha Paredes
+                  </span>
+                </td>
                 <td className="px-4 py-2 whitespace-nowrap text-center">
-                  <div>
-                    <Button onClick={() => {}} type="quinary">
-                      $350,00
-                    </Button>
-                  </div>
+                <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
+                    $1.000
+                  </span>
                 </td>
               </tr>
               <tr className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
@@ -140,24 +143,22 @@ const Highcost = () => {
                   scope="row"
                   className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                 >
-                  <span className="">Video grabacion</span>
+                  <span className="">1 Julio 2024</span>
                 </th>
                 <td className="px-4 py-2 whitespace-nowrap text-center">
-                  <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
-                    1 Julio 2023
-                  </span>
-                </td>
-                <td className="px-4 py-2 font-medium whitespace-nowrap text-center">
                   <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
                     12:35 pm
                   </span>
                 </td>
+                <td className="px-4 py-2 font-medium whitespace-nowrap text-center">
+                  <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
+                    Martha Paredes
+                  </span>
+                </td>
                 <td className="px-4 py-2 whitespace-nowrap text-center">
-                  <div>
-                    <Button onClick={() => {}} type="quinary">
-                      $350,00
-                    </Button>
-                  </div>
+                <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
+                    $1.000
+                  </span>
                 </td>
               </tr>
               <tr className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
@@ -181,24 +182,22 @@ const Highcost = () => {
                   scope="row"
                   className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                 >
-                  <span className="">Video grabacion</span>
+                  <span className="">1 Julio 2024</span>
                 </th>
                 <td className="px-4 py-2 whitespace-nowrap text-center">
-                  <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
-                    1 Julio 2023
-                  </span>
-                </td>
-                <td className="px-4 py-2 font-medium whitespace-nowrap text-center">
                   <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
                     12:35 pm
                   </span>
                 </td>
+                <td className="px-4 py-2 font-medium whitespace-nowrap text-center">
+                  <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
+                    Martha Paredes
+                  </span>
+                </td>
                 <td className="px-4 py-2 whitespace-nowrap text-center">
-                  <div>
-                    <Button onClick={() => {}} type="quinary">
-                      $350,00
-                    </Button>
-                  </div>
+                <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
+                    $1.000
+                  </span>
                 </td>
               </tr>
               <tr className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
@@ -222,77 +221,47 @@ const Highcost = () => {
                   scope="row"
                   className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                 >
-                  <span className="">Video grabacion</span>
+                  <span className="">1 Julio 2024</span>
                 </th>
                 <td className="px-4 py-2 whitespace-nowrap text-center">
-                  <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
-                    1 Julio 2023
-                  </span>
-                </td>
-                <td className="px-4 py-2 font-medium whitespace-nowrap text-center">
                   <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
                     12:35 pm
                   </span>
                 </td>
+                <td className="px-4 py-2 font-medium whitespace-nowrap text-center">
+                  <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
+                    Martha Paredes
+                  </span>
+                </td>
                 <td className="px-4 py-2 whitespace-nowrap text-center">
-                  <div>
-                    <Button onClick={() => {}} type="quinary">
-                      $350,00
-                    </Button>
-                  </div>
+                <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
+                    $1.000
+                  </span>
                 </td>
               </tr>
+             
             </tbody>
           </table>
         </div>
-        <div className="ml-12 flex flex-col h-full gap-3">
-          <button className="col-span-3 w-72 rounded-2xl border border-[#F2F2F2] p-6 flex justify-center items-center hover:scale-110 duration-150">
-            <div className="rounded-full w-12 h-12 bg-[#FB8500] flex items-center justify-center text-white">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                className="w-6 h-6"
-              >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M12 5l0 14" />
-                <path d="M5 12l14 0" />
-              </svg>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-2xl ml-3">Agregar</span>
-              <span className="text-md ml-3">Pago</span>
-            </div>
-          </button>
-          <div className="w-full p-12 bg-[#FC8904] h-full rounded-2xl flex flex-col justify-center items-center text-white text-center">
-            <span>Has seleccionado 3 pagos</span>
-            <span className="mt-3">Total</span>
-            <span className="mt-3 text-3xl">$1.159,80</span>
-            <button className="rounded-full px-6 py-3 bg-white text-black flex items-center justify-center mt-6">
-              Pagar{" "}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                className="w-6 h-6"
-              >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M16.7 8a3 3 0 0 0 -2.7 -2h-4a3 3 0 0 0 0 6h4a3 3 0 0 1 0 6h-4a3 3 0 0 1 -2.7 -2" />
-                <path d="M12 3v3m0 12v3" />
-              </svg>
-            </button>
+        <div className="py-3 px-12 flex flex-col items-center border rounded-2xl justify-center">
+          <span className="text-center">Descargar</span>
+          <span className="text-center mt-6 text-sm">
+            Has seleccionado 3 fechas
+          </span>
+
+          <span className="mt-12">Escoje el formato</span>
+          <div className="flex justify-center gap-1 mt-2">
+            <Button type="primary" onClick={() => {}}>
+              PDF
+            </Button>
+            <Button type="primary" onClick={() => {}}>
+              Excel
+            </Button>
+          </div>
+          <div className="mt-6">
+            <Button type="quinary" onClick={() => {}}>
+              Descargar
+            </Button>
           </div>
         </div>
       </div>
@@ -300,4 +269,4 @@ const Highcost = () => {
   );
 };
 
-export default Highcost;
+export default Historyofpays;
