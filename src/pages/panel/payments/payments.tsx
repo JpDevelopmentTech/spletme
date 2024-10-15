@@ -5,6 +5,7 @@ import Highcost from "./components/highcost";
 import Pay from "./components/pay";
 import Accounts from "./components/accounts";
 import Historyofpays from "./components/historyofpays";
+import logoPay from "../../../assets/images/payoneer-dark-logo.svg";
 
 const Payments = () => {
   return (
@@ -12,30 +13,14 @@ const Payments = () => {
       <div className="col-span-12">
         <Title title="Pagos" subtitle="Gestiona tus pagos" />
         <div className="grid grid-cols-12 gap-6 mt-6">
-          <div className="bg-[#91CCE8] rounded-2xl col-span-3 p-6 flex justify-between items-center hover:scale-110 duration-150">
-            <div className="flex flex-col text-white ">
-              <span className="text-2xl">Ajustes</span>
-              <span className="text-xs">Ajusta tus cuentas</span>
-              <button className="px-3 py-1 bg-white text-[#91CCE8] text-xs rounded-full mt-3">
-                Ver
-              </button>
-            </div>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="stroke-white w-16 h-16"
-              width="44"
-              height="44"
-              viewBox="0 0 24 24"
-              stroke-width="1.5"
-              stroke="#2c3e50"
-              fill="none"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-              <path d="M19.875 6.27a2.225 2.225 0 0 1 1.125 1.948v7.284c0 .809 -.443 1.555 -1.158 1.948l-6.75 4.27a2.269 2.269 0 0 1 -2.184 0l-6.75 -4.27a2.225 2.225 0 0 1 -1.158 -1.948v-7.285c0 -.809 .443 -1.554 1.158 -1.947l6.75 -3.98a2.33 2.33 0 0 1 2.25 0l6.75 3.98h-.033z" />
-              <path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
-            </svg>
+          <div className="bg-white shadow-lg rounded-2xl col-span-3 p-6  hover:scale-110 duration-150 relative">
+   
+              <span className="text-xl text-black">Metodo de pago principal</span>
+
+            <img src={logoPay} className="w-40 mt-6" alt="" />
+            <button className="px-3 py-1 absolute bg-[#91CCE8] text-white text-xs rounded-full bottom-3 right-3">
+              Configurar
+            </button>
           </div>
           <div className="shadow-lg col-span-6 p-6 rounded-2xl flex items-center justify-between hover:scale-110 duration-150">
             <div className="flex flex-col">
