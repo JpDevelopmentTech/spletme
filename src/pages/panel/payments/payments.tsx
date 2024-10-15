@@ -75,8 +75,8 @@ const Payments = () => {
               </svg>
             </div>
             <div className="flex flex-col">
-              <span className="text-2xl ml-3">Agregar</span>
-              <span className="text-md ml-3">Pago</span>
+              <span className="text-2xl ml-3">Agregar</span> 
+              <span className="text-2xl ml-3">metodo de pago</span> 
             </div>
           </Link>
         </div>

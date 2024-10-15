@@ -70,7 +70,7 @@ const Table = () => {
               </div>
             </th>
             <th scope="col" className="px-4 py-3">
-              Colaborador
+              Usuario
             </th>
             <th scope="col" className="px-4 py-3 text-center">
               Generado total
@@ -80,6 +80,9 @@ const Table = () => {
             </th>
             <th scope="col" className="px-4 py-3 min-w-[14rem] text-center">
               Rol
+            </th>
+            <th scope="col" className="px-4 py-3 text-center">
+              Distribuidor
             </th>
             <th scope="col" className="px-4 py-3 text-center">
               Metodo de pago
@@ -114,7 +117,7 @@ const Table = () => {
                   alt=""
                   className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
                 />
-                <span className="ml-3">JK Escorcia</span>
+                <span className="ml-3">Escorcia Music</span>
               </div>
             </th>
             <td className="px-4 py-2 whitespace-nowrap text-center">
@@ -135,6 +138,11 @@ const Table = () => {
             <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
               <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
                 Believe
+              </span>
+            </td>
+            <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
+              <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
+                Payooner
               </span>
             </td>
             <td className="px-4 py-2 whitespace-nowrap font-medium text-gray-900 dark:text-white text-xs">
