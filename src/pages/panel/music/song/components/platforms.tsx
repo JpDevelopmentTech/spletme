@@ -70,7 +70,7 @@ const Platforms = () => {
   return (
     <div className="col-span-6 p-6 border rounded-2xl">
       <div className="flex flex-col">
-        <span className="font-semibold text-xl">Mis plataformas</span>
+        <span className="font-semibold text-xl">Plataformas</span>
         <span className="text-sm">Comportamiento por plataforma</span>
       </div>
       <div className="flex mt-6 items-center gap-6">

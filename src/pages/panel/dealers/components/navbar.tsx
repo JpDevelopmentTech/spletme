@@ -37,7 +37,7 @@ export default function NavBar() {
           onClick={() => navigateToId("high_performance")}
         >
           <span className="text-white text-subtitle font-bold">
-            Comportamiento
+            Rendimiento
           </span>
           <span className="text-white text-normal">Status general</span>
           <span className="bg-white px-3 text-black text-normal rounded-2xl mt-3">

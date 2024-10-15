@@ -76,7 +76,7 @@ const Payments = () => {
             </div>
             <div className="flex flex-col">
               <span className="text-2xl ml-3">Agregar</span> 
-              <span className="text-2xl ml-3">metodo de pago</span> 
+              <span className="text-xl ml-3">metodo de pago</span> 
             </div>
           </Link>
         </div>
