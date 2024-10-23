@@ -38,7 +38,8 @@ export const SpotifyService = {
   getTopTracks: async (id = "4vofRTVBI4bh7P0HQGddgm") => {
     try {
       await SpotifyService.getAccessToken();
-      const uri = "https://api.spotify.com/v1/artists/" + id + "/top-tracks?market=US";
+      const uri =
+        "https://api.spotify.com/v1/artists/" + id + "/top-tracks?market=US";
       const headers = {
         Authorization: `Bearer ${localStorage.getItem("access_token_spotify")}`,
       };
@@ -74,6 +75,35 @@ export const SpotifyService = {
       return response.data;
     } catch (error) {
       console.error("Error: ", error);
-    } 
-  }
+    }
+  },
+
+  getAlbum: async (id: string) => {
+    try {
+      await SpotifyService.getAccessToken();
+      const uri = "https://api.spotify.com/v1/albums/" + id;
+      const headers = {
+        Authorization: `Bearer ${localStorage.getItem("access_token_spotify")}`,
+      };
+      const response = await axios.get(uri, { headers });
+      return response.data;
+    } catch (error) {
+      console.error("Error: ", error);
+    }
+  },
+
+  getTopAlbums: async (id = "4vofRTVBI4bh7P0HQGddgm") => {
+    try {
+      await SpotifyService.getAccessToken();
+      const uri =
+        "https://api.spotify.com/v1/artists/" + id + "/albums?market=US";
+      const headers = {
+        Authorization: `Bearer ${localStorage.getItem("access_token_spotify")}`,
+      };
+      const response = await axios.get(uri, { headers });
+      return response.data;
+    } catch (error) {
+      console.error("Error: ", error);
+    }
+  },
 };
