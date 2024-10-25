@@ -1,4 +1,5 @@
 import CardSong from "../../../components/cardsong/cardsong";
+import "./music.css";
 import { useEffect, useState } from "react";
 import { SpotifyService } from "../../../services/spotify";
 import { Link } from "react-router-dom";
@@ -134,26 +135,20 @@ export default function Music() {
       <div className="animate-fade-left">
         <div className="w-full flex flex-col">
           <div>
-            <button
-              onClick={() => {
-                setMode("songs");
-              }}
-              className={`${
-                mode === "songs" && "bg-quinary text-white border-none"
-              } px-3 py-1 rounded-l-full text-black border`}
-            >
-              Canciones
-            </button>
-            <button
-              onClick={() => {
-                setMode("albums");
-              }}
-              className={`${
-                mode === "albums" && "bg-quinary text-white border-none"
-              } px-3 py-1 rounded-r-full text-black border`}
-            >
-              Albumes
-            </button>
+            <label htmlFor="theme" className="theme">
+              <span className="text-sm font-light">Canciones</span>
+              <span className="theme__toggle-wrap">
+                <input
+                  id="theme"
+                  className="theme__toggle"
+                  type="checkbox"
+                  onClick={() =>
+                    mode === "songs" ? setMode("albums") : setMode("songs")
+                  }
+                />
+              </span>
+              <span className="text-sm font-light">Albumes</span>
+            </label>
           </div>
           {mode === "songs" ? (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-3">
