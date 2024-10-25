@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Title from "../../../../../components/title/title";
 import { SpotifyService } from "../../../../../services/spotify";
+import { Link } from "react-router-dom";
 
 const CardAlbum = ({ album }: { album: any }) => {
   const [data, setData] = useState<any>(null);
@@ -17,7 +18,7 @@ const CardAlbum = ({ album }: { album: any }) => {
     
   };
   return (
-    <div className="flex gap-6 items-center shadow-lg rounded-lg">
+    <Link to={'/panel/album/' + data?.id} className="flex gap-6 items-center shadow-lg rounded-lg">
       <img src={data?.images[0].url} alt="" className="w-48 h-48 rounded-lg" />
       <div className="flex flex-col w-full">
         <Title title={data?.name} subtitle={
@@ -31,7 +32,7 @@ const CardAlbum = ({ album }: { album: any }) => {
         <span className="text-3xl font-semibold my-3">$2.000,00</span>
         
       </div>
-    </div>
+    </Link>
   );
 };
 
