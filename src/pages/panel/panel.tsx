@@ -2,10 +2,18 @@ import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import UserIcon from "../../assets/images/Mesa de trabajo 28.svg";
 import Sidebar from "../../components/sidebar/sidebar";
+import { useAuth0 } from "@auth0/auth0-react";
 import { SpotifyService } from "../../services/spotify";
-import { Drawer, DrawerOptions, initDropdowns,  InstanceOptions } from "flowbite";
+import {
+  Drawer,
+  DrawerOptions,
+  initDropdowns,
+  InstanceOptions,
+} from "flowbite";
 
 export default function Panel() {
+
+  const {logout} = useAuth0();
   const [showMenu, setShowMenu] = useState(false);
 
   useEffect(() => {
@@ -14,14 +22,14 @@ export default function Panel() {
     };
 
     SignInSpotify();
-    flowbite()
+    flowbite();
 
     return () => {};
   }, []);
 
   const flowbite = () => {
-    initDropdowns()
-  }
+    initDropdowns();
+  };
 
   const initMenuUser = () => {
     const userMenu = document.getElementById("user-menu");
@@ -366,93 +374,108 @@ export default function Panel() {
       </div>
       <div
         id="user-menu"
-        className="fixed z-40 h-screen w-80 overflow-y-auto bg-white p-4 dark:bg-gray-800"
+        className="fixed z-40 h-screen w-80 overflow-y-auto bg-white p-4 dark:bg-gray-800 flex flex-col justify-between"
         tabIndex={-1}
         aria-labelledby="drawer-js-label"
       >
-        <h5
-          id="drawer-js-label"
-          className="mb-4 inline-flex items-center text-base font-semibold text-gray-500 dark:text-gray-400"
-        >
-          <svg
-            className="me-2 h-5 w-5"
-            aria-hidden="true"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-            xmlns="http://www.w3.org/2000/svg"
+        <div>
+          <h5
+            id="drawer-js-label"
+            className="mb-4 inline-flex items-center text-base font-semibold text-gray-500 dark:text-gray-400"
           >
-            <path
-              fill-rule="evenodd"
-              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-              clip-rule="evenodd"
-            ></path>
-          </svg>
-          Info
-        </h5>
-        <button
-          onClick={() => {
-            initMenuUser().hide();
-          }}
-          type="button"
-          aria-controls="drawer-example"
-          className="absolute right-2.5 top-2.5 inline-flex h-8 w-8 items-center justify-center rounded-lg bg-transparent text-sm text-gray-400 hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-gray-600 dark:hover:text-white"
-        >
-          <svg
-            className="h-3 w-3"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 14 14"
-          >
-            <path
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-            />
-          </svg>
-          <span className="sr-only">Close menu</span>
-        </button>
-        <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
-          Supercharge your hiring by taking advantage of our
-          <a
-            href="#"
-            className="font-medium text-blue-600 underline hover:no-underline dark:text-blue-500"
-          >
-            limited-time sale
-          </a>
-          for Flowbite Docs + Job Board. Unlimited access to over 190K
-          top-ranked candidates and the #1 design job board.
-        </p>
-        <div className="grid grid-cols-2 gap-4">
-          <a
-            href="#"
-            className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-center text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-700"
-          >
-            Learn more
-          </a>
-          <a
-            href="#"
-            className="inline-flex items-center rounded-lg bg-blue-700 px-4 py-2 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-          >
-            Get access
             <svg
-              className="ms-2 h-3.5 w-3.5"
+              className="me-2 h-5 w-5"
+              aria-hidden="true"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                clip-rule="evenodd"
+              ></path>
+            </svg>
+            Info
+          </h5>
+          <button
+            onClick={() => {
+              initMenuUser().hide();
+            }}
+            type="button"
+            aria-controls="drawer-example"
+            className="absolute right-2.5 top-2.5 inline-flex h-8 w-8 items-center justify-center rounded-lg bg-transparent text-sm text-gray-400 hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-gray-600 dark:hover:text-white"
+          >
+            <svg
+              className="h-3 w-3"
               aria-hidden="true"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
-              viewBox="0 0 14 10"
+              viewBox="0 0 14 14"
             >
               <path
                 stroke="currentColor"
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 stroke-width="2"
-                d="M1 5h12m0 0L9 1m4 4L9 9"
+                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
               />
             </svg>
-          </a>
+            <span className="sr-only">Close menu</span>
+          </button>
+          <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
+            Supercharge your hiring by taking advantage of our
+            <a
+              href="#"
+              className="font-medium text-blue-600 underline hover:no-underline dark:text-blue-500"
+            >
+              limited-time sale
+            </a>
+            for Flowbite Docs + Job Board. Unlimited access to over 190K
+            top-ranked candidates and the #1 design job board.
+          </p>
+          <div className="grid grid-cols-2 gap-4">
+            <a
+              href="#"
+              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-center text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-700"
+            >
+              Learn more
+            </a>
+            <a
+              href="#"
+              className="inline-flex items-center rounded-lg bg-blue-700 px-4 py-2 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            >
+              Get access
+              <svg
+                className="ms-2 h-3.5 w-3.5"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 14 10"
+              >
+                <path
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M1 5h12m0 0L9 1m4 4L9 9"
+                />
+              </svg>
+            </a>
+          </div>
+        </div>
+        <div>
+          <button
+            type="button"
+            onClick={() => logout({
+              logoutParams: {
+                returnTo: window.location.origin,
+              }
+            })}
+            className="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900"
+          >
+            Cerrar sesion
+          </button>
         </div>
       </div>
     </>

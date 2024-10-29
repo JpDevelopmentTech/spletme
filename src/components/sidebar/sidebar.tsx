@@ -9,13 +9,12 @@ import BalanceIcon from '../../assets/images/BALANCE.svg'
 import PagosIcon from '../../assets/images/PAGOS.svg'
 import Logo from "../../assets/images/7 - FULL LOGO.png";
 import logo from "../../assets/images/5 - LOGO.png";
-// import { useSelector } from "react-redux";
+import { useAuth0 } from "@auth0/auth0-react";
 export default function Sidebar() {
+  const {user} = useAuth0()
 
   
   
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  // const user = useSelector((state: any) => state.auth.user);
   return (
     <>
       <div className="lg:w-80  w-full lg:fixed  left-0 lg:h-full p-9 bg-[#FBFBFB]  lg:flex flex-col overflow-y-auto z-20 animate-fade ">
@@ -25,7 +24,7 @@ export default function Sidebar() {
         <div className="flex flex-col">
           
         <span className="font-bold text-subtitle text-septenary">¡Bienvenido!</span>
-        <span className="font-bold text-title">Escorcia Music</span>
+        <span className="font-bold text-title">{user?.name}</span>
         <span className="text-xs text-neutral-400">ID: #JKE2365</span>
         </div>
         <div className="w-full h-full flex flex-col mt-6  ">
