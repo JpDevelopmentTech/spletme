@@ -96,7 +96,7 @@ export default function Income() {
     },
   }
   return (
-    <div id="income" className="col-span-6 p-6 rounded-2xl shadow-lg hover:scale-105 duration-200">
+    <div id="income" className="col-span-6 p-6 rounded-2xl shadow-lg hover:scale-[1.01] duration-200">
       <div className="flex justify-between  flex-col">
         <Title title="Ingresos" subtitle="Mide el comportamiento por distribuidor" />
         <div>

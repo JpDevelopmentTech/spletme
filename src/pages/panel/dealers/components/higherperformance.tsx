@@ -125,7 +125,7 @@ export default function HigherPerformance() {
     },
   }
   return (
-    <div id="high_performance" className="col-span-6 p-6 rounded-2xl shadow-lg hover:scale-105 duration-200">
+    <div id="high_performance" className="col-span-6 p-6 rounded-2xl shadow-lg hover:scale-[1.01] duration-200">
       <Title title="Rendimiento" subtitle="Distribuidores" />
       <ReactApexChart options={options} series={series} height={350} type="bar"/>
     </div>

@@ -234,7 +234,7 @@ export default function Behavior() {
   return (
     <div
       id="behavior"
-      className="col-span-12 row-span-2 p-6 rounded-2xl shadow-lg hover:scale-105 duration-200 relative"
+      className="col-span-12 row-span-2 p-6 rounded-2xl shadow-lg hover:scale-[1.01] duration-200 relative"
     >
       <div className="flex justify-between items-center">
         <Title
