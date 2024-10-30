@@ -64,7 +64,7 @@ const Album = () => {
                 <th scope="col" className="px-4 py-3 text-center">
                   Duracion
                 </th>
-                <th scope="col" className="px-4 py-3 min-w-[14rem] text-center">
+                <th scope="col" className="px-4 py-3 min-w-[14rem] text-left">
                   Artistas
                 </th>
               </tr>
@@ -108,7 +108,7 @@ const Album = () => {
                     </span>
                   </td>
                   <td className="px-4 py-2 font-medium whitespace-nowrap">
-                    <div className="flex flex-wrap space-x-4 w-full justify-center">
+                    <div className="flex flex-wrap space-x-4 w-full text-left">
                         {item.artists.map((artist: any) => (
                             <span className="font-light">{artist.name}</span>
                         ))}
