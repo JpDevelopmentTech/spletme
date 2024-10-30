@@ -10,9 +10,9 @@ import ImgCollaborator from "./components/imgCollaborator";
 import AddCollaborator from "./components/addCollaborator";
 import ImgTop from "./components/imgTop";
 import Table from "./components/table";
+import MoneyInMoneyOut from "./components/moneyInMoneyOut";
 
 export default function Collaborators() {
-  const [typeMoney, setTypeMoney] = useState<"in" | "out">("in");
   const [collaboratorActive, setCollaboratorActive] = useState(0);
   const collaborators = [
     {
@@ -43,28 +43,7 @@ export default function Collaborators() {
             <span className="text-title font-bold">Colaboradores</span>
             <span className="text-subtitle">Organiza tus colaboradores</span>
           </div>
-          <div className="bg-[#DEDEDE] rounded-full">
-            <button
-              onClick={() => setTypeMoney("in")}
-              className={
-                typeMoney === "in"
-                  ? "p-3 rounded-full bg-[#219EBC] text-white"
-                  : "p-3 rounded-full bg-[#DEDEDE] text-[#8A8A8A]"
-              }
-            >
-              Money in
-            </button>
-            <button
-              onClick={() => setTypeMoney("out")}
-              className={
-                typeMoney === "out"
-                  ? "p-3 rounded-full bg-[#219EBC] text-white"
-                  : "p-3 rounded-full bg-[#DEDEDE] text-[#8A8A8A]"
-              }
-            >
-              Money Out
-            </button>
-          </div>
+          <MoneyInMoneyOut />
         </div>
       </div>
 

@@ -6,42 +6,38 @@ export default function ImgTop({ activeImg }: { activeImg: string }) {
 
   useEffect(() => {
     const GetDominantColor = () => {
-      const img = document.createElement("img");
+      const img = new Image();
+      img.crossOrigin = "Anonymous";
       img.src = activeImg;
-      
 
-      const canvas = document.createElement("canvas");
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
 
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-      if (!img) return;
-      ctx.drawImage(img, 0, 0);
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const { data } = imageData;
-      const colorsFrequency: { [key: string]: number } = {};
+        ctx.drawImage(img, 0, 0, img.width, img.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const { data } = imageData;
+        const colorsFrequency: { [key: string]: number } = {};
 
-      for (let i = 0; i < data.length; i += 4) {
-        const [r, g, b] = [data[i], data[i + 1], data[i + 2]];
-        const rgb = `${r},${g},${b}`;
-        if (colorsFrequency[rgb]) {
-          colorsFrequency[rgb] += 1;
-        } else {
-          colorsFrequency[rgb] = 1;
+        for (let i = 0; i < data.length; i += 4) {
+          const [r, g, b] = [data[i], data[i + 1], data[i + 2]];
+          const rgb = `${r},${g},${b}`;
+          colorsFrequency[rgb] = (colorsFrequency[rgb] || 0) + 1;
         }
-      }
 
-      const colorsSorted = Object.keys(colorsFrequency).sort(
-        (a, b) => colorsFrequency[b] - colorsFrequency[a]
-      );
+        const colorsSorted = Object.keys(colorsFrequency).sort(
+          (a, b) => colorsFrequency[b] - colorsFrequency[a]
+        );
 
-      setPrimaryColorDominant(`rgb(${colorsSorted[0]})`);
-      setSecondaryColorDominant(
-        `rgb(${colorsSorted[colorsSorted.length - 1]})`
-      );
+        setPrimaryColorDominant(`rgb(${colorsSorted[0]})`);
+        setSecondaryColorDominant(`rgb(${colorsSorted[colorsSorted.length - 1]})`);
+      };
     };
-    setTimeout(() => {
-      GetDominantColor();
-    }, 500);
+
+    GetDominantColor();
   }, [activeImg]);
 
   return (
@@ -52,9 +48,9 @@ export default function ImgTop({ activeImg }: { activeImg: string }) {
           background: `linear-gradient(35deg, ${primary} 0%, ${secondary} 100%)`,
         }}
       >
-        <div className="flex  justify-between items-center  ">
+        <div className="flex justify-between items-center">
           <div className="flex flex-col">
-            <span className="text-title  font-bold">El vega Life</span>
+            <span className="text-title font-bold">El vega Life</span>
             <span className="text-normal">Fecha de vinculacion + ID</span>
           </div>
           <div>
@@ -64,28 +60,18 @@ export default function ImgTop({ activeImg }: { activeImg: string }) {
         <div className="flex justify-between">
           <div className="flex flex-col items-center border-r border-white p-3 text-center">
             <span className="text-title text-white font-bold">5</span>
-            <span className="text-subtitle text-white font-bold">
-              Canciones
-            </span>
-            <span className="text-normal text-white">
-              Proyectos en conjunto
-            </span>
+            <span className="text-subtitle text-white font-bold">Canciones</span>
+            <span className="text-normal text-white">Proyectos en conjunto</span>
           </div>
-          <div className="flex flex-col items-center  border-white p-3 text-center">
+          <div className="flex flex-col items-center border-white p-3 text-center">
             <span className="text-title text-white font-bold">39%</span>
-            <span className="text-subtitle text-white font-bold">
-              Colaboracion
-            </span>
+            <span className="text-subtitle text-white font-bold">Colaboracion</span>
             <span className="text-normal text-white">Porcentaje general</span>
           </div>
           <div className="flex flex-col items-center border-l border-white p-3 text-center">
             <span className="text-title text-white font-bold">$5.892,00</span>
-            <span className="text-subtitle text-white font-bold">
-              Ganancias
-            </span>
-            <span className="text-normal text-white">
-              Desde la fecha de vinculacion
-            </span>
+            <span className="text-subtitle text-white font-bold">Ganancias</span>
+            <span className="text-normal text-white">Desde la fecha de vinculacion</span>
           </div>
         </div>
       </div>
