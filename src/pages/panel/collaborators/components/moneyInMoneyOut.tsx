@@ -9,7 +9,7 @@ const MoneyInMoneyOut = () => {
     if (toggleButton) {
       toggleButton.style.transition = "transform 0.3s ease";
       if (moneyIn) {
-        toggleButton.style.transform = "translateX(100%)";
+        toggleButton.style.transform = "translateX(50%)";
         toggleButton.innerText = "Money out";
       } else {
         toggleButton.style.transform = "translateX(0)";
@@ -34,7 +34,7 @@ const MoneyInMoneyOut = () => {
       <div
         className="bg-secondary rounded-full p-2 absolute"
         id="toggleButton"
-        style={{ transform: moneyIn ? "translateX(0)" : "translateX(100%)" }}
+        style={{ transform: moneyIn ? "translateX(0)" : "translateX(93%)" }}
       >
         {moneyIn ? "Money in" : "Money out"}
       </div>
