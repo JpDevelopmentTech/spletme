@@ -24,15 +24,15 @@ const MoneyInMoneyOut = () => {
       onClick={toogleSwitch}
     >
       <div className="flex justify-between w-full">
-        <span className={`p-2 ${moneyIn ? "text-black" : "text-black"}`}>
+        <span className={`p-2 ${moneyIn ? "text-black font-medium" : "text-black font-medium"}`}>
           Money in
         </span>
-        <span className={`p-2 ${!moneyIn ? "text-black" : "text-black"}`}>
+        <span className={`p-2 ${!moneyIn ? "text-black font-medium" : "text-black font-medium"}`}>
           Money out
         </span>
       </div>
       <div
-        className="bg-secondary rounded-full p-2 absolute"
+        className="bg-secondary rounded-full p-2 absolute font-medium text-white"
         id="toggleButton"
         style={{ transform: moneyIn ? "translateX(0)" : "translateX(93%)" }}
       >
