@@ -1,10 +1,40 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ApexOptions } from "apexcharts";
 import { InstanceOptions, Modal, ModalOptions } from "flowbite";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 import { Link } from "react-router-dom";
+import Button from "../../../../../components/atoms/button";
+import ModalComponent from "../../../../../components/modal/modal";
+import { Alert, Badge, Checkbox, Datepicker, Label, TextInput } from "flowbite-react";
 
 export default function Table() {
+  const [viewParticipations, setViewParticipations] = useState(false);
+  const [conditionals, setConditionals] = useState<any[]>([
+    {
+      start: new Date().toISOString().split("T")[0],
+      end: "2023-12-31",
+      value: 50,
+      platforms: ["youtube"],
+    },
+    {
+      start: new Date().toISOString().split("T")[0],
+      end: "2023-12-31",
+      value: 50,
+      platforms: ["youtube", "spotify"],
+    },
+  ]);
+  const [formConditional, setFormConditional] = useState<{
+    start: string;
+    end: string;
+    value: number;
+    platforms: string[];
+  }>({
+    start: new Date().toISOString().split("T")[0],
+    end: new Date().toISOString().split("T")[0],
+    value: 0,
+    platforms: [],
+  });
   const series = [
     {
       name: "Distribuidora 2",
@@ -133,6 +163,27 @@ export default function Table() {
     const modal = initializateModal();
     modal.hide();
   };
+
+  const addPlatform = (platform: string) => {
+    setFormConditional((prevState) => {
+      const platforms = prevState.platforms.includes(platform)
+        ? prevState.platforms.filter((p) => p !== platform)
+        : [...prevState.platforms, platform];
+      return { ...prevState, platforms };
+    });
+  };
+
+  const addConditional = () => {
+    setConditionals((prevState) => [...prevState, formConditional]);
+    setFormConditional({
+      start: new Date().toISOString().split("T")[0],
+      end: new Date().toISOString().split("T")[0],
+      value: 0,
+      platforms: [],
+    });
+
+    console.log(conditionals);
+  };
   return (
     <div className="col-span-12">
       <div
@@ -232,18 +283,230 @@ export default function Table() {
                     </Link>
                   </div>
                   <div className="p-3 flex flex-col gap-3">
-                    <label htmlFor="">Pagado por</label>
-                    <div className="bg-gray-100 text-gray-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-gray-700 dark:text-gray-300 flex items-center gap-3">
-                      <img
-                        className="w-10 h-10 rounded-full"
-                        src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png"
-                        alt="Rounded avatar"
-                      />
-                      Believe
+                    <label htmlFor="">Participacion</label>
+                    <div>
+                      <Button
+                        onClick={() => {
+                          setViewParticipations(!viewParticipations);
+                        }}
+                        type="primary"
+                      >
+                        Ver participaciones
+                      </Button>
                     </div>
                   </div>
                 </div>
               </div>
+              {viewParticipations && (
+                <div>
+                  <span className="font-semibold">Condicionales</span>
+                  <div className="flex flex-col gap-3">
+                    {conditionals.map((conditional, index) => (
+                      // tabla para condicionales
+                      <div className="border p-3 rounded-lg " key={index}>
+                        <div className="flex flex-col">
+                          <label className="text-sm font-light flex items-center gap-3">
+                            <span className="font-medium">Periodo:</span>{" "}
+                            {conditional.start}{" "}
+                            <span>
+                              <svg
+                                className="w-6 h-6 text-gray-800 dark:text-white"
+                                aria-hidden="true"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  stroke="currentColor"
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="2"
+                                  d="M19 12H5m14 0-4 4m4-4-4-4"
+                                />
+                              </svg>
+                            </span>{" "}
+                            {conditional.end}
+                          </label>
+                          <label className="text-sm font-light">
+                            <span className="font-medium">Porcentaje:</span>{" "}
+                            {conditional.value}%
+                          </label>
+                          <div className="mt-3">
+                            <Label>Plataformas</Label>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {conditional.platforms.length === 0 && (
+                                <Badge color="dark">No existen plataformas condicionales</Badge>
+                              )}
+                              {conditional.platforms.map(
+                                (platform: string, index: number) => (
+                                  <Badge key={index} color="dark">
+                                    {platform}
+                                  </Badge>
+                                )
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 flex justify-end">
+                    <ModalComponent
+                      title="Crear condicional"
+                      textButton="Agregar condicional"
+                      action={addConditional}
+                    >
+                      <form>
+                        <div className="grid gap-6 mb-6 md:grid-cols-2">
+                          <div>
+                            <label
+                              htmlFor="first_name"
+                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                            >
+                              Desde
+                            </label>
+                            <Datepicker
+                              onChange={(e) => {
+                                setFormConditional({
+                                  ...formConditional,
+                                  start: e
+                                    ?.toISOString()
+                                    .split("T")[0] as string,
+                                });
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <label
+                              htmlFor="last_name"
+                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                            >
+                              Hasta
+                            </label>
+                            <Datepicker
+                              onChange={(e) => {
+                                setFormConditional({
+                                  ...formConditional,
+                                  end: e?.toISOString().split("T")[0] as string,
+                                });
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <div className="mb-6">
+                          <Label>Opciones</Label>
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              id="forever"
+                              onChange={() =>
+                                setFormConditional({
+                                  ...formConditional,
+                                  end: "Para siempre",
+                                })
+                              }
+                            />
+                            <Label htmlFor="youtube" className="flex">
+                              Hasta siempre
+                            </Label>
+                          </div>
+                        </div>
+                        <div className="mb-6">
+                          <div>
+                            <Label>Porcentaje</Label>
+                            <TextInput
+                              type="number"
+                              value={formConditional.value}
+                              onChange={(e) => {
+                                setFormConditional({
+                                  ...formConditional,
+                                  value: parseInt(e.target.value),
+                                });
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <div className="mb-6">
+                          <Label>Plataformas</Label>
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              id="youtube"
+                              onChange={() => addPlatform("youtube")}
+                            />
+                            <Label htmlFor="youtube" className="flex">
+                              Youtube
+                            </Label>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              id="spotify"
+                              onChange={() => addPlatform("spotify")}
+                            />
+                            <Label htmlFor="spotify" className="flex">
+                              Spotify
+                            </Label>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              id="apple-music"
+                              onChange={() => addPlatform("apple-music")}
+                            />
+                            <Label htmlFor="apple-music" className="flex">
+                              Apple Music
+                            </Label>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              id="amazon-music"
+                              onChange={() => addPlatform("amazon-music")}
+                            />
+                            <Label htmlFor="amazon-music" className="flex">
+                              Amazon Music
+                            </Label>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              id="tidal"
+                              onChange={() => addPlatform("tidal")}
+                            />
+                            <Label htmlFor="tidal" className="flex">
+                              Tidal
+                            </Label>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              id="deezer"
+                              onChange={() => addPlatform("deezer")}
+                            />
+                            <Label htmlFor="deezer" className="flex">
+                              Deezer
+                            </Label>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              id="pandora"
+                              onChange={() => addPlatform("pandora")}
+                            />
+                            <Label htmlFor="pandora" className="flex">
+                              Pandora
+                            </Label>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              id="soundcloud"
+                              onChange={() => addPlatform("soundcloud")}
+                            />
+                            <Label htmlFor="soundcloud" className="flex">
+                              SoundCloud
+                            </Label>
+                          </div>
+                        </div>
+                      </form>
+                    </ModalComponent>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center justify-end p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
@@ -427,7 +690,10 @@ export default function Table() {
               </td>
               <td className="px-4 py-2 whitespace-nowrap font-medium text-gray-900 dark:text-white text-xs text-center">
                 <div className="flex justify-center">
-                  <button onClick={() => openDetails()} className="bg-[#FB8500] text-white text-xs font-medium me-2 px-2.5 py-0.5 rounded-full flex items-center justify-center gap-2 ">
+                  <button
+                    onClick={() => openDetails()}
+                    className="bg-[#FB8500] text-white text-xs font-medium me-2 px-2.5 py-0.5 rounded-full flex items-center justify-center gap-2 "
+                  >
                     $350.00
                     <svg
                       className="w-6 h-6 text-white dark:text-white"
@@ -504,7 +770,10 @@ export default function Table() {
               </td>
               <td className="px-4 py-2 whitespace-nowrap font-medium text-gray-900 dark:text-white text-xs text-center">
                 <div className="flex justify-center">
-                  <button onClick={() => openDetails()} className="bg-blue-600 text-white text-xs font-medium me-2 px-2.5 py-0.5 rounded-full flex items-center justify-center gap-2 ">
+                  <button
+                    onClick={() => openDetails()}
+                    className="bg-blue-600 text-white text-xs font-medium me-2 px-2.5 py-0.5 rounded-full flex items-center justify-center gap-2 "
+                  >
                     $350.00
                     <svg
                       className="w-6 h-6 text-white dark:text-white"
@@ -581,7 +850,10 @@ export default function Table() {
               </td>
               <td className="px-4 py-2 whitespace-nowrap font-medium text-gray-900 dark:text-white text-xs text-center">
                 <div className="flex justify-center">
-                  <button onClick={() => openDetails()} className="bg-[#FB8500] text-white text-xs font-medium me-2 px-2.5 py-0.5 rounded-full flex items-center justify-center gap-2 ">
+                  <button
+                    onClick={() => openDetails()}
+                    className="bg-[#FB8500] text-white text-xs font-medium me-2 px-2.5 py-0.5 rounded-full flex items-center justify-center gap-2 "
+                  >
                     $350.00
                     <svg
                       className="w-6 h-6 text-white dark:text-white"

@@ -1,9 +1,14 @@
+/* eslint-disable no-undef */
+/* eslint-disable @typescript-eslint/no-var-requires */
 /** @type {import('tailwindcss').Config} */
+
+const flowbite = require("flowbite-react/tailwind");
 export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
-    "./node_modules/flowbite/**/*.js"
+    "./node_modules/flowbite/**/*.js",
+    flowbite.content()
   ],
   theme: {
     extend: {
@@ -39,7 +44,8 @@ export default {
     // eslint-disable-next-line no-undef
     require('tailwindcss-textshadow'),
     // eslint-disable-next-line no-undef
-    require('flowbite/plugin')
+    require('flowbite/plugin'),
+    flowbite.plugin()
     
   ],
 }
