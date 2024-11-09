@@ -6,7 +6,7 @@ import ReactApexChart from "react-apexcharts";
 import { Link } from "react-router-dom";
 import Button from "../../../../../components/atoms/button";
 import ModalComponent from "../../../../../components/modal/modal";
-import { Alert, Badge, Checkbox, Datepicker, Label, TextInput } from "flowbite-react";
+import {Badge, Checkbox, Datepicker, Label, TextInput } from "flowbite-react";
 
 export default function Table() {
   const [viewParticipations, setViewParticipations] = useState(false);
