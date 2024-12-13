@@ -1,0 +1,23 @@
+export const platforms = [
+    "Spotify",
+    "Apple Music",
+    "YouTube",
+    "SoundCloud",
+    "Deezer",
+    "Tidal",
+    "Amazon Music",
+    "Google Play Music",
+    "Pandora",
+    "iHeartRadio",
+    "Napster",
+    "Slacker",
+    "KKBox",
+    "Anghami",
+    "Soundtrack by Twitch",
+    "Yandex Music",
+    "Tencent Music",
+    "NetEase Cloud Music",
+    "Qobuz",
+    "JioSaavn",
+    "7digital"
+]

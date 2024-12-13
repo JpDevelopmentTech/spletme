@@ -4,24 +4,31 @@ import { InstanceOptions, Modal, ModalOptions } from "flowbite";
 import { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 import { Link } from "react-router-dom";
-import Button from "../../../../../components/atoms/button";
 import ModalComponent from "../../../../../components/modal/modal";
-import {Badge, Checkbox, Datepicker, Label, TextInput } from "flowbite-react";
+import {
+  Badge,
+  Button,
+  Checkbox,
+  Datepicker,
+  Label,
+  TextInput,
+} from "flowbite-react";
+import Alert from "../../../../../components/alert/alert";
+import Select from "react-select";
+import { platforms } from "../../../../../enums/platforms";
+import countries from "../../../../../data/countries.json";
 
 export default function Table() {
-  const [viewParticipations, setViewParticipations] = useState(false);
   const [conditionals, setConditionals] = useState<any[]>([
     {
       start: new Date().toISOString().split("T")[0],
       end: "2023-12-31",
       value: 50,
       platforms: ["youtube"],
-    },
-    {
-      start: new Date().toISOString().split("T")[0],
-      end: "2023-12-31",
-      value: 50,
-      platforms: ["youtube", "spotify"],
+      regions: ["Colombia"],
+      conditionalAmount: false,
+      operatorConditional: ">",
+      amountConditional: 0,
     },
   ]);
   const [formConditional, setFormConditional] = useState<{
@@ -29,12 +36,22 @@ export default function Table() {
     end: string;
     value: number;
     platforms: string[];
+    regions: string[];
+    conditionalAmount: boolean;
+    operatorConditional: string;
+    amountConditional: number;
   }>({
     start: new Date().toISOString().split("T")[0],
     end: new Date().toISOString().split("T")[0],
     value: 0,
     platforms: [],
+    regions: [],
+    conditionalAmount: false,
+    operatorConditional: ">",
+    amountConditional: 0,
   });
+
+  const [alert, setAlert] = useState<string>("");
   const series = [
     {
       name: "Distribuidora 2",
@@ -131,6 +148,10 @@ export default function Table() {
     initializateModal();
   }, []);
 
+  const addConditional = () => {
+    setConditionals([...conditionals, formConditional]);
+  };
+
   const initializateModal = () => {
     const $targetModalDetail = document.getElementById("modalDetail");
     const modalOptions: ModalOptions = {
@@ -164,28 +185,16 @@ export default function Table() {
     modal.hide();
   };
 
-  const addPlatform = (platform: string) => {
-    setFormConditional((prevState) => {
-      const platforms = prevState.platforms.includes(platform)
-        ? prevState.platforms.filter((p) => p !== platform)
-        : [...prevState.platforms, platform];
-      return { ...prevState, platforms };
-    });
+  const saveConditionals = () => {
+    //si en conditionals no existe un objeto con la propiedad end igual a forever retornar error
+    if (!conditionals.find((conditional) => conditional.end === "forever")) {
+      return setAlert("Debe existir un condicional 'Hasta siempre'");
+    }
   };
 
-  const addConditional = () => {
-    setConditionals((prevState) => [...prevState, formConditional]);
-    setFormConditional({
-      start: new Date().toISOString().split("T")[0],
-      end: new Date().toISOString().split("T")[0],
-      value: 0,
-      platforms: [],
-    });
-
-    console.log(conditionals);
-  };
   return (
     <div className="col-span-12">
+      <Alert message={alert} type="red" />
       <div
         id="modalDetail"
         tabIndex={-1}
@@ -252,7 +261,9 @@ export default function Table() {
                     <label className="text-sm">Porcentaje: 50%</label>
                     <label className="text-sm">Pagado: $650,00</label>
                     <label className="text-sm">Generado total: $1.000,00</label>
-                    <label className="text-sm">ID: 10 Julio 2023</label>
+                    <label className="text-sm">
+                      Fecha ultimo pago: Junio 10, 2024
+                    </label>
                   </div>
                   <div className="p-3 flex gap-3 items-center border-b">
                     <label htmlFor="">Colaboraciones:</label>
@@ -282,83 +293,22 @@ export default function Table() {
                       </svg>
                     </Link>
                   </div>
-                  <div className="p-3 flex flex-col gap-3">
-                    <label htmlFor="">Participacion</label>
-                    <div>
-                      <Button
-                        onClick={() => {
-                          setViewParticipations(!viewParticipations);
-                        }}
-                        type="primary"
-                      >
-                        Ver participaciones
-                      </Button>
-                    </div>
-                  </div>
                 </div>
               </div>
-              {viewParticipations && (
-                <div>
-                  <span className="font-semibold">Condicionales</span>
-                  <div className="flex flex-col gap-3">
-                    {conditionals.map((conditional, index) => (
-                      // tabla para condicionales
-                      <div className="border p-3 rounded-lg " key={index}>
-                        <div className="flex flex-col">
-                          <label className="text-sm font-light flex items-center gap-3">
-                            <span className="font-medium">Periodo:</span>{" "}
-                            {conditional.start}{" "}
-                            <span>
-                              <svg
-                                className="w-6 h-6 text-gray-800 dark:text-white"
-                                aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="24"
-                                height="24"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  stroke="currentColor"
-                                  stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                  stroke-width="2"
-                                  d="M19 12H5m14 0-4 4m4-4-4-4"
-                                />
-                              </svg>
-                            </span>{" "}
-                            {conditional.end}
-                          </label>
-                          <label className="text-sm font-light">
-                            <span className="font-medium">Porcentaje:</span>{" "}
-                            {conditional.value}%
-                          </label>
-                          <div className="mt-3">
-                            <Label>Plataformas</Label>
-                            <div className="flex items-center gap-2 flex-wrap">
-                              {conditional.platforms.length === 0 && (
-                                <Badge color="dark">No existen plataformas condicionales</Badge>
-                              )}
-                              {conditional.platforms.map(
-                                (platform: string, index: number) => (
-                                  <Badge key={index} color="dark">
-                                    {platform}
-                                  </Badge>
-                                )
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-3 flex justify-end">
-                    <ModalComponent
-                      title="Crear condicional"
-                      textButton="Agregar condicional"
-                      action={addConditional}
-                    >
-                      <form>
+
+              <div>
+                <span className="font-semibold">Condicionales</span>
+                <div className="flex flex-col gap-3">
+                  Existen {conditionals.length} condicionales
+                </div>
+                <div className="mt-3 flex justify-end">
+                  <ModalComponent
+                    title="Crear condicional"
+                    textButton="Agregar condicional"
+                    action={saveConditionals}
+                  >
+                    <div className="flex gap-6 justify-between">
+                      <form className="w-full">
                         <div className="grid gap-6 mb-6 md:grid-cols-2">
                           <div>
                             <label
@@ -393,23 +343,72 @@ export default function Table() {
                                 });
                               }}
                             />
+                            <div className="flex items-center gap-2">
+                              <Checkbox
+                                id="forever"
+                                onChange={() =>
+                                  setFormConditional({
+                                    ...formConditional,
+                                    end: "forever",
+                                  })
+                                }
+                              />
+                              <Label htmlFor="youtube" className="flex">
+                                Hasta siempre
+                              </Label>
+                            </div>
                           </div>
                         </div>
                         <div className="mb-6">
-                          <Label>Opciones</Label>
-                          <div className="flex items-center gap-2">
-                            <Checkbox
-                              id="forever"
-                              onChange={() =>
-                                setFormConditional({
-                                  ...formConditional,
-                                  end: "Para siempre",
-                                })
-                              }
-                            />
-                            <Label htmlFor="youtube" className="flex">
-                              Hasta siempre
-                            </Label>
+                          <Label className="text-lg">Plataformas</Label>
+                          <div className="flex justify-between items-center">
+                            <Label>Todas las plataformas</Label>
+                            <Label>Menos{"<"}</Label>
+                            <div className="">
+                              <Select
+                                className="min-w-56 max-w-56"
+                                isMulti
+                                onChange={(e) => {
+                                  setFormConditional({
+                                    ...formConditional,
+                                    platforms: e.map(
+                                      (platform: any) => platform.value
+                                    ),
+                                  });
+                                }}
+                                name="platforms"
+                                options={platforms.map((platform) => ({
+                                  value: platform,
+                                  label: platform,
+                                }))}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mb-6">
+                          <Label className="text-lg">Regiones</Label>
+                          <div className="flex justify-between items-center">
+                            <Label>Todas las regiones</Label>
+                            <Label>Menos{"<"}</Label>
+                            <div className="">
+                              <Select
+                                className="min-w-56 max-w-56"
+                                isMulti
+                                name="regions"
+                                options={countries.map((platform) => ({
+                                  value: platform.name,
+                                  label: platform.name,
+                                }))}
+                                onChange={(e) => {
+                                  setFormConditional({
+                                    ...formConditional,
+                                    regions: e.map(
+                                      (platform: any) => platform.value
+                                    ),
+                                  });
+                                }}
+                              />
+                            </div>
                           </div>
                         </div>
                         <div className="mb-6">
@@ -428,85 +427,149 @@ export default function Table() {
                           </div>
                         </div>
                         <div className="mb-6">
-                          <Label>Plataformas</Label>
-                          <div className="flex items-center gap-2">
+                          <div className="flex gap-3">
+                            <Label>Condicional de monto</Label>
                             <Checkbox
-                              id="youtube"
-                              onChange={() => addPlatform("youtube")}
+                              id="conditionalAmount"
+                              onChange={() => {
+                                setFormConditional({
+                                  ...formConditional,
+                                  conditionalAmount:
+                                    !formConditional.conditionalAmount,
+                                });
+                              }}
                             />
-                            <Label htmlFor="youtube" className="flex">
-                              Youtube
-                            </Label>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Checkbox
-                              id="spotify"
-                              onChange={() => addPlatform("spotify")}
-                            />
-                            <Label htmlFor="spotify" className="flex">
-                              Spotify
-                            </Label>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Checkbox
-                              id="apple-music"
-                              onChange={() => addPlatform("apple-music")}
-                            />
-                            <Label htmlFor="apple-music" className="flex">
-                              Apple Music
-                            </Label>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Checkbox
-                              id="amazon-music"
-                              onChange={() => addPlatform("amazon-music")}
-                            />
-                            <Label htmlFor="amazon-music" className="flex">
-                              Amazon Music
-                            </Label>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Checkbox
-                              id="tidal"
-                              onChange={() => addPlatform("tidal")}
-                            />
-                            <Label htmlFor="tidal" className="flex">
-                              Tidal
-                            </Label>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Checkbox
-                              id="deezer"
-                              onChange={() => addPlatform("deezer")}
-                            />
-                            <Label htmlFor="deezer" className="flex">
-                              Deezer
-                            </Label>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Checkbox
-                              id="pandora"
-                              onChange={() => addPlatform("pandora")}
-                            />
-                            <Label htmlFor="pandora" className="flex">
-                              Pandora
-                            </Label>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Checkbox
-                              id="soundcloud"
-                              onChange={() => addPlatform("soundcloud")}
-                            />
-                            <Label htmlFor="soundcloud" className="flex">
-                              SoundCloud
-                            </Label>
-                          </div>
+                          {formConditional.conditionalAmount && (
+                            <div>
+                              <Label>
+                                Cumplir esta condicion siempre y cuando
+                              </Label>
+                              <div className="flex justify-between items-center">
+                                <Label>Monto generado</Label>
+                                <Select
+                                  onChange={(e) => {
+                                    setFormConditional({
+                                      ...formConditional,
+                                      operatorConditional: e?.value as string,
+                                    });
+                                  }}
+                                  className="min-w-56 max-w-56"
+                                  options={[
+                                    { value: ">", label: ">" },
+                                    { value: "<", label: "<" },
+                                    { value: "=", label: "=" },
+                                  ]}
+                                />
+                                <TextInput
+                                  type="number"
+                                  value={formConditional.amountConditional}
+                                  onChange={(e) => {
+                                    setFormConditional({
+                                      ...formConditional,
+                                      amountConditional: parseInt(
+                                        e.target.value
+                                      ),
+                                    });
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex justify-end">
+                          <Button color="dark" onClick={addConditional}>
+                            Agregar condicional
+                          </Button>
                         </div>
                       </form>
-                    </ModalComponent>
-                  </div>
+                      <div className="flex flex-col gap-3 max-h-full overflow-y-auto">
+                        {conditionals.map((conditional, index) => (
+                          // tabla para condicionales
+                          <div className="border p-3 rounded-lg " key={index}>
+                            <div className="flex flex-col">
+                              <label className="text-sm font-light flex items-center gap-3">
+                                <span className="font-medium">Periodo:</span>{" "}
+                                {conditional.start}{" "}
+                                <span>
+                                  <svg
+                                    className="w-6 h-6 text-gray-800 dark:text-white"
+                                    aria-hidden="true"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      stroke="currentColor"
+                                      stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      stroke-width="2"
+                                      d="M1 5h12m0 0L9 1m4 4L9 9"
+                                    />
+                                  </svg>
+                                </span>{" "}
+                                {conditional.end}
+                              </label>
+                              <label className="text-sm font-light">
+                                <span className="font-medium">Porcentaje:</span>{" "}
+                                {conditional.value}%
+                              </label>
+                              <div className="mt-3">
+                                <Label>Excepto las plataformas:</Label>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  {conditional.platforms.length === 0 && (
+                                    <Badge color="dark">
+                                      No existen plataformas condicionales
+                                    </Badge>
+                                  )}
+                                  {conditional.platforms.map(
+                                    (platform: string, index: number) => (
+                                      <Badge key={index} color="dark">
+                                        {platform}
+                                      </Badge>
+                                    )
+                                  )}
+                                </div>
+                              </div>
+                              <div className="mt-3">
+                                <Label>Excepto las regiones:</Label>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  {conditional.regions.length === 0 && (
+                                    <Badge color="dark">
+                                      No existen regiones condicionales
+                                    </Badge>
+                                  )}
+                                  {conditional.regions.map(
+                                    (region: string, index: number) => (
+                                      <Badge key={index} color="dark">
+                                        {region}
+                                      </Badge>
+                                    )
+                                  )}
+                                </div>
+                              </div>
+                              {conditional.conditionalAmount && (
+                                <div className="mt-3">
+                                  <Label>Condicional de monto</Label>
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <Badge color="dark">
+                                      {conditional.operatorConditional} $
+                                      {conditional.amountConditional}
+                                    </Badge>
+                                  </div>
+                                </div>
+                              )}
+
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </ModalComponent>
                 </div>
-              )}
+              </div>
             </div>
 
             <div className="flex items-center justify-end p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">

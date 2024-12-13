@@ -292,7 +292,7 @@ export default function Home() {
             <div className="flex justify-between items-center">
               <div className="flex flex-col">
                 <span className="font-semibold text-xl">Balance general</span>
-                <span className="text-septenary ">3 De junio</span>
+                <span className="text-septenary ">Junio 3, 2024</span>
               </div>
               <img src={monedaNaranjaIcon} alt="" className="w-10" />
             </div>
@@ -300,19 +300,22 @@ export default function Home() {
               <div className="flex gap-3">
                 <img src={ingresoIcon} alt="" className="w-5" />
                 <span className="font-bold ">Ingresos</span>
-                <span className="text-[#31bd3f] ">$00,00</span>
+                <span className="text-[#31bd3f] ">$100,00</span>
               </div>
               <div className="flex gap-3">
                 <img src={egresoIcon} alt="" className="w-5" />
                 <span className="font-bold ">Egresos</span>
-                <span className="text-[#FB8500] ">$00,00</span>
+                <span className="text-[#FB8500] ">$50,00</span>
               </div>
+            </div>
+            <div>
+              
             </div>
           </div>
         </div>
         <div className="col-span-12 lg:col-span-3 shadow-lg rounded-2xl    lg:row-span-3 p-8 flex flex-col duration-200 hover:scale-105">
           <span className="text-semibold text-xl font-bold text-left">
-            Mis plataformas
+            Plataformas
           </span>
           <span className="text-septenary text-sm">Comportamiento por plataforma</span>
           <div className="flex justify-center items-center flex-col gap-6 h-full">
@@ -427,7 +430,7 @@ export default function Home() {
         <div className="col-span-12 lg:col-span-9 flex flex-col ">
           <div className="flex justify-between items-center">
             <div className="flex flex-col">
-              <span className="font-semibold text-xl">Top songs</span>
+              <span className="font-semibold text-xl">Top Songs</span>
               <span className="text-septenary ">
                 Aqui tus mejores canciones
               </span>

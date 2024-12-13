@@ -19,17 +19,17 @@ const ModalComponent = ({
         {textButton}
       </Button>
 
-      <Modal dismissible show={openModal} onClose={() => setOpenModal(false)}>
+      <Modal size="6xl" dismissible show={openModal} onClose={() => setOpenModal(false)}>
         <Modal.Header>{title}</Modal.Header>
-        <Modal.Body>
+        <Modal.Body >
           <div className="space-y-6">{children}</div>
         </Modal.Body>
-        <Modal.Footer>
+        <Modal.Footer >
           <Button color="dark" onClick={() => {
             action && action();
             setOpenModal(false);
           }}>
-            Aceptar
+            Guardar
           </Button>
           <Button color="dark" outline onClick={() => setOpenModal(false)}>
             Cerrar
