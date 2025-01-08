@@ -9,7 +9,7 @@ export default function Login() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/panel/home");
+      navigate("/onboarding");
     }
   }, [isAuthenticated, navigate]);
 

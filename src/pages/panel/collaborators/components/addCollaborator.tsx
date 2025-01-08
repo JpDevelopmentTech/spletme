@@ -21,7 +21,7 @@ export default function AddCollaborator() {
                 />
               </svg>
               <span className="text-title text-center w-full font-bold text-quinary">
-                Añadir distribuidora
+                Añadir colaborador
               </span>
             </div>
           </div>
@@ -37,7 +37,7 @@ export default function AddCollaborator() {
         </div>
         <div className="flex flex-col">
           <span className="text-subtitle font-bold">Agregar</span>
-          <span className="text-normal">Distribuidor</span>
+          <span className="text-normal">Colaborador</span>
         </div>
       </button>
     </>

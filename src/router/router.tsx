@@ -10,6 +10,7 @@ import Song from "../pages/panel/music/song/song";
 import Collaborator from "../pages/panel/collaborators/pages/collaborator";
 import Payments from "../pages/panel/payments/payments";
 import Album from "../pages/panel/music/album/album";
+import Onboarding from "../pages/auth/onboarding";
 
 
 
@@ -17,6 +18,10 @@ const routes = [
   {
     path: "/",
     element: <Login />,
+  },
+  {
+    path: "/onboarding",
+    element: <Onboarding />
   },
 
   {
