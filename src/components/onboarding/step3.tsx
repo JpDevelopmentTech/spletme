@@ -16,15 +16,15 @@ const Step3 = () => {
         ></path>
       </svg>
       <h1 className="mb-2 text-2xl font-extrabold tracking-tight text-gray-900 leding-tight dark:text-white">
-        Verified
+        Verificado
       </h1>
       <p className="mb-4 font-light text-gray-500 dark:text-gray-400 md:mb-6">
-        You have successfully verified your account.
+        Haz completado el proceso de verificación
       </p>
       <Link to={'/panel/home'}
         className="block w-full text-white bg-primary hover:bg-primary focus:ring-4 focus:outline-none focus:ring-primary font-medium rounded-lg text-sm px-5 py-2.5 sm:py-3.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
       >
-        Log in to your Account
+        Ingresar en mi cuenta
       </Link>
     </div>
   );

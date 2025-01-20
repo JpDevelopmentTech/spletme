@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import img from "../../../../../assets/images/collaborator3.jpg";
 import ImageProfile from "../../../../../components/imageprofile/imageprofile";
 import Title from "../../../../../components/title/title";
 export default function CardSong({ data }: { data: any }) {
@@ -25,14 +24,6 @@ export default function CardSong({ data }: { data: any }) {
           ))}
         </div>
         <span className="text-3xl font-semibold my-3">$2.000,00</span>
-        <div className="bg-gray-100 text-gray-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-gray-700 dark:text-gray-300 flex items-center gap-3">
-          <img
-            className="w-10 h-10 rounded-full"
-            src={img}
-            alt="Rounded avatar"
-          />
-          Believe
-        </div>
       </div>
     </div>
   );

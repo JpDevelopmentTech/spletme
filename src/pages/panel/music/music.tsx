@@ -1,5 +1,4 @@
 import CardSong from "../../../components/cardsong/cardsong";
-import "./music.css";
 import { useEffect, useState } from "react";
 import { SpotifyService } from "../../../services/spotify";
 import { Link } from "react-router-dom";
@@ -121,34 +120,25 @@ export default function Music() {
 
   const getTopAlbums = async () => {
     const response = await SpotifyService.getTopAlbums();
-    console.log(response);
     setTopTracks(response.items);
   };
 
   const getTopTracks = async () => {
     const response = await SpotifyService.getTopTracks();
-    console.log(response);
     setTopTracks(response.tracks);
   };
   return (
     <>
       <div className="animate-fade-left">
         <div className="w-full flex flex-col">
-          <div>
-            <label htmlFor="theme" className="theme">
-              <span className="text-sm font-light">Canciones</span>
-              <span className="theme__toggle-wrap">
-                <input
-                  id="theme"
-                  className="theme__toggle"
-                  type="checkbox"
-                  onClick={() =>
-                    mode === "songs" ? setMode("albums") : setMode("songs")
-                  }
-                />
-              </span>
-              <span className="text-sm font-light">Albumes</span>
-            </label>
+          <div className="cursor-pointer font-light relative">
+            <button onClick={() => mode === 'songs' ? setMode('albums') : setMode('songs')} className="flex gap-6 bg-gray-200 rounded-full px-6 py-2">
+              <label htmlFor="" className="w-1/2">Canciones</label>
+              <div className={
+                mode === "songs" ? "w-[7rem] absolute bg-gray-600 h-6 opacity-20 left-3 rounded-full translate-x-0 duration-500" : "w-[6rem] absolute bg-gray-600 h-6 opacity-20 left-2 rounded-full translate-x-28 duration-500"
+              }></div>
+              <label htmlFor="" className="w-1/2">Albumes</label>
+            </button>
           </div>
           {mode === "songs" ? (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-3">

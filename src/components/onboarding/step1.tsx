@@ -1,12 +1,47 @@
+import { useState } from "react";
+
 const Step1 = ({ nextStep }: { nextStep: () => void }) => {
   const professions = [
-    "singer",
-    "producer",
-    "writer",
-    "actor",
+    "Artista",
+    "Productor",
+    "Compositor",
+    "Otro",
   ];
+  
+  const otherProfessionList = [
+    "Ingeniero de sonido",
+    "Diseñador de sonido",
+    "Diseñador de audio",
+    "Ingeniero de mezcla",
+    "Ingeniero de masterización",
+    "Ingeniero de grabación",
+    "Ingeniero de producción",
+    "Ingeniero de postproducción",
+    "Ingeniero de sonido en vivo",
+    "Ingeniero de sonido en estudio",
+    "Ingeniero de sonido en cine",
+    "Ingeniero de sonido en televisión",
+    "Ingeniero de sonido en radio",
+    "Ingeniero de sonido en videojuegos",
+    "Ingeniero de sonido en realidad virtual",
+    "Ingeniero de sonido en realidad aumentada",
+    "Ingeniero de sonido en realidad mixta",
+    "Ingeniero de sonido en realidad extendida",
+    "Ingeniero de sonido en realidad inmersiva",
+    "Ingeniero de sonido en realidad simulada",
+    "Ingeniero de sonido en realidad hiperrealista",
+    "Ingeniero de sonido en realidad superrealista",
+    "Ingeniero de sonido en realidad ultrarrealista",
+    "Ingeniero de sonido en realidad surrealista",
+    "Ingeniero de sonido en realidad fantástica",
+    "Ingeniero de sonido en realidad mágica",
+    "Ingeniero de sonido en realidad mística",
+  ]
+
+  const [profession, setProfession] = useState("");
+  const [ , setOtherProfession] = useState("");
   return (
-    <div>
+    <div className="my-12">
       <h1 className="mb-4 text-2xl font-extrabold leading-tight tracking-tight text-gray-900 sm:mb-6 dark:text-white">
         Cuentanos sobre ti
       </h1>
@@ -23,6 +58,7 @@ const Step1 = ({ nextStep }: { nextStep: () => void }) => {
               value={profession}
               className="hidden peer"
               required
+              onChange={(e) => setProfession(e.target.value)}
             />
             <label
               htmlFor={profession}
@@ -40,7 +76,7 @@ const Step1 = ({ nextStep }: { nextStep: () => void }) => {
                   clip-rule="evenodd"
                 ></path>
               </svg>
-              <span className="w-full">I'm a {profession}</span>
+              <span className="w-full">{profession}</span>
               <svg
                 className="w-6 h-6 ml-3"
                 fill="currentColor"
@@ -57,11 +93,36 @@ const Step1 = ({ nextStep }: { nextStep: () => void }) => {
           </li>
         ))}
       </ul>
+      <div className="mb-12">
+        {profession === "Otro" && (
+          <ul className="flex flex-wrap  gap-3">
+            {otherProfessionList.map((profession) => (
+              <li key={profession}>
+                <input
+                  type="radio"
+                  id={profession}
+                  name="otherProfession"
+                  value={profession}
+                  className="hidden peer"
+                  required
+                  onChange={(e) => setOtherProfession(e.target.value)}
+                />
+                <label
+                  htmlFor={profession}
+                  className="px-3 inline-flex items-center justify-center w-full  text-gray-500 border-2 border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-primary-500 peer-checked:border-primary peer-checked:text-primary bg-gray-50 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
+                >
+                  <span className="w-full">{profession}</span>
+                </label>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
       <button
         onClick={nextStep}
         className="w-full px-5 py-2.5 sm:py-3.5 text-sm font-medium text-center text-white rounded-lg bg-primary hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
       >
-        Next: Account Info
+        Proximo: Detalles de la cuenta
       </button>
     </div>
   );

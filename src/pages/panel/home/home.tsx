@@ -4,11 +4,14 @@ import ReactApexChart from "react-apexcharts";
 import ingresoIcon from "../../../assets/images/Mesa de trabajo 23.svg";
 import egresoIcon from "../../../assets/images/Mesa de trabajo 24.svg";
 import monedaNaranjaIcon from "../../../assets/images/Mesa de trabajo 14.svg";
+import logoPayoneer from "../../../assets/images/payoneer-dark-logo.svg";
 
 import { Link } from "react-router-dom";
 import CardSong from "../../../components/cardsong/cardsong";
 import { useEffect, useState } from "react";
 import { SpotifyService } from "../../../services/spotify";
+import PlatformsCard from "../../../components/platformsCard/platformsCard";
+import { Label } from "flowbite-react";
 
 
 export default function Home() {
@@ -61,71 +64,7 @@ export default function Home() {
     },
   };
 
-  const series2 = [76, 67, 61, 90, 50, 30];
-
-  const options2: ApexOptions = {
-    chart: {
-      height: 50,
-      type: "radialBar",
-    },
-    plotOptions: {
-      radialBar: {
-        offsetY: 0,
-        startAngle: 0,
-        endAngle: 360,
-        hollow: {
-          margin: 5,
-          size: "30%",
-          background: "transparent",
-          image: undefined,
-        },
-        dataLabels: {
-          name: {
-            show: false,
-          },
-          value: {
-            show: false,
-          },
-        },
-      },
-    },
-    colors: ["#CF5650", "#94C8E5", "#89D062", "#000000", "#E55FFE", "#666666"],
-    labels: [
-      "Youtube",
-      "Amazon Music",
-      "Spotify",
-      "Apple Music",
-      "Deezer",
-      "Otra",
-    ],
-    legend: {
-      show: false,
-      floating: true,
-      fontSize: "16px",
-      position: "left",
-      offsetX: 160,
-      offsetY: 15,
-      labels: {
-        useSeriesColors: true,
-      },
-      formatter: function (seriesName, opts) {
-        return seriesName + ":  " + opts.w.globals.series[opts.seriesIndex];
-      },
-      itemMargin: {
-        vertical: 3,
-      },
-    },
-    responsive: [
-      {
-        breakpoint: 480,
-        options: {
-          legend: {
-            show: false,
-          },
-        },
-      },
-    ],
-  };
+  
 
   return (
     <>
@@ -282,7 +221,7 @@ export default function Home() {
                   stroke-width="2"
                   d="M8 17.345a4.76 4.76 0 0 0 2.558 1.618c2.274.589 4.512-.446 4.999-2.31.487-1.866-1.273-3.9-3.546-4.49-2.273-.59-4.034-2.623-3.547-4.488.486-1.865 2.724-2.899 4.998-2.31.982.236 1.87.793 2.538 1.592m-3.879 12.171V21m0-18v2.2"
                 />
-              </svg>
+              </svg> 
               244,19
             </span>
           </div>
@@ -309,113 +248,13 @@ export default function Home() {
               </div>
             </div>
             <div>
-              
+              <Label>Paga seguro con</Label>
+              <img src={logoPayoneer} alt="" className="mt-3 h-12 object-contain"/>
             </div>
           </div>
         </div>
-        <div className="col-span-12 lg:col-span-3 shadow-lg rounded-2xl    lg:row-span-3 p-8 flex flex-col duration-200 hover:scale-105">
-          <span className="text-semibold text-xl font-bold text-left">
-            Plataformas
-          </span>
-          <span className="text-septenary text-sm">Comportamiento por plataforma</span>
-          <div className="flex justify-center items-center flex-col gap-6 h-full">
-            <ReactApexChart
-              options={options2}
-              type="radialBar"
-              series={series2}
-            />
-            <div className="w-full p-3 flex justify-around bg-[#F3F3F3] rounded-full">
-              <button>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="1.5em"
-                  height="1.5em"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    fill="currentColor"
-                    d="M16 20v-7h4v7h-4Zm-6 0V4h4v16h-4Zm-6 0V9h4v11H4Z"
-                  />
-                </svg>
-              </button>
-              <button className="bg-[#D1D1D1] py-3 px-6 rounded-3xl">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="1.5em"
-                  height="1.5em"
-                  viewBox="0 0 32 32"
-                >
-                  <path
-                    fill="currentColor"
-                    d="M16 30A14.016 14.016 0 0 1 2 16h2A12 12 0 1 0 16 4V2a14 14 0 0 1 0 28Z"
-                  />
-                  <path
-                    fill="currentColor"
-                    d="M16 26A10.011 10.011 0 0 1 6 16h2a8 8 0 1 0 8-8V6a10 10 0 0 1 0 20Z"
-                  />
-                  <path
-                    fill="currentColor"
-                    d="M16 22a6.007 6.007 0 0 1-6-6h2a4 4 0 1 0 4-4v-2a6 6 0 0 1 0 12Z"
-                  />
-                </svg>
-              </button>
-              <button>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="1.5em"
-                  height="1.5em"
-                  viewBox="0 0 1024 1024"
-                >
-                  <path
-                    fill="currentColor"
-                    d="M888 792H200V168c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v688c0 4.4 3.6 8 8 8h752c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm-616-64h536c4.4 0 8-3.6 8-8V284c0-7.2-8.7-10.7-13.7-5.7L592 488.6l-125.4-124a8.03 8.03 0 0 0-11.3 0l-189 189.6a7.87 7.87 0 0 0-2.3 5.6V720c0 4.4 3.6 8 8 8z"
-                  />
-                </svg>
-              </button>
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2  gap-2">
-              <div className="flex items-center gap-3">
-                <div className="bg-[#CF5650] w-3 h-3 rounded-full"></div>
-                <span className="text-normal">Youtube</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="bg-[#94C8E5] w-3 h-3 rounded-full"></div>
-                <span className="text-normal">Amazon Music</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="bg-[#89D062] w-3 h-3 rounded-full"></div>
-                <span className="text-normal">Spotify</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="bg-[#000000] w-3 h-3 rounded-full"></div>
-                <span className="text-normal">Apple Music</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="bg-[#E55FFE] w-3 h-3 rounded-full"></div>
-                <span className="text-normal">Deezer</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="bg-[#666666] w-3 h-3 rounded-full"></div>
-                <span className="text-normal">Otra</span>
-              </div>
-            </div>
-
-            <div>
-              <Link
-                to={"#"}
-                className="bg-quinary py-2 px-6 text-white rounded-2xl text-normal"
-              >
-                Editar plataformas
-              </Link>
-            </div>
-            <div className="flex flex-col items-center">
-              <span className="semibold text-xl font-bold">1250</span>
-              <span className="text-septenary text-normal">
-                Streams + Views
-              </span>
-            </div>
-          </div>
-        </div>
+        <PlatformsCard />
+      
         {/* <div className="col-span-12 lg:col-span-3 shadow-lg rounded-3xl p-8 flex flex-col justify-between items-start duration-200 hover:scale-105">
           <div className="flex justify-between w-full items-start">
             <div className="flex flex-col">

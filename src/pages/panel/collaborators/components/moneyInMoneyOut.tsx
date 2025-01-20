@@ -3,41 +3,30 @@ import { useState } from "react";
 const MoneyInMoneyOut = () => {
   const [moneyIn, setMoneyIn] = useState(true);
 
-  const toogleSwitch = () => {
-    setMoneyIn(!moneyIn);
-    const toggleButton = document.getElementById("toggleButton");
-    if (toggleButton) {
-      toggleButton.style.transition = "transform 0.3s ease";
-      if (moneyIn) {
-        toggleButton.style.transform = "translateX(50%)";
-        toggleButton.innerText = "Money out";
-      } else {
-        toggleButton.style.transform = "translateX(0)";
-        toggleButton.innerText = "Money in";
-      }
-    }
-  };
+
 
   return (
-    <div
-      className="flex bg-gray-300 gap-3 rounded-full relative w-48 cursor-pointer"
-      onClick={toogleSwitch}
-    >
-      <div className="flex justify-between w-full">
-        <span className={`p-2 ${moneyIn ? "text-black font-medium" : "text-black font-medium"}`}>
-          Money in
-        </span>
-        <span className={`p-2 ${!moneyIn ? "text-black font-medium" : "text-black font-medium"}`}>
-          Money out
-        </span>
-      </div>
-      <div
-        className="bg-secondary rounded-full p-2 absolute font-medium text-white"
-        id="toggleButton"
-        style={{ transform: moneyIn ? "translateX(0)" : "translateX(93%)" }}
+    <div className="cursor-pointer font-light relative">
+      <button
+        onClick={() =>
+          moneyIn ? setMoneyIn(false) : setMoneyIn(true)
+        }
+        className="flex gap-6 bg-gray-200 rounded-full px-6 py-2 w-[16rem]"
       >
-        {moneyIn ? "Money in" : "Money out"}
-      </div>
+        <label htmlFor="" className="w-1/2">
+          Money In
+        </label>
+        <div
+          className={
+            moneyIn 
+              ? "w-[7rem] absolute bg-gray-600 h-6 opacity-20 left-3 rounded-full translate-x-0 duration-500"
+              : "w-[7rem] absolute bg-gray-600 h-6 opacity-20 left-2 rounded-full translate-x-[123px] duration-500"
+          }
+        ></div>
+        <label htmlFor="" className="w-1/2">
+          Money Out
+        </label>
+      </button>
     </div>
   );
 };
