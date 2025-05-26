@@ -17,6 +17,20 @@ import Alert from "../../../../../components/alert/alert";
 import Select from "react-select";
 import { platforms } from "../../../../../enums/platforms";
 import countries from "../../../../../data/countries.json";
+import { 
+  Eye, 
+  ChevronLeft, 
+  ChevronRight, 
+  DollarSign,
+  Percent,
+  User,
+  CreditCard,
+  Clock,
+  Filter,
+  Search,
+  Music
+} from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function Table() {
   const [conditionals, setConditionals] = useState<any[]>([
@@ -193,8 +207,174 @@ export default function Table() {
   };
 
   return (
-    <div className="col-span-12">
+    <div className="col-span-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300">
       <Alert message={alert} type="red" />
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <Music className="w-6 h-6" />
+          Collaborators
+        </h2>
+        <div className="flex gap-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input
+              type="text"
+              placeholder="Search collaborators..."
+              className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            />
+          </div>
+          <Button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 transition-colors duration-200">
+            <Filter className="w-4 h-4" />
+            Filters
+          </Button>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+        <table className="w-full text-sm text-left">
+          <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th scope="col" className="p-4">
+                <div className="flex items-center">
+                  <Checkbox className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600" />
+                </div>
+              </th>
+              <th scope="col" className="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                Collaborator
+              </th>
+              <th scope="col" className="px-6 py-4 font-medium text-gray-900 dark:text-white text-center">
+                <div className="flex items-center justify-center gap-2">
+                  <DollarSign className="w-4 h-4" />
+                  Generated Total
+                </div>
+              </th>
+              <th scope="col" className="px-6 py-4 font-medium text-gray-900 dark:text-white text-center">
+                <div className="flex items-center justify-center gap-2">
+                  <Percent className="w-4 h-4" />
+                  Percentage
+                </div>
+              </th>
+              <th scope="col" className="px-6 py-4 font-medium text-gray-900 dark:text-white text-center">
+                <div className="flex items-center justify-center gap-2">
+                  <User className="w-4 h-4" />
+                  Role
+                </div>
+              </th>
+              <th scope="col" className="px-6 py-4 font-medium text-gray-900 dark:text-white text-center">
+                <div className="flex items-center justify-center gap-2">
+                  <CreditCard className="w-4 h-4" />
+                  Payment Method
+                </div>
+              </th>
+              <th scope="col" className="px-6 py-4 font-medium text-gray-900 dark:text-white text-center">
+                <div className="flex items-center justify-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Pending Payment
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <motion.tr 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200"
+            >
+              <td className="p-4">
+                <Checkbox className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600" />
+              </td>
+              <th scope="row" className="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <img
+                      src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png"
+                      alt=""
+                      className="w-10 h-10 rounded-full ring-2 ring-gray-200 dark:ring-gray-700"
+                    />
+                    <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+                  </div>
+                  <div>
+                    <div className="font-medium">JK Escorcia</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Artist</div>
+                  </div>
+                </div>
+              </th>
+              <td className="px-6 py-4 text-center">
+                <Badge color="success" className="px-3 py-1">
+                  $1,200.00
+                </Badge>
+              </td>
+              <td className="px-6 py-4 text-center">
+                <Badge color="info" className="px-3 py-1">
+                  50%
+                </Badge>
+              </td>
+              <td className="px-6 py-4 text-center">
+                <Badge color="purple" className="px-3 py-1">
+                  Artist
+                </Badge>
+              </td>
+              <td className="px-6 py-4 text-center">
+                <Badge color="warning" className="px-3 py-1">
+                  Believe
+                </Badge>
+              </td>
+              <td className="px-6 py-4 text-center">
+                <Button
+                  onClick={() => openDetails()}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full flex items-center gap-2 transition-colors duration-200"
+                >
+                  $350.00
+                  <Eye className="w-4 h-4" />
+                </Button>
+              </td>
+            </motion.tr>
+            {/* Repeat similar structure for other rows */}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 mt-6">
+        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+          <span>Showing</span>
+          <span className="font-semibold text-gray-900 dark:text-white">1-10</span>
+          <span>of</span>
+          <span className="font-semibold text-gray-900 dark:text-white">1000</span>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Button
+            className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Previous
+          </Button>
+          
+          <div className="flex items-center gap-1">
+            {[1, 2, 3, "...", 100].map((page, index) => (
+              <Button
+                key={index}
+                className={`w-8 h-8 rounded-lg ${
+                  page === 3
+                    ? "bg-blue-600 text-white"
+                    : "bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
+                }`}
+              >
+                {page}
+              </Button>
+            ))}
+          </div>
+          
+          <Button
+            className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700"
+          >
+            Next
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+
       <div
         id="modalDetail"
         tabIndex={-1}
@@ -584,467 +764,6 @@ export default function Table() {
           </div>
         </div>
       </div>
-
-      <div className="overflow-x-auto ">
-        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-            <tr>
-              <th scope="col" className="p-4">
-                <div className="flex items-center">
-                  <input
-                    id="checkbox-all"
-                    type="checkbox"
-                    className="w-4 h-4 text-primary-600 bg-gray-100 rounded-full border-gray-300 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                  />
-                  <label htmlFor="checkbox-all" className="sr-only">
-                    checkbox
-                  </label>
-                </div>
-              </th>
-              <th scope="col" className="px-4 py-3">
-                Colaborador
-              </th>
-              <th scope="col" className="px-4 py-3 text-center">
-                Generado total
-              </th>
-              <th scope="col" className="px-4 py-3 text-center">
-                Porcentaje
-              </th>
-              <th scope="col" className="px-4 py-3 min-w-[14rem] text-center">
-                Rol
-              </th>
-              <th scope="col" className="px-4 py-3 text-center">
-                Metodo de pago
-              </th>
-              <th scope="col" className="px-4 py-3 text-center">
-                Pendiente por pagar
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
-              <td className="px-4 py-2 w-4">
-                <div className="flex items-center">
-                  <input
-                    id="checkbox-table-search-1"
-                    type="checkbox"
-                    onClick={() => null}
-                    className="w-4 h-4 text-primary-600 bg-gray-100 rounded-full border-gray-300 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                  ></input>
-                  <label htmlFor="checkbox-table-search-1" className="sr-only">
-                    checkbox
-                  </label>
-                </div>
-              </td>
-              <th
-                scope="row"
-                className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="flex -space-x-4">
-                    <img
-                      src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png"
-                      alt=""
-                      className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full-full dark:border-gray-800"
-                    />
-                  </div>
-                  JK Escorcia
-                </div>
-              </th>
-              <td className="px-4 py-2 whitespace-nowrap text-center">
-                <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-primary-900 dark:text-primary-300 text-center">
-                  $1.200,00
-                </span>
-              </td>
-              <td className="px-4 py-2 whitespace-nowrap text-center">
-                <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-primary-900 dark:text-primary-300 text-center">
-                  %50
-                </span>
-              </td>
-              <td className="px-4 py-2 font-medium whitespace-nowrap text-center">
-                <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-primary-900 dark:text-primary-300 text-center">
-                  Artista
-                </span>
-              </td>
-              <td className="px-4 py-2 font-medium whitespace-nowrap text-center">
-                <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-primary-900 dark:text-primary-300 text-center">
-                  Believe
-                </span>
-              </td>
-              <td className="px-4 py-2 whitespace-nowrap font-medium text-gray-900 dark:text-white text-xs text-center">
-                <div className="flex justify-center">
-                  <button
-                    onClick={() => openDetails()}
-                    className="bg-blue-600 text-white text-xs font-medium me-2 px-2.5 py-0.5 rounded-full flex items-center justify-center gap-2 "
-                  >
-                    $350.00
-                    <svg
-                      className="w-6 h-6 text-white dark:text-white"
-                      aria-hidden="true"
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke="currentColor"
-                        stroke-width="2"
-                        d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z"
-                      />
-                      <path
-                        stroke="currentColor"
-                        stroke-width="2"
-                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </td>
-            </tr>
-            <tr className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
-              <td className="px-4 py-2 w-4">
-                <div className="flex items-center">
-                  <input
-                    id="checkbox-table-search-1"
-                    type="checkbox"
-                    onClick={() => null}
-                    className="w-4 h-4 text-primary-600 bg-gray-100 rounded-full border-gray-300 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                  ></input>
-                  <label htmlFor="checkbox-table-search-1" className="sr-only">
-                    checkbox
-                  </label>
-                </div>
-              </td>
-              <th
-                scope="row"
-                className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="flex -space-x-4">
-                    <img
-                      src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png"
-                      alt=""
-                      className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full-full dark:border-gray-800"
-                    />
-                  </div>
-                  JK Escorcia
-                </div>
-              </th>
-              <td className="px-4 py-2 whitespace-nowrap text-center">
-                <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-primary-900 dark:text-primary-300 text-center">
-                  $1.200,00
-                </span>
-              </td>
-              <td className="px-4 py-2 whitespace-nowrap text-center">
-                <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-primary-900 dark:text-primary-300 text-center">
-                  %50
-                </span>
-              </td>
-              <td className="px-4 py-2 font-medium whitespace-nowrap text-center">
-                <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-primary-900 dark:text-primary-300 text-center">
-                  Artista
-                </span>
-              </td>
-              <td className="px-4 py-2 font-medium whitespace-nowrap text-center">
-                <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-primary-900 dark:text-primary-300 text-center">
-                  Believe
-                </span>
-              </td>
-              <td className="px-4 py-2 whitespace-nowrap font-medium text-gray-900 dark:text-white text-xs text-center">
-                <div className="flex justify-center">
-                  <button
-                    onClick={() => openDetails()}
-                    className="bg-[#FB8500] text-white text-xs font-medium me-2 px-2.5 py-0.5 rounded-full flex items-center justify-center gap-2 "
-                  >
-                    $350.00
-                    <svg
-                      className="w-6 h-6 text-white dark:text-white"
-                      aria-hidden="true"
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke="currentColor"
-                        stroke-width="2"
-                        d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z"
-                      />
-                      <path
-                        stroke="currentColor"
-                        stroke-width="2"
-                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </td>
-            </tr>
-            <tr className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
-              <td className="px-4 py-2 w-4">
-                <div className="flex items-center">
-                  <input
-                    id="checkbox-table-search-1"
-                    type="checkbox"
-                    onClick={() => null}
-                    className="w-4 h-4 text-primary-600 bg-gray-100 rounded-full border-gray-300 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                  ></input>
-                  <label htmlFor="checkbox-table-search-1" className="sr-only">
-                    checkbox
-                  </label>
-                </div>
-              </td>
-              <th
-                scope="row"
-                className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="flex -space-x-4">
-                    <img
-                      src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png"
-                      alt=""
-                      className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full-full dark:border-gray-800"
-                    />
-                  </div>
-                  JK Escorcia
-                </div>
-              </th>
-              <td className="px-4 py-2 whitespace-nowrap text-center">
-                <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-primary-900 dark:text-primary-300 text-center">
-                  $1.200,00
-                </span>
-              </td>
-              <td className="px-4 py-2 whitespace-nowrap text-center">
-                <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-primary-900 dark:text-primary-300 text-center">
-                  %50
-                </span>
-              </td>
-              <td className="px-4 py-2 font-medium whitespace-nowrap text-center">
-                <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-primary-900 dark:text-primary-300 text-center">
-                  Compositor
-                </span>
-              </td>
-              <td className="px-4 py-2 font-medium whitespace-nowrap text-center">
-                <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-primary-900 dark:text-primary-300 text-center">
-                  Believe
-                </span>
-              </td>
-              <td className="px-4 py-2 whitespace-nowrap font-medium text-gray-900 dark:text-white text-xs text-center">
-                <div className="flex justify-center">
-                  <button
-                    onClick={() => openDetails()}
-                    className="bg-blue-600 text-white text-xs font-medium me-2 px-2.5 py-0.5 rounded-full flex items-center justify-center gap-2 "
-                  >
-                    $350.00
-                    <svg
-                      className="w-6 h-6 text-white dark:text-white"
-                      aria-hidden="true"
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke="currentColor"
-                        stroke-width="2"
-                        d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z"
-                      />
-                      <path
-                        stroke="currentColor"
-                        stroke-width="2"
-                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </td>
-            </tr>
-            <tr className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
-              <td className="px-4 py-2 w-4">
-                <div className="flex items-center">
-                  <input
-                    id="checkbox-table-search-1"
-                    type="checkbox"
-                    onClick={() => null}
-                    className="w-4 h-4 text-primary-600 bg-gray-100 rounded-full border-gray-300 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                  ></input>
-                  <label htmlFor="checkbox-table-search-1" className="sr-only">
-                    checkbox
-                  </label>
-                </div>
-              </td>
-              <th
-                scope="row"
-                className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="flex -space-x-4">
-                    <img
-                      src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png"
-                      alt=""
-                      className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full-full dark:border-gray-800"
-                    />
-                  </div>
-                  JK Escorcia
-                </div>
-              </th>
-              <td className="px-4 py-2 whitespace-nowrap text-center">
-                <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-primary-900 dark:text-primary-300 text-center">
-                  $1.200,00
-                </span>
-              </td>
-              <td className="px-4 py-2 whitespace-nowrap text-center">
-                <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-primary-900 dark:text-primary-300 text-center">
-                  %50
-                </span>
-              </td>
-              <td className="px-4 py-2 font-medium whitespace-nowrap text-center">
-                <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-primary-900 dark:text-primary-300 text-center">
-                  Diseñador grafico
-                </span>
-              </td>
-              <td className="px-4 py-2 font-medium whitespace-nowrap text-center">
-                <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-primary-900 dark:text-primary-300 text-center">
-                  Believe
-                </span>
-              </td>
-              <td className="px-4 py-2 whitespace-nowrap font-medium text-gray-900 dark:text-white text-xs text-center">
-                <div className="flex justify-center">
-                  <button
-                    onClick={() => openDetails()}
-                    className="bg-[#FB8500] text-white text-xs font-medium me-2 px-2.5 py-0.5 rounded-full flex items-center justify-center gap-2 "
-                  >
-                    $350.00
-                    <svg
-                      className="w-6 h-6 text-white dark:text-white"
-                      aria-hidden="true"
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke="currentColor"
-                        stroke-width="2"
-                        d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z"
-                      />
-                      <path
-                        stroke="currentColor"
-                        stroke-width="2"
-                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <nav
-        className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-4 "
-        aria-label="Table navigation"
-      >
-        <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
-          Showing
-          <span className="font-semibold text-gray-900 dark:text-white">
-            1-10
-          </span>
-          of
-          <span className="font-semibold text-gray-900 dark:text-white">
-            1000
-          </span>
-        </span>
-        <ul className="inline-flex items-stretch -space-x-px">
-          <li>
-            <a
-              href="#"
-              className="flex items-center justify-center h-full py-1.5 px-3 ml-0 text-gray-500 bg-white rounded-full-l-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-            >
-              <span className="sr-only">Previous</span>
-              <svg
-                className="w-5 h-5"
-                aria-hidden="true"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-            >
-              1
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-            >
-              2
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              aria-current="page"
-              className="flex items-center justify-center text-sm z-10 py-2 px-3 leading-tight text-primary-600 bg-primary-50 border border-primary-300 hover:bg-primary-100 hover:text-primary-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white"
-            >
-              3
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-            >
-              ...
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-            >
-              100
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="flex items-center justify-center h-full py-1.5 px-3 leading-tight text-gray-500 bg-white rounded-full-r-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-            >
-              <span className="sr-only">Next</span>
-              <svg
-                className="w-5 h-5"
-                aria-hidden="true"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-            </a>
-          </li>
-        </ul>
-      </nav>
     </div>
   );
 }

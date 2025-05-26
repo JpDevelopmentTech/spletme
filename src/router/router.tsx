@@ -11,13 +11,22 @@ import Collaborator from "../pages/panel/collaborators/pages/collaborator";
 import Payments from "../pages/panel/payments/payments";
 import Album from "../pages/panel/music/album/album";
 import Onboarding from "../pages/auth/onboarding";
-
+import EmailLogin from "../pages/auth/email-login";
+import Register from "../pages/auth/register";
 
 
 const routes = [
   {
     path: "/",
     element: <Login />,
+  },
+  {
+    path: "/auth/email-login",
+    element: <EmailLogin />
+  },
+  {
+    path: "/auth/register",
+    element: <Register />
   },
   {
     path: "/onboarding",

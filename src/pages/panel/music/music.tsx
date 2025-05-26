@@ -1,156 +1,94 @@
 import CardSong from "../../../components/cardsong/cardsong";
-import { useEffect, useState } from "react";
-import { SpotifyService } from "../../../services/spotify";
+import {  useState } from "react";
 import { Link } from "react-router-dom";
 import CardAlbum from "./song/components/cardAlbum";
+import { motion } from "framer-motion";
+import UploadModal from "./components/UploadModal";
+import {Music as MusicIcon,Disc, Search, Upload, Loader2 } from "lucide-react";
+import UseSongs from "../../../hooks/useSongs";
 
-const dataTableSong = [
-  {
-    id: 1,
-    name: "Nombre de la cancion",
-    percentage: "0%",
-    collaborators: [
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png",
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png",
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-3.png",
-    ],
-    owner:
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png",
-    distributor:
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png",
-    releaseDate: "23 Nov 2022",
-    status:
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png",
-  },
-  {
-    id: 2,
-    name: "Nombre de la cancion",
-    percentage: "0%",
-    collaborators: [
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png",
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png",
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-3.png",
-    ],
-    owner:
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png",
-    distributor:
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png",
-    releaseDate: "23 Nov 2022",
-    status:
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png",
-  },
-  {
-    id: 3,
-    name: "Nombre de la cancion",
-    percentage: "0%",
-    collaborators: [
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png",
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png",
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-3.png",
-    ],
-    owner:
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png",
-    distributor:
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png",
-  },
-];
 
-const dataTableAlbum = [
-  {
-    id: 1,
-    name: "Nombre del album",
-    percentage: "0%",
-    collaborators: [
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png",
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png",
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-3.png",
-    ],
-    owner:
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png",
-    distributor:
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png",
-    releaseDate: "23 Nov 2022",
-    status:
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png",
-  },
-  {
-    id: 2,
-    name: "Nombre del album",
-    percentage: "0%",
-    collaborators: [
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png",
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png",
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-3.png",
-    ],
-    owner:
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png",
-    distributor:
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png",
-    releaseDate: "23 Nov 2022",
-    status:
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png",
-  },
-  {
-    id: 3,
-    name: "Nombre del album",
-    percentage: "0%",
-    collaborators: [
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png",
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png",
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-3.png",
-    ],
-    owner:
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png",
-    distributor:
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png",
-    releaseDate: "23 Nov 2022",
-    status:
-      "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png",
-  },
-];
 
 export default function Music() {
-  const [topTracks, setTopTracks] = useState([]);
   const [mode, setMode] = useState<"songs" | "albums">("songs");
-  useEffect(() => {
-    if (mode === "songs") getTopTracks();
-    if (mode === "albums") getTopAlbums();
-    return () => {};
-  }, [mode]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { songs, uploadSongs, loading, getSongs } = UseSongs();
 
-  const getTopAlbums = async () => {
-    const response = await SpotifyService.getTopAlbums();
-    setTopTracks(response.items);
+  const handleFileSelect = async (file: File) => {
+    // Here you can handle the file upload
+    // For example, you could send it to your backend
+    const formData = new FormData();
+    formData.append('csvFile', file);
+    await uploadSongs(formData);
+    setIsModalOpen(false);
+    getSongs();
   };
 
-  const getTopTracks = async () => {
-    const response = await SpotifyService.getTopTracks();
-    setTopTracks(response.tracks);
-  };
+
+ 
   return (
     <>
-      <div className="animate-fade-left">
+    {loading ? (
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="w-10 h-10 animate-spin" />
+      </div>
+    ): (
+      <>
+          <div className="animate-fade-left">
         <div className="w-full flex flex-col">
-          <div className="cursor-pointer font-light relative">
-            <button onClick={() => mode === 'songs' ? setMode('albums') : setMode('songs')} className="flex gap-6 bg-gray-200 rounded-full px-6 py-2">
-              <label htmlFor="" className="w-1/2">Canciones</label>
-              <div className={
-                mode === "songs" ? "w-[7rem] absolute bg-gray-600 h-6 opacity-20 left-3 rounded-full translate-x-0 duration-500" : "w-[6rem] absolute bg-gray-600 h-6 opacity-20 left-2 rounded-full translate-x-28 duration-500"
-              }></div>
-              <label htmlFor="" className="w-1/2">Albumes</label>
-            </button>
+          <div className="flex justify-center mb-6">
+            <div className="bg-white rounded-lg shadow-sm p-1 inline-flex">
+              <motion.button
+                className={`px-6 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
+                  mode === 'songs' 
+                    ? 'bg-quinary text-white' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+                onClick={() => setMode('songs')}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                animate={{
+                  backgroundColor: mode === 'songs' ? '#FF4800' : '#ffffff'
+                }}
+              >
+                <MusicIcon size={18} />
+                Canciones
+              </motion.button>
+              <motion.button
+                className={`px-6 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
+                  mode === 'albums'
+                    ? 'bg-quinary text-white'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+                onClick={() => setMode('albums')}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                animate={{
+                  backgroundColor: mode === 'albums' ? '#FF4800' : '#ffffff'
+                }}
+              >
+                <Disc size={18} />
+                Álbumes
+              </motion.button>
+            </div>
           </div>
+          {songs.length === 0 && (
+            <div className="flex flex-col items-center justify-center h-full mt-10">
+              <MusicIcon size={100} color="gray"/>
+              <h1 className="text-2xl font-bold text-gray-500">No songs found</h1>
+            </div>
+          )}
           {mode === "songs" ? (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-3">
-              <CardSong song={topTracks[0]} />
-              <CardSong song={topTracks[1]} />
-              <CardSong song={topTracks[2]} />
+              <CardSong song={songs[0]} />
+              <CardSong song={songs[1]} />
+              <CardSong song={songs[2]} />
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-3">
-              <CardAlbum album={topTracks[0]} />
-              <CardAlbum album={topTracks[1]} />
-              <CardAlbum album={topTracks[2]} />
+              <CardAlbum album={songs[0]} />
+              <CardAlbum album={songs[1]} />
+              <CardAlbum album={songs[2]} />
             </div>
           )}
         </div>
@@ -159,6 +97,15 @@ export default function Music() {
           <div className="flex items-center justify-between space-x-4 pt-3">
             <div className="flex-1 flex items-center space-x-3">
               <h5 className="dark:text-white font-semibold">All Songs</h5>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setIsModalOpen(true)}
+                className="px-4 py-2 bg-indigo-500 text-white rounded-md text-sm font-medium hover:bg-opacity-90 transition-colors flex items-center gap-2"
+              >
+                <Upload size={18} />
+                Upload Songs
+              </motion.button>
             </div>
           </div>
           <div className="flex flex-col-reverse md:flex-row items-center justify-between md:space-x-4 py-3">
@@ -172,21 +119,7 @@ export default function Music() {
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <svg
-                      aria-hidden="true"
-                      className="w-4 h-4 text-gray-500 dark:text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                      />
-                    </svg>
+                    <Search size={18} className="text-gray-500 dark:text-gray-400" />
                   </div>
                   <input
                     type="search"
@@ -245,9 +178,16 @@ export default function Music() {
               </tr>
             </thead>
             <tbody>
+              {songs.length === 0 && (
+                <tr>
+                  <td colSpan={100} className="text-center">
+                    No songs found
+                  </td>
+                </tr>
+              )}
               {mode === "songs" && (
                 <>
-                  {dataTableSong.map((song) => (
+                  {songs.map((song: any) => (
                     <tr className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
                       <td className="px-4 py-2 w-4">
                         <div className="flex items-center">
@@ -269,7 +209,7 @@ export default function Music() {
                         scope="row"
                         className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                       >
-                        <Link to={"/panel/song/s"}>{song.name}</Link>
+                        <Link to={"/panel/song/s"}>{song.trackTitle}</Link>
                       </th>
                       <td className="px-4 py-2 whitespace-nowrap text-center">
                         <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
@@ -348,7 +288,7 @@ export default function Music() {
 
               {mode === "albums" && (
                 <>
-                  {dataTableAlbum.map((album) => (
+                  {songs.map((album) => (
                     <tr className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
                       <td className="px-4 py-2 w-4">
                         <div className="flex items-center">
@@ -370,7 +310,7 @@ export default function Music() {
                         scope="row"
                         className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                       >
-                        <Link to={"/panel/song/s"}>{album.name}</Link>
+                        <Link to={"/panel/song/s"}>{}</Link>
                       </th>
                       <td className="px-4 py-2 whitespace-nowrap text-center">
                         <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
@@ -550,6 +490,15 @@ export default function Music() {
           </ul>
         </nav>
       </div>
+
+      <UploadModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onFileSelect={handleFileSelect}
+      />
+      </>
+    )}
+    
     </>
   );
 }

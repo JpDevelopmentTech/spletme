@@ -22,54 +22,112 @@ export default function Song() {
       url: "/panel",
     },
     {
-      label: "Cancion",
-      url: "/panel/song" + id,
-    }
+      label: "Canción",
+      url: `/panel/song/${id}`,
+    },
   ];
-  const [data, setData] = useState<any>();
+  const [data, setData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     const getTrack = async () => {
-      const response = await SpotifyService.getTrack(id || "");
-      setData(response);
+      setIsLoading(true);
+      try {
+        const response = await SpotifyService.getTrack(id || "");
+        setData(response);
+      } catch (error) {
+        console.error("Error fetching track:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     getTrack();
-
-    return () => {};
   }, [id]);
 
   return (
-    <div>
-      <div className="flex justify-between ">
-        <Title title="Canciones" subtitle="Fecha de vinculacion" />
-        <Breadcrumb items={items} />
-      </div>
-      <div className="grid grid-cols-12 gap-8">
-        <CardSong data={data} />
-        <Data data={data} />
-        <AddCollaborator />
-        <div className="flex col-span-4 gap-3 shadow-lg rounded-full items-center justify-around">
-          <span className="font-bold text-sm">
-            Proxima liquidación <br /> estimada
-          </span>
-          <span className="bg-quinary text-white p-3 rounded-full text-sm">
-            10 Julio 2024
-          </span>
+    <div className="min-h-screen bg-gray-50">
+      <div className="w-full mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        {/* Header section */}
+        <div className="mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <Title title="Canciones" subtitle="Fecha de vinculación" />
+            <Breadcrumb items={items} />
+          </div>
         </div>
-        <div className="flex col-span-5 gap-3 bg-quinary rounded-full items-center justify-around">
-          <span className="text-subtitle text-white">Pagar a todos</span>
-          <span className="text-white font-semibold text-title">$1.159,80</span>
-          <button className="font-bold bg-white rounded-full px-5 py-2">
-            Pagar $
-          </button>
-        </div>
-        <Table />
-        <Behavior />
-        <Statistics />
-        <Platforms />
-        <EspecificData />
-        <Historyofsplits />
-        <Extraordinarycosts />
+
+        {/* Loading state */}
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="w-16 h-16 border-t-4 border-quinary border-solid rounded-full animate-spin"></div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden col-span-6 row-span-1">
+              <CardSong data={data} />
+            </div>
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden col-span-6 row-span-2">
+              <Data data={data} />
+            </div>
+            <div className="bg-gradient-to-r from-quinary to-quinary/90 rounded-xl p-6 text-white overflow-hidden col-span-3 row-span-1">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">
+                    Próxima liquidación estimada
+                  </span>
+                  <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-medium">
+                    10 Julio 2024
+                  </span>
+                </div>
+                <div className="flex items-center justify-between pt-2">
+                  <span className="text-lg font-semibold">Pagar a todos</span>
+                  <span className="text-2xl font-bold">$1.159,80</span>
+                </div>
+                <button className="w-full bg-white text-quinary font-bold py-3 rounded-lg transition-colors hover:bg-white/90">
+                  Pagar $
+                </button>
+              </div>
+            </div>
+            <AddCollaborator />
+            <div className="bg-white rounded-xl shadow-sm p-6 overflow-hidden col-span-12">
+              <Table />
+            </div>
+            <div className="bg-white rounded-xl shadow-sm p-6 overflow-hidden col-span-12">
+              <Behavior />
+            </div>
+
+            {/* Sidebar - 1/3 width */}
+
+            {/* Collaborator card */}
+
+            {/* Payment card with gradient */}
+
+            {/* Statistics card */}
+            <div className="bg-white rounded-xl shadow-sm p-6 overflow-hidden col-span-6">
+              <Statistics />
+            </div>
+
+            {/* Platforms card */}
+            <div className="bg-white rounded-xl shadow-sm p-6 overflow-hidden col-span-6">
+              <Platforms />
+            </div>
+
+            {/* Specific data card */}
+            <div className="bg-white rounded-xl shadow-sm p-6 overflow-hidden col-span-12">
+              <EspecificData />
+            </div>
+
+            {/* History of splits card */}
+            <div className="bg-white rounded-xl shadow-sm p-6 overflow-hidden col-span-12">
+              <Historyofsplits />
+            </div>
+
+            {/* Extraordinary costs card */}
+            <div className="bg-white rounded-xl shadow-sm p-6 overflow-hidden col-span-12">
+              <Extraordinarycosts />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,49 +1,48 @@
 import { ApexOptions } from "apexcharts";
 import "./home.css";
 import ReactApexChart from "react-apexcharts";
-import ingresoIcon from "../../../assets/images/Mesa de trabajo 23.svg";
-import egresoIcon from "../../../assets/images/Mesa de trabajo 24.svg";
-import monedaNaranjaIcon from "../../../assets/images/Mesa de trabajo 14.svg";
 import logoPayoneer from "../../../assets/images/payoneer-dark-logo.svg";
-
 import { Link } from "react-router-dom";
 import CardSong from "../../../components/cardsong/cardsong";
-import { useEffect, useState } from "react";
-import { SpotifyService } from "../../../services/spotify";
+import { useState } from "react";
 import PlatformsCard from "../../../components/platformsCard/platformsCard";
-import { Label } from "flowbite-react";
-
+import { motion } from "framer-motion";
+import { Share2, Download, Music, Youtube, DollarSign, BarChart3, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import UseSongs from "../../../hooks/useSongs";
 
 export default function Home() {
-  const [topTracks, setTopTracks] = useState([]);
-  useEffect(() => {
-    const getTopTracks = async () => {
-      const response = await SpotifyService.getTopTracks();
-      setTopTracks(response.tracks);
-    };
-
-    getTopTracks();
-
-    return () => {};
-  }, []);
+  const [activeFilter, setActiveFilter] = useState("all");
+  const { songs } = UseSongs();
 
   const series = [
     {
-      name: "series1",
+      name: "Streams",
       data: [31, 40, 28, 51, 42, 109, 100],
     },
     {
-      name: "series2",
+      name: "Revenue",
       data: [11, 32, 45, 32, 34, 52, 41],
     },
   ];
 
   const options: ApexOptions = {
+    chart: {
+      toolbar: {
+        show: false,
+      },
+      background: 'transparent',
+    },
     dataLabels: {
       enabled: false,
     },
     stroke: {
       curve: "smooth",
+      width: 2,
+    },
+    colors: ['#2563EB', '#60A5FA'],
+    grid: {
+      borderColor: '#f1f1f1',
+      strokeDashArray: 5,
     },
     xaxis: {
       type: "datetime",
@@ -56,237 +55,305 @@ export default function Home() {
         "2018-09-19T05:30:00.000Z",
         "2018-09-19T06:30:00.000Z",
       ],
+      labels: {
+        style: {
+          fontSize: '10px',
+        },
+      },
     },
     tooltip: {
       x: {
         format: "dd/MM/yy HH:mm",
       },
+      theme: 'light',
     },
   };
 
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: {
+        duration: 0.5
+      }
+    }
+  };
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const filterOptions = ["Concept", "Timeframe", "Format"];
   
-
   return (
-    <>
-      <div className="w-full  grid grid-cols-12 gap-6 animate-fade-left">
-        <div className="col-span-10 flex gap-4 lg:flex-row flex-col items-center">
-          <div>
-            <select
-              id="countries"
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-full focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            >
-              <option selected>Concept</option>
-              <option value="US">United States</option>
-              <option value="CA">Canada</option>
-              <option value="FR">France</option>
-              <option value="DE">Germany</option>
-            </select>
-          </div>
-          <div>
-            <select
-              id="countries"
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-full focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            >
-              <option selected>Filtro por tiempo</option>
-              <option value="US">United States</option>
-              <option value="CA">Canada</option>
-              <option value="FR">France</option>
-              <option value="DE">Germany</option>
-            </select>
-          </div>
-          <div>
-            <select
-              id="countries"
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-full focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            >
-              <option selected>Formato</option>
-              <option value="US">United States</option>
-              <option value="CA">Canada</option>
-              <option value="FR">France</option>
-              <option value="DE">Germany</option>
-            </select>
-          </div>
-          <button
-            type="button"
-            className="text-white bg-black hover:bg-black/80 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-full text-sm p-2.5 text-center inline-flex items-center me-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-          >
-            <svg
-              className="w-6 h-6 text-white dark:text-white"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path d="M17.5 3a3.5 3.5 0 0 0-3.456 4.06L8.143 9.704a3.5 3.5 0 1 0-.01 4.6l5.91 2.65a3.5 3.5 0 1 0 .863-1.805l-5.94-2.662a3.53 3.53 0 0 0 .002-.961l5.948-2.667A3.5 3.5 0 1 0 17.5 3Z" />
-            </svg>
-
-            <span className="sr-only">Icon description</span>
-          </button>
-          <button
-            type="button"
-            className="text-white bg-black hover:bg-black/80 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-full text-sm p-2.5 text-center inline-flex items-center me-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-          >
-            <svg
-              className="w-6 h-6 text-white dark:text-white"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M4 15v2a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-2m-8 1V4m0 12-4-4m4 4 4-4"
-              />
-            </svg>
-
-            <span className="sr-only">Icon description</span>
-          </button>
+    <motion.div 
+      className="container mx-auto px-4 py-6"
+      initial="hidden"
+      animate="visible"
+      variants={staggerContainer}
+    >
+      {/* Header with filters */}
+      <motion.div
+        variants={fadeInUp}
+        className="mb-8"
+      >
+        <div className="flex flex-col space-y-2">
+          <h1 className="text-2xl font-bold">Dashboard</h1>
+          <p className="text-gray-500 text-sm">Welcome to your music analytics</p>
         </div>
-        <div className="col-span-2">
-
+        
+        <div className="mt-6 flex flex-wrap gap-3 items-center">
+          <div className="flex space-x-1">
+            {filterOptions.map((filter) => (
+              <motion.button
+                key={filter}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`px-4 py-2 rounded-full text-sm ${
+                  activeFilter === filter.toLowerCase()
+                    ? "bg-black text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+                onClick={() => setActiveFilter(filter.toLowerCase())}
+              >
+                {filter}
+              </motion.button>
+            ))}
+          </div>
+          
+          <div className="flex ml-auto space-x-2">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-2 rounded-full bg-gray-100 hover:bg-gray-200"
+            >
+              <Share2 className="w-5 h-5 text-gray-700" />
+            </motion.button>
+            
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-2 rounded-full bg-gray-100 hover:bg-gray-200"
+            >
+              <Download className="w-5 h-5 text-gray-700" />
+            </motion.button>
+          </div>
         </div>
-        <div
-          className="duration-200 hover:scale-105 col-span-12 lg:col-span-6 shadow-lg rounded-2xl row-span-2  p-8 flex flex-col"
-          id="chart"
+      </motion.div>
+
+      <div className="grid grid-cols-12 gap-6">
+        {/* Main stats chart */}
+        <motion.div
+          variants={fadeInUp}
+          className="col-span-12 lg:col-span-8 bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow duration-300"
         >
-          <span className="font-semibold text-xl">Estadisticas</span>
-          <span className=" text-septenary text-sm">
-            Reporte de tu rendimiento general
-          </span>
-          <ReactApexChart
-            options={options}
-            type="area"
-            height={200}
-            series={series}
-          />
-          <div className="w-full flex justify-around p-3">
-            <span className="bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-full me-2 dark:bg-gray-700 dark:text-gray-400 border  ">
-              <svg
-                className="w-3 h-3 me-1.5"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M15 6.037c0-1.724-1.978-2.665-3.28-1.562L7.638 7.933H6c-1.105 0-2 .91-2 2.034v4.066c0 1.123.895 2.034 2 2.034h1.638l4.082 3.458c1.302 1.104 3.28.162 3.28-1.562V6.037Z" />
-                <path
-                  fill-rule="evenodd"
-                  d="M16.786 7.658a.988.988 0 0 1 1.414-.014A6.135 6.135 0 0 1 20 12c0 1.662-.655 3.17-1.715 4.27a.989.989 0 0 1-1.414.014 1.029 1.029 0 0 1-.014-1.437A4.085 4.085 0 0 0 18 12a4.085 4.085 0 0 0-1.2-2.904 1.029 1.029 0 0 1-.014-1.438Z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-              325k Streams
-            </span>
-            <span className="bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-full me-2 dark:bg-gray-700 dark:text-gray-400 border  ">
-              <svg
-                className="w-3 h-3 me-1.5"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M21.7 8.037a4.26 4.26 0 0 0-.789-1.964 2.84 2.84 0 0 0-1.984-.839c-2.767-.2-6.926-.2-6.926-.2s-4.157 0-6.928.2a2.836 2.836 0 0 0-1.983.839 4.225 4.225 0 0 0-.79 1.965 30.146 30.146 0 0 0-.2 3.206v1.5a30.12 30.12 0 0 0 .2 3.206c.094.712.364 1.39.784 1.972.604.536 1.38.837 2.187.848 1.583.151 6.731.2 6.731.2s4.161 0 6.928-.2a2.844 2.844 0 0 0 1.985-.84 4.27 4.27 0 0 0 .787-1.965 30.12 30.12 0 0 0 .2-3.206v-1.516a30.672 30.672 0 0 0-.202-3.206Zm-11.692 6.554v-5.62l5.4 2.819-5.4 2.801Z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-              325K Views
-            </span>
-            <span className="bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-full me-2 dark:bg-gray-700 dark:text-gray-400 border  ">
-              <svg
-                className="w-3 h-3 me-1.5"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M8 17.345a4.76 4.76 0 0 0 2.558 1.618c2.274.589 4.512-.446 4.999-2.31.487-1.866-1.273-3.9-3.546-4.49-2.273-.59-4.034-2.623-3.547-4.488.486-1.865 2.724-2.899 4.998-2.31.982.236 1.87.793 2.538 1.592m-3.879 12.171V21m0-18v2.2"
-                />
-              </svg> 
-              244,19
-            </span>
-          </div>
-        </div>
-        <div className="col-span-12  lg:col-span-3 shadow-lg row-span-2 rounded-2xl  flex items-start p-8 justify-between duration-200 hover:scale-105">
-          <div className="flex flex-col w-full h-full justify-start gap-12">
-            <div className="flex justify-between items-center">
-              <div className="flex flex-col">
-                <span className="font-semibold text-xl">Balance general</span>
-                <span className="text-septenary ">Junio 3, 2024</span>
-              </div>
-              <img src={monedaNaranjaIcon} alt="" className="w-10" />
-            </div>
-            <div className="flex flex-col gap-3">
-              <div className="flex gap-3">
-                <img src={ingresoIcon} alt="" className="w-5" />
-                <span className="font-bold ">Ingresos</span>
-                <span className="text-[#31bd3f] ">$100,00</span>
-              </div>
-              <div className="flex gap-3">
-                <img src={egresoIcon} alt="" className="w-5" />
-                <span className="font-bold ">Egresos</span>
-                <span className="text-[#FB8500] ">$50,00</span>
-              </div>
-            </div>
+          <div className="flex justify-between items-center mb-6">
             <div>
-              <Label>Paga seguro con</Label>
-              <img src={logoPayoneer} alt="" className="mt-3 h-12 object-contain"/>
+              <h2 className="text-lg font-semibold">Performance Analytics</h2>
+              <p className="text-sm text-gray-500">Overview of your music performance</p>
             </div>
-          </div>
-        </div>
-        <PlatformsCard />
-      
-        {/* <div className="col-span-12 lg:col-span-3 shadow-lg rounded-3xl p-8 flex flex-col justify-between items-start duration-200 hover:scale-105">
-          <div className="flex justify-between w-full items-start">
-            <div className="flex flex-col">
-              <span className="font-semibold text-xl">En tu Ewallet</span>
-            </div>
-            <img src={checkIcon} alt="" className="w-10" />
-          </div>
-
-          <span className="text-septesemibold text-xl font-bold">$00,00</span>
-        </div> */}
-
-        <div className="col-span-12 lg:col-span-9 flex flex-col ">
-          <div className="flex justify-between items-center">
-            <div className="flex flex-col">
-              <span className="font-semibold text-xl">Top Songs</span>
-              <span className="text-septenary ">
-                Aqui tus mejores canciones
+            <div className="flex space-x-2">
+              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700">
+                <span className="w-2 h-2 mr-1 rounded-full bg-indigo-500"></span>
+                Streams
+              </span>
+              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-orange-50 text-orange-700">
+                <span className="w-2 h-2 mr-1 rounded-full bg-orange-500"></span>
+                Revenue
               </span>
             </div>
-            <div>
-              <Link to={"#"} className="font-bold ">
-                Ver todas
-              </Link>
+          </div>
+          
+          <div className="h-[300px]">
+            <ReactApexChart
+              options={options}
+              series={series}
+              type="area"
+              height="100%"
+              width="100%"
+            />
+          </div>
+          
+          <div className="grid grid-cols-3 gap-3 mt-6">
+            <motion.div 
+              whileHover={{ y: -5 }}
+              className="bg-gray-50 rounded-lg p-3 text-center"
+            >
+              <div className="flex items-center justify-center mb-1">
+                <Music className="w-4 h-4 text-indigo-600 mr-1" />
+                <span className="text-sm font-medium">Streams</span>
+              </div>
+              <p className="text-lg font-bold">325K</p>
+            </motion.div>
+            
+            <motion.div 
+              whileHover={{ y: -5 }}
+              className="bg-gray-50 rounded-lg p-3 text-center"
+            >
+              <div className="flex items-center justify-center mb-1">
+                <Youtube className="w-4 h-4 text-red-600 mr-1" />
+                <span className="text-sm font-medium">Views</span>
+              </div>
+              <p className="text-lg font-bold">325K</p>
+            </motion.div>
+            
+            <motion.div 
+              whileHover={{ y: -5 }}
+              className="bg-gray-50 rounded-lg p-3 text-center"
+            >
+              <div className="flex items-center justify-center mb-1">
+                <DollarSign className="w-4 h-4 text-green-600 mr-1" />
+                <span className="text-sm font-medium">Revenue</span>
+              </div>
+              <p className="text-lg font-bold">$244.19</p>
+            </motion.div>
+          </div>
+        </motion.div>
+
+        {/* Balance section */}
+        <motion.div
+          variants={fadeInUp}
+          className="col-span-12 lg:col-span-4 bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300"
+        >
+          <div className="p-6">
+            <div className="flex justify-between items-center mb-8">
+              <div>
+                <h2 className="text-lg font-semibold">Balance</h2>
+                <p className="text-sm text-gray-500">June 3, 2024</p>
+              </div>
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-orange-50">
+                <BarChart3 className="w-6 h-6 text-orange-500" />
+              </div>
+            </div>
+            
+            <div className="space-y-6">
+              <motion.div 
+                whileHover={{ x: 5 }}
+                className="flex items-center p-3 rounded-lg bg-gray-50"
+              >
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-green-50 mr-3">
+                  <ArrowUpRight className="w-4 h-4 text-green-500" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Income</p>
+                </div>
+                <p className="text-green-600 font-semibold">$100.00</p>
+              </motion.div>
+              
+              <motion.div 
+                whileHover={{ x: 5 }}
+                className="flex items-center p-3 rounded-lg bg-gray-50"
+              >
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-50 mr-3">
+                  <ArrowDownRight className="w-4 h-4 text-orange-500" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Expense</p>
+                </div>
+                <p className="text-orange-500 font-semibold">$50.00</p>
+              </motion.div>
+            </div>
+          </div>
+          
+          <div className="p-6 bg-gray-50 mt-4">
+            <p className="text-sm font-medium text-gray-600 mb-3">Pay securely with</p>
+            <div className="flex items-center">
+              <img src={logoPayoneer} alt="Payoneer logo" className="h-10" />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-3">
-            <CardSong song={topTracks[0]} />
-            <CardSong song={topTracks[1]} />
+          <div className="px-6 pb-6">
+            <motion.button
+              className="w-full px-4 py-3 text-sm text-white bg-[#FF4800] rounded-lg hover:bg-opacity-90 flex items-center justify-center gap-2"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => window.open('https://myaccount.payoneer.com/login', '_blank')}
+            >
+              Login to Payoneer
+            </motion.button>
           </div>
-        </div>
+        </motion.div>
+
+        {/* Platforms section */}
+        <motion.div
+          variants={fadeInUp}
+          className="col-span-12 md:col-span-6 lg:col-span-4"
+        >
+          <PlatformsCard />
+        </motion.div>
+
+        {/* Top Songs section */}
+        <motion.div
+          variants={fadeInUp}
+          className="col-span-12 md:col-span-6 lg:col-span-8"
+        >
+          <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow duration-300">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-lg font-semibold">Top Songs</h2>
+                <p className="text-sm text-gray-500">Your best performing tracks</p>
+              </div>
+              <Link to="#" className="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors">
+                View all
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {songs.length > 0 ? (
+                <>
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                  >
+                    <CardSong song={songs[0]} />
+                  </motion.div>
+                  
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    <CardSong song={songs[1]} />
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    <CardSong song={songs[2]} />
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                  >
+                    <CardSong song={songs[3]} />
+                  </motion.div>
+                </>
+              ) : (
+                <div className="col-span-2 flex flex-col items-center justify-center py-12 px-4">
+                  <Music className="w-12 h-12 text-gray-300 mb-3" />
+                  <h3 className="text-lg font-medium text-gray-700 mb-2">No songs yet</h3>
+                  <p className="text-sm text-gray-500 text-center max-w-sm">
+                    Upload your first song to start tracking your music performance
+                  </p>
+                  <Link to="/panel/music" className="mt-4 px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition-colors">
+                    Upload song
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+        </motion.div>
       </div>
-    </>
+    </motion.div>
   );
 }
