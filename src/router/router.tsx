@@ -13,7 +13,9 @@ import Album from "../pages/panel/music/album/album";
 import Onboarding from "../pages/auth/onboarding";
 import EmailLogin from "../pages/auth/email-login";
 import Register from "../pages/auth/register";
-
+import Income from "../pages/panel/income/income";
+import Expenses from "../pages/panel/expenses/expenses";
+import Balance from "../pages/panel/balance/balance";
 
 const routes = [
   {
@@ -76,6 +78,18 @@ const routes = [
       {
         path: "pagos",
         element: <Payments />
+      },
+      {
+        path: "ingresos",
+        element: <Income />
+      },
+      {
+        path: "gastos",
+        element: <Expenses />
+      },
+      {
+        path: "balance",
+        element: <Balance />
       }
     ],
   },

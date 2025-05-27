@@ -18,7 +18,6 @@ import Select from "react-select";
 import { platforms } from "../../../../../enums/platforms";
 import countries from "../../../../../data/countries.json";
 import { 
-  Eye, 
   ChevronLeft, 
   ChevronRight, 
   DollarSign,
@@ -144,7 +143,6 @@ export default function Table() {
     stroke: {
       show: true,
       width: 3,
-      colors: ["transparent"],
     },
     xaxis: {
       categories: ["Ene", "Feb", "Mar", "Apr", "May", "Jun"],
@@ -210,168 +208,130 @@ export default function Table() {
     <div className="col-span-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300">
       <Alert message={alert} type="red" />
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+        <h2 className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
           <Music className="w-6 h-6" />
           Collaborators
         </h2>
         <div className="flex gap-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-indigo-400 w-5 h-5" />
             <input
               type="text"
               placeholder="Search collaborators..."
-              className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="pl-10 pr-4 py-2 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:border-indigo-600 dark:text-white transition-all duration-200"
             />
           </div>
-          <Button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 transition-colors duration-200">
+          <Button className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 transition-colors duration-200">
             <Filter className="w-4 h-4" />
             Filters
           </Button>
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-        <table className="w-full text-sm text-left">
-          <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
-            <tr>
-              <th scope="col" className="p-4">
-                <div className="flex items-center">
-                  <Checkbox className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600" />
-                </div>
-              </th>
-              <th scope="col" className="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                Collaborator
-              </th>
-              <th scope="col" className="px-6 py-4 font-medium text-gray-900 dark:text-white text-center">
-                <div className="flex items-center justify-center gap-2">
-                  <DollarSign className="w-4 h-4" />
-                  Generated Total
-                </div>
-              </th>
-              <th scope="col" className="px-6 py-4 font-medium text-gray-900 dark:text-white text-center">
-                <div className="flex items-center justify-center gap-2">
-                  <Percent className="w-4 h-4" />
-                  Percentage
-                </div>
-              </th>
-              <th scope="col" className="px-6 py-4 font-medium text-gray-900 dark:text-white text-center">
-                <div className="flex items-center justify-center gap-2">
-                  <User className="w-4 h-4" />
-                  Role
-                </div>
-              </th>
-              <th scope="col" className="px-6 py-4 font-medium text-gray-900 dark:text-white text-center">
-                <div className="flex items-center justify-center gap-2">
-                  <CreditCard className="w-4 h-4" />
-                  Payment Method
-                </div>
-              </th>
-              <th scope="col" className="px-6 py-4 font-medium text-gray-900 dark:text-white text-center">
-                <div className="flex items-center justify-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  Pending Payment
-                </div>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <motion.tr 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200"
+      <div className="grid grid-cols-1 gap-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-indigo-100 dark:border-indigo-900 p-4 hover:shadow-md transition-all duration-300"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <img
+                  src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png"
+                  alt=""
+                  className="w-12 h-12 rounded-full ring-2 ring-indigo-200 dark:ring-indigo-700"
+                />
+                <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+              </div>
+              <div>
+                <div className="font-medium text-lg text-gray-900 dark:text-white">JK Escorcia</div>
+                <div className="text-sm text-indigo-600 dark:text-indigo-400">Artist</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox className="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="flex flex-col items-center p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg">
+              <DollarSign className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mb-1" />
+              <span className="text-sm text-gray-500 dark:text-gray-400">Generated Total</span>
+              <span className="text-lg font-semibold text-indigo-900 dark:text-indigo-100">$1,200.00</span>
+            </div>
+
+            <div className="flex flex-col items-center p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg">
+              <Percent className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mb-1" />
+              <span className="text-sm text-gray-500 dark:text-gray-400">Percentage</span>
+              <span className="text-lg font-semibold text-indigo-900 dark:text-indigo-100">50%</span>
+            </div>
+
+            <div className="flex flex-col items-center p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg">
+              <User className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mb-1" />
+              <span className="text-sm text-gray-500 dark:text-gray-400">Role</span>
+              <span className="text-lg font-semibold text-indigo-900 dark:text-indigo-100">Artist</span>
+            </div>
+
+            <div className="flex flex-col items-center p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg">
+              <CreditCard className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mb-1" />
+              <span className="text-sm text-gray-500 dark:text-gray-400">Payment Method</span>
+              <span className="text-lg font-semibold text-indigo-900 dark:text-indigo-100">Believe</span>
+            </div>
+          </div>
+
+          <div className="mt-4 flex justify-end">
+            <motion.button
+              onClick={() => openDetails()}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 hover:scale-105 "
             >
-              <td className="p-4">
-                <Checkbox className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600" />
-              </td>
-              <th scope="row" className="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <img
-                      src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png"
-                      alt=""
-                      className="w-10 h-10 rounded-full ring-2 ring-gray-200 dark:ring-gray-700"
-                    />
-                    <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
-                  </div>
-                  <div>
-                    <div className="font-medium">JK Escorcia</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Artist</div>
-                  </div>
-                </div>
-              </th>
-              <td className="px-6 py-4 text-center">
-                <Badge color="success" className="px-3 py-1">
-                  $1,200.00
-                </Badge>
-              </td>
-              <td className="px-6 py-4 text-center">
-                <Badge color="info" className="px-3 py-1">
-                  50%
-                </Badge>
-              </td>
-              <td className="px-6 py-4 text-center">
-                <Badge color="purple" className="px-3 py-1">
-                  Artist
-                </Badge>
-              </td>
-              <td className="px-6 py-4 text-center">
-                <Badge color="warning" className="px-3 py-1">
-                  Believe
-                </Badge>
-              </td>
-              <td className="px-6 py-4 text-center">
-                <Button
-                  onClick={() => openDetails()}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full flex items-center gap-2 transition-colors duration-200"
-                >
-                  $350.00
-                  <Eye className="w-4 h-4" />
-                </Button>
-              </td>
-            </motion.tr>
-            {/* Repeat similar structure for other rows */}
-          </tbody>
-        </table>
+              <Clock className="w-4 h-4" />
+              Pending Payment: $350.00
+            </motion.button>
+          </div>
+        </motion.div>
+
+        {/* Repeat similar structure for other collaborators */}
       </div>
 
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 mt-6">
-        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+        <div className="flex items-center gap-2 text-sm text-indigo-600 dark:text-indigo-400">
           <span>Showing</span>
-          <span className="font-semibold text-gray-900 dark:text-white">1-10</span>
+          <span className="font-semibold text-indigo-900 dark:text-indigo-100">1-10</span>
           <span>of</span>
-          <span className="font-semibold text-gray-900 dark:text-white">1000</span>
+          <span className="font-semibold text-indigo-900 dark:text-indigo-100">1000</span>
         </div>
         
         <div className="flex items-center gap-2">
-          <Button
-            className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700"
+          <motion.button
+            className="flex items-center gap-2 px-3 py-2 border border-indigo-200 rounded-lg hover:bg-indigo-50 dark:border-indigo-700 dark:hover:bg-indigo-900/30 transition-all duration-200"
           >
             <ChevronLeft className="w-4 h-4" />
             Previous
-          </Button>
+          </motion.button>
           
           <div className="flex items-center gap-1">
             {[1, 2, 3, "...", 100].map((page, index) => (
-              <Button
+              <motion.button
                 key={index}
-                className={`w-8 h-8 rounded-lg ${
+                className={`w-8 h-8 rounded-lg transition-all duration-200 ${
                   page === 3
-                    ? "bg-blue-600 text-white"
-                    : "bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
+                    ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                    : "bg-white text-indigo-700 hover:bg-indigo-50 dark:bg-gray-800 dark:text-indigo-400 dark:hover:bg-indigo-900/30"
                 }`}
               >
                 {page}
-              </Button>
+              </motion.button>
             ))}
           </div>
           
-          <Button
-            className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700"
+          <motion.button
+            className="flex items-center gap-2 px-3 py-2 border border-indigo-200 rounded-lg hover:bg-indigo-50 dark:border-indigo-700 dark:hover:bg-indigo-900/30 transition-all duration-200"
           >
             Next
             <ChevronRight className="w-4 h-4" />
-          </Button>
+          </motion.button>
         </div>
       </div>
 
@@ -379,21 +339,33 @@ export default function Table() {
         id="modalDetail"
         tabIndex={-1}
         aria-hidden="true"
-        className="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full"
+        className="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full backdrop-blur-sm"
       >
         <div className="relative p-4 w-full max-w-6xl max-h-full">
-          <div className="relative bg-white rounded-2xl shadow dark:bg-gray-700">
-            <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                Detalles del colaborador
-              </h3>
-              <button
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+            className="relative bg-white rounded-2xl shadow-lg dark:bg-gray-800"
+          >
+            <div className="flex items-center justify-between p-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg">
+                  <User className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-indigo-900 dark:text-indigo-100">
+                  Detalles del colaborador
+                </h3>
+              </div>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
                 type="button"
-                className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                className="text-indigo-400 bg-transparent hover:bg-indigo-50 hover:text-indigo-600 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-indigo-900/30 dark:hover:text-indigo-300 transition-all duration-200"
                 onClick={() => closeDetails()}
               >
                 <svg
-                  className="w-3 h-3"
+                  className="w-4 h-4"
                   aria-hidden="true"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -401,63 +373,124 @@ export default function Table() {
                 >
                   <path
                     stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
                     d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
                   />
                 </svg>
                 <span className="sr-only">Close modal</span>
-              </button>
+              </motion.button>
             </div>
 
-            <div className="p-4 md:p-5 space-y-4">
-              <div className="flex gap-3">
-                <div className="w-2/3">
-                  <div className="flex items-center gap-3">
-                    Seleccionar periodo
-                    <div>
-                      <select
-                        id="countries"
-                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                      >
-                        <option selected>2024</option>
-                        <option>2023</option>
-                        <option>2022</option>
-                        <option>2021</option>
-                      </select>
+            <div className="p-6 space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                  <div className="bg-white  rounded-xl p-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-lg font-semibold text-indigo-900 dark:text-indigo-100">Estadísticas</h4>
+                      <div className="flex items-center gap-2">
+                        <select
+                          className="bg-indigo-50 border border-indigo-200 text-indigo-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5 dark:bg-indigo-900/30 dark:border-indigo-700 dark:text-indigo-100 dark:focus:ring-indigo-600 dark:focus:border-indigo-600"
+                        >
+                          <option selected>2024</option>
+                          <option>2023</option>
+                          <option>2022</option>
+                          <option>2021</option>
+                        </select>
+                      </div>
                     </div>
+                    <ReactApexChart
+                      series={series}
+                      options={{
+                        ...options,
+                        colors: ['#6366f1', '#818cf8'],
+                        theme: {
+                          mode: 'dark'
+                        }
+                      }}
+                      height={350}
+                      type="bar"
+                    />
                   </div>
-                  <ReactApexChart
-                    series={series}
-                    options={options}
-                    height={350}
-                    type="bar"
-                  />
                 </div>
-                <div className="w-1/3">
-                  <div className="flex flex-col gap-3 border-b w-full p-3">
-                    <label className="text-sm">ID: 124SDFG32</label>
-                    <label className="text-sm">Porcentaje: 50%</label>
-                    <label className="text-sm">Pagado: $650,00</label>
-                    <label className="text-sm">Generado total: $1.000,00</label>
-                    <label className="text-sm">
-                      Fecha ultimo pago: Junio 10, 2024
-                    </label>
-                  </div>
-                  <div className="p-3 flex gap-3 items-center border-b">
-                    <label htmlFor="">Colaboraciones:</label>
-                    <span className="bg-gray-100 text-gray-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-gray-300">
-                      51
-                    </span>
+
+                <div className="space-y-4">
+                  <motion.div 
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="bg-white dark:bg-gray-800 rounded-xl p-4"
+                  >
+                    <h4 className="text-lg font-semibold text-indigo-900 dark:text-indigo-100 mb-4">Información</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg">
+                          <CreditCard className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">ID</p>
+                          <p className="text-indigo-900 dark:text-indigo-100 font-medium">124SDFG32</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg">
+                          <Percent className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">Porcentaje</p>
+                          <p className="text-indigo-900 dark:text-indigo-100 font-medium">50%</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg">
+                          <DollarSign className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">Pagado</p>
+                          <p className="text-indigo-900 dark:text-indigo-100 font-medium">$650,00</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg">
+                          <DollarSign className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">Generado total</p>
+                          <p className="text-indigo-900 dark:text-indigo-100 font-medium">$1.000,00</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg">
+                          <Clock className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">Último pago</p>
+                          <p className="text-indigo-900 dark:text-indigo-100 font-medium">Junio 10, 2024</p>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  <motion.div 
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="bg-white dark:bg-gray-800 rounded-xl p-4"
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-lg font-semibold text-indigo-900 dark:text-indigo-100">Colaboraciones</h4>
+                      <Badge color="indigo" className="px-3 py-1">
+                        51
+                      </Badge>
+                    </div>
                     <Link
                       to={""}
-                      type="button"
-                      className="text-black  focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2 text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors duration-200 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 dark:text-indigo-400 dark:hover:text-indigo-300"
                     >
                       Ver todas
                       <svg
-                        className="rtl:rotate-180 w-3.5 h-3.5 ms-2"
+                        className="w-4 h-4"
                         aria-hidden="true"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
@@ -465,23 +498,30 @@ export default function Table() {
                       >
                         <path
                           stroke="currentColor"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
                           d="M1 5h12m0 0L9 1m4 4L9 9"
                         />
                       </svg>
                     </Link>
-                  </div>
+                  </motion.div>
                 </div>
               </div>
 
-              <div>
-                <span className="font-semibold">Condicionales</span>
-                <div className="flex flex-col gap-3">
-                  Existen {conditionals.length} condicionales
-                </div>
-                <div className="mt-3 flex justify-end">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="bg-white dark:bg-gray-800 rounded-xl p-4"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-lg font-semibold text-indigo-900 dark:text-indigo-100">Condicionales</h4>
+                    <Badge color="indigo" className="px-3 py-1">
+                      {conditionals.length}
+                    </Badge>
+                  </div>
                   <ModalComponent
                     title="Crear condicional"
                     textButton="Agregar condicional"
@@ -665,103 +705,80 @@ export default function Table() {
                       </form>
                       <div className="flex flex-col gap-3 max-h-full overflow-y-auto">
                         {conditionals.map((conditional, index) => (
-                          // tabla para condicionales
-                          <div className="border p-3 rounded-lg " key={index}>
-                            <div className="flex flex-col">
-                              <label className="text-sm font-light flex items-center gap-3">
-                                <span className="font-medium">Periodo:</span>{" "}
-                                {conditional.start}{" "}
-                                <span>
-                                  <svg
-                                    className="w-6 h-6 text-gray-800 dark:text-white"
-                                    aria-hidden="true"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      stroke="currentColor"
-                                      stroke-linecap="round"
-                                      stroke-linejoin="round"
-                                      stroke-width="2"
-                                      d="M1 5h12m0 0L9 1m4 4L9 9"
-                                    />
-                                  </svg>
-                                </span>{" "}
-                                {conditional.end}
-                              </label>
-                              <label className="text-sm font-light">
-                                <span className="font-medium">Porcentaje:</span>{" "}
-                                {conditional.value}%
-                              </label>
-                              <div className="mt-3">
-                                <Label>Excepto las plataformas:</Label>
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  {conditional.platforms.length === 0 && (
-                                    <Badge color="dark">
-                                      No existen plataformas condicionales
-                                    </Badge>
-                                  )}
-                                  {conditional.platforms.map(
-                                    (platform: string, index: number) => (
-                                      <Badge key={index} color="dark">
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: index * 0.1 }}
+                            key={index}
+                            className="bg-indigo-50 dark:bg-indigo-900/30 rounded-lg p-4"
+                          >
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2">
+                                <Clock className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                                <span className="text-sm text-indigo-900 dark:text-indigo-100">
+                                  {conditional.start} - {conditional.end}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Percent className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                                <span className="text-sm text-indigo-900 dark:text-indigo-100">
+                                  {conditional.value}%
+                                </span>
+                              </div>
+                              {conditional.platforms.length > 0 && (
+                                <div className="space-y-1">
+                                  <span className="text-xs text-indigo-600 dark:text-indigo-400">Plataformas excluidas:</span>
+                                  <div className="flex flex-wrap gap-1">
+                                    {conditional.platforms.map((platform: string, idx: number) => (
+                                      <Badge key={idx} color="indigo" className="text-xs">
                                         {platform}
                                       </Badge>
-                                    )
-                                  )}
-                                </div>
-                              </div>
-                              <div className="mt-3">
-                                <Label>Excepto las regiones:</Label>
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  {conditional.regions.length === 0 && (
-                                    <Badge color="dark">
-                                      No existen regiones condicionales
-                                    </Badge>
-                                  )}
-                                  {conditional.regions.map(
-                                    (region: string, index: number) => (
-                                      <Badge key={index} color="dark">
-                                        {region}
-                                      </Badge>
-                                    )
-                                  )}
-                                </div>
-                              </div>
-                              {conditional.conditionalAmount && (
-                                <div className="mt-3">
-                                  <Label>Condicional de monto</Label>
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <Badge color="dark">
-                                      {conditional.operatorConditional} $
-                                      {conditional.amountConditional}
-                                    </Badge>
+                                    ))}
                                   </div>
                                 </div>
                               )}
-
+                              {conditional.regions.length > 0 && (
+                                <div className="space-y-1">
+                                  <span className="text-xs text-indigo-600 dark:text-indigo-400">Regiones excluidas:</span>
+                                  <div className="flex flex-wrap gap-1">
+                                    {conditional.regions.map((region: string, idx: number) => (
+                                      <Badge key={idx} color="indigo" className="text-xs">
+                                        {region}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {conditional.conditionalAmount && (
+                                <div className="flex items-center gap-2">
+                                  <DollarSign className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                                  <span className="text-sm text-indigo-900 dark:text-indigo-100">
+                                    {conditional.operatorConditional} ${conditional.amountConditional}
+                                  </span>
+                                </div>
+                              )}
                             </div>
-                          </div>
+                          </motion.div>
                         ))}
                       </div>
                     </div>
                   </ModalComponent>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
-            <div className="flex items-center justify-end p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
-              <button
+            <div className="flex items-center justify-end p-6">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => closeDetails()}
                 type="button"
-                className="text-white bg-black hover:bg-black/80 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors duration-200 dark:bg-indigo-600 dark:hover:bg-indigo-700"
               >
                 Cerrar
-              </button>
+              </motion.button>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </div>

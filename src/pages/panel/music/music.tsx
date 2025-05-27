@@ -1,11 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import CardSong from "../../../components/cardsong/cardsong";
 import {  useState } from "react";
 import { Link } from "react-router-dom";
 import CardAlbum from "./song/components/cardAlbum";
 import { motion } from "framer-motion";
 import UploadModal from "./components/UploadModal";
-import {Music as MusicIcon,Disc, Search, Upload, Loader2 } from "lucide-react";
+import {Music as MusicIcon,Disc, Search, Upload } from "lucide-react";
 import UseSongs from "../../../hooks/useSongs";
+import Loading from "../../../components/loading/loading";
 
 
 
@@ -29,9 +31,7 @@ export default function Music() {
   return (
     <>
     {loading ? (
-      <div className="flex justify-center items-center h-screen">
-        <Loader2 className="w-10 h-10 animate-spin" />
-      </div>
+      <Loading />
     ): (
       <>
           <div className="animate-fade-left">
@@ -97,16 +97,16 @@ export default function Music() {
           <div className="flex items-center justify-between space-x-4 pt-3">
             <div className="flex-1 flex items-center space-x-3">
               <h5 className="dark:text-white font-semibold">All Songs</h5>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setIsModalOpen(true)}
-                className="px-4 py-2 bg-indigo-500 text-white rounded-md text-sm font-medium hover:bg-opacity-90 transition-colors flex items-center gap-2"
-              >
-                <Upload size={18} />
-                Upload Songs
-              </motion.button>
             </div>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setIsModalOpen(true)}
+              className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-all flex items-center gap-2 shadow-md hover:shadow-lg"
+            >
+              <Upload size={18} />
+              Upload Songs
+            </motion.button>
           </div>
           <div className="flex flex-col-reverse md:flex-row items-center justify-between md:space-x-4 py-3">
             <div className="w-full lg:w-2/3 flex flex-col space-y-3 md:space-y-0 md:flex-row md:items-center">
@@ -166,11 +166,8 @@ export default function Music() {
                 <th scope="col" className="px-4 py-3 min-w-[14rem] text-center">
                   Propietario
                 </th>
-                <th scope="col" className="px-4 py-3">
-                  Distribuidor
-                </th>
-                <th scope="col" className="px-4 py-3 text-center">
-                  Fecha de lanzamiento
+                <th scope="col" className="px-4 py-3 min-w-[14rem] text-center">
+                  Sello
                 </th>
                 <th scope="col" className="px-4 py-3 text-center">
                   Status
@@ -209,11 +206,11 @@ export default function Music() {
                         scope="row"
                         className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                       >
-                        <Link to={"/panel/song/s"}>{song.trackTitle}</Link>
+                        <Link to={"/panel/song/" + song._id}>{song.trackTitle}</Link>
                       </th>
                       <td className="px-4 py-2 whitespace-nowrap text-center">
                         <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
-                          0%
+                          {song?.percetaje || "No se ha asignado porcentaje a esta canción"}
                         </span>
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap">
@@ -250,118 +247,8 @@ export default function Music() {
                           />
                         </div>
                       </td>
-                      <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                        <div className="flex -space-x-4 w-full justify-center">
-                          <img
-                            src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png"
-                            alt=""
-                            className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
-                          />
-                        </div>
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap font-medium text-gray-900 dark:text-white text-xs text-center">
-                        23 Nov 2022
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap font-medium text-gray-900 dark:text-white text-xs">
-                        <div className="flex items-center justify-center">
-                          <svg
-                            className="w-6 h-6 text-green-500 dark:text-white"
-                            aria-hidden="true"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="24"
-                            height="24"
-                            fill="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              fill-rule="evenodd"
-                              d="M12 2c-.791 0-1.55.314-2.11.874l-.893.893a.985.985 0 0 1-.696.288H7.04A2.984 2.984 0 0 0 4.055 7.04v1.262a.986.986 0 0 1-.288.696l-.893.893a2.984 2.984 0 0 0 0 4.22l.893.893a.985.985 0 0 1 .288.696v1.262a2.984 2.984 0 0 0 2.984 2.984h1.262c.261 0 .512.104.696.288l.893.893a2.984 2.984 0 0 0 4.22 0l.893-.893a.985.985 0 0 1 .696-.288h1.262a2.984 2.984 0 0 0 2.984-2.984V15.7c0-.261.104-.512.288-.696l.893-.893a2.984 2.984 0 0 0 0-4.22l-.893-.893a.985.985 0 0 1-.288-.696V7.04a2.984 2.984 0 0 0-2.984-2.984h-1.262a.985.985 0 0 1-.696-.288l-.893-.893A2.984 2.984 0 0 0 12 2Zm3.683 7.73a1 1 0 1 0-1.414-1.413l-4.253 4.253-1.277-1.277a1 1 0 0 0-1.415 1.414l1.985 1.984a1 1 0 0 0 1.414 0l4.96-4.96Z"
-                              clip-rule="evenodd"
-                            />
-                          </svg>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </>
-              )}
-
-              {mode === "albums" && (
-                <>
-                  {songs.map((album) => (
-                    <tr className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
-                      <td className="px-4 py-2 w-4">
-                        <div className="flex items-center">
-                          <input
-                            id="checkbox-table-search-1"
-                            type="checkbox"
-                            onClick={() => null}
-                            className="w-4 h-4 text-primary-600 bg-gray-100 rounded border-gray-300 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                          ></input>
-                          <label
-                            htmlFor="checkbox-table-search-1"
-                            className="sr-only"
-                          >
-                            checkbox
-                          </label>
-                        </div>
-                      </td>
-                      <th
-                        scope="row"
-                        className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"
-                      >
-                        <Link to={"/panel/song/s"}>{}</Link>
-                      </th>
-                      <td className="px-4 py-2 whitespace-nowrap text-center">
-                        <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
-                          0%
-                        </span>
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap">
-                        <div className="flex -space-x-4 w-28">
-                          <img
-                            src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png"
-                            alt=""
-                            className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
-                          />
-                          <img
-                            src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png"
-                            alt=""
-                            className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
-                          />
-                          <img
-                            src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-3.png"
-                            alt=""
-                            className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
-                          />
-                          <a
-                            href="#"
-                            className="flex-shrink-0 flex items-center justify-center w-10 h-10 text-xs font-medium text-white bg-gray-900 dark:bg-gray-700 border-2 border-white rounded-full hover:bg-gray-600 dark:border-gray-800"
-                          >
-                            +5
-                          </a>
-                        </div>
-                      </td>
-                      <td className="px-4 py-2 font-medium whitespace-nowrap">
-                        <div className="flex -space-x-4 w-full justify-center">
-                          <img
-                            src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png"
-                            alt=""
-                            className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
-                          />
-                        </div>
-                      </td>
-                      <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                        <div className="flex -space-x-4 w-full justify-center">
-                          <img
-                            src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png"
-                            alt=""
-                            className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
-                          />
-                        </div>
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap font-medium text-gray-900 dark:text-white text-xs text-center">
-                        23 Nov 2022
+                      <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
+                        {song?.artisticLabel}
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap font-medium text-gray-900 dark:text-white text-xs">
                         <div className="flex items-center justify-center">

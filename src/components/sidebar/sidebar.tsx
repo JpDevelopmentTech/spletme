@@ -147,7 +147,7 @@ export default function Sidebar() {
             
             <motion.div variants={itemAnimation}>
               <NavLink
-                to="/panel/income"
+                to="/panel/ingresos"
                 className={({ isActive }) =>
                   `flex items-center space-x-3 px-4 py-2.5 rounded-xl transition-all duration-200 ${
                     isActive
@@ -163,7 +163,7 @@ export default function Sidebar() {
 
             <motion.div variants={itemAnimation}>
               <NavLink
-                to="/panel/bills"
+                to="/panel/gastos"
                 className={({ isActive }) =>
                   `flex items-center space-x-3 px-4 py-2.5 rounded-xl transition-all duration-200 ${
                     isActive

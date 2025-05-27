@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
@@ -6,7 +7,7 @@ import ImageProfile from "../imageprofile/imageprofile";
 
 interface CardSongProps {
   song?: {
-    id: string;
+    _id: string;
     isrc?: string;
     trackTitle?: string;
     artistName?: string;
@@ -14,11 +15,12 @@ interface CardSongProps {
     album?: {
       images: { url: string }[];
     };
+    percetaje?: number;
   };
 }
 
 export default function CardSong({ song }: CardSongProps) {
-  const { getRecordingByISRC, loading } = useMusicBrainz();
+  const { getRecordingByISRC } = useMusicBrainz();
   const [recordingData, setRecordingData] = useState<any>(null);
 
   useEffect(() => {
@@ -37,7 +39,6 @@ export default function CardSong({ song }: CardSongProps) {
   // Use MusicBrainz data if available, otherwise fallback to song data
   const displayTitle = recordingData?.title || song?.trackTitle || 'Unknown Title';
   const displayArtist = recordingData?.artist || song?.artistName || 'Unknown Artist';
-  const coverImage = recordingData?.coverArt || song?.album?.images?.[0]?.url;
 
   if (!song) {
     return (
@@ -67,42 +68,13 @@ export default function CardSong({ song }: CardSongProps) {
       transition={{ duration: 0.4, ease: "easeOut" }}
       className="w-full"
     >
-      <Link to={"/panel/song/" + song.id} className="block">
+      <Link to={"/panel/song/" + song._id} className="block">
         <motion.div 
           whileHover={{ y: -8 }}
           transition={{ type: "spring", stiffness: 300 }}
           className="bg-gradient-to-br from-white to-gray-100 p-5 rounded-2xl shadow-md border border-gray-200 overflow-hidden relative"
         >
           <div className="flex flex-col sm:flex-row gap-6 relative z-10">
-            {/* Cover Image with Animation */}
-            <motion.div 
-              className="relative aspect-square overflow-hidden rounded-xl shadow-lg border border-gray-200"
-              whileHover={{ scale: 1.03 }}
-              transition={{ duration: 0.3 }}
-            >
-              {loading ? (
-                <div className="w-full h-full bg-gray-200 animate-pulse" />
-              ) : (
-                <motion.img
-                  src={coverImage}
-                  className="w-full h-full object-cover"
-                  alt={displayTitle}
-                  initial={{ scale: 1 }}
-                  whileHover={{ scale: 1.08, rotate: 1 }}
-                  transition={{ duration: 0.5 }}
-                />
-              )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300" />
-              
-              <motion.div 
-                className="absolute bottom-2 left-2 px-3 py-1 bg-white/80 backdrop-blur-md rounded-full text-sm font-medium text-gray-800 shadow-md"
-                initial={{ opacity: 0, y: 10 }}
-                whileHover={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                325K Streams
-              </motion.div>
-            </motion.div>
 
             {/* Song Details */}
             <div className="flex flex-col justify-between py-1 flex-1">
@@ -163,7 +135,9 @@ export default function CardSong({ song }: CardSongProps) {
                   <span className="font-bold text-xl bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
                     $00,00
                   </span>
-                  <span className="text-sm px-3 py-1 rounded-full bg-green-100 text-green-700 font-medium shadow-sm">0%</span>
+                  <span className="text-sm px-3 py-1 rounded-full bg-green-100 text-green-700 font-medium shadow-sm">
+                    {song?.percetaje || "No tienes porcentaje asignado"}
+                  </span>
                 </motion.div>
                 
                 <motion.button

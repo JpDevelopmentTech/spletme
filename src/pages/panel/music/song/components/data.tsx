@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { motion } from "framer-motion";
 
-export default function Data({ data }: { data: any }) {
+export default function Data({ song }: { song: any }) {
   return (
     <motion.div 
       initial={{ opacity: 0 }}
@@ -42,11 +42,11 @@ export default function Data({ data }: { data: any }) {
       
       <div className="mt-6 space-y-4">
         {[
-          { label: "UPC", value: "000000000" },
-          { label: "ISRC", value: data?.external_ids.isrc || "—" },
-          { label: "Lanzamiento", value: "10 Julio 2023" },
-          { label: "Duración", value: "02:54" },
-          { label: "Sello", value: "SplitMe" }
+          { label: "UPC", value: song?.external_ids?.upc || "—" },
+          { label: "ISRC", value: song?.external_ids?.isrc || "—" },
+          { label: "Lanzamiento", value: song?.release_date || "—" },
+          { label: "Duración", value: song?.duration_ms || "—" },
+          { label: "Sello", value: song?.label || "—" }
         ].map((item, index) => (
           <motion.div 
             key={item.label}

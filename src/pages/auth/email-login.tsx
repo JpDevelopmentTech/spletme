@@ -3,7 +3,6 @@ import { Mail, Lock, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { AuthService } from "../../services/auth";
-import LocalStorageService from "../../services/localstorage";
 export default function EmailLogin() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -12,7 +11,8 @@ export default function EmailLogin() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const response = await AuthService.login(email, password);
-    LocalStorageService.setItem('token', response.token);
+    localStorage.setItem('token', response.data.token);
+    localStorage.setItem('user', JSON.stringify(response.data.user));
     navigate("/onboarding");
   };
 

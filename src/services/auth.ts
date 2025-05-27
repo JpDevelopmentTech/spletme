@@ -8,6 +8,7 @@ export const AuthService = {
         try {
             const endpoint = URI + '/sign-in';
             const response = await axios.post(endpoint, { email, password });
+            console.log(response.data);
             return response.data;
             
         } catch (error) {

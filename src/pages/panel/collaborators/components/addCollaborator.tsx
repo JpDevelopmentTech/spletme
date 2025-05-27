@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, UserPlus, Mail, User, Shield } from "lucide-react";
+import { X, Plus, UserPlus, Mail, User } from "lucide-react";
 
 export default function AddCollaborator() {
   const [showCollaboratorsModal, setShowCollaboratorsModal] = useState(false);
@@ -24,15 +24,15 @@ export default function AddCollaborator() {
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-quinary/5 to-quinary/10">
+              <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-indigo-50 to-indigo-100">
                 <div className="flex items-center gap-3">
                   <motion.div
-                    className="p-2 rounded-lg bg-quinary/10"
+                    className="p-2 rounded-lg bg-indigo-100"
                     initial={{ rotate: -10 }}
                     animate={{ rotate: 0 }}
                     transition={{ type: "spring", stiffness: 200 }}
                   >
-                    <UserPlus className="w-5 h-5 text-quinary" />
+                    <UserPlus className="w-5 h-5 text-indigo-600" />
                   </motion.div>
                   <h3 className="text-xl font-semibold text-gray-800">Añadir colaborador</h3>
                 </div>
@@ -58,7 +58,7 @@ export default function AddCollaborator() {
                       <input
                         type="text"
                         placeholder="Nombre del colaborador"
-                        className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:border-quinary focus:ring-2 focus:ring-quinary/20 outline-none transition-all"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
                       />
                     </div>
                     <div className="relative">
@@ -68,19 +68,8 @@ export default function AddCollaborator() {
                       <input
                         type="email"
                         placeholder="Correo electrónico"
-                        className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:border-quinary focus:ring-2 focus:ring-quinary/20 outline-none transition-all"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
                       />
-                    </div>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Shield className="w-5 h-5 text-gray-400" />
-                      </div>
-                      <select className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:border-quinary focus:ring-2 focus:ring-quinary/20 outline-none transition-all appearance-none bg-white">
-                        <option value="">Seleccionar rol</option>
-                        <option value="admin">Administrador</option>
-                        <option value="editor">Editor</option>
-                        <option value="viewer">Visualizador</option>
-                      </select>
                     </div>
                   </div>
                 </div>
@@ -95,7 +84,7 @@ export default function AddCollaborator() {
                   Cancelar
                 </motion.button>
                 <motion.button
-                  className="px-5 py-2.5 text-sm font-medium text-white bg-quinary rounded-lg hover:bg-quinary/90 transition-colors flex items-center gap-2"
+                  className="px-5 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -115,7 +104,7 @@ export default function AddCollaborator() {
         onClick={() => setShowCollaboratorsModal(true)}
       >
         <motion.div 
-          className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-quinary to-quinary/80 text-white shadow-lg shadow-quinary/20"
+          className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-200"
           whileHover={{ scale: 1.1, rotate: 5 }}
           transition={{ type: "spring", stiffness: 400, damping: 10 }}
         >

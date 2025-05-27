@@ -12,15 +12,6 @@ export default function CardSong({ data }: { data: any }) {
       transition={{ duration: 0.3 }}
       whileHover={{ scale: 1.02 }}
     >
-      <motion.img
-        src={data?.album.images[0].url}
-        alt={data?.name}
-        className="w-36 h-36 rounded-xl object-cover shadow-md"
-        whileHover={{ 
-          scale: 1.05,
-          transition: { duration: 0.2 } 
-        }}
-      />
       <div className="flex flex-col justify-between w-full">
         <div>
           <motion.div
@@ -44,7 +35,7 @@ export default function CardSong({ data }: { data: any }) {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
           >
-            {data?.artists.map((item: any, index: number) => (
+            {data?.artists?.map((item: any, index: number) => (
               <motion.div 
                 key={item.id}
                 initial={{ opacity: 0, scale: 0.8 }}

@@ -1,29 +1,61 @@
 import { useEffect, useState } from 'react';
 import SongService from '../services/songs';
+
+interface Release {
+  reportMonth: string;
+  salesMonth: string;
+  platform: string;
+  country: string;
+  upc: string;
+  catalogNumber: string;
+  streamingSubscriptionType: string;
+  releaseType: string;
+  salesType: string;
+  quantity: number;
+  customerPaymentCurrency: string;
+  unitPrice: number;
+  mechanicalReproductionCosts: number;
+  grossIncome: number;
+  netIncome: number;
+}
+
+interface Song {
+  _id: string;
+  isrc: string;
+  artistName: string;
+  artisticLabel: string;
+  releases: Release[];
+  totalGrossIncome: number;
+  totalNetIncome: number;
+  totalStreams: number;
+  trackTitle: string;
+}
+
+
+
 const UseSongs = () => {
-    const [songs, setSongs] = useState([]);
+    const [songs, setSongs] = useState<Song[]>([]);
     const [loading, setLoading] = useState(false);
 
     const getSongs = async () => {
         setLoading(true);
-        const response = await SongService.getSongs();
-        if(response === null){
-            setSongs([]);
-        }else{
+        try {
+            const response = await SongService.getSongs();
             setSongs(response.data);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     }
 
     const uploadSongs = async (file: FormData) => {
         setLoading(true);
         try {
-            const response = await SongService.uploadSongs(file);
-            if (response) {
-                setSongs(response);
-            }
+            await SongService.uploadSongs(file);
+            await getSongs();
         } catch (error) {
-            console.error("Error in uploadSongs:", error);
+            console.error(error);
         } finally {
             setLoading(false);
         }

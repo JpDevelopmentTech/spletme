@@ -34,6 +34,36 @@ class SongService {
       return null;
     }
   }
+
+  async getSong(id: string) {
+    try {
+      const endpoint = this.URI + "/" + id;
+      const response = await axios.get(endpoint, {
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error getting song:", error);
+      return null;
+    }
+  }
+
+  async getSongsByFilter(country: string, platform: string) {
+    try {
+      const endpoint = this.URI + "/by-params?country=" + country + "&platform=" + platform;
+      const response = await axios.get(endpoint, {
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error getting songs by filter:", error);
+        return null;
+      }
+  }
 }
 
 export default new SongService();
