@@ -50,9 +50,9 @@ class SongService {
     }
   }
 
-  async getSongsByFilter(country: string, platform: string) {
+  async getSongsByFilter(country: string, platform: string, startDate: string, endDate: string) {
     try {
-      const endpoint = this.URI + "/by-params?country=" + country + "&platform=" + platform;
+      const endpoint = this.URI + "/by-params?country=" + country + "&platform=" + platform + "&startDate=" + startDate + "&endDate=" + endDate;
       const response = await axios.get(endpoint, {
         headers: {
           Authorization: `Bearer ${this.token}`,

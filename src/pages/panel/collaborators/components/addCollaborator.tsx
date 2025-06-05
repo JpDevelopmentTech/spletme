@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, UserPlus, Mail, User } from "lucide-react";
+import { X, Plus, UserPlus, Mail, Hash, UserCog } from "lucide-react";
 
 export default function AddCollaborator() {
   const [showCollaboratorsModal, setShowCollaboratorsModal] = useState(false);
+  const [method, setMethod] = useState<'email' | 'code'>('email');
 
   return (
     <>
@@ -48,28 +49,86 @@ export default function AddCollaborator() {
               <div className="p-6">
                 <div className="space-y-6">
                   <p className="text-sm text-gray-600 leading-relaxed">
-                    Complete los datos para agregar un nuevo colaborador al proyecto. El colaborador recibirá una invitación por correo electrónico.
+                    Elige cómo quieres agregar al colaborador al proyecto.
                   </p>
+                  
+                  <div className="flex gap-4 mb-6">
+                    <motion.button
+                      className={`flex-1 py-2.5 px-4 rounded-lg border transition-all ${
+                        method === 'email' 
+                          ? 'bg-indigo-50 border-indigo-200 text-indigo-700' 
+                          : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                      }`}
+                      onClick={() => setMethod('email')}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        <Mail className="w-4 h-4" />
+                        <span>Por correo</span>
+                      </div>
+                    </motion.button>
+                    <motion.button
+                      className={`flex-1 py-2.5 px-4 rounded-lg border transition-all ${
+                        method === 'code' 
+                          ? 'bg-indigo-50 border-indigo-200 text-indigo-700' 
+                          : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                      }`}
+                      onClick={() => setMethod('code')}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        <Hash className="w-4 h-4" />
+                        <span>Por código</span>
+                      </div>
+                    </motion.button>
+                  </div>
+
                   <div className="space-y-4">
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <User className="w-5 h-5 text-gray-400" />
+                    {method === 'email' ? (
+                      <>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Mail className="w-5 h-5 text-gray-400" />
+                          </div>
+                          <input
+                            type="email"
+                            placeholder="Correo electrónico"
+                            className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <Hash className="w-5 h-5 text-gray-400" />
+                        </div>
+                        <input
+                          type="text"
+                          placeholder="Código de usuario"
+                          className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+                        />
                       </div>
-                      <input
-                        type="text"
-                        placeholder="Nombre del colaborador"
-                        className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
-                      />
+                    )}
+                    <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <UserCog className="w-5 h-5 text-gray-400" />
                     </div>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Mail className="w-5 h-5 text-gray-400" />
-                      </div>
-                      <input
-                        type="email"
-                        placeholder="Correo electrónico"
-                        className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
-                      />
+                    <select
+                      className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all appearance-none bg-white"
+                    >
+                      <option value="" disabled selected>Seleccionar rol</option>
+                      <option value="singer">Cantante</option>
+                      <option value="composer">Compositor</option>
+                      <option value="musician">Músico</option>
+                      <option value="producer">Productor</option>
+                      <option value="arranger">Arreglista</option>
+                      <option value="lyricist">Letrista</option>
+                      <option value="mixer">Mezclador</option>
+                      <option value="mastering">Mastering</option>
+                    </select>
+
                     </div>
                   </div>
                 </div>

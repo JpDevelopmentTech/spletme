@@ -64,7 +64,7 @@ export default function Song() {
             <Loading />
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-              <div className="bg-white rounded-xl shadow-sm overflow-hidden col-span-6 row-span-1 border border-indigo-100">
+              <div className="bg-white rounded-xl shadow-sm overflow-hidden col-span-9 row-span-1 border border-indigo-100">
                 <div className="p-6">
                   <div className="flex justify-between items-start mb-6">
                     <div>
@@ -111,8 +111,9 @@ export default function Song() {
                   </button>
                 </div>
               </div>
-              <AddCollaborator />
+
               <div className="bg-white rounded-xl shadow-sm p-6 overflow-hidden col-span-12 border border-indigo-100">
+              <AddCollaborator />
                 <Table />
               </div>
               <div className="bg-white rounded-xl shadow-sm p-6 overflow-hidden col-span-12 border border-indigo-100">
