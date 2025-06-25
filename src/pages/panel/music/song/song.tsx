@@ -66,26 +66,48 @@ export default function Song() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               <div className="bg-white rounded-xl shadow-sm overflow-hidden col-span-9 row-span-1 border border-indigo-100">
                 <div className="p-6">
-                  <div className="flex justify-between items-start mb-6">
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-900">{song?.trackTitle}</h2>
-                      <p className="text-gray-600 mt-1">{song?.artistName}</p>
+                  <div className="flex flex-col md:flex-row gap-6">
+                    {/* Song Image Section */}
+                    <div className="w-full md:w-48 h-48 rounded-lg overflow-hidden shadow-md flex-shrink-0">
+                      {song?.spotifyData?.album?.images && song?.spotifyData?.album?.images.length > 0 ? (
+                        <img 
+                          src={song.spotifyData.album.images[0].url} 
+                          alt={`${song.trackTitle} cover`}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                          <svg className="w-16 h-16 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.276A1 1 0 0018 15V3z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      )}
                     </div>
-                    <span className="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                      ISRC: {song?.isrc}
-                    </span>
-                  </div>
+                    
+                    {/* Song Info Section */}
+                    <div className="flex-1">
+                      <div className="flex justify-between items-start mb-6">
+                        <div>
+                          <h2 className="text-2xl font-bold text-gray-900">{song?.trackTitle}</h2>
+                          <p className="text-gray-600 mt-1">{song?.artistName}</p>
+                        </div>
+                        <span className="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                          ISRC: {song?.isrc}
+                        </span>
+                      </div>
 
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <p className="text-sm text-gray-500 mb-1">Total Streams</p>
-                      <p className="text-2xl font-bold text-gray-900">{song?.totalStreams?.toLocaleString()}</p>
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <p className="text-sm text-gray-500 mb-1">Net Income</p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        ${song?.totalNetIncome?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div className="bg-gray-50 rounded-lg p-4">
+                          <p className="text-sm text-gray-500 mb-1">Total Streams</p>
+                          <p className="text-2xl font-bold text-gray-900">{song?.totalStreams?.toLocaleString()}</p>
+                        </div>
+                        <div className="bg-gray-50 rounded-lg p-4">
+                          <p className="text-sm text-gray-500 mb-1">Net Income</p>
+                          <p className="text-2xl font-bold text-gray-900">
+                            ${song?.totalNetIncome?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -114,7 +136,7 @@ export default function Song() {
 
               <div className="bg-white rounded-xl shadow-sm p-6 overflow-hidden col-span-12 border border-indigo-100">
               <AddCollaborator />
-                <Table />
+                <Table collaborators={song?.collaborators} songId={id}/>
               </div>
               <div className="bg-white rounded-xl shadow-sm p-6 overflow-hidden col-span-12 border border-indigo-100">
                 <Behavior />

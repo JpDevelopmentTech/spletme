@@ -4,7 +4,7 @@ const Step3 = () => {
   return (
     <div>
       <svg
-        className="w-12 h-12 mb-4 text-green-400"
+        className="w-12 h-12 mb-4 text-gray-400"
         fill="currentColor"
         viewBox="0 0 20 20"
         xmlns="http://www.w3.org/2000/svg"
@@ -22,7 +22,7 @@ const Step3 = () => {
         Haz completado el proceso de verificación
       </p>
       <Link to={'/panel/home'}
-        className="block w-full text-white bg-primary hover:bg-primary focus:ring-4 focus:outline-none focus:ring-primary font-medium rounded-lg text-sm px-5 py-2.5 sm:py-3.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+        className="block w-full text-white bg-gray-600 hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 sm:py-3.5 text-center dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800"
       >
         Ingresar en mi cuenta
       </Link>

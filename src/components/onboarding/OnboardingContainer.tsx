@@ -64,7 +64,7 @@ const OnboardingContainer = () => {
   const progressPercentage = (currentStep / totalSteps) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="container mx-auto px-4 py-8">
         {/* Header con logo y progreso */}
         <div className="max-w-4xl mx-auto mb-8">
@@ -74,7 +74,7 @@ const OnboardingContainer = () => {
               animate={{ opacity: 1, y: 0 }}
               className="flex items-center justify-center mb-4"
             >
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+              <div className="w-12 h-12 bg-gradient-to-r from-gray-500 to-gray-700 rounded-xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">
                 S
               </div>
               <span className="ml-3 text-2xl font-bold text-gray-900 dark:text-white">
@@ -113,7 +113,7 @@ const OnboardingContainer = () => {
                   <div
                     className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 ${
                       step.id <= currentStep
-                        ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg"
+                        ? "bg-gradient-to-r from-gray-500 to-gray-700 text-white shadow-lg"
                         : "bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
                     }`}
                   >
@@ -131,7 +131,7 @@ const OnboardingContainer = () => {
                   </div>
                   <div className="mt-2 text-center">
                     <div className={`text-xs font-medium ${
-                      step.id <= currentStep ? "text-blue-600 dark:text-blue-400" : "text-gray-500 dark:text-gray-400"
+                      step.id <= currentStep ? "text-gray-600 dark:text-gray-400" : "text-gray-500 dark:text-gray-400"
                     }`}>
                       {step.title}
                     </div>
@@ -141,7 +141,7 @@ const OnboardingContainer = () => {
                   {index < steps.length - 1 && (
                     <div className="absolute top-6 left-12 w-full h-0.5 bg-gray-200 dark:bg-gray-700 -z-10">
                       <motion.div
-                        className="h-full bg-gradient-to-r from-blue-500 to-purple-600"
+                        className="h-full bg-gradient-to-r from-gray-500 to-gray-700"
                         initial={{ width: "0%" }}
                         animate={{ 
                           width: step.id < currentStep ? "100%" : "0%" 
@@ -157,7 +157,7 @@ const OnboardingContainer = () => {
             {/* Barra de progreso general */}
             <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
               <motion.div
-                className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full"
+                className="bg-gradient-to-r from-gray-500 to-gray-700 h-2 rounded-full"
                 initial={{ width: "0%" }}
                 animate={{ width: `${progressPercentage}%` }}
                 transition={{ duration: 0.5 }}

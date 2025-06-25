@@ -16,6 +16,7 @@ interface CardSongProps {
       images: { url: string }[];
     };
     percetaje?: number;
+    spotifyData?: any;
   };
 }
 
@@ -39,6 +40,7 @@ export default function CardSong({ song }: CardSongProps) {
   // Use MusicBrainz data if available, otherwise fallback to song data
   const displayTitle = recordingData?.title || song?.trackTitle || 'Unknown Title';
   const displayArtist = recordingData?.artist || song?.artistName || 'Unknown Artist';
+  const dataSpotify = song?.spotifyData
 
   if (!song) {
     return (
@@ -75,6 +77,25 @@ export default function CardSong({ song }: CardSongProps) {
           className="bg-gradient-to-br from-white to-gray-100 p-5 rounded-2xl shadow-md border border-gray-200 overflow-hidden relative"
         >
           <div className="flex flex-col sm:flex-row gap-6 relative z-10">
+            
+            {/* Song Cover Image */}
+            <div className="relative aspect-square overflow-hidden rounded-xl shadow-lg border border-gray-200 w-full sm:w-32 md:w-40">
+              {dataSpotify?.album?.images && dataSpotify?.album.images.length > 0 ? (
+                <motion.img
+                  src={dataSpotify.album.images[0].url}
+                  alt={`${displayTitle} cover`}
+                  className="w-full h-full object-cover"
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                  <svg className="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.276A1 1 0 0018 15V3z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              )}
+            </div>
 
             {/* Song Details */}
             <div className="flex flex-col justify-between py-1 flex-1">

@@ -134,10 +134,10 @@ const AccountDetailsStep = ({ nextStep, prevStep }: AccountDetailsStepProps) => 
                   id={field.id}
                   value={formData[field.id as keyof typeof formData]}
                   onChange={(e) => handleInputChange(field.id, e.target.value)}
-                  className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
+                  className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-gray-500/20 ${
                     errors[field.id]
                       ? "border-red-300 bg-red-50 dark:border-red-600 dark:bg-red-900/20"
-                      : "border-gray-200 bg-white hover:border-gray-300 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-gray-500 dark:focus:border-blue-400"
+                      : "border-gray-200 bg-white hover:border-gray-300 focus:border-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-gray-500 dark:focus:border-gray-400"
                   } dark:text-white`}
                 >
                   <option value="">{field.placeholder}</option>
@@ -160,10 +160,10 @@ const AccountDetailsStep = ({ nextStep, prevStep }: AccountDetailsStepProps) => 
                 value={formData[field.id as keyof typeof formData]}
                 onChange={(e) => handleInputChange(field.id, e.target.value)}
                 placeholder={field.placeholder}
-                className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
+                className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-gray-500/20 ${
                   errors[field.id]
                     ? "border-red-300 bg-red-50 dark:border-red-600 dark:bg-red-900/20"
-                    : "border-gray-200 bg-white hover:border-gray-300 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-gray-500 dark:focus:border-blue-400"
+                    : "border-gray-200 bg-white hover:border-gray-300 focus:border-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-gray-500 dark:focus:border-gray-400"
                 } dark:text-white dark:placeholder-gray-400`}
               />
             )}
@@ -189,19 +189,56 @@ const AccountDetailsStep = ({ nextStep, prevStep }: AccountDetailsStepProps) => 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800"
+        className="bg-gray-50 dark:bg-gray-800/60 rounded-xl p-4 border border-gray-200 dark:border-gray-700"
       >
         <div className="flex items-start space-x-3">
-          <div className="text-blue-500 text-xl">🔒</div>
+          <div className="text-gray-500 text-xl">🔒</div>
           <div>
-            <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">
+            <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">
               Tu información está segura
             </h4>
-            <p className="text-sm text-blue-700 dark:text-blue-300">
-              Utilizamos encriptación de nivel bancario para proteger todos tus datos personales.
-              Esta información solo se usa para verificar tu identidad y cumplir con regulaciones.
+            <p className="text-sm text-gray-700 dark:text-gray-300">
+              Utilizamos encriptación de nivel bancario para proteger tus datos personales.
             </p>
           </div>
+        </div>
+      </motion.div>
+
+      {/* Términos y condiciones */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6 }}
+        className="space-y-4"
+      >
+        <div className="flex items-start space-x-3">
+          <input
+            type="checkbox"
+            id="terms"
+            className="mt-1 w-4 h-4 text-gray-600 bg-gray-100 border-gray-300 rounded focus:ring-gray-500 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+            required
+          />
+          <label htmlFor="terms" className="text-sm text-gray-600 dark:text-gray-400">
+            Al continuar, acepto los{" "}
+            <a href="#" className="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 underline">
+              Términos de Servicio
+            </a>{" "}
+            y la{" "}
+            <a href="#" className="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 underline">
+              Política de Privacidad
+            </a>
+          </label>
+        </div>
+
+        <div className="flex items-start space-x-3">
+          <input
+            type="checkbox"
+            id="newsletter"
+            className="mt-1 w-4 h-4 text-gray-600 bg-gray-100 border-gray-300 rounded focus:ring-gray-500 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+          />
+          <label htmlFor="newsletter" className="text-sm text-gray-600 dark:text-gray-400">
+            Quiero recibir actualizaciones y noticias sobre nuevas funciones por correo electrónico
+          </label>
         </div>
       </motion.div>
 
@@ -209,28 +246,21 @@ const AccountDetailsStep = ({ nextStep, prevStep }: AccountDetailsStepProps) => 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
+        transition={{ delay: 0.7 }}
         className="flex space-x-4 pt-6"
       >
         <button
           onClick={prevStep}
-          className="flex-1 py-3 px-6 rounded-xl font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-all duration-300 flex items-center justify-center space-x-2"
+          className="flex-1 py-3 px-6 rounded-xl font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-all duration-300"
         >
-          <span>←</span>
-          <span>Anterior</span>
+          ← Anterior
         </button>
         
         <button
           onClick={handleSubmit}
-          className="flex-1 py-3 px-6 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center space-x-2"
+          className="flex-1 py-3 px-6 rounded-xl font-semibold text-white bg-gradient-to-r from-gray-500 to-gray-700 hover:from-gray-600 hover:to-gray-800 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
         >
-          <span>Continuar</span>
-          <motion.div
-            animate={{ x: [0, 5, 0] }}
-            transition={{ repeat: Infinity, duration: 1.5 }}
-          >
-            →
-          </motion.div>
+          Continuar →
         </button>
       </motion.div>
     </div>

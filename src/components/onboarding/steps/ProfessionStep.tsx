@@ -15,28 +15,28 @@ const ProfessionStep = ({ nextStep }: ProfessionStepProps) => {
       name: "Artista",
       icon: "🎤",
       description: "Cantante, músico o intérprete",
-      gradient: "from-pink-500 to-rose-500"
+      gradient: "from-gray-500 to-gray-600"
     },
     {
       id: "productor",
       name: "Productor",
       icon: "🎛️",
       description: "Productor musical o de audio",
-      gradient: "from-blue-500 to-cyan-500"
+      gradient: "from-gray-500 to-gray-600"
     },
     {
       id: "compositor",
       name: "Compositor",
       icon: "🎼",
       description: "Compositor o escritor de canciones",
-      gradient: "from-purple-500 to-indigo-500"
+      gradient: "from-gray-500 to-gray-600"
     },
     {
       id: "otro",
       name: "Otro",
       icon: "🎯",
       description: "Otra profesión musical",
-      gradient: "from-green-500 to-emerald-500"
+      gradient: "from-gray-500 to-gray-600"
     }
   ];
 
@@ -162,7 +162,7 @@ const ProfessionStep = ({ nextStep }: ProfessionStepProps) => {
                   htmlFor={profession}
                   className={`block p-3 rounded-lg border cursor-pointer transition-all duration-200 text-sm ${
                     selectedOtherProfession === profession
-                      ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-400"
+                      ? "border-gray-500 bg-gray-50 text-gray-700 dark:bg-gray-800/60 dark:text-gray-300 dark:border-gray-400"
                       : "border-gray-200 bg-gray-50 hover:border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-gray-500 dark:hover:bg-gray-600"
                   }`}
                 >
@@ -188,7 +188,7 @@ const ProfessionStep = ({ nextStep }: ProfessionStepProps) => {
           disabled={!selectedProfession || (selectedProfession === "otro" && !selectedOtherProfession)}
           className={`w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-300 ${
             selectedProfession && (selectedProfession !== "otro" || selectedOtherProfession)
-              ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              ? "bg-gradient-to-r from-gray-500 to-gray-700 text-white hover:from-gray-600 hover:to-gray-800 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               : "bg-gray-200 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500"
           }`}
         >

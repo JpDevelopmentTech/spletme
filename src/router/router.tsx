@@ -15,6 +15,7 @@ import EmailLogin from "../pages/auth/email-login";
 import Register from "../pages/auth/register";
 import Balance from "../pages/panel/balance/balance";
 import Profile from "../pages/panel/profile/profile";
+import AcceptCollaboration from "../pages/collabotarion/acceptCollaboration";
 
 const routes = [
   {
@@ -32,6 +33,10 @@ const routes = [
   {
     path: "/onboarding",
     element: <Onboarding />
+  },
+  {
+    path: "/collaboration/accept",
+    element: <AcceptCollaboration />
   },
 
   {

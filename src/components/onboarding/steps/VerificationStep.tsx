@@ -104,7 +104,7 @@ const VerificationStep = ({ nextStep, prevStep }: VerificationStepProps) => {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.2 }}
-          className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-green-400 to-green-600 rounded-full text-white text-3xl shadow-lg"
+          className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-gray-400 to-gray-600 rounded-full text-white text-3xl shadow-lg"
         >
           📱
         </motion.div>
@@ -144,12 +144,12 @@ const VerificationStep = ({ nextStep, prevStep }: VerificationStepProps) => {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.1 * index }}
-              className={`w-12 h-12 text-center text-xl font-bold rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
+              className={`w-12 h-12 text-center text-xl font-bold rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-gray-500/20 ${
                 digit
-                  ? "border-blue-500 bg-blue-50 text-blue-700 dark:border-blue-400 dark:bg-blue-900/20 dark:text-blue-300"
+                  ? "border-gray-500 bg-gray-50 text-gray-700 dark:border-gray-400 dark:bg-gray-800/60 dark:text-gray-300"
                   : error
                   ? "border-red-300 bg-red-50 dark:border-red-600 dark:bg-red-900/20"
-                  : "border-gray-200 bg-white hover:border-gray-300 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-gray-500 dark:focus:border-blue-400"
+                  : "border-gray-200 bg-white hover:border-gray-300 focus:border-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-gray-500 dark:focus:border-gray-400"
               } dark:text-white`}
             />
           ))}
@@ -185,7 +185,7 @@ const VerificationStep = ({ nextStep, prevStep }: VerificationStepProps) => {
         {countdown > 0 ? (
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Podrás solicitar un nuevo código en{" "}
-            <span className="font-semibold text-blue-600 dark:text-blue-400">
+            <span className="font-semibold text-gray-600 dark:text-gray-400">
               {countdown}s
             </span>
           </p>
@@ -193,11 +193,11 @@ const VerificationStep = ({ nextStep, prevStep }: VerificationStepProps) => {
           <button
             onClick={handleResendCode}
             disabled={isResending}
-            className="text-sm font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200 disabled:opacity-50"
+            className="text-sm font-semibold text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors duration-200 disabled:opacity-50"
           >
             {isResending ? (
               <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin"></div>
                 <span>Enviando...</span>
               </div>
             ) : (
@@ -212,15 +212,15 @@ const VerificationStep = ({ nextStep, prevStep }: VerificationStepProps) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800"
+        className="bg-gray-50 dark:bg-gray-900/20 rounded-xl p-4 border border-gray-200 dark:border-gray-800"
       >
         <div className="flex items-start space-x-3">
-          <div className="text-blue-500 text-xl">💡</div>
+          <div className="text-gray-500 text-xl">💡</div>
           <div>
-            <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">
+            <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">
               Consejos para recibir el código
             </h4>
-            <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+            <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
               <li>• Verifica que WhatsApp esté instalado y activo</li>
               <li>• Revisa tu bandeja de mensajes de WhatsApp</li>
               <li>• Asegúrate de tener conexión a internet</li>
@@ -259,28 +259,21 @@ const VerificationStep = ({ nextStep, prevStep }: VerificationStepProps) => {
       >
         <button
           onClick={prevStep}
-          className="flex-1 py-3 px-6 rounded-xl font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-all duration-300 flex items-center justify-center space-x-2"
+          className="flex-1 py-3 px-6 rounded-xl font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-all duration-300"
         >
-          <span>←</span>
-          <span>Anterior</span>
+          ← Anterior
         </button>
         
         <button
           onClick={handleVerify}
           disabled={!isCodeComplete}
-          className={`flex-1 py-3 px-6 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 ${
+          className={`flex-1 py-3 px-6 rounded-xl font-semibold text-white transition-all duration-300 ${
             isCodeComplete
-              ? "text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-              : "text-gray-400 bg-gray-200 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500"
+              ? "bg-gradient-to-r from-gray-500 to-gray-700 hover:from-gray-600 hover:to-gray-800 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              : "bg-gray-300 cursor-not-allowed dark:bg-gray-600"
           }`}
         >
-          <span>Verificar</span>
-          <motion.div
-            animate={{ x: isCodeComplete ? [0, 5, 0] : 0 }}
-            transition={{ repeat: Infinity, duration: 1.5 }}
-          >
-            →
-          </motion.div>
+          Verificar →
         </button>
       </motion.div>
     </div>

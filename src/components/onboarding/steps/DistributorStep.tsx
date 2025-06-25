@@ -19,7 +19,7 @@ const DistributorStep = ({ nextStep, prevStep }: DistributorStepProps) => {
       id: "believe",
       name: "Believe",
       description: "Distribución global independiente",
-      color: "from-red-500 to-pink-500",
+      color: "from-gray-500 to-gray-600",
       icon: "🎵",
       features: ["Distribución mundial", "Analytics avanzados", "Promoción digital"]
     },
@@ -27,7 +27,7 @@ const DistributorStep = ({ nextStep, prevStep }: DistributorStepProps) => {
       id: "onerpm",
       name: "ONErpm",
       description: "Plataforma de distribución moderna",
-      color: "from-blue-500 to-cyan-500",
+      color: "from-gray-500 to-gray-600",
       icon: "🎧",
       features: ["Tecnología avanzada", "Soporte 24/7", "Marketing digital"]
     },
@@ -35,7 +35,7 @@ const DistributorStep = ({ nextStep, prevStep }: DistributorStepProps) => {
       id: "orchard",
       name: "The Orchard",
       description: "Distribución premium de Sony Music",
-      color: "from-purple-500 to-indigo-500",
+      color: "from-gray-500 to-gray-600",
       icon: "🎼",
       features: ["Red global", "Servicios premium", "Soporte especializado"]
     },
@@ -43,7 +43,7 @@ const DistributorStep = ({ nextStep, prevStep }: DistributorStepProps) => {
       id: "symphonic",
       name: "Symphonic",
       description: "Distribución independiente completa",
-      color: "from-green-500 to-emerald-500",
+      color: "from-gray-500 to-gray-600",
       icon: "🎹",
       features: ["Distribución completa", "Herramientas de artista", "Soporte personalizado"]
     }
@@ -216,10 +216,10 @@ const DistributorStep = ({ nextStep, prevStep }: DistributorStepProps) => {
                   value={credentials.email}
                   onChange={(e) => handleCredentialChange("email", e.target.value)}
                   placeholder="tu@email.com"
-                  className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
+                  className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-gray-500/20 ${
                     errors.email
                       ? "border-red-300 bg-red-50 dark:border-red-600 dark:bg-red-900/20"
-                      : "border-gray-200 bg-white hover:border-gray-300 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-gray-500 dark:focus:border-blue-400"
+                      : "border-gray-200 bg-white hover:border-gray-300 focus:border-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-gray-500 dark:focus:border-gray-400"
                   } dark:text-white dark:placeholder-gray-400`}
                 />
                 {errors.email && (
@@ -257,10 +257,10 @@ const DistributorStep = ({ nextStep, prevStep }: DistributorStepProps) => {
                   value={credentials.password}
                   onChange={(e) => handleCredentialChange("password", e.target.value)}
                   placeholder="••••••••"
-                  className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
+                  className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-gray-500/20 ${
                     errors.password
                       ? "border-red-300 bg-red-50 dark:border-red-600 dark:bg-red-900/20"
-                      : "border-gray-200 bg-white hover:border-gray-300 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-gray-500 dark:focus:border-blue-400"
+                      : "border-gray-200 bg-white hover:border-gray-300 focus:border-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-gray-500 dark:focus:border-gray-400"
                   } dark:text-white dark:placeholder-gray-400`}
                 />
                 {errors.password && (
@@ -283,17 +283,16 @@ const DistributorStep = ({ nextStep, prevStep }: DistributorStepProps) => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 border border-green-200 dark:border-green-800"
+              className="bg-gray-50 dark:bg-gray-800/60 rounded-xl p-4 border border-gray-200 dark:border-gray-700"
             >
-              <div className="flex items-start space-x-3">
-                <div className="text-green-500 text-xl">🛡️</div>
+              <div className="flex items-center space-x-3">
+                <div className="text-gray-500 text-xl">ℹ️</div>
                 <div>
-                  <h4 className="font-semibold text-green-900 dark:text-green-100 mb-1">
+                  <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-sm mb-1">
                     Conexión segura
                   </h4>
-                  <p className="text-sm text-green-700 dark:text-green-300">
-                    Tus credenciales se almacenan de forma segura y encriptada. Solo las usamos para 
-                    sincronizar tu catálogo musical y nunca las compartimos con terceros.
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                    Tus credenciales se encriptan y solo se usan para sincronizar tu catálogo musical.
                   </p>
                 </div>
               </div>
@@ -306,33 +305,26 @@ const DistributorStep = ({ nextStep, prevStep }: DistributorStepProps) => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
+        transition={{ delay: 0.8 }}
         className="flex space-x-4 pt-6"
       >
         <button
           onClick={prevStep}
-          className="flex-1 py-3 px-6 rounded-xl font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-all duration-300 flex items-center justify-center space-x-2"
+          className="flex-1 py-3 px-6 rounded-xl font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-all duration-300"
         >
-          <span>←</span>
-          <span>Anterior</span>
+          ← Anterior
         </button>
         
         <button
           onClick={handleSubmit}
-          disabled={!selectedDistributor || !credentials.email || !credentials.password}
-          className={`flex-1 py-3 px-6 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 ${
-            selectedDistributor && credentials.email && credentials.password
-              ? "text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-              : "text-gray-400 bg-gray-200 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500"
+          disabled={!selectedDistributor}
+          className={`flex-1 py-3 px-6 rounded-xl font-semibold text-white transition-all duration-300 ${
+            selectedDistributor
+              ? "bg-gradient-to-r from-gray-500 to-gray-700 hover:from-gray-600 hover:to-gray-800 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              : "bg-gray-300 cursor-not-allowed dark:bg-gray-600"
           }`}
         >
-          <span>Continuar</span>
-          <motion.div
-            animate={{ x: selectedDistributor && credentials.email && credentials.password ? [0, 5, 0] : 0 }}
-            transition={{ repeat: Infinity, duration: 1.5 }}
-          >
-            →
-          </motion.div>
+          Continuar →
         </button>
       </motion.div>
     </div>

@@ -35,6 +35,43 @@ class SongService {
     }
   }
 
+  async acceptCollaboration(token: string){
+    try {
+      const endpoint = this.URI + "/accept-invitation";
+      const response = await axios.post(endpoint, {
+        token
+      });
+      return response.data;
+    } catch (error) {
+      return null
+    }
+  }
+
+  async addCollaborator({
+    songId,
+    collaboratorEmail,
+    collaboratorId,
+  }: {
+    songId: string;
+    collaboratorEmail?: string;
+    collaboratorId?: string;
+  }){
+    try {
+      const endpoint = this.URI + "/" + songId + "/add-collaborator";
+      const response = await axios.post(endpoint, {
+        collaboratorEmail,
+        collaboratorId,
+      }, {
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      return null
+    }
+  }
+
   async getSong(id: string) {
     try {
       const endpoint = this.URI + "/" + id;

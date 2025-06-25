@@ -30,25 +30,7 @@ const CompletionStep = () => {
 
   return (
     <div className="text-center space-y-8 relative overflow-hidden">
-      {/* Confetti Animation */}
-      <div className="absolute inset-0 pointer-events-none">
-        {[...Array(20)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute text-2xl"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 20}%`,
-            }}
-            variants={confettiVariants}
-            initial="initial"
-            animate="animate"
-            transition={{ delay: Math.random() * 2 }}
-          >
-            {["🎉", "🎊", "✨", "🌟", "🎈"][Math.floor(Math.random() * 5)]}
-          </motion.div>
-        ))}
-      </div>
+      
 
       {/* Success Icon */}
       <motion.div
@@ -62,7 +44,7 @@ const CompletionStep = () => {
         }}
         className="relative"
       >
-        <div className="inline-flex items-center justify-center w-32 h-32 bg-gradient-to-r from-green-400 to-green-600 rounded-full shadow-2xl">
+        <div className="inline-flex items-center justify-center w-32 h-32 bg-gradient-to-r from-gray-400 to-gray-600 rounded-full shadow-2xl">
           <motion.svg
             width="60"
             height="60"
@@ -82,33 +64,6 @@ const CompletionStep = () => {
             />
           </motion.svg>
         </div>
-        
-        {/* Pulse rings */}
-        <motion.div
-          className="absolute inset-0 rounded-full border-4 border-green-400"
-          animate={{
-            scale: [1, 1.2, 1.4],
-            opacity: [0.8, 0.4, 0]
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeOut"
-          }}
-        />
-        <motion.div
-          className="absolute inset-0 rounded-full border-4 border-green-400"
-          animate={{
-            scale: [1, 1.1, 1.3],
-            opacity: [0.6, 0.3, 0]
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeOut",
-            delay: 0.5
-          }}
-        />
       </motion.div>
 
       {/* Success Message */}
@@ -174,7 +129,7 @@ const CompletionStep = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.8 }}
-        className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-6 border border-blue-200 dark:border-blue-800"
+        className="bg-gray-50 dark:bg-gray-800/60 rounded-xl p-6 border border-gray-200 dark:border-gray-700"
       >
         <div className="flex items-center justify-center space-x-3 mb-4">
           <div className="text-2xl">🎉</div>
@@ -188,38 +143,40 @@ const CompletionStep = () => {
         </p>
         <div className="flex items-center justify-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
           <div className="flex items-center space-x-1">
-            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+            <span className="w-2 h-2 bg-gray-500 rounded-full"></span>
             <span>Perfil completo</span>
           </div>
           <div className="flex items-center space-x-1">
-            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+            <span className="w-2 h-2 bg-gray-500 rounded-full"></span>
             <span>Distribuidor conectado</span>
           </div>
           <div className="flex items-center space-x-1">
-            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+            <span className="w-2 h-2 bg-gray-500 rounded-full"></span>
             <span>WhatsApp verificado</span>
           </div>
         </div>
       </motion.div>
 
-      {/* Action Button */}
+      {/* Call to Action */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 2.2 }}
-        className="pt-4"
+        className="pt-6"
       >
         <Link
           to="/panel/home"
-          className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 space-x-3"
+          className="inline-flex items-center justify-center w-full py-4 px-8 rounded-xl font-semibold text-lg text-white bg-gradient-to-r from-gray-500 to-gray-700 hover:from-gray-600 hover:to-gray-800 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
         >
-          <span>Ir a mi panel</span>
-          <motion.div
-            animate={{ x: [0, 5, 0] }}
-            transition={{ repeat: Infinity, duration: 1.5 }}
-          >
-            🚀
-          </motion.div>
+          <div className="flex items-center space-x-3">
+            <span>Ir al Dashboard</span>
+            <motion.div
+              animate={{ x: [0, 5, 0] }}
+              transition={{ repeat: Infinity, duration: 1.5 }}
+            >
+              🚀
+            </motion.div>
+          </div>
         </Link>
       </motion.div>
 
@@ -234,11 +191,11 @@ const CompletionStep = () => {
           ¿Necesitas ayuda para comenzar?
         </p>
         <div className="flex items-center justify-center space-x-4">
-          <button className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200">
+          <button className="text-sm text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors duration-200">
             Ver tutorial
           </button>
           <span className="text-gray-300 dark:text-gray-600">•</span>
-          <button className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200">
+          <button className="text-sm text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors duration-200">
             Contactar soporte
           </button>
         </div>

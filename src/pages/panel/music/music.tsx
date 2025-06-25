@@ -161,6 +161,9 @@ export default function Music() {
                     <th scope="col" className="px-4 py-3">
                       Cancion
                     </th>
+                    <th scope="col" className="px-4 py-3">
+                      Tiene split
+                    </th>
                     <th scope="col" className="px-4 py-3 text-center">
                       Porcentaje
                     </th>
@@ -222,33 +225,24 @@ export default function Music() {
                           </th>
                           <td className="px-4 py-2 whitespace-nowrap text-center">
                             <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
+                              {song?.split ? "Si" : "No"}
+                            </span>
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-center">
+                            <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
                               {song?.percetaje ||
                                 "No se ha asignado porcentaje a esta canción"}
                             </span>
                           </td>
                           <td className="px-4 py-2 whitespace-nowrap">
                             <div className="flex -space-x-4 w-28">
-                              <img
-                                src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png"
-                                alt=""
-                                className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
-                              />
-                              <img
-                                src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png"
-                                alt=""
-                                className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
-                              />
-                              <img
-                                src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-3.png"
-                                alt=""
-                                className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
-                              />
-                              <a
-                                href="#"
-                                className="flex-shrink-0 flex items-center justify-center w-10 h-10 text-xs font-medium text-white bg-gray-900 dark:bg-gray-700 border-2 border-white rounded-full hover:bg-gray-600 dark:border-gray-800"
-                              >
-                                +5
-                              </a>
+                              {song?.collaborators.lenght > 0 ? song?.collaborators?.map((collaborator: any) => (
+                                <img
+                                  src={collaborator.image}
+                                  alt={collaborator.name}
+                                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                                />
+                              )) : <span className="text-gray-500">No hay colaboradores</span>}
                             </div>
                           </td>
                           <td className="px-4 py-2 font-medium whitespace-nowrap">

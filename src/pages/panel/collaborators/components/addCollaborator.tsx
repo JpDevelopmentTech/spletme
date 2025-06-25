@@ -1,23 +1,56 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, UserPlus, Mail, Hash, UserCog } from "lucide-react";
+import SongService from "../../../../services/songs";
+import { useParams } from "react-router-dom";
 
 export default function AddCollaborator() {
+  const { id } = useParams();
   const [showCollaboratorsModal, setShowCollaboratorsModal] = useState(false);
-  const [method, setMethod] = useState<'email' | 'code'>('email');
+  const [method, setMethod] = useState<"email" | "code">("email");
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [role, setRole] = useState("");
+
+  const addNewCollaborator = async () => {
+    // Prepare the request payload based on the method
+    const requestPayload = {
+      songId: id || "",
+      ...(method === "email" 
+        ? { collaboratorEmail: email } 
+        : { collaboratorId: code }
+      )
+    };
+
+    const response = await SongService.addCollaborator(requestPayload);
+    
+    if (response !== null) {
+      // Reset form and close modal
+      resetForm();
+    }else{
+      alert("Error al agregar el colaborador");
+    }
+  };
+
+  const resetForm = () => {
+    setShowCollaboratorsModal(false);
+    setEmail("");
+    setCode("");
+    setRole("");
+  };
 
   return (
     <>
       <AnimatePresence>
         {showCollaboratorsModal && (
-          <motion.div 
+          <motion.div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setShowCollaboratorsModal(false)}
           >
-            <motion.div 
+            <motion.div
               className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden"
               initial={{ scale: 0.95, y: 20, opacity: 0 }}
               animate={{ scale: 1, y: 0, opacity: 1 }}
@@ -35,7 +68,9 @@ export default function AddCollaborator() {
                   >
                     <UserPlus className="w-5 h-5 text-indigo-600" />
                   </motion.div>
-                  <h3 className="text-xl font-semibold text-gray-800">Añadir colaborador</h3>
+                  <h3 className="text-xl font-semibold text-gray-800">
+                    Añadir colaborador
+                  </h3>
                 </div>
                 <motion.button
                   className="p-2 rounded-full hover:bg-gray-100 transition-colors"
@@ -51,15 +86,15 @@ export default function AddCollaborator() {
                   <p className="text-sm text-gray-600 leading-relaxed">
                     Elige cómo quieres agregar al colaborador al proyecto.
                   </p>
-                  
+
                   <div className="flex gap-4 mb-6">
                     <motion.button
                       className={`flex-1 py-2.5 px-4 rounded-lg border transition-all ${
-                        method === 'email' 
-                          ? 'bg-indigo-50 border-indigo-200 text-indigo-700' 
-                          : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                        method === "email"
+                          ? "bg-indigo-50 border-indigo-200 text-indigo-700"
+                          : "border-gray-200 text-gray-600 hover:bg-gray-50"
                       }`}
-                      onClick={() => setMethod('email')}
+                      onClick={() => setMethod("email")}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
@@ -70,11 +105,11 @@ export default function AddCollaborator() {
                     </motion.button>
                     <motion.button
                       className={`flex-1 py-2.5 px-4 rounded-lg border transition-all ${
-                        method === 'code' 
-                          ? 'bg-indigo-50 border-indigo-200 text-indigo-700' 
-                          : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                        method === "code"
+                          ? "bg-indigo-50 border-indigo-200 text-indigo-700"
+                          : "border-gray-200 text-gray-600 hover:bg-gray-50"
                       }`}
-                      onClick={() => setMethod('code')}
+                      onClick={() => setMethod("code")}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
@@ -86,13 +121,15 @@ export default function AddCollaborator() {
                   </div>
 
                   <div className="space-y-4">
-                    {method === 'email' ? (
+                    {method === "email" ? (
                       <>
                         <div className="relative">
                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <Mail className="w-5 h-5 text-gray-400" />
                           </div>
                           <input
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             type="email"
                             placeholder="Correo electrónico"
                             className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
@@ -106,29 +143,34 @@ export default function AddCollaborator() {
                         </div>
                         <input
                           type="text"
+                          value={code}
+                          onChange={(e) => setCode(e.target.value)}
                           placeholder="Código de usuario"
                           className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
                         />
                       </div>
                     )}
                     <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <UserCog className="w-5 h-5 text-gray-400" />
-                    </div>
-                    <select
-                      className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all appearance-none bg-white"
-                    >
-                      <option value="" disabled selected>Seleccionar rol</option>
-                      <option value="singer">Cantante</option>
-                      <option value="composer">Compositor</option>
-                      <option value="musician">Músico</option>
-                      <option value="producer">Productor</option>
-                      <option value="arranger">Arreglista</option>
-                      <option value="lyricist">Letrista</option>
-                      <option value="mixer">Mezclador</option>
-                      <option value="mastering">Mastering</option>
-                    </select>
-
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <UserCog className="w-5 h-5 text-gray-400" />
+                      </div>
+                      <select
+                        value={role}
+                        onChange={(e) => setRole(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all appearance-none bg-white"
+                      >
+                        <option value="" disabled selected>
+                          Seleccionar rol
+                        </option>
+                        <option value="singer">Cantante</option>
+                        <option value="composer">Compositor</option>
+                        <option value="musician">Músico</option>
+                        <option value="producer">Productor</option>
+                        <option value="arranger">Arreglista</option>
+                        <option value="lyricist">Letrista</option>
+                        <option value="mixer">Mezclador</option>
+                        <option value="mastering">Mastering</option>
+                      </select>
                     </div>
                   </div>
                 </div>
@@ -146,6 +188,7 @@ export default function AddCollaborator() {
                   className="px-5 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
+                  onClick={() => addNewCollaborator()}
                 >
                   <UserPlus className="w-4 h-4" />
                   Añadir colaborador
@@ -162,7 +205,7 @@ export default function AddCollaborator() {
         whileTap={{ y: 0, scale: 0.99 }}
         onClick={() => setShowCollaboratorsModal(true)}
       >
-        <motion.div 
+        <motion.div
           className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-200"
           whileHover={{ scale: 1.1, rotate: 5 }}
           transition={{ type: "spring", stiffness: 400, damping: 10 }}
