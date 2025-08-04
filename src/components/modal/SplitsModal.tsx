@@ -1,685 +1,976 @@
-import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Trash2, Music, AlertCircle, Check, User as UserIcon, Plus, Calendar, Globe, Settings, Loader2 } from 'lucide-react';
-import { User } from '../../models/user';
-import { useSplits } from '../../hooks/useSplits';
-import { CreateSplitRequest, SplitParticipant as ServiceParticipant, SplitCondition } from '../../services/splits';
-
-// Local interfaces for the modal
-interface Participant {
-  id: string;
-  name: string;
-  role: string;
-  percentage: number;
-  conditions: SplitCondition[];
-}
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Music,
+  Trash2,
+  User,
+  X,
+  Plus,
+  Globe,
+  Calendar,
+  Percent,
+  Users,
+  Settings,
+  ChevronDown,
+  Save,
+  Sparkles,
+} from "lucide-react";
+import { User as UserType } from "@/models/user";
+import Select from "react-select";
+import { countries, platforms } from "@/const";
+import { useState } from "react";
+import {
+  splitsService,
+  type SplitCondition,
+  type CreateSplitRequest,
+} from "@/services/splits";
 
 interface SplitsModalProps {
+  collaborators: UserType[];
   isOpen: boolean;
   onClose: () => void;
-  collaborators: User[];
-  songId?: string; // Optional song ID for loading existing splits
-  onSplitSaved?: (splitId: string) => void; // Callback when split is saved
+  songId: string;
+  onSplitSaved: (splitId: string) => void;
 }
 
-const SplitsModal = ({ isOpen, onClose, collaborators, songId, onSplitSaved }: SplitsModalProps) => {
-  
-  const [participants, setParticipants] = useState<Participant[]>([]);
-  const [ownerPercentage, setOwnerPercentage] = useState<number>(0);
-  const [localErrors, setLocalErrors] = useState<{ [key: string]: string }>({});
+interface CollaboratorFormData {
+  percentage: string;
+  countriesType: "all" | "except" | "only";
+  selectedCountries: { value: string; label: string }[];
+  platformsType: "all" | "except" | "only";
+  selectedPlatforms: { value: string; label: string }[];
+  splitConditions: SplitCondition[];
+  type: "general" | "specific";
+}
 
-  const {
-    split,
-    loading,
-    error,
-    saving,
-    loadSplitBySong,
-    createSplit,
-    updateSplit,
-    generateConditionDescription,
-    clearError,
-    clearSplit
-  } = useSplits();
+export default function SplitsModal({
+  collaborators,
+  isOpen,
+  onClose,
+  songId,
+}: SplitsModalProps) {
+  const [collaboratorForms, setCollaboratorForms] = useState<
+    Record<string, CollaboratorFormData>
+  >({});
+  const [expandedCollaborators, setExpandedCollaborators] = useState<
+    Record<string, boolean>
+  >({});
+  const [isLoading, setIsLoading] = useState(false);
 
-  const platforms = [
-    'Spotify', 'Apple Music', 'YouTube Music', 'Amazon Music', 'Deezer', 
-    'Tidal', 'SoundCloud', 'Bandcamp', 'Pandora', 'iHeartRadio'
-  ];
-
-  const countries = [
-    'Colombia', 'Estados Unidos', 'México', 'Argentina', 'España', 'Brasil',
-    'Chile', 'Perú', 'Ecuador', 'Venezuela', 'Uruguay', 'Paraguay',
-    'Reino Unido', 'Francia', 'Alemania', 'Italia', 'Canadá', 'Australia'
-  ];
-
-  const conditionTypes = [
-    { value: 'time', label: 'Por período de tiempo' },
-    { value: 'platforms', label: 'Solo en ciertas plataformas' },
-    { value: 'countries', label: 'Solo en ciertos países' },
-    { value: 'time_reduced', label: 'Período con reducción posterior' },
-    { value: 'custom', label: 'Condición personalizada' }
-  ];
-
-  // Load existing split when modal opens with songId
-  useEffect(() => {
-    if (isOpen && songId) {
-      loadSplitBySong(songId);
-    } else if (isOpen && !songId) {
-      // Initialize with collaborators for new split
-      initializeParticipants();
-    }
-  }, [isOpen, songId, loadSplitBySong]);
-
-  // Initialize participants from collaborators or existing split
-  useEffect(() => {
-    if (split) {
-      // Load existing split data
-      setOwnerPercentage(split.ownerPercentage);
-      setParticipants(split.participants?.map(p => ({
-        id: p.id || p.name, // Use ID if available, fallback to name
-        name: p.name,
-        role: p.role,
-        percentage: p.percentage,
-        conditions: p.conditions || []
-      })));
-    } else if (collaborators && collaborators.length > 0) {
-      initializeParticipants();
-    }
-  }, [split, collaborators]);
-
-  const initializeParticipants = () => {
-    setParticipants(collaborators?.map(collaborator => ({
-      id: collaborator.id,
-      name: collaborator.name,
-      role: collaborator.role || '',
-      percentage: collaborator.percentage || 0,
-      conditions: []
-    })) || []);
-    setOwnerPercentage(0);
+  // Toggle expanded state for collaborator
+  const toggleCollaboratorExpanded = (collaboratorId: string) => {
+    setExpandedCollaborators((prev) => ({
+      ...prev,
+      [collaboratorId]: !prev[collaboratorId],
+    }));
   };
 
-  // Clear state when modal closes
-  useEffect(() => {
-    if (!isOpen) {
-      setLocalErrors({});
-      clearError();
-      if (!songId) {
-        clearSplit();
-      }
-    }
-  }, [isOpen, songId, clearError, clearSplit]);
-
-  const removeParticipant = (id: string) => {
-    if (participants.length > 1) {
-      setParticipants(participants.filter(p => p.id !== id));
-    }
-  };
-
-  const addCondition = (participantId: string) => {
-    const newCondition: SplitCondition = {
-      type: 'time',
-      percentage: 0,
-      description: '',
-      parameters: {}
-    };
-    
-    setParticipants(participants.map(p => 
-      p.id === participantId 
-        ? { ...p, conditions: [...p.conditions, newCondition] }
-        : p
-    ));
-  };
-
-  const removeCondition = (participantId: string, conditionIndex: number) => {
-    setParticipants(participants.map(p => 
-      p.id === participantId 
-        ? { ...p, conditions: p.conditions.filter((_, index) => index !== conditionIndex) }
-        : p
-    ));
-  };
-
-  const updateCondition = (participantId: string, conditionIndex: number, field: keyof SplitCondition, value: string | number) => {
-    setParticipants(participants.map(p => 
-      p.id === participantId 
-        ? {
-            ...p, 
-            conditions: p.conditions.map((c, index) => 
-              index === conditionIndex ? { ...c, [field]: value } : c
-            )
-          }
-        : p
-    ));
-  };
-
-  const updateConditionParameter = (participantId: string, conditionIndex: number, parameter: string, value: string | number | string[]) => {
-    setParticipants(participants.map(p => 
-      p.id === participantId 
-        ? {
-            ...p, 
-            conditions: p.conditions.map((c, index) => 
-              index === conditionIndex 
-                ? { ...c, parameters: { ...c.parameters, [parameter]: value } }
-                : c
-            )
-          }
-        : p
-    ));
-  };
-
-  const updateParticipant = (id: string, field: keyof Participant, value: string | number) => {
-    setParticipants(participants.map(p => 
-      p.id === id ? { ...p, [field]: value } : p
-    ));
-    
-    // Clear related errors
-    if (localErrors[`${id}_${field}`]) {
-      setLocalErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[`${id}_${field}`];
-        return newErrors;
-      });
-    }
-  };
-
-  const getTotalPercentage = () => {
-    return participants?.reduce((sum, p) => sum + (p.percentage || 0), 0) + ownerPercentage;
-  };
-
-  const handleSave = async () => {
-    if (!songId) {
-      setLocalErrors({ general: 'ID de canción requerido' });
-      return;
-    }
-
-    const splitData: CreateSplitRequest = {
-      songId,
-      owner: {
-        name: "Tú (Dueño)",
-        role: "Dueño/Creador",
-        percentage: ownerPercentage
+  // Actualizar datos del formulario de un colaborador específico
+  const updateCollaboratorForm = (
+    collaboratorId: string,
+    field: keyof CollaboratorFormData,
+    value: string | readonly { value: string; label: string }[]
+  ) => {
+    setCollaboratorForms((prev) => ({
+      ...prev,
+      [collaboratorId]: {
+        ...prev[collaboratorId],
+        [field]: value,
       },
-      splits: participants.map((participant): ServiceParticipant => ({
-        name: participant.name,
-        role: participant.role,
-        percentage: participant.percentage,
-        conditions: participant.conditions.map(c => ({
-          ...c,
-          description: generateConditionDescription(c)
-        }))
-      }))
-    };
+    }));
+  };
 
-    let result;
-    if (split?.id) {
-      // Update existing split
-      result = await updateSplit(split.id, splitData);
-    } else {
-      // Create new split
-      result = await createSplit(splitData);
-    }
+  // Actualizar condiciones específicas de split
+  const updateSplitCondition = (
+    collaboratorId: string,
+    conditionIndex: number,
+    field: string,
+    value:
+      | string
+      | readonly { value: string; label: string }[]
+      | readonly string[]
+  ) => {
+    setCollaboratorForms((prev) => ({
+      ...prev,
+      [collaboratorId]: {
+        ...prev[collaboratorId],
+        splitConditions: (prev[collaboratorId]?.splitConditions || []).map(
+          (condition, index) =>
+            index === conditionIndex
+              ? { ...condition, [field]: value }
+              : condition
+        ),
+      },
+    }));
+  };
 
-    if (result) {
-      onSplitSaved?.(result.id);
+  const addSplitCondition = (collaboratorId: string) => {
+    setCollaboratorForms((prev) => ({
+      ...prev,
+      [collaboratorId]: {
+        ...prev[collaboratorId],
+        splitConditions: [
+          ...prev[collaboratorId].splitConditions,
+          {
+            percentage: 0,
+            selectedCountries: [],
+            countriesType: "all",
+            selectedPlatforms: [],
+            platformsType: "all",
+            type: "specific",
+          },
+        ],
+      },
+    }));
+  };
+
+  const removeSplitCondition = (
+    collaboratorId: string,
+    conditionIndex: number
+  ) => {
+    setCollaboratorForms((prev) => ({
+      ...prev,
+      [collaboratorId]: {
+        ...prev[collaboratorId],
+        splitConditions: prev[collaboratorId].splitConditions.filter(
+          (_, index) => index !== conditionIndex
+        ),
+      },
+    }));
+  };
+
+  const saveSplit = async () => {
+    setIsLoading(true);
+    try {
+      // Convertir los datos del formulario al formato del backend
+      const splitsToCreate: CreateSplitRequest[] = [];
+
+      for (const [collaboratorId, formData] of Object.entries(
+        collaboratorForms
+      )) {
+        if (formData.percentage && parseFloat(formData.percentage) > 0) {
+          const splitRequest: CreateSplitRequest = {
+            songId,
+            collaboratorId,
+            conditions: formData.splitConditions.map((condition) => ({
+              fromDate: condition.fromDate,
+              toDate: condition.toDate,
+              percentage: condition.percentage,
+              selectedCountries: condition.selectedCountries || [],
+              countriesType: condition.countriesType,
+              selectedPlatforms: condition.selectedPlatforms || [],
+              platformsType: condition.platformsType,
+              type: condition.type,
+            })),
+          };
+
+          splitRequest.conditions?.push({
+            percentage: parseFloat(formData.percentage),
+            selectedCountries: formData.selectedCountries.map((c) => c.value),
+            selectedPlatforms: formData.selectedPlatforms.map((p) => p.value),
+            countriesType: formData.countriesType,
+            platformsType: formData.platformsType,
+            type: "general",
+          });
+
+          splitsToCreate.push(splitRequest);
+        }
+      }
+
+      const response = await splitsService.createSplit(splitsToCreate);
+      console.log(response);
       onClose();
+    } catch (error) {
+      console.error("Error saving splits:", error);
+      alert("Error al guardar los splits. Por favor, intenta de nuevo.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const isFormValid = () => {
-    return ownerPercentage > 0 &&
-           participants?.every(p => p.percentage > 0) &&
-           getTotalPercentage() === 100 &&
-           !loading &&
-           !saving;
+  // Custom styles for react-select
+  const selectStyles = {
+    control: (base: Record<string, unknown>) => ({
+      ...base,
+      border: "1px solid #e5e7eb",
+      borderRadius: "12px",
+      padding: "4px",
+      boxShadow: "none",
+      "&:hover": {
+        border: "1px solid #219EBC",
+      },
+      "&:focus-within": {
+        border: "1px solid #219EBC",
+        boxShadow: "0 0 0 3px rgba(33, 158, 188, 0.1)",
+      },
+    }),
+    option: (
+      base: Record<string, unknown>,
+      { isSelected, isFocused }: { isSelected: boolean; isFocused: boolean }
+    ) => ({
+      ...base,
+      backgroundColor: isSelected ? "#219EBC" : isFocused ? "#8ECAE6" : "white",
+      color: isSelected ? "white" : "#374151",
+    }),
+    multiValue: (base: Record<string, unknown>) => ({
+      ...base,
+      backgroundColor: "#8ECAE6",
+      borderRadius: "8px",
+    }),
+    multiValueLabel: (base: Record<string, unknown>) => ({
+      ...base,
+      color: "#023047",
+      fontWeight: "500",
+    }),
+    multiValueRemove: (base: Record<string, unknown>) => ({
+      ...base,
+      color: "#023047",
+      "&:hover": {
+        backgroundColor: "#219EBC",
+        color: "white",
+      },
+    }),
   };
-
-  const totalPercentage = getTotalPercentage();
 
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
           onClick={onClose}
         >
           <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.95, opacity: 0 }}
-            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden"
+            className="bg-white rounded-3xl shadow-2xl max-w-5xl w-full mx-4 max-h-[95vh] overflow-hidden flex flex-col"
+            initial={{ scale: 0.9, y: 50, opacity: 0 }}
+            animate={{ scale: 1, y: 0, opacity: 1 }}
+            exit={{ scale: 0.9, y: 50, opacity: 0 }}
+            transition={{ type: "spring", damping: 20, stiffness: 300 }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-gray-500 to-gray-700 rounded-lg flex items-center justify-center">
-                  <Music className="w-5 h-5 text-white" />
+            {/* Enhanced Header */}
+            <div className="relative bg-gradient-to-r from-tertiary via-secondary to-tertiary p-8 text-white overflow-hidden">
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-tertiary/20 to-secondary/20"
+                animate={{
+                  background: [
+                    "linear-gradient(45deg, rgba(33, 158, 188, 0.2), rgba(142, 202, 230, 0.2))",
+                    "linear-gradient(135deg, rgba(142, 202, 230, 0.2), rgba(33, 158, 188, 0.2))",
+                    "linear-gradient(45deg, rgba(33, 158, 188, 0.2), rgba(142, 202, 230, 0.2))",
+                  ],
+                }}
+                transition={{ duration: 4, repeat: Infinity }}
+              />
+
+              <div className="relative flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <motion.div
+                    className="p-3 rounded-2xl bg-white/20 backdrop-blur-sm"
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    transition={{ type: "spring", stiffness: 400 }}
+                  >
+                    <Users className="w-8 h-8 text-white" />
+                  </motion.div>
+                  <div>
+                    <motion.h2
+                      className="text-3xl font-bold mb-1"
+                      initial={{ x: -20, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: 0.1 }}
+                    >
+                      Configurar Splits
+                    </motion.h2>
+                    <motion.p
+                      className="text-white/80 text-lg"
+                      initial={{ x: -20, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: 0.2 }}
+                    >
+                      Distribuye los ingresos entre colaboradores
+                    </motion.p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                    {split ? 'Editar Split' : 'Gestionar Splits'}
-                  </h2>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Configura la distribución de regalías
-                  </p>
-                </div>
+
+                <motion.button
+                  onClick={onClose}
+                  className="p-2 rounded-xl bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-colors"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <X className="w-6 h-6 text-white" />
+                </motion.button>
               </div>
-              <button
-                onClick={onClose}
-                disabled={saving}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50"
-              >
-                <X className="w-5 h-5 text-gray-500" />
-              </button>
+
+              {/* Decorative elements */}
+              <motion.div
+                className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full"
+                animate={{
+                  scale: [1, 1.2, 1],
+                  opacity: [0.3, 0.1, 0.3],
+                }}
+                transition={{ duration: 3, repeat: Infinity }}
+              />
+              <motion.div
+                className="absolute -bottom-6 -left-6 w-32 h-32 bg-white/5 rounded-full"
+                animate={{
+                  scale: [1.2, 1, 1.2],
+                  opacity: [0.1, 0.3, 0.1],
+                }}
+                transition={{ duration: 4, repeat: Infinity }}
+              />
             </div>
 
-            {/* Loading State */}
-            {loading && (
-              <div className="flex items-center justify-center p-8">
-                <Loader2 className="w-8 h-8 animate-spin text-gray-500" />
-                <span className="ml-2 text-gray-600 dark:text-gray-400">Cargando split...</span>
-              </div>
-            )}
+            {/* Enhanced Body */}
+            <div className="flex-1 overflow-y-auto p-8 bg-gray-50">
+              <motion.div
+                className="space-y-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                {collaborators.map((collaborator, index) => {
+                  // Inicializar formulario si no existe
+                  if (!collaboratorForms[collaborator.id]) {
+                    setCollaboratorForms((prev) => ({
+                      ...prev,
+                      [collaborator.id]: {
+                        percentage: "",
+                        countriesType: "all",
+                        selectedCountries: [],
+                        platformsType: "all",
+                        selectedPlatforms: [],
+                        splitConditions: [],
+                        type: "general",
+                      },
+                    }));
+                  }
 
-            {/* Content */}
-            {!loading && (
-              <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
-                {/* Error Display */}
-                {(error || localErrors.general) && (
-                  <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                    <p className="text-sm text-red-600 dark:text-red-400 flex items-center">
-                      <AlertCircle className="w-4 h-4 mr-2" />
-                      {error || localErrors.general}
-                    </p>
-                  </div>
-                )}
+                  const formData = collaboratorForms[collaborator.id] || {
+                    percentage: "",
+                    countriesType: "all",
+                    selectedCountries: [],
+                    platformsType: "all",
+                    selectedPlatforms: [],
+                    splitConditions: [],
+                    type: "general",
+                  };
 
-                {/* Owner Percentage */}
-                <div className="mb-6">
-                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    <UserIcon className="w-4 h-4 inline mr-2" />
-                    Tu porcentaje como dueño de la canción
-                  </label>
-                  <div className="flex items-center space-x-3">
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={ownerPercentage || ''}
-                      onChange={(e) => {
-                        setOwnerPercentage(parseInt(e.target.value) || 0);
-                        if (localErrors.ownerPercentage) {
-                          setLocalErrors(prev => {
-                            const newErrors = { ...prev };
-                            delete newErrors.ownerPercentage;
-                            return newErrors;
-                          });
-                        }
+                  const isExpanded = expandedCollaborators[collaborator.id];
+
+                  return (
+                    <motion.div
+                      key={collaborator.id}
+                      className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 * index }}
+                      whileHover={{
+                        boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)",
                       }}
-                      placeholder="0"
-                      disabled={saving}
-                      className={`flex-1 px-4 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-gray-500/20 disabled:opacity-50 disabled:cursor-not-allowed ${
-                        localErrors.ownerPercentage
-                          ? 'border-red-300 bg-red-50 dark:border-red-600 dark:bg-red-900/20'
-                          : 'border-gray-200 bg-white hover:border-gray-300 focus:border-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-gray-500 dark:focus:border-gray-400'
-                      } dark:text-white dark:placeholder-gray-400`}
-                    />
-                    <span className="text-lg font-semibold text-gray-700 dark:text-gray-300">%</span>
-                  </div>
-                  {localErrors.ownerPercentage && (
-                    <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center">
-                      <AlertCircle className="w-4 h-4 mr-1" />
-                      {localErrors.ownerPercentage}
-                    </p>
-                  )}
-                  <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                    Este es tu porcentaje como dueño/creador principal de la canción
-                  </p>
-                </div>
-
-                {/* Participants */}
-                <div className="mb-6">
-                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">
-                    <Music className="w-4 h-4 inline mr-2" />
-                    Colaboradores
-                  </label>
-
-                  <div className="space-y-4">
-                    {participants?.map((participant, index) => (
+                    >
+                      {/* Collaborator Header */}
                       <motion.div
-                        key={participant.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50"
+                        className="p-6 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100 cursor-pointer"
+                        onClick={() =>
+                          toggleCollaboratorExpanded(collaborator.id)
+                        }
+                        whileHover={{
+                          backgroundColor: "rgba(142, 202, 230, 0.05)",
+                        }}
                       >
-                        <div className="flex items-center justify-between mb-3">
-                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Participante {index + 1}
-                          </span>
-                          {participants.length > 1 && (
-                            <button
-                              onClick={() => removeParticipant(participant.id)}
-                              disabled={saving}
-                              className="p-1 hover:bg-red-100 dark:hover:bg-red-900/20 text-red-500 rounded transition-colors disabled:opacity-50"
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <motion.div
+                              className="w-14 h-14 rounded-2xl bg-gradient-to-br from-secondary to-tertiary flex items-center justify-center text-white shadow-lg"
+                              whileHover={{ scale: 1.1 }}
                             >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                          {/* Name */}
-                          <div>
-                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                              Nombre
-                            </label>
-                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{participant.name}</span>
-                          </div>
-
-                          {/* Role */}
-                          <div>
-                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                              Rol
-                            </label>
-                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{participant.role || 'Sin rol asignado'}</span>
-                          </div>
-
-                          {/* Percentage */}
-                          <div>
-                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                              Porcentaje Base (%)
-                            </label>
-                            <input
-                              type="number"
-                              min="0"
-                              max="100"
-                              value={participant.percentage || 0}
-                              onChange={(e) => updateParticipant(participant.id, 'percentage', parseInt(e.target.value) || 0)}
-                              placeholder="0"
-                              disabled={saving}
-                              className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500/20 disabled:opacity-50 disabled:cursor-not-allowed ${
-                                localErrors[`${participant.id}_percentage`]
-                                  ? 'border-red-300 bg-red-50 dark:border-red-600 dark:bg-red-900/20'
-                                  : 'border-gray-200 bg-white hover:border-gray-300 focus:border-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-gray-500'
-                              } dark:text-white dark:placeholder-gray-400 text-sm`}
-                            />
-                            {localErrors[`${participant.id}_percentage`] && (
-                              <p className="mt-1 text-xs text-red-600 dark:text-red-400">
-                                {localErrors[`${participant.id}_percentage`]}
+                              <User className="w-7 h-7" />
+                            </motion.div>
+                            <div>
+                              <h3 className="text-xl font-bold text-quaternary mb-1">
+                                {collaborator.name}
+                              </h3>
+                              <p className="text-septenary text-sm flex items-center gap-2">
+                                <span>{collaborator.email}</span>
+                                {formData.percentage && (
+                                  <span className="px-2 py-1 bg-secondary/20 text-tertiary rounded-lg text-xs font-medium">
+                                    {formData.percentage}%
+                                  </span>
+                                )}
                               </p>
-                            )}
-                          </div>
-
-                          {/* Conditions */}
-                          <div className="col-span-3">
-                            <div className="flex items-center justify-between mb-2">
-                              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400">
-                                Condiciones del Split
-                              </label>
-                              <button
-                                type="button"
-                                onClick={() => addCondition(participant.id)}
-                                disabled={saving}
-                                className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md transition-colors disabled:opacity-50"
-                              >
-                                <Plus size={12} />
-                                Agregar
-                              </button>
-                            </div>
-                            
-                            <div className="space-y-2">
-                              {participant.conditions.map((condition, conditionIndex) => (
-                                <div key={conditionIndex} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                                  <div className="flex items-center justify-between mb-2">
-                                    <div className="flex items-center gap-2">
-                                      {condition.type === 'time' && <Calendar size={14} className="text-gray-500" />}
-                                      {condition.type === 'platforms' && <Music size={14} className="text-gray-500" />}
-                                      {condition.type === 'countries' && <Globe size={14} className="text-gray-500" />}
-                                      {(condition.type === 'time_reduced' || condition.type === 'custom') && <Settings size={14} className="text-gray-500" />}
-                                      <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                                        Condición {conditionIndex + 1}
-                                      </span>
-                                    </div>
-                                    <button
-                                      type="button"
-                                      onClick={() => removeCondition(participant.id, conditionIndex)}
-                                      disabled={saving}
-                                      className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 disabled:opacity-50"
-                                    >
-                                      <Trash2 size={12} />
-                                    </button>
-                                  </div>
-
-                                  <div className="grid grid-cols-2 gap-2 mb-2">
-                                    <div>
-                                      <select
-                                        value={condition.type}
-                                        onChange={(e) => updateCondition(participant.id, conditionIndex, 'type', e.target.value as SplitCondition['type'])}
-                                        disabled={saving}
-                                        className="w-full px-2 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 disabled:opacity-50"
-                                      >
-                                        {conditionTypes.map(type => (
-                                          <option key={type.value} value={type.value}>
-                                            {type.label}
-                                          </option>
-                                        ))}
-                                      </select>
-                                    </div>
-                                    <div>
-                                      <input
-                                        type="number"
-                                        min="0"
-                                        max="100"
-                                        value={condition.percentage}
-                                        onChange={(e) => updateCondition(participant.id, conditionIndex, 'percentage', parseInt(e.target.value) || 0)}
-                                        placeholder="% para esta condición"
-                                        disabled={saving}
-                                        className="w-full px-2 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 disabled:opacity-50"
-                                      />
-                                    </div>
-                                  </div>
-
-                                  {/* Specific parameters based on type */}
-                                  {condition.type === 'time' && (
-                                    <div className="grid grid-cols-2 gap-2">
-                                      <input
-                                        type="date"
-                                        value={condition.parameters.startDate || ''}
-                                        onChange={(e) => updateConditionParameter(participant.id, conditionIndex, 'startDate', e.target.value)}
-                                        disabled={saving}
-                                        className="w-full px-2 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 disabled:opacity-50"
-                                      />
-                                      <input
-                                        type="date"
-                                        value={condition.parameters.endDate || ''}
-                                        onChange={(e) => updateConditionParameter(participant.id, conditionIndex, 'endDate', e.target.value)}
-                                        disabled={saving}
-                                        className="w-full px-2 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 disabled:opacity-50"
-                                      />
-                                    </div>
-                                  )}
-
-                                  {condition.type === 'platforms' && (
-                                    <div>
-                                      <select
-                                        multiple
-                                        value={condition.parameters.platforms || []}
-                                        onChange={(e) => {
-                                          const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
-                                          updateConditionParameter(participant.id, conditionIndex, 'platforms', selectedOptions);
-                                        }}
-                                        disabled={saving}
-                                        className="w-full px-2 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 h-20 disabled:opacity-50"
-                                      >
-                                        {platforms.map(platform => (
-                                          <option key={platform} value={platform}>
-                                            {platform}
-                                          </option>
-                                        ))}
-                                      </select>
-                                      <p className="text-xs text-gray-500 mt-1">Mantén Ctrl/Cmd para seleccionar múltiples</p>
-                                    </div>
-                                  )}
-
-                                  {condition.type === 'countries' && (
-                                    <div>
-                                      <select
-                                        multiple
-                                        value={condition.parameters.countries || []}
-                                        onChange={(e) => {
-                                          const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
-                                          updateConditionParameter(participant.id, conditionIndex, 'countries', selectedOptions);
-                                        }}
-                                        disabled={saving}
-                                        className="w-full px-2 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 h-20 disabled:opacity-50"
-                                      >
-                                        {countries.map(country => (
-                                          <option key={country} value={country}>
-                                            {country}
-                                          </option>
-                                        ))}
-                                      </select>
-                                      <p className="text-xs text-gray-500 mt-1">Mantén Ctrl/Cmd para seleccionar múltiples</p>
-                                    </div>
-                                  )}
-
-                                  {condition.type === 'time_reduced' && (
-                                    <div className="grid grid-cols-3 gap-2">
-                                      <input
-                                        type="date"
-                                        value={condition.parameters.startDate || ''}
-                                        onChange={(e) => updateConditionParameter(participant.id, conditionIndex, 'startDate', e.target.value)}
-                                        disabled={saving}
-                                        className="w-full px-2 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 disabled:opacity-50"
-                                      />
-                                      <input
-                                        type="date"
-                                        value={condition.parameters.endDate || ''}
-                                        onChange={(e) => updateConditionParameter(participant.id, conditionIndex, 'endDate', e.target.value)}
-                                        disabled={saving}
-                                        className="w-full px-2 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 disabled:opacity-50"
-                                      />
-                                      <input
-                                        type="number"
-                                        min="0"
-                                        max="100"
-                                        value={condition.parameters.finalPercentage || 0}
-                                        onChange={(e) => updateConditionParameter(participant.id, conditionIndex, 'finalPercentage', parseInt(e.target.value) || 0)}
-                                        placeholder="% después"
-                                        disabled={saving}
-                                        className="w-full px-2 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 disabled:opacity-50"
-                                      />
-                                    </div>
-                                  )}
-
-                                  {condition.type === 'custom' && (
-                                    <textarea
-                                      value={condition.parameters.text || ''}
-                                      onChange={(e) => updateConditionParameter(participant.id, conditionIndex, 'text', e.target.value)}
-                                      placeholder="Describe la condición personalizada..."
-                                      disabled={saving}
-                                      className="w-full px-2 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 h-16 resize-none disabled:opacity-50"
-                                    />
-                                  )}
-
-                                  {/* Generated description */}
-                                  <div className="mt-2 p-2 bg-gray-100 dark:bg-gray-700 rounded text-xs text-gray-600 dark:text-gray-400">
-                                    <strong>Vista previa:</strong> {generateConditionDescription(condition)}
-                                  </div>
-                                </div>
-                              ))}
-                              
-                              {participant.conditions.length === 0 && (
-                                <div className="text-xs text-gray-500 dark:text-gray-400 italic text-center py-2">
-                                  Sin condiciones específicas - Se aplicará el porcentaje base
-                                </div>
-                              )}
                             </div>
                           </div>
+
+                          <motion.div
+                            animate={{ rotate: isExpanded ? 180 : 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="p-2 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors"
+                          >
+                            <ChevronDown className="w-5 h-5 text-septenary" />
+                          </motion.div>
                         </div>
                       </motion.div>
-                    ))}
-                  </div>
+
+                      {/* Collapsible Content */}
+                      <AnimatePresence>
+                        {isExpanded && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="p-6 space-y-6">
+                              {/* General Condition Section */}
+                              <div className="bg-gradient-to-r from-secondary/10 to-tertiary/10 rounded-2xl p-6">
+                                <div className="flex items-center gap-3 mb-4">
+                                  <Settings className="w-6 h-6 text-tertiary" />
+                                  <div>
+                                    <h4 className="text-lg font-semibold text-quaternary">
+                                      Condición General
+                                    </h4>
+                                    <p className="text-sm text-septenary">
+                                      Configuración base que se aplica cuando no
+                                      hay condiciones específicas activas
+                                    </p>
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                  {/* Percentage Input */}
+                                  <div className="space-y-2">
+                                    <label className="flex items-center gap-2 text-sm font-medium text-quaternary">
+                                      <Percent className="w-4 h-4" />
+                                      Porcentaje de Split
+                                    </label>
+                                    <div className="relative">
+                                      <input
+                                        type="number"
+                                        min="0"
+                                        max="100"
+                                        step="0.01"
+                                        placeholder="0.00"
+                                        value={formData.percentage}
+                                        onChange={(e) =>
+                                          updateCollaboratorForm(
+                                            collaborator.id,
+                                            "percentage",
+                                            e.target.value
+                                          )
+                                        }
+                                        className="w-full pl-4 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-tertiary/20 focus:border-tertiary transition-all text-quaternary font-medium"
+                                      />
+                                      <div className="absolute right-3 top-1/2 -translate-y-1/2 text-septenary">
+                                        %
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Countries Configuration */}
+                                  <div className="space-y-3 col-span-2">
+                                    <label className="flex items-center gap-2 text-sm font-medium text-quaternary">
+                                      <Globe className="w-4 h-4" />
+                                      Configuración de Países
+                                    </label>
+                                    <div className="space-y-2">
+                                      {[
+                                        {
+                                          value: "all",
+                                          label: "Todos los países",
+                                        },
+                                        {
+                                          value: "except",
+                                          label: "Excepto países seleccionados",
+                                        },
+                                        {
+                                          value: "only",
+                                          label: "Solo países seleccionados",
+                                        },
+                                      ].map((option) => (
+                                        <motion.label
+                                          key={option.value}
+                                          className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors"
+                                          whileHover={{ scale: 1.02 }}
+                                          whileTap={{ scale: 0.98 }}
+                                        >
+                                          <input
+                                            type="radio"
+                                            name={`countries-${collaborator.id}`}
+                                            checked={
+                                              formData.countriesType ===
+                                              option.value
+                                            }
+                                            onChange={() =>
+                                              updateCollaboratorForm(
+                                                collaborator.id,
+                                                "countriesType",
+                                                option.value as
+                                                  | "all"
+                                                  | "except"
+                                                  | "only"
+                                              )
+                                            }
+                                            className="w-4 h-4 text-tertiary focus:ring-tertiary/20"
+                                          />
+                                          <span className="text-sm text-quaternary">
+                                            {option.label}
+                                          </span>
+                                        </motion.label>
+                                      ))}
+                                    </div>
+
+                                    {(formData.countriesType === "except" ||
+                                      formData.countriesType === "only") && (
+                                      <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: "auto" }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                      >
+                                        <Select
+                                          isMulti
+                                          options={countries}
+                                          value={formData.selectedCountries}
+                                          onChange={(selected) =>
+                                            updateCollaboratorForm(
+                                              collaborator.id,
+                                              "selectedCountries",
+                                              selected || []
+                                            )
+                                          }
+                                          styles={selectStyles}
+                                          placeholder="Seleccionar países..."
+                                          noOptionsMessage={() =>
+                                            "No hay países disponibles"
+                                          }
+                                        />
+                                      </motion.div>
+                                    )}
+                                  </div>
+
+                                  {/* Platforms Configuration */}
+                                  <div className="space-y-3 lg:col-span-2">
+                                    <label className="flex items-center gap-2 text-sm font-medium text-quaternary">
+                                      <Music className="w-4 h-4" />
+                                      Configuración de Plataformas
+                                    </label>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                      {[
+                                        {
+                                          value: "all",
+                                          label: "Todas las plataformas",
+                                        },
+                                        {
+                                          value: "except",
+                                          label:
+                                            "Excepto plataformas seleccionadas",
+                                        },
+                                        {
+                                          value: "only",
+                                          label:
+                                            "Solo plataformas seleccionadas",
+                                        },
+                                      ].map((option) => (
+                                        <motion.label
+                                          key={option.value}
+                                          className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors"
+                                          whileHover={{ scale: 1.02 }}
+                                          whileTap={{ scale: 0.98 }}
+                                        >
+                                          <input
+                                            type="radio"
+                                            name={`platforms-${collaborator.id}`}
+                                            checked={
+                                              formData.platformsType ===
+                                              option.value
+                                            }
+                                            onChange={() =>
+                                              updateCollaboratorForm(
+                                                collaborator.id,
+                                                "platformsType",
+                                                option.value as
+                                                  | "all"
+                                                  | "except"
+                                                  | "only"
+                                              )
+                                            }
+                                            className="w-4 h-4 text-tertiary focus:ring-tertiary/20"
+                                          />
+                                          <span className="text-sm text-quaternary">
+                                            {option.label}
+                                          </span>
+                                        </motion.label>
+                                      ))}
+                                    </div>
+
+                                    {(formData.platformsType === "except" ||
+                                      formData.platformsType === "only") && (
+                                      <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: "auto" }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                      >
+                                        <Select
+                                          isMulti
+                                          options={platforms}
+                                          value={formData.selectedPlatforms}
+                                          onChange={(selected) =>
+                                            updateCollaboratorForm(
+                                              collaborator.id,
+                                              "selectedPlatforms",
+                                              selected || []
+                                            )
+                                          }
+                                          styles={selectStyles}
+                                          placeholder="Seleccionar plataformas..."
+                                          noOptionsMessage={() =>
+                                            "No hay plataformas disponibles"
+                                          }
+                                        />
+                                      </motion.div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Conditional Splits Section */}
+                              <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                    <Sparkles className="w-6 h-6 text-quinary" />
+                                    <div>
+                                      <h4 className="text-lg font-semibold text-quaternary">
+                                        Condiciones Específicas
+                                      </h4>
+                                      <p className="text-sm text-septenary">
+                                        Configuraciones que se aplican en
+                                        períodos específicos
+                                      </p>
+                                    </div>
+                                  </div>
+
+                                  <motion.button
+                                    onClick={() =>
+                                      addSplitCondition(collaborator.id)
+                                    }
+                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-quinary to-quinary/80 text-white rounded-xl hover:shadow-lg transition-all"
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                  >
+                                    <Plus className="w-4 h-4" />
+                                    Añadir Condición
+                                  </motion.button>
+                                </div>
+
+                                {/* Conditional Splits List */}
+                                <div className="space-y-4">
+                                  {(formData.splitConditions || []).map(
+                                    (condition, conditionIndex) => (
+                                      <motion.div
+                                        key={conditionIndex}
+                                        className="bg-gradient-to-r from-quinary/10 to-quinary/5 rounded-2xl p-6 border border-quinary/20"
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -20 }}
+                                        transition={{
+                                          delay: conditionIndex * 0.1,
+                                        }}
+                                      >
+                                        <div className="flex items-center justify-between mb-4">
+                                          <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-lg bg-quinary/20 flex items-center justify-center">
+                                              <Calendar className="w-4 h-4 text-quinary" />
+                                            </div>
+                                            <h5 className="font-semibold text-quaternary">
+                                              Condición #{conditionIndex + 1}
+                                            </h5>
+                                          </div>
+
+                                          <motion.button
+                                            onClick={() =>
+                                              removeSplitCondition(
+                                                collaborator.id,
+                                                conditionIndex
+                                              )
+                                            }
+                                            className="p-2 rounded-lg text-red-500 hover:bg-red-50 transition-colors"
+                                            whileHover={{ scale: 1.1 }}
+                                            whileTap={{ scale: 0.9 }}
+                                          >
+                                            <Trash2 className="w-4 h-4" />
+                                          </motion.button>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                          <div className="space-y-2">
+                                            <label className="text-sm font-medium text-quaternary">
+                                              Fecha de inicio
+                                            </label>
+                                            <input
+                                              type="date"
+                                              value={condition.fromDate}
+                                              onChange={(e) =>
+                                                updateSplitCondition(
+                                                  collaborator.id,
+                                                  conditionIndex,
+                                                  "fromDate",
+                                                  e.target.value
+                                                )
+                                              }
+                                              className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-quinary/20 focus:border-quinary transition-all"
+                                            />
+                                          </div>
+
+                                          <div className="space-y-2">
+                                            <label className="text-sm font-medium text-quaternary">
+                                              Fecha de fin
+                                            </label>
+                                            <input
+                                              type="date"
+                                              value={condition.toDate}
+                                              onChange={(e) =>
+                                                updateSplitCondition(
+                                                  collaborator.id,
+                                                  conditionIndex,
+                                                  "toDate",
+                                                  e.target.value
+                                                )
+                                              }
+                                              className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-quinary/20 focus:border-quinary transition-all"
+                                            />
+                                          </div>
+
+                                          <div className="space-y-2">
+                                            <label className="text-sm font-medium text-quaternary">
+                                              Porcentaje
+                                            </label>
+                                            <div className="relative">
+                                              <input
+                                                type="number"
+                                                min="0"
+                                                max="100"
+                                                step="0.01"
+                                                value={condition.percentage}
+                                                onChange={(e) =>
+                                                  updateSplitCondition(
+                                                    collaborator.id,
+                                                    conditionIndex,
+                                                    "percentage",
+                                                    e.target.value
+                                                  )
+                                                }
+                                                className="w-full pl-3 pr-8 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-quinary/20 focus:border-quinary transition-all"
+                                              />
+                                              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-septenary text-sm">
+                                                %
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                        {/* Countries and Platforms for conditions - Similar structure but more compact */}
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                          <div className="space-y-2">
+                                            <label className="text-sm font-medium text-quaternary">
+                                              Países
+                                            </label>
+                                            <div className="flex gap-2 text-xs">
+                                              {[
+                                                {
+                                                  value: "all",
+                                                  label: "Todos",
+                                                },
+                                                {
+                                                  value: "except",
+                                                  label: "Excepto",
+                                                },
+                                                {
+                                                  value: "only",
+                                                  label: "Solo",
+                                                },
+                                              ].map((option) => (
+                                                <label
+                                                  key={option.value}
+                                                  className="flex items-center gap-1 cursor-pointer"
+                                                >
+                                                  <input
+                                                    type="radio"
+                                                    name={`countries-${collaborator.id}-${conditionIndex}`}
+                                                    checked={
+                                                      condition.countriesType ===
+                                                        option.value ||
+                                                      (condition.countriesType ===
+                                                        undefined &&
+                                                        option.value === "all")
+                                                    }
+                                                    onChange={() =>
+                                                      updateSplitCondition(
+                                                        collaborator.id,
+                                                        conditionIndex,
+                                                        "countriesType",
+                                                        option.value
+                                                      )
+                                                    }
+                                                    className="w-3 h-3"
+                                                  />
+                                                  <span>{option.label}</span>
+                                                </label>
+                                              ))}
+                                            </div>
+                                            {condition.countriesType !==
+                                              "all" && (
+                                              <Select<
+                                                {
+                                                  value: string;
+                                                  label: string;
+                                                },
+                                                true
+                                              >
+                                                isMulti
+                                                options={countries}
+                                                onChange={(selected) =>
+                                                  updateSplitCondition(
+                                                    collaborator.id,
+                                                    conditionIndex,
+                                                    "countries",
+                                                    selected || []
+                                                  )
+                                                }
+                                                styles={selectStyles}
+                                                placeholder="Seleccionar..."
+                                              />
+                                            )}
+                                          </div>
+
+                                          <div className="space-y-2">
+                                            <label className="text-sm font-medium text-quaternary">
+                                              Plataformas
+                                            </label>
+                                            <div className="flex gap-2 text-xs">
+                                              {[
+                                                {
+                                                  value: "all",
+                                                  label: "Todas",
+                                                },
+                                                {
+                                                  value: "except",
+                                                  label: "Excepto",
+                                                },
+                                                {
+                                                  value: "only",
+                                                  label: "Solo",
+                                                },
+                                              ].map((option) => (
+                                                <label
+                                                  key={option.value}
+                                                  className="flex items-center gap-1 cursor-pointer"
+                                                >
+                                                  <input
+                                                    type="radio"
+                                                    name={`platforms-${collaborator.id}-${conditionIndex}`}
+                                                    checked={
+                                                      condition.platformsType ===
+                                                        option.value ||
+                                                      (condition.platformsType ===
+                                                        undefined &&
+                                                        option.value === "all")
+                                                    }
+                                                    onChange={() =>
+                                                      updateSplitCondition(
+                                                        collaborator.id,
+                                                        conditionIndex,
+                                                        "platformsType",
+                                                        option.value
+                                                      )
+                                                    }
+                                                    className="w-3 h-3"
+                                                  />
+                                                  <span>{option.label}</span>
+                                                </label>
+                                              ))}
+                                            </div>
+                                            {condition.platformsType !==
+                                              "all" && (
+                                              <Select
+                                                isMulti
+                                                options={platforms}
+                                                onChange={(selected) =>
+                                                  updateSplitCondition(
+                                                    collaborator.id,
+                                                    conditionIndex,
+                                                    "platforms",
+                                                    selected || []
+                                                  )
+                                                }
+                                                styles={selectStyles}
+                                                placeholder="Seleccionar..."
+                                              />
+                                            )}
+                                          </div>
+                                        </div>
+                                      </motion.div>
+                                    )
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
+            </div>
+
+            {/* Enhanced Footer */}
+            <div className="p-6 bg-white border-t border-gray-100">
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-septenary">
+                  {collaborators.length} colaborador
+                  {collaborators.length !== 1 ? "es" : ""} configurado
+                  {collaborators.length !== 1 ? "s" : ""}
                 </div>
 
-                {/* Summary */}
-                <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
-                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                    Resumen de Distribución
-                  </h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Tu porcentaje:</span>
-                      <span className="font-medium text-gray-900 dark:text-white">{ownerPercentage}%</span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Colaboradores:</span>
-                      <span className="font-medium text-gray-900 dark:text-white">
-                        {participants?.reduce((sum, p) => sum + p.percentage, 0)}%
-                      </span>
-                    </div>
-                    <div className="border-t border-gray-200 dark:border-gray-700 pt-2">
-                      <div className="flex justify-between items-center text-sm font-semibold">
-                        <span className="text-gray-700 dark:text-gray-300">Total:</span>
-                        <span className={`${totalPercentage === 100 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                          {totalPercentage}%
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <div className="flex items-center gap-3">
+                  <motion.button
+                    onClick={onClose}
+                    className="px-6 py-3 text-septenary hover:text-quaternary transition-colors font-medium"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Cancelar
+                  </motion.button>
 
-                {/* Total validation error */}
-                {totalPercentage !== 100 && (
-                  <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                    <p className="text-sm text-red-600 dark:text-red-400 flex items-center">
-                      <AlertCircle className="w-4 h-4 mr-2" />
-                      La suma de porcentajes debe ser exactamente 100% (actual: {totalPercentage}%)
-                    </p>
-                  </div>
-                )}
+                  <motion.button
+                    onClick={saveSplit}
+                    disabled={isLoading}
+                    className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-tertiary to-secondary text-white rounded-xl font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    {isLoading ? (
+                      <motion.div
+                        className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
+                        animate={{ rotate: 360 }}
+                        transition={{
+                          duration: 1,
+                          repeat: Infinity,
+                          ease: "linear",
+                        }}
+                      />
+                    ) : (
+                      <Save className="w-4 h-4" />
+                    )}
+                    {isLoading ? "Guardando..." : "Guardar Configuración"}
+                  </motion.button>
+                </div>
               </div>
-            )}
-
-            {/* Footer */}
-            <div className="flex items-center justify-between p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-              <button
-                onClick={onClose}
-                disabled={saving}
-                className="px-6 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors disabled:opacity-50"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={!isFormValid() || saving}
-                className={`px-6 py-2 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 ${
-                  isFormValid() && !saving
-                    ? 'bg-gray-600 hover:bg-gray-700 text-white shadow-lg hover:shadow-xl'
-                    : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                }`}
-              >
-                {saving ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Guardando...</span>
-                  </>
-                ) : (
-                  <>
-                    <Check className="w-4 h-4" />
-                    <span>{split ? 'Actualizar Split' : 'Guardar Split'}</span>
-                  </>
-                )}
-              </button>
             </div>
           </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
   );
-};
-
-export default SplitsModal; 
+}

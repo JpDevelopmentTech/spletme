@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import {useState } from "react";  
 import { DollarSign } from "lucide-react";
 import Title from "../../../../components/title/title";
@@ -14,12 +14,20 @@ import Historyofsplits from "./components/historyofsplits";
 import Extraordinarycosts from "./components/extraordinarycosts";
 import useSong from "../../../../hooks/useSong";
 import Loading from "../../../../components/loading/loading";
-import ConfirmationModal from "../../../../components/confirmationModal/confirmationModal";
+import StripeConnectLoginModal from "../../../../components/modal/StripeConnectLoginModal";
+import StripePaymentModal from "../../../../components/modal/StripePaymentModal";
+import AlertComponent from "../../../../components/alert/alert";
+import LocalStorageService from "../../../../services/localstorage";
+import PaymentHistory from "../../../../components/PaymentHistory/PaymentHistory";
 
 export default function Song() {
   const { id } = useParams();
   const { song, loading } = useSong({ id: id || "" });
+  const [showStripeLoginModal, setShowStripeLoginModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertType, setAlertType] = useState('');
+  const [paymentHistoryRefresh, setPaymentHistoryRefresh] = useState(0);
   console.log("🚀 ~ Song ~ song:", song)
   
   const items = [
@@ -33,21 +41,74 @@ export default function Song() {
     },
   ];
 
-  const handlePayment = () => {
-    // Aquí iría la lógica del pago
-    setShowPaymentModal(false);
+  // Verificar si hay sesión activa en localStorage
+  const isStripeConnected = () => {
+    const authData = LocalStorageService.getItem('stripe_connect_auth');
+    return authData?.isLoggedIn === true;
+  };
+
+  // Manejar click en botón "Pagar a todos"
+  const handlePayAllClick = () => {
+    if (isStripeConnected()) {
+      // Si ya está conectado, mostrar modal de pago
+      setShowPaymentModal(true);
+    } else {
+      // Si no está conectado, mostrar modal de login
+      setShowStripeLoginModal(true);
+    }
+  };
+
+  const handleStripeLoginSuccess = () => {
+    // Aquí podríamos proceder con el pago después del login exitoso
+    console.log("Login exitoso en Stripe Connect, procediendo con el pago...");
+    
+    // Mostrar alerta de éxito
+    setAlertMessage('¡Inicio de sesión exitoso! Te has conectado correctamente con Stripe Connect.');
+    setAlertType('success');
+    
+    // Limpiar la alerta después de 5 segundos
+    setTimeout(() => {
+      setAlertMessage('');
+      setAlertType('');
+    }, 5000);
+  };
+
+  const handlePaymentSuccess = () => {
+    // Manejar éxito del pago
+    console.log("Pago procesado exitosamente");
+    
+    // Refrescar el historial de pagos
+    setPaymentHistoryRefresh(prev => prev + 1);
+    
+    // Mostrar alerta de éxito del pago
+    setAlertMessage('¡Pago procesado exitosamente! Los colaboradores recibirán su parte correspondiente.');
+    setAlertType('success');
+    
+    // Limpiar la alerta después de 5 segundos
+    setTimeout(() => {
+      setAlertMessage('');
+      setAlertType('');
+    }, 5000);
   };
 
   return (
     <>
-      <ConfirmationModal
+      <StripeConnectLoginModal
+        isOpen={showStripeLoginModal}
+        onClose={() => setShowStripeLoginModal(false)}
+        onLoginSuccess={handleStripeLoginSuccess}
+      />
+      
+      <StripePaymentModal
         isOpen={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}
-        onConfirm={handlePayment}
-        title="Confirmar pago"
-        message="¿Estás seguro que deseas proceder con el pago? Esta acción no se puede deshacer."
-        confirmText="Confirmar pago"
+        songTitle={song?.trackTitle}
+        totalAmount={song?.totalNetIncome || 0}
+        collaborators={song?.collaborators || []}
+        onPaymentSuccess={handlePaymentSuccess}
       />
+      
+      <AlertComponent message={alertMessage} type={alertType} />
 
       <div className="min-h-screen ">
         <div className="w-full mx-auto px-4 py-8 sm:px-6 lg:px-8">
@@ -126,7 +187,7 @@ export default function Song() {
                   </div>
                   <button 
                     className="w-full bg-indigo-600 text-white font-semibold py-3 rounded-lg transition-colors hover:bg-indigo-700 flex items-center justify-center"
-                    onClick={() => setShowPaymentModal(true)}
+                    onClick={handlePayAllClick}
                   >
                     <span className="mr-2">Pagar a todos</span>
                     <DollarSign className="w-4 h-4" />
@@ -165,6 +226,15 @@ export default function Song() {
               {/* Extraordinary costs card */}
               <div className="bg-white rounded-xl shadow-sm p-6 overflow-hidden col-span-12 border border-indigo-100">
                 <Extraordinarycosts />
+              </div>
+
+              {/* Payment History card */}
+              <div className="col-span-12">
+                <PaymentHistory 
+                  title="Historial de Pagos Realizados" 
+                  maxHeight="500px"
+                  refreshTrigger={paymentHistoryRefresh}
+                />
               </div>
             </div>
           )}

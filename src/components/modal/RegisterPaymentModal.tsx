@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, DollarSign, Calendar, Globe, Music, AlertCircle, Check, Loader2 } from 'lucide-react';
-import { usePayments, useSplits } from '../../hooks/useSplits';
-import { CalculationResponse } from '../../services/splits';
+import { useSplits } from '../../hooks/useSplits';
 
 interface RegisterPaymentModalProps {
   isOpen: boolean;
@@ -17,11 +16,10 @@ const RegisterPaymentModal = ({ isOpen, onClose, splitId, songTitle, onPaymentRe
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [platform, setPlatform] = useState<string>('');
   const [country, setCountry] = useState<string>('');
-  const [preview, setPreview] = useState<CalculationResponse | null>(null);
+  const [preview, setPreview] = useState<any>(null);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  const { registerPayment, loading: paymentLoading, error: paymentError } = usePayments();
-  const { calculateDistribution, loading: calculationLoading } = useSplits();
+  const { loading: splitsLoading, error: splitsError, getSplitsBySong } = useSplits();
 
   const platforms = [
     'Spotify', 'Apple Music', 'YouTube Music', 'Amazon Music', 'Deezer', 
@@ -46,68 +44,26 @@ const RegisterPaymentModal = ({ isOpen, onClose, splitId, songTitle, onPaymentRe
     }
   }, [isOpen]);
 
-  // Calculate preview when amount changes
+  // Load splits when modal opens
   useEffect(() => {
-    if (amount > 0 && splitId) {
-      const timer = setTimeout(() => {
-        calculatePreview();
-      }, 500); // Debounce
-
-      return () => clearTimeout(timer);
-    } else {
-      setPreview(null);
+    if (isOpen && splitId) {
+      loadSplits();
     }
-  }, [amount, date, platform, country, splitId]);
+  }, [isOpen, splitId]);
 
-  const calculatePreview = async () => {
+  const loadSplits = async () => {
     try {
-      const calculation = await calculateDistribution(splitId, {
-        amount,
-        date,
-        platform: platform || undefined,
-        country: country || undefined
-      });
-      setPreview(calculation);
+      const splits = await getSplitsBySong(splitId);
+      setPreview({ splits: splits || [] });
     } catch (error) {
-      console.error('Error calculating preview:', error);
+      console.error('Error loading splits:', error);
     }
-  };
-
-  const validateForm = () => {
-    const newErrors: { [key: string]: string } = {};
-
-    if (amount <= 0) {
-      newErrors.amount = 'El monto debe ser mayor a 0';
-    }
-
-    if (!date) {
-      newErrors.date = 'La fecha es requerida';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async () => {
-    if (!validateForm()) return;
-
-    try {
-      const paymentData = {
-        amount,
-        date,
-        platform: platform || undefined,
-        country: country || undefined
-      };
-
-      const newPayment = await registerPayment(splitId, paymentData);
-      
-      if (newPayment) {
-        onPaymentRegistered?.(newPayment.id);
-        onClose();
-      }
-    } catch (error) {
-      console.error('Error registering payment:', error);
-    }
+    // This would integrate with payment system when available
+    console.log('Payment registration not yet implemented');
+    onClose();
   };
 
   const formatCurrency = (amount: number) => {
@@ -118,7 +74,7 @@ const RegisterPaymentModal = ({ isOpen, onClose, splitId, songTitle, onPaymentRe
   };
 
   const isFormValid = () => {
-    return amount > 0 && date && !paymentLoading && !calculationLoading;
+    return amount > 0 && date && !splitsLoading;
   };
 
   return (
@@ -155,7 +111,7 @@ const RegisterPaymentModal = ({ isOpen, onClose, splitId, songTitle, onPaymentRe
               </div>
               <button
                 onClick={onClose}
-                disabled={paymentLoading}
+                disabled={splitsLoading}
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50"
               >
                 <X className="w-5 h-5 text-gray-500" />
@@ -167,11 +123,11 @@ const RegisterPaymentModal = ({ isOpen, onClose, splitId, songTitle, onPaymentRe
               {/* Left Panel - Form */}
               <div className="w-1/2 p-6 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
                 {/* Error Display */}
-                {paymentError && (
+                {splitsError && (
                   <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                     <p className="text-sm text-red-600 dark:text-red-400 flex items-center">
                       <AlertCircle className="w-4 h-4 mr-2" />
-                      {paymentError}
+                      {splitsError}
                     </p>
                   </div>
                 )}

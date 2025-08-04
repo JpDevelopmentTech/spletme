@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { User as UserType } from "../../../../../models/user";
+import payments from "@/services/payments";
 
 interface TableProps {
   collaborators: UserType[];
@@ -77,13 +78,19 @@ export default function Table({ collaborators, songId }: TableProps) {
     // You can add additional logic here, like refreshing data or showing a notification
   };
 
+  const paymentToCollaborator = async (collaboratorId: string, splitId: string) => {
+    console.log('Payment to collaborator with ID:', collaboratorId);
+    const response = await payments.createPayment(collaboratorId, splitId)
+    console.log('Response:', response);
+  }
+
   return (
     <>
       <SplitsModal 
         collaborators={collaborators}
         isOpen={isSplitsModalOpen} 
         onClose={closeSplitsModal}
-        songId={songId}
+        songId={songId || ''}
         onSplitSaved={handleSplitSaved}
       />
       
@@ -199,7 +206,7 @@ export default function Table({ collaborators, songId }: TableProps) {
             <div className="flex flex-col items-center p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg">
               <DollarSign className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mb-1" />
               <span className="text-sm text-gray-500 dark:text-gray-400">Generated Total</span>
-              <span className="text-lg font-semibold text-indigo-900 dark:text-indigo-100">$1,200.00</span>
+              <span className="text-lg font-semibold text-indigo-900 dark:text-indigo-100">$ {collaborator?.splitInfo?.paymentDetails?.totalOwed.toFixed(2) || 0}</span>
             </div>
 
             <div className="flex flex-col items-center p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg">
@@ -230,7 +237,6 @@ export default function Table({ collaborators, songId }: TableProps) {
             </div>
             
             <div className="flex gap-2">
-              {currentSplitId && (
                 <>
                   <motion.button
                     onClick={() => openPaymentHistoryModal(currentSplitId)}
@@ -241,14 +247,13 @@ export default function Table({ collaborators, songId }: TableProps) {
                   </motion.button>
                   
                   <motion.button
-                    onClick={() => openRegisterPaymentModal(currentSplitId)}
+                    onClick={() => paymentToCollaborator(collaborator.id, collaborator?.splitInfo?.splitId || '')}
                     className="flex items-center gap-1 px-3 py-1 text-xs bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-900/50 text-green-700 dark:text-green-300 rounded-md transition-all duration-200 hover:scale-105"
                   >
                     <Plus className="w-3 h-3" />
                     Pagar
                   </motion.button>
                 </>
-              )}
             </div>
           </div>
         </motion.div>

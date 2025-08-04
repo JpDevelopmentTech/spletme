@@ -1,104 +1,136 @@
+import axios from "axios";
+
+// Interfaces para la nueva implementación de splits
 interface SplitCondition {
-  id?: string;
-  type: 'time' | 'platforms' | 'countries' | 'time_reduced' | 'custom';
+  fromDate?: string;
+  toDate?: string;
   percentage: number;
-  description: string;
-  parameters: {
-    startDate?: string;
-    endDate?: string;
-    platforms?: string[];
-    countries?: string[];
-    finalPercentage?: number;
-    text?: string;
+  selectedCountries: string[];
+  countriesType: "all" | "except" | "only";
+  selectedPlatforms: string[];
+  platformsType: "all" | "except" | "only";
+  type: "general" | "specific";
+}
+
+interface GeneralCondition {
+  percentage: number;
+  countriesType: "all" | "except" | "only";
+  selectedCountries: string[];
+  platformsType: "all" | "except" | "only";
+  selectedPlatforms: string[];
+}
+
+interface Split {
+  id?: string;
+  songId: string;
+  collaboratorId: string;
+  ownerId?: string;
+  generalCondition: GeneralCondition;
+  splitConditions: SplitCondition[];
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  song?: {
+    id: string;
+    isrc: string;
+    trackTitle: string;
+    artistName: string;
   };
-}
-
-interface SplitParticipant {
-  id?: string;
-  name: string;
-  role: string;
-  percentage: number;
-  conditions: SplitCondition[];
-}
-
-interface SplitOwner {
-  name: string;
-  role: string;
-  percentage: number;
+  collaborator?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  owner?: {
+    id: string;
+    name: string;
+    email: string;
+  };
 }
 
 interface CreateSplitRequest {
   songId: string;
-  owner: SplitOwner;
-  splits: SplitParticipant[];
+  collaboratorId: string;
+  conditions: SplitCondition[];
 }
 
-interface SplitResponse {
-  id: string;
+interface CreateMultipleSplitsRequest {
   songId: string;
-  ownerId: string;
-  ownerPercentage: number;
-  totalPercentage: number;
-  status: 'draft' | 'active' | 'expired';
-  createdAt: string;
-  updatedAt: string;
-  owner: SplitOwner;
-  participants: SplitParticipant[];
-}
-
-interface CalculationResponse {
-  owner: {
-    name: string;
-    percentage: number;
-    amount: number;
-  };
-  participants: Array<{
-    name: string;
-    percentage: number;
-    amount: number;
-    appliedConditions: string[];
+  splits: Array<{
+    collaboratorId: string;
+    conditions: SplitCondition[];
   }>;
-  totalAmount: number;
-  calculationDate: string;
-  filters: {
-    platform?: string;
-    country?: string;
-  };
 }
 
-interface PaymentRecord {
-  id: string;
-  splitId: string;
-  amount: number;
-  date: string;
-  platform?: string;
-  country?: string;
-  distribution: CalculationResponse;
+interface UpdateSplitRequest {
+  generalCondition?: GeneralCondition;
+  conditions?: SplitCondition[];
+  isActive?: boolean;
 }
 
-interface SplitsAnalytics {
+interface SplitsStats {
   totalSplits: number;
-  activeSplits: number;
-  totalParticipants: number;
-  totalPayments: number;
-  totalAmount: number;
-  averageParticipantsPerSplit: number;
-  mostUsedPlatforms: Array<{ platform: string; count: number }>;
-  mostUsedCountries: Array<{ country: string; count: number }>;
-  recentActivity: Array<{
-    type: 'split_created' | 'payment_registered' | 'split_updated';
-    date: string;
-    description: string;
-  }>;
+  totalPercentage: number;
+  averagePercentage: number;
+  splits: Split[];
+}
+
+interface SplitsResponse {
+  success: boolean;
+  message: string;
+  data: Split | Split[] | SplitsStats | { totalPercentage: number } | {
+    splits: Split[];
+    pagination: {
+      currentPage: number;
+      totalPages: number;
+      totalItems: number;
+      itemsPerPage: number;
+    };
+    stats: {
+      totalSplits: number;
+      totalPercentage: number;
+      averagePercentage: number;
+    };
+  };
+}
+
+interface MultipleSplitsResponse {
+  success: boolean;
+  message: string;
+  data: {
+    created: Split[];
+    errors: Array<{
+      collaboratorId: string;
+      error: string;
+    }>;
+  };
 }
 
 class SplitsService {
   private baseURL = import.meta.env.VITE_URL_API + '/api/v1/splits';
-
-  // Create or update a split
-  async createSplit(data: CreateSplitRequest): Promise<SplitResponse> {
+  private headers = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${this.getAuthToken()}`
+  }
+  /**
+   * Crear un nuevo split
+   */
+  async createSplit(data: CreateSplitRequest[]): Promise<Split> {
     try {
-      const response = await fetch(this.baseURL, {
+      const response = await axios.post(this.baseURL + '/collaborator', data[0], {headers: this.headers});
+      return response.data
+    } catch (error) {
+      console.error('Error creating split:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Crear múltiples splits para una canción
+   */
+  async createMultipleSplits(data: CreateMultipleSplitsRequest): Promise<MultipleSplitsResponse['data']> {
+    try {
+      const response = await fetch(`${this.baseURL}/multiple`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -109,18 +141,93 @@ class SplitsService {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Error creating split');
+        throw new Error(error.message || 'Error creating multiple splits');
       }
 
-      return await response.json();
+      const result: MultipleSplitsResponse = await response.json();
+      return result.data;
     } catch (error) {
-      console.error('Error creating split:', error);
+      console.error('Error creating multiple splits:', error);
       throw error;
     }
   }
 
-  // Update an existing split
-  async updateSplit(splitId: string, data: CreateSplitRequest): Promise<SplitResponse> {
+  /**
+   * Obtener splits por canción
+   */
+  async getSplitsBySong(songId: string): Promise<Split[]> {
+    try {
+      const response = await fetch(`${this.baseURL}/song/${songId}`, {
+        headers: {
+          'Authorization': `Bearer ${this.getAuthToken()}`
+        }
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Error fetching splits by song');
+      }
+
+      const result: SplitsResponse = await response.json();
+      return result.data as Split[];
+    } catch (error) {
+      console.error('Error fetching splits by song:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtener splits por colaborador
+   */
+  async getSplitsByCollaborator(collaboratorId: string): Promise<Split[]> {
+    try {
+      const response = await fetch(`${this.baseURL}/collaborator/${collaboratorId}`, {
+        headers: {
+          'Authorization': `Bearer ${this.getAuthToken()}`
+        }
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Error fetching splits by collaborator');
+      }
+
+      const result: SplitsResponse = await response.json();
+      return result.data as Split[];
+    } catch (error) {
+      console.error('Error fetching splits by collaborator:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtener split por ID
+   */
+  async getSplitById(splitId: string): Promise<Split> {
+    try {
+      const response = await fetch(`${this.baseURL}/${splitId}`, {
+        headers: {
+          'Authorization': `Bearer ${this.getAuthToken()}`
+        }
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Error fetching split');
+      }
+
+      const result: SplitsResponse = await response.json();
+      return result.data as Split;
+    } catch (error) {
+      console.error('Error fetching split by ID:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Actualizar split
+   */
+  async updateSplit(splitId: string, data: UpdateSplitRequest): Promise<Split> {
     try {
       const response = await fetch(`${this.baseURL}/${splitId}`, {
         method: 'PUT',
@@ -136,239 +243,18 @@ class SplitsService {
         throw new Error(error.message || 'Error updating split');
       }
 
-      return await response.json();
+      const result: SplitsResponse = await response.json();
+      return result.data as Split;
     } catch (error) {
       console.error('Error updating split:', error);
       throw error;
     }
   }
 
-  // Get split by song ID
-  async getSplitBySong(songId: string): Promise<SplitResponse | null> {
-    try {
-      const response = await fetch(`${this.baseURL}/song/${songId}`, {
-        headers: {
-          'Authorization': `Bearer ${this.getAuthToken()}`
-        }
-      });
-
-      if (response.status === 404) {
-        return null;
-      }
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Error fetching split');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching split by song:', error);
-      throw error;
-    }
-  }
-
-  // Get split by ID
-  async getSplit(splitId: string): Promise<SplitResponse> {
-    try {
-      const response = await fetch(`${this.baseURL}/${splitId}`, {
-        headers: {
-          'Authorization': `Bearer ${this.getAuthToken()}`
-        }
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Error fetching split');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching split:', error);
-      throw error;
-    }
-  }
-
-  // Calculate current distribution
-  async calculateDistribution(
-    splitId: string,
-    options?: {
-      date?: string;
-      platform?: string;
-      country?: string;
-      amount?: number;
-    }
-  ): Promise<CalculationResponse> {
-    try {
-      const params = new URLSearchParams();
-      if (options?.date) params.append('date', options.date);
-      if (options?.platform) params.append('platform', options.platform);
-      if (options?.country) params.append('country', options.country);
-      if (options?.amount) params.append('amount', options.amount.toString());
-
-      const url = `${this.baseURL}/${splitId}/calculate${params.toString() ? '?' + params.toString() : ''}`;
-      
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${this.getAuthToken()}`
-        }
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Error calculating distribution');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error calculating distribution:', error);
-      throw error;
-    }
-  }
-
-  // Get payment history
-  async getPaymentHistory(splitId: string): Promise<PaymentRecord[]> {
-    try {
-      const response = await fetch(`${this.baseURL}/${splitId}/payments`, {
-        headers: {
-          'Authorization': `Bearer ${this.getAuthToken()}`
-        }
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Error fetching payment history');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching payment history:', error);
-      throw error;
-    }
-  }
-
-  // Register a payment
-  async registerPayment(
-    splitId: string,
-    paymentData: {
-      amount: number;
-      date?: string;
-      platform?: string;
-      country?: string;
-    }
-  ): Promise<PaymentRecord> {
-    try {
-      const response = await fetch(`${this.baseURL}/${splitId}/payments`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.getAuthToken()}`
-        },
-        body: JSON.stringify({
-          ...paymentData,
-          date: paymentData.date || new Date().toISOString()
-        })
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Error registering payment');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error registering payment:', error);
-      throw error;
-    }
-  }
-
-  // Get splits where user participates
-  async getUserSplits(userId: string): Promise<SplitResponse[]> {
-    try {
-      const response = await fetch(`${this.baseURL}/user/${userId}`, {
-        headers: {
-          'Authorization': `Bearer ${this.getAuthToken()}`
-        }
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Error fetching user splits');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching user splits:', error);
-      throw error;
-    }
-  }
-
-  // Preview calculation without saving
-  async previewCalculation(
-    splitData: CreateSplitRequest,
-    options?: {
-      date?: string;
-      platform?: string;
-      country?: string;
-      amount?: number;
-    }
-  ): Promise<CalculationResponse> {
-    try {
-      const params = new URLSearchParams();
-      if (options?.date) params.append('date', options.date);
-      if (options?.platform) params.append('platform', options.platform);
-      if (options?.country) params.append('country', options.country);
-      if (options?.amount) params.append('amount', options.amount.toString());
-
-      const url = `${this.baseURL}/preview${params.toString() ? '?' + params.toString() : ''}`;
-      
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.getAuthToken()}`
-        },
-        body: JSON.stringify(splitData)
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Error previewing calculation');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error previewing calculation:', error);
-      throw error;
-    }
-  }
-
-  // Duplicate split for new song
-  async duplicateSplit(splitId: string, newSongId: string): Promise<SplitResponse> {
-    try {
-      const response = await fetch(`${this.baseURL}/${splitId}/duplicate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.getAuthToken()}`
-        },
-        body: JSON.stringify({ songId: newSongId })
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Error duplicating split');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error duplicating split:', error);
-      throw error;
-    }
-  }
-
-  // Delete split (soft delete)
-  async deleteSplit(splitId: string): Promise<void> {
+  /**
+   * Eliminar split (soft delete)
+   */
+  async deleteSplit(splitId: string): Promise<Split> {
     try {
       const response = await fetch(`${this.baseURL}/${splitId}`, {
         method: 'DELETE',
@@ -381,16 +267,21 @@ class SplitsService {
         const error = await response.json();
         throw new Error(error.message || 'Error deleting split');
       }
+
+      const result: SplitsResponse = await response.json();
+      return result.data as Split;
     } catch (error) {
       console.error('Error deleting split:', error);
       throw error;
     }
   }
 
-  // Get analytics/statistics
-  async getAnalytics(): Promise<SplitsAnalytics> {
+  /**
+   * Obtener estadísticas de splits
+   */
+  async getSplitsStats(type: 'owner' | 'collaborator' = 'owner'): Promise<SplitsStats> {
     try {
-      const response = await fetch(`${this.baseURL}/../analytics/splits`, {
+      const response = await fetch(`${this.baseURL}/stats?type=${type}`, {
         headers: {
           'Authorization': `Bearer ${this.getAuthToken()}`
         }
@@ -398,96 +289,131 @@ class SplitsService {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Error fetching analytics');
+        throw new Error(error.message || 'Error fetching splits stats');
       }
 
-      return await response.json();
+      const result: SplitsResponse = await response.json();
+      return result.data as SplitsStats;
     } catch (error) {
-      console.error('Error fetching analytics:', error);
+      console.error('Error fetching splits stats:', error);
       throw error;
     }
   }
 
-  // Helper method to get auth token
-  private getAuthToken(): string {
-    // Get token from localStorage or your auth system
-    return localStorage.getItem('authToken') || '';
-  }
+  /**
+   * Calcular porcentaje total de splits para una canción
+   */
+  async calculateTotalPercentage(
+    songId: string, 
+    excludeCollaboratorId?: string, 
+    additionalPercentage: number = 0
+  ): Promise<number> {
+    try {
+      const params = new URLSearchParams();
+      if (excludeCollaboratorId) params.append('excludeCollaboratorId', excludeCollaboratorId);
+      if (additionalPercentage > 0) params.append('additionalPercentage', additionalPercentage.toString());
 
-  // Validate split data before sending
-  validateSplitData(data: CreateSplitRequest): { isValid: boolean; errors: string[] } {
-    const errors: string[] = [];
-
-    // Check if percentages sum to 100
-    const totalPercentage = data.owner.percentage + 
-      data.splits.reduce((sum, participant) => sum + participant.percentage, 0);
-
-    if (totalPercentage !== 100) {
-      errors.push(`Los porcentajes deben sumar exactamente 100% (actual: ${totalPercentage}%)`);
-    }
-
-    // Validate owner percentage
-    if (data.owner.percentage <= 0 || data.owner.percentage > 100) {
-      errors.push('El porcentaje del dueño debe estar entre 1 y 100');
-    }
-
-    // Validate participants
-    data.splits.forEach((participant, index) => {
-      if (participant.percentage <= 0 || participant.percentage > 100) {
-        errors.push(`El porcentaje del participante ${index + 1} debe estar entre 1 y 100`);
-      }
-
-      if (!participant.name.trim()) {
-        errors.push(`El nombre del participante ${index + 1} es requerido`);
-      }
-
-      // Validate conditions
-      participant.conditions.forEach((condition, condIndex) => {
-        if (condition.percentage < 0 || condition.percentage > participant.percentage) {
-          errors.push(`El porcentaje de la condición ${condIndex + 1} del participante ${index + 1} no puede ser mayor al porcentaje base`);
-        }
-
-        // Validate time conditions
-        if (condition.type === 'time' || condition.type === 'time_reduced') {
-          if (!condition.parameters.startDate || !condition.parameters.endDate) {
-            errors.push(`Las fechas son requeridas para la condición de tiempo del participante ${index + 1}`);
-          } else if (new Date(condition.parameters.startDate) >= new Date(condition.parameters.endDate)) {
-            errors.push(`La fecha de inicio debe ser anterior a la fecha de fin en la condición del participante ${index + 1}`);
-          }
-        }
-
-        // Validate platform conditions
-        if (condition.type === 'platforms' && (!condition.parameters.platforms || condition.parameters.platforms.length === 0)) {
-          errors.push(`Debe seleccionar al menos una plataforma para la condición del participante ${index + 1}`);
-        }
-
-        // Validate country conditions
-        if (condition.type === 'countries' && (!condition.parameters.countries || condition.parameters.countries.length === 0)) {
-          errors.push(`Debe seleccionar al menos un país para la condición del participante ${index + 1}`);
-        }
-
-        // Validate custom conditions
-        if (condition.type === 'custom' && !condition.parameters.text?.trim()) {
-          errors.push(`Debe describir la condición personalizada del participante ${index + 1}`);
+      const response = await fetch(`${this.baseURL}/song/${songId}/percentage?${params.toString()}`, {
+        headers: {
+          'Authorization': `Bearer ${this.getAuthToken()}`
         }
       });
-    });
 
-    return {
-      isValid: errors.length === 0,
-      errors
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Error calculating total percentage');
+      }
+
+      const result: SplitsResponse = await response.json();
+      return (result.data as { totalPercentage: number }).totalPercentage;
+    } catch (error) {
+      console.error('Error calculating total percentage:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtener mis splits (con paginación)
+   */
+  async getMySplits(
+    type: 'owner' | 'collaborator' = 'owner',
+    page: number = 1,
+    limit: number = 10
+  ): Promise<{
+    splits: Split[];
+    pagination: {
+      currentPage: number;
+      totalPages: number;
+      totalItems: number;
+      itemsPerPage: number;
     };
+    stats: {
+      totalSplits: number;
+      totalPercentage: number;
+      averagePercentage: number;
+    };
+  }> {
+    try {
+      const params = new URLSearchParams({
+        type,
+        page: page.toString(),
+        limit: limit.toString()
+      });
+
+      const response = await fetch(`${this.baseURL}/my-splits?${params.toString()}`, {
+        headers: {
+          'Authorization': `Bearer ${this.getAuthToken()}`
+        }
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Error fetching my splits');
+      }
+
+      const result: SplitsResponse = await response.json();
+      return result.data as {
+        splits: Split[];
+        pagination: {
+          currentPage: number;
+          totalPages: number;
+          totalItems: number;
+          itemsPerPage: number;
+        };
+        stats: {
+          totalSplits: number;
+          totalPercentage: number;
+          averagePercentage: number;
+        };
+      };
+    } catch (error) {
+      console.error('Error fetching my splits:', error);
+      throw error;
+    }
+  }
+
+  
+
+  /**
+   * Obtener token de autenticación
+   */
+  private getAuthToken(): string {
+    return localStorage.getItem('token') || '';
   }
 }
 
+// Exportar la instancia del servicio
 export const splitsService = new SplitsService();
-export type { 
-  SplitCondition, 
-  SplitParticipant, 
-  SplitOwner, 
-  CreateSplitRequest, 
-  SplitResponse, 
-  CalculationResponse, 
-  PaymentRecord,
-  SplitsAnalytics
+
+// Exportar interfaces para uso en otros componentes
+export type {
+  Split,
+  SplitCondition,
+  GeneralCondition,
+  CreateSplitRequest,
+  CreateMultipleSplitsRequest,
+  UpdateSplitRequest,
+  SplitsStats,
+  SplitsResponse,
+  MultipleSplitsResponse
 }; 

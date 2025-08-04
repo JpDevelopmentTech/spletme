@@ -16,6 +16,7 @@ import Register from "../pages/auth/register";
 import Balance from "../pages/panel/balance/balance";
 import Profile from "../pages/panel/profile/profile";
 import AcceptCollaboration from "../pages/collabotarion/acceptCollaboration";
+import Stripe from "../pages/panel/stripe/stripe";
 
 const routes = [
   {
@@ -43,6 +44,10 @@ const routes = [
     path: "/panel",
     element: <Panel />,
     children: [
+      {
+        path: "stripe/:status",
+        element: <Stripe />
+      },
       {
         path: "home",
         element: <Home />,

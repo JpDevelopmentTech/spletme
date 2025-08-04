@@ -1,4 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const Select = ({options} : {options: {
     value: string;
     label: string;

@@ -6,5 +6,10 @@ export default defineConfig(({ mode }) => {
   console.log(mode)
   return {
     plugins: [react()],
+    resolve: {
+      alias: {
+        "@": "/src",
+      },
+    },
   }
 });

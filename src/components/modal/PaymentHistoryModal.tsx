@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, DollarSign, Calendar, Globe, Music, TrendingUp, User, Clock, Filter, Search } from 'lucide-react';
-import { usePayments } from '../../hooks/useSplits';
-import { PaymentRecord, CalculationResponse } from '../../services/splits';
+import { X, DollarSign, User, Clock, Search } from 'lucide-react';
+import { useSplits } from '../../hooks/useSplits';
 
 interface PaymentHistoryModalProps {
   isOpen: boolean;
@@ -12,72 +11,44 @@ interface PaymentHistoryModalProps {
 }
 
 const PaymentHistoryModal = ({ isOpen, onClose, splitId, songTitle }: PaymentHistoryModalProps) => {
-  const { payments, loading, error, loadPayments, clearError } = usePayments();
-  const [selectedPayment, setSelectedPayment] = useState<PaymentRecord | null>(null);
-  const [filterPlatform, setFilterPlatform] = useState<string>('');
-  const [filterCountry, setFilterCountry] = useState<string>('');
+  const { loading, error, getSplitsBySong, clearError } = useSplits();
+  const [splits, setSplits] = useState<any[]>([]);
+  const [selectedSplit, setSelectedSplit] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
 
   useEffect(() => {
     if (isOpen && splitId) {
-      loadPayments(splitId);
+      loadSplits();
     }
-  }, [isOpen, splitId, loadPayments]);
+  }, [isOpen, splitId]);
+
+  const loadSplits = async () => {
+    if (splitId) {
+      const result = await getSplitsBySong(splitId);
+      setSplits(result || []);
+    }
+  };
 
   useEffect(() => {
     if (!isOpen) {
-      setSelectedPayment(null);
-      setFilterPlatform('');
-      setFilterCountry('');
+      setSelectedSplit(null);
       setSearchTerm('');
       clearError();
     }
   }, [isOpen, clearError]);
 
-  const filteredPayments = payments.filter(payment => {
-    const matchesPlatform = !filterPlatform || payment.platform === filterPlatform;
-    const matchesCountry = !filterCountry || payment.country === filterCountry;
+  const filteredSplits = splits.filter(split => {
     const matchesSearch = !searchTerm || 
-      payment.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      payment.platform?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      payment.country?.toLowerCase().includes(searchTerm.toLowerCase());
+      split.collaborator?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      split.id?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    return matchesPlatform && matchesCountry && matchesSearch;
+    return matchesSearch;
   });
 
-  const totalAmount = payments.reduce((sum, payment) => sum + payment.amount, 0);
-  const averageAmount = payments.length > 0 ? totalAmount / payments.length : 0;
+  const totalPercentage = splits.reduce((sum, split) => sum + (split.generalCondition?.percentage || 0), 0);
+  const averagePercentage = splits.length > 0 ? totalPercentage / splits.length : 0;
 
-  const platformStats = payments.reduce((acc, payment) => {
-    if (payment.platform) {
-      acc[payment.platform] = (acc[payment.platform] || 0) + payment.amount;
-    }
-    return acc;
-  }, {} as Record<string, number>);
 
-  const countryStats = payments.reduce((acc, payment) => {
-    if (payment.country) {
-      acc[payment.country] = (acc[payment.country] || 0) + payment.amount;
-    }
-    return acc;
-  }, {} as Record<string, number>);
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
 
   return (
     <AnimatePresence>
@@ -107,7 +78,7 @@ const PaymentHistoryModal = ({ isOpen, onClose, splitId, songTitle }: PaymentHis
                     Historial de Pagos
                   </h2>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {songTitle || 'Canción'} - {payments.length} pagos registrados
+                    {songTitle || 'Canción'} - {splits.length} splits registrados
                   </p>
                 </div>
               </div>
@@ -137,26 +108,9 @@ const PaymentHistoryModal = ({ isOpen, onClose, splitId, songTitle }: PaymentHis
                       />
                     </div>
                     <div className="flex space-x-2">
-                      <select
-                        value={filterPlatform}
-                        onChange={(e) => setFilterPlatform(e.target.value)}
-                        className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
-                      >
-                        <option value="">Todas las plataformas</option>
-                        {Object.keys(platformStats).map(platform => (
-                          <option key={platform} value={platform}>{platform}</option>
-                        ))}
-                      </select>
-                      <select
-                        value={filterCountry}
-                        onChange={(e) => setFilterCountry(e.target.value)}
-                        className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
-                      >
-                        <option value="">Todos los países</option>
-                        {Object.keys(countryStats).map(country => (
-                          <option key={country} value={country}>{country}</option>
-                        ))}
-                      </select>
+                      <div className="flex-1 px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm text-gray-500 dark:text-gray-400">
+                        Filtros de splits
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -166,19 +120,19 @@ const PaymentHistoryModal = ({ isOpen, onClose, splitId, songTitle }: PaymentHis
                   <div className="grid grid-cols-3 gap-4">
                     <div className="text-center">
                       <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                        {formatCurrency(totalAmount)}
+                        {totalPercentage.toFixed(1)}%
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Total Pagado</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Total Porcentaje</p>
                     </div>
                     <div className="text-center">
                       <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                        {payments.length}
+                        {splits.length}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Pagos</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Splits</p>
                     </div>
                     <div className="text-center">
                       <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                        {formatCurrency(averageAmount)}
+                        {averagePercentage.toFixed(1)}%
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">Promedio</p>
                     </div>
@@ -196,50 +150,43 @@ const PaymentHistoryModal = ({ isOpen, onClose, splitId, songTitle }: PaymentHis
                     <div className="p-4 text-center text-red-600 dark:text-red-400">
                       <p>Error al cargar los pagos: {error}</p>
                     </div>
-                  ) : filteredPayments.length === 0 ? (
+                  ) : filteredSplits.length === 0 ? (
                     <div className="p-8 text-center text-gray-500 dark:text-gray-400">
                       <DollarSign className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                      <p>No hay pagos registrados</p>
+                      <p>No hay splits registrados</p>
                     </div>
                   ) : (
                     <div className="space-y-2 p-4">
-                      {filteredPayments.map((payment) => (
+                      {filteredSplits.map((split) => (
                         <motion.div
-                          key={payment.id}
+                          key={split.id}
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           className={`p-4 rounded-lg border cursor-pointer transition-all duration-200 ${
-                            selectedPayment?.id === payment.id
+                            selectedSplit?.id === split.id
                               ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
                               : 'border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-600 hover:bg-gray-50 dark:hover:bg-gray-800/50'
                           }`}
-                          onClick={() => setSelectedPayment(payment)}
+                          onClick={() => setSelectedSplit(split)}
                         >
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center space-x-2">
-                              <DollarSign className="w-4 h-4 text-green-500" />
+                              <User className="w-4 h-4 text-blue-500" />
                               <span className="font-semibold text-gray-900 dark:text-white">
-                                {formatCurrency(payment.amount)}
+                                {split.collaborator?.name || 'Colaborador'}
                               </span>
                             </div>
                             <span className="text-xs text-gray-500 dark:text-gray-400">
-                              {formatDate(payment.date)}
+                              {split.generalCondition?.percentage || 0}%
                             </span>
                           </div>
                           <div className="flex items-center justify-between text-sm">
                             <div className="flex items-center space-x-4">
-                              {payment.platform && (
-                                <div className="flex items-center space-x-1">
-                                  <Music className="w-3 h-3 text-gray-400" />
-                                  <span className="text-gray-600 dark:text-gray-400">{payment.platform}</span>
-                                </div>
-                              )}
-                              {payment.country && (
-                                <div className="flex items-center space-x-1">
-                                  <Globe className="w-3 h-3 text-gray-400" />
-                                  <span className="text-gray-600 dark:text-gray-400">{payment.country}</span>
-                                </div>
-                              )}
+                              <div className="flex items-center space-x-1">
+                                <span className="text-gray-600 dark:text-gray-400">
+                                  {split.isActive ? 'Activo' : 'Inactivo'}
+                                </span>
+                              </div>
                             </div>
                           </div>
                         </motion.div>
@@ -249,130 +196,99 @@ const PaymentHistoryModal = ({ isOpen, onClose, splitId, songTitle }: PaymentHis
                 </div>
               </div>
 
-              {/* Right Panel - Payment Details */}
+              {/* Right Panel - Split Details */}
               <div className="w-1/2">
-                {selectedPayment ? (
+                {selectedSplit ? (
                   <div className="p-6 overflow-y-auto h-full">
                     <div className="mb-6">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                        Detalles del Pago
+                        Detalles del Split
                       </h3>
                       <div className="grid grid-cols-2 gap-4 mb-4">
                         <div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">ID del Pago</p>
-                          <p className="font-medium text-gray-900 dark:text-white">{selectedPayment.id}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">ID del Split</p>
+                          <p className="font-medium text-gray-900 dark:text-white">{selectedSplit.id}</p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Fecha</p>
-                          <p className="font-medium text-gray-900 dark:text-white">{formatDate(selectedPayment.date)}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">Estado</p>
+                          <p className="font-medium text-gray-900 dark:text-white">{selectedSplit.isActive ? 'Activo' : 'Inactivo'}</p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Monto Total</p>
-                          <p className="font-medium text-gray-900 dark:text-white text-lg">{formatCurrency(selectedPayment.amount)}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">Porcentaje</p>
+                          <p className="font-medium text-gray-900 dark:text-white text-lg">{selectedSplit.generalCondition?.percentage || 0}%</p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Fecha de Cálculo</p>
-                          <p className="font-medium text-gray-900 dark:text-white">{formatDate(selectedPayment.distribution.calculationDate)}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">Colaborador</p>
+                          <p className="font-medium text-gray-900 dark:text-white">{selectedSplit.collaborator?.name || 'N/A'}</p>
                         </div>
                       </div>
 
-                      {(selectedPayment.platform || selectedPayment.country) && (
-                        <div className="flex space-x-4 mb-4">
-                          {selectedPayment.platform && (
-                            <div className="flex items-center space-x-2 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 rounded-full">
-                              <Music className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                              <span className="text-sm font-medium text-blue-800 dark:text-blue-300">{selectedPayment.platform}</span>
-                            </div>
-                          )}
-                          {selectedPayment.country && (
-                            <div className="flex items-center space-x-2 px-3 py-1 bg-green-100 dark:bg-green-900/30 rounded-full">
-                              <Globe className="w-4 h-4 text-green-600 dark:text-green-400" />
-                              <span className="text-sm font-medium text-green-800 dark:text-green-300">{selectedPayment.country}</span>
-                            </div>
-                          )}
+                      <div className="flex space-x-4 mb-4">
+                        <div className="flex items-center space-x-2 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+                          <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                          <span className="text-sm font-medium text-blue-800 dark:text-blue-300">
+                            {selectedSplit.collaborator?.email || 'N/A'}
+                          </span>
                         </div>
-                      )}
+                      </div>
                     </div>
 
-                    {/* Distribution Details */}
+                    {/* Split Conditions */}
                     <div>
                       <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-4">
-                        Distribución de Pagos
+                        Condiciones del Split
                       </h4>
 
-                      {/* Owner */}
+                      {/* General Condition */}
                       <div className="mb-4 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center space-x-2">
-                            <User className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                             <span className="font-medium text-indigo-900 dark:text-indigo-100">
-                              {selectedPayment.distribution.owner.name}
+                              Condición General
                             </span>
                           </div>
                           <span className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
-                            {selectedPayment.distribution.owner.percentage}%
+                            {selectedSplit.generalCondition?.percentage || 0}%
                           </span>
                         </div>
-                        <div className="text-right">
-                          <span className="text-lg font-bold text-indigo-800 dark:text-indigo-200">
-                            {formatCurrency(selectedPayment.distribution.owner.amount)}
-                          </span>
+                        <div className="text-sm text-indigo-700 dark:text-indigo-300">
+                          <p>Plataformas: {selectedSplit.generalCondition?.platformsType || 'N/A'}</p>
+                          <p>Países: {selectedSplit.generalCondition?.countriesType || 'N/A'}</p>
                         </div>
                       </div>
 
-                      {/* Participants */}
-                      <div className="space-y-3">
-                        {selectedPayment.distribution.participants.map((participant, index) => (
-                          <div key={index} className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center space-x-2">
-                                <User className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                      {/* Specific Conditions */}
+                      {selectedSplit.splitConditions && selectedSplit.splitConditions.length > 0 && (
+                        <div className="space-y-3">
+                          <h5 className="text-sm font-semibold text-gray-900 dark:text-white">
+                            Condiciones Específicas
+                          </h5>
+                          {selectedSplit.splitConditions.map((condition: any, index: number) => (
+                            <div key={index} className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                              <div className="flex items-center justify-between mb-2">
                                 <span className="font-medium text-gray-900 dark:text-white">
-                                  {participant.name}
+                                  Condición {index + 1}
+                                </span>
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                  {condition.percentage}%
                                 </span>
                               </div>
-                              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                {participant.percentage}%
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <div>
-                                {participant.appliedConditions.length > 0 && (
-                                  <div className="flex flex-wrap gap-1 mb-2">
-                                    {participant.appliedConditions.map((condition, condIndex) => (
-                                      <span key={condIndex} className="text-xs px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded-full">
-                                        {condition}
-                                      </span>
-                                    ))}
-                                  </div>
-                                )}
+                              <div className="text-sm text-gray-600 dark:text-gray-400">
+                                <p>Tipo: {condition.type}</p>
+                                {condition.fromDate && <p>Desde: {condition.fromDate}</p>}
+                                {condition.toDate && <p>Hasta: {condition.toDate}</p>}
                               </div>
-                              <span className="text-lg font-bold text-gray-800 dark:text-gray-200">
-                                {formatCurrency(participant.amount)}
-                              </span>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Total Verification */}
-                      <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-green-800 dark:text-green-200">
-                            Total Distribuido:
-                          </span>
-                          <span className="text-lg font-bold text-green-800 dark:text-green-200">
-                            {formatCurrency(selectedPayment.distribution.totalAmount)}
-                          </span>
+                          ))}
                         </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 ) : (
                   <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
                     <div className="text-center">
                       <Clock className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                      <p>Selecciona un pago para ver los detalles</p>
+                      <p>Selecciona un split para ver los detalles</p>
                     </div>
                   </div>
                 )}
