@@ -1,4 +1,5 @@
 export interface User {
+    amountToPay: string;
     id: string;
     name: string;
     lastName: string;
@@ -10,6 +11,7 @@ export interface User {
         splitId: string;
         paymentDetails: {
             totalOwed: number;
+            amountToPay: number;
         }
     }
 }

@@ -1,5 +1,4 @@
- 
-import {useState } from "react";  
+import { useState } from "react";
 import { DollarSign } from "lucide-react";
 import Title from "../../../../components/title/title";
 import AddCollaborator from "../../collaborators/components/addCollaborator";
@@ -19,17 +18,28 @@ import StripePaymentModal from "../../../../components/modal/StripePaymentModal"
 import AlertComponent from "../../../../components/alert/alert";
 import LocalStorageService from "../../../../services/localstorage";
 import PaymentHistory from "../../../../components/PaymentHistory/PaymentHistory";
+import useCurrentCollaborator from "../../../../hooks/useCurrentCollaborator";
 
 export default function Song() {
   const { id } = useParams();
-  const { song, loading } = useSong({ id: id || "" });
+  const { song, loading, getCollaboratorsInfo } = useSong({ id: id || "" });
+  const {
+    getCurrentUserPercentage,
+    getCurrentUserAmount,
+    isCurrentUserCollaborator,
+  } = useCurrentCollaborator({ collaborators: song?.collaborators || [] });
   const [showStripeLoginModal, setShowStripeLoginModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('');
-  const [alertType, setAlertType] = useState('');
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertType, setAlertType] = useState("");
   const [paymentHistoryRefresh, setPaymentHistoryRefresh] = useState(0);
-  console.log("🚀 ~ Song ~ song:", song)
-  
+
+  console.log(
+    "🚀 ~ Is current user collaborator:",
+    isCurrentUserCollaborator()
+  );
+  console.log("🚀 ~ Song ~ song:", song);
+
   const items = [
     {
       label: "Inicio",
@@ -43,7 +53,7 @@ export default function Song() {
 
   // Verificar si hay sesión activa en localStorage
   const isStripeConnected = () => {
-    const authData = LocalStorageService.getItem('stripe_connect_auth');
+    const authData = LocalStorageService.getItem("stripe_connect_auth");
     return authData?.isLoggedIn === true;
   };
 
@@ -61,33 +71,37 @@ export default function Song() {
   const handleStripeLoginSuccess = () => {
     // Aquí podríamos proceder con el pago después del login exitoso
     console.log("Login exitoso en Stripe Connect, procediendo con el pago...");
-    
+
     // Mostrar alerta de éxito
-    setAlertMessage('¡Inicio de sesión exitoso! Te has conectado correctamente con Stripe Connect.');
-    setAlertType('success');
-    
+    setAlertMessage(
+      "¡Inicio de sesión exitoso! Te has conectado correctamente con Stripe Connect."
+    );
+    setAlertType("success");
+
     // Limpiar la alerta después de 5 segundos
     setTimeout(() => {
-      setAlertMessage('');
-      setAlertType('');
+      setAlertMessage("");
+      setAlertType("");
     }, 5000);
   };
 
   const handlePaymentSuccess = () => {
     // Manejar éxito del pago
     console.log("Pago procesado exitosamente");
-    
+
     // Refrescar el historial de pagos
-    setPaymentHistoryRefresh(prev => prev + 1);
-    
+    setPaymentHistoryRefresh((prev) => prev + 1);
+
     // Mostrar alerta de éxito del pago
-    setAlertMessage('¡Pago procesado exitosamente! Los colaboradores recibirán su parte correspondiente.');
-    setAlertType('success');
-    
+    setAlertMessage(
+      "¡Pago procesado exitosamente! Los colaboradores recibirán su parte correspondiente."
+    );
+    setAlertType("success");
+
     // Limpiar la alerta después de 5 segundos
     setTimeout(() => {
-      setAlertMessage('');
-      setAlertType('');
+      setAlertMessage("");
+      setAlertType("");
     }, 5000);
   };
 
@@ -98,7 +112,7 @@ export default function Song() {
         onClose={() => setShowStripeLoginModal(false)}
         onLoginSuccess={handleStripeLoginSuccess}
       />
-      
+
       <StripePaymentModal
         isOpen={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}
@@ -107,7 +121,7 @@ export default function Song() {
         collaborators={song?.collaborators || []}
         onPaymentSuccess={handlePaymentSuccess}
       />
-      
+
       <AlertComponent message={alertMessage} type={alertType} />
 
       <div className="min-h-screen ">
@@ -130,43 +144,79 @@ export default function Song() {
                   <div className="flex flex-col md:flex-row gap-6">
                     {/* Song Image Section */}
                     <div className="w-full md:w-48 h-48 rounded-lg overflow-hidden shadow-md flex-shrink-0">
-                      {song?.spotifyData?.album?.images && song?.spotifyData?.album?.images.length > 0 ? (
-                        <img 
-                          src={song.spotifyData.album.images[0].url} 
+                      {song?.spotifyData?.album?.images &&
+                      song?.spotifyData?.album?.images.length > 0 ? (
+                        <img
+                          src={song.spotifyData.album.images[0].url}
                           alt={`${song.trackTitle} cover`}
                           className="w-full h-full object-cover"
                         />
                       ) : (
                         <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                          <svg className="w-16 h-16 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.276A1 1 0 0018 15V3z" clipRule="evenodd" />
+                          <svg
+                            className="w-16 h-16 text-gray-400"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.276A1 1 0 0018 15V3z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                         </div>
                       )}
                     </div>
-                    
+
                     {/* Song Info Section */}
                     <div className="flex-1">
                       <div className="flex justify-between items-start mb-6">
                         <div>
-                          <h2 className="text-2xl font-bold text-gray-900">{song?.trackTitle}</h2>
-                          <p className="text-gray-600 mt-1">{song?.artistName}</p>
+                          <h2 className="text-2xl font-bold text-gray-900">
+                            {song?.trackTitle}
+                          </h2>
+                          <p className="text-gray-600 mt-1">
+                            {song?.artistName}
+                          </p>
                         </div>
                         <span className="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
                           ISRC: {song?.isrc}
                         </span>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                         <div className="bg-gray-50 rounded-lg p-4">
-                          <p className="text-sm text-gray-500 mb-1">Total Streams</p>
-                          <p className="text-2xl font-bold text-gray-900">{song?.totalStreams?.toLocaleString()}</p>
+                          <p className="text-sm text-gray-500 mb-1">
+                            Total Streams
+                          </p>
+                          <p className="text-2xl font-bold text-gray-900">
+                            {song?.totalStreams?.toLocaleString()}
+                          </p>
                         </div>
                         <div className="bg-gray-50 rounded-lg p-4">
-                          <p className="text-sm text-gray-500 mb-1">Net Income</p>
-                          <p className="text-2xl font-bold text-gray-900">
-                            ${song?.totalNetIncome?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          <p className="text-sm text-gray-500 mb-1">
+                            Net Income
                           </p>
+                          <p className="text-2xl font-bold text-gray-900">
+                            $
+                            {song?.totalNetIncome?.toLocaleString("en-US", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </p>
+                        </div>
+                        <div className="bg-gray-50 rounded-lg p-4">
+                          <p className="text-sm text-gray-500 mb-1">
+                            Mi porcentaje
+                          </p>
+                          <div className="flex gap-3">
+                            <p className="text-2xl font-bold text-gray-900">
+                              ${getCurrentUserAmount()}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-3">
+                              {getCurrentUserPercentage()}%
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -175,17 +225,23 @@ export default function Song() {
               </div>
               <div className="bg-white rounded-xl shadow-lg overflow-hidden col-span-3 row-span-1 border border-indigo-100">
                 <div className="bg-gradient-to-r from-indigo-600 to-indigo-500 p-4">
-                  <h3 className="text-lg font-semibold text-white">Próxima liquidación estimada</h3>
+                  <h3 className="text-lg font-semibold text-white">
+                    Próxima liquidación estimada
+                  </h3>
                   <p className="text-sm text-white/80">10 Julio 2024</p>
                 </div>
                 <div className="p-6">
                   <div className="flex justify-between items-center mb-4">
                     <span className="text-gray-600">Total a pagar</span>
                     <span className="text-2xl font-bold text-indigo-600">
-                      ${song?.totalNetIncome?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      $
+                      {song?.totalNetIncome?.toLocaleString("en-US", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
                     </span>
                   </div>
-                  <button 
+                  <button
                     className="w-full bg-indigo-600 text-white font-semibold py-3 rounded-lg transition-colors hover:bg-indigo-700 flex items-center justify-center"
                     onClick={handlePayAllClick}
                   >
@@ -196,8 +252,8 @@ export default function Song() {
               </div>
 
               <div className="bg-white rounded-xl shadow-sm p-6 overflow-hidden col-span-12 border border-indigo-100">
-              <AddCollaborator />
-                <Table collaborators={song?.collaborators} songId={id}/>
+                <AddCollaborator />
+                <Table collaborators={getCollaboratorsInfo()} songId={song?._id || song?.id} />
               </div>
               <div className="bg-white rounded-xl shadow-sm p-6 overflow-hidden col-span-12 border border-indigo-100">
                 <Behavior />
@@ -230,8 +286,8 @@ export default function Song() {
 
               {/* Payment History card */}
               <div className="col-span-12">
-                <PaymentHistory 
-                  title="Historial de Pagos Realizados" 
+                <PaymentHistory
+                  title="Historial de Pagos Realizados"
                   maxHeight="500px"
                   refreshTrigger={paymentHistoryRefresh}
                 />
