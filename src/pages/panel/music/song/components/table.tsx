@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button, Checkbox } from "flowbite-react";
 import SplitsModal from "../../../../../components/modal/SplitsModal";
 import PaymentHistoryModal from "../../../../../components/modal/PaymentHistoryModal";
+import OwnerSplitModal from "./ownerfrom";
 import RegisterPaymentModal from "../../../../../components/modal/RegisterPaymentModal";
 import {
   ChevronLeft,
@@ -21,22 +22,54 @@ import { motion } from "framer-motion";
 import { User as UserType } from "../../../../../models/user";
 import payments from "@/services/payments";
 
+interface Song {
+  id?: string;
+  _id?: string;
+  trackTitle: string;
+  artistName?: string;
+  isrc?: string;
+  ownerId?: string;
+  owner?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  collaborators?: Array<{
+    id: string;
+    _id?: string;
+    name: string;
+    email: string;
+    hasActiveSplit?: boolean;
+  }>;
+  totalNetIncome?: number;
+  releases?: Array<{
+    id: string;
+    platform: string;
+    country: string;
+    reportMonth: string;
+  }>;
+  createdAt?: string;
+  updatedAt?: string;
+}
 interface TableProps {
   collaborators: UserType[];
   songId?: string;
+  song?: Song;
 }
 
-export default function Table({ collaborators, songId }: TableProps) {
+export default function Table({ collaborators, songId, song }: TableProps) {
   const [isSplitsModalOpen, setIsSplitsModalOpen] = useState(false);
   const [isPaymentHistoryModalOpen, setIsPaymentHistoryModalOpen] =
     useState(false);
   const [isRegisterPaymentModalOpen, setIsRegisterPaymentModalOpen] =
     useState(false);
   const [currentSplitId, setCurrentSplitId] = useState<string>("");
+  const [isOwnerSplitModalOpen, setIsOwnerSplitModalOpen] = useState(false);
 
   // Log collaborators for debugging (remove in production)
-  console.log("Collaborators:", collaborators);
-  console.log("Song ID:", songId);
+  // console.log("Collaborators:", collaborators);
+  // console.log("Song ID:", songId);
+  // console.log("Is Owner:", isOwner);
 
   const openSplitsModal = () => {
     setIsSplitsModalOpen(true);
@@ -65,11 +98,24 @@ export default function Table({ collaborators, songId }: TableProps) {
     setIsRegisterPaymentModalOpen(false);
     setCurrentSplitId("");
   };
+  const openOwnerSplitModal = () => {
+    setIsOwnerSplitModalOpen(true);
+  };
+
+  const closeOwnerSplitModal = () => {
+    setIsOwnerSplitModalOpen(false);
+  };
 
   const handleSplitSaved = (splitId: string) => {
     console.log("Split saved with ID:", splitId);
     setCurrentSplitId(splitId);
     // You can add additional logic here, like refreshing data or showing a notification
+  };
+
+  const handleOwnerSplitCreated = () => {
+    console.log("Owner split created, refreshing data...");
+    setIsOwnerSplitModalOpen(false);
+    window.location.reload();
   };
 
   const handlePaymentRegistered = (paymentId: string) => {
@@ -142,6 +188,7 @@ export default function Table({ collaborators, songId }: TableProps) {
                 Gestión de Splits y Pagos
               </span>
             </div>
+
             <div className="flex gap-2">
               <motion.button
                 onClick={openSplitsModal}
@@ -173,6 +220,21 @@ export default function Table({ collaborators, songId }: TableProps) {
             </div>
           </div>
         </div>
+
+        <OwnerSplitModal
+          isOpen={isOwnerSplitModalOpen}
+          onClose={closeOwnerSplitModal}
+          songId={songId || ""}
+          song={
+            song || {
+              id: songId || "",
+              trackTitle: "",
+              artistName: "",
+              isrc: "",
+            }
+          }
+          onSplitCreated={handleOwnerSplitCreated}
+        />
 
         <div className="grid grid-cols-1 gap-4">
           {collaborators?.map((collaborator) => (
@@ -261,6 +323,24 @@ export default function Table({ collaborators, songId }: TableProps) {
                 <div className="flex gap-2">
                   <>
                     <motion.button
+                      onClick={openOwnerSplitModal}
+                      className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-lg font-medium shadow-lg transition-all duration-200 hover:scale-105"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span className="text-sm">Crear Owner Split</span>
+                    </motion.button>
+
+                    <motion.button
+                      onClick={openSplitsModal}
+                      className="flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-all duration-200 hover:scale-105"
+                    >
+                      <Music className="w-4 h-4" />
+                      <span className="text-sm">Configurar Splits</span>
+                    </motion.button>
+
+                    <motion.button
                       onClick={() => openPaymentHistoryModal(currentSplitId)}
                       className="flex items-center gap-1 px-3 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-md transition-all duration-200 hover:scale-105"
                     >
@@ -346,3 +426,5 @@ export default function Table({ collaborators, songId }: TableProps) {
     </>
   );
 }
+
+export type { Song };

@@ -54,6 +54,11 @@ interface CreateSplitRequest {
   conditions: SplitCondition[];
 }
 
+interface CreateSplitOwnerRequest {
+  songId: string;
+  conditions: SplitCondition[];
+}
+
 interface CreateMultipleSplitsRequest {
   songId: string;
   splits: Array<{
@@ -78,20 +83,25 @@ interface SplitsStats {
 interface SplitsResponse {
   success: boolean;
   message: string;
-  data: Split | Split[] | SplitsStats | { totalPercentage: number } | {
-    splits: Split[];
-    pagination: {
-      currentPage: number;
-      totalPages: number;
-      totalItems: number;
-      itemsPerPage: number;
-    };
-    stats: {
-      totalSplits: number;
-      totalPercentage: number;
-      averagePercentage: number;
-    };
-  };
+  data:
+    | Split
+    | Split[]
+    | SplitsStats
+    | { totalPercentage: number }
+    | {
+        splits: Split[];
+        pagination: {
+          currentPage: number;
+          totalPages: number;
+          totalItems: number;
+          itemsPerPage: number;
+        };
+        stats: {
+          totalSplits: number;
+          totalPercentage: number;
+          averagePercentage: number;
+        };
+      };
 }
 
 interface MultipleSplitsResponse {
@@ -106,48 +116,113 @@ interface MultipleSplitsResponse {
   };
 }
 
+interface SplitPayment {
+  splitId: string;
+  calculation: {
+    totalOwed: number;
+    totalPaidPreviously: number;
+    amountToPay: number;
+    songDataSnapshot: {
+      totalNetIncome: number;
+      releasesCount: number;
+      calculatedAt: Date;
+    };
+  };
+  paymentExecution: {
+    paymentIntentId: string | null;
+    amount: number | null;
+    totalPaidAfterThisPayment: number;
+  };
+  currency: string;
+  paidBy: string | null;
+  paidTo: string;
+  status: string;
+  paymentType: string;
+  previousPaymentId: string | null;
+}
+
+interface SplitCalculation {
+  totalOwed: number;
+  totalPaidPreviously: number;
+  amountToPay: number;
+  breakdown: Array<{
+    releaseId: string;
+    platform: string;
+    country: string;
+    netIncome: number;
+    percentage: number;
+    amount: number;
+  }>;
+}
+
 class SplitsService {
-  private baseURL = import.meta.env.VITE_URL_API + '/api/v1/splits';
+  private baseURL = import.meta.env.VITE_URL_API + "/api/v1/splits";
   private headers = {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${this.getAuthToken()}`
-  }
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${this.getAuthToken()}`,
+  };
   /**
    * Crear un nuevo split
    */
   async createSplit(data: CreateSplitRequest[]): Promise<Split> {
     try {
-      const response = await axios.post(this.baseURL + '/collaborator', data[0], {headers: this.headers});
-      return response.data
+      const response = await axios.post(
+        this.baseURL + "/collaborator",
+        data[0],
+        { headers: this.headers }
+      );
+      return response.data;
     } catch (error) {
-      console.error('Error creating split:', error);
+      console.error("Error creating split:", error);
       throw error;
     }
   }
 
+async createOwnerSplit(data: CreateSplitOwnerRequest): Promise<Split> {
+  try {
+    const ownerSplitData = {
+      songId: data.songId,
+      conditions: data.conditions
+    };
+
+    console.log('Sending owner split data (without ownerId):', ownerSplitData);
+
+    const response = await axios.post(`${this.baseURL}/owner`, ownerSplitData, {
+      headers: this.headers
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('Error creating owner split:', error);
+    throw error;
+  }
+}
+
   /**
    * Crear múltiples splits para una canción
    */
-  async createMultipleSplits(data: CreateMultipleSplitsRequest): Promise<MultipleSplitsResponse['data']> {
+  async createMultipleSplits(
+    data: CreateMultipleSplitsRequest
+  ): Promise<MultipleSplitsResponse["data"]> {
     try {
       const response = await fetch(`${this.baseURL}/multiple`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.getAuthToken()}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.getAuthToken()}`,
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Error creating multiple splits');
+        throw new Error(error.message || "Error creating multiple splits");
       }
 
       const result: MultipleSplitsResponse = await response.json();
       return result.data;
     } catch (error) {
-      console.error('Error creating multiple splits:', error);
+      console.error("Error creating multiple splits:", error);
       throw error;
     }
   }
@@ -159,19 +234,19 @@ class SplitsService {
     try {
       const response = await fetch(`${this.baseURL}/song/${songId}`, {
         headers: {
-          'Authorization': `Bearer ${this.getAuthToken()}`
-        }
+          Authorization: `Bearer ${this.getAuthToken()}`,
+        },
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Error fetching splits by song');
+        throw new Error(error.message || "Error fetching splits by song");
       }
 
       const result: SplitsResponse = await response.json();
       return result.data as Split[];
     } catch (error) {
-      console.error('Error fetching splits by song:', error);
+      console.error("Error fetching splits by song:", error);
       throw error;
     }
   }
@@ -181,21 +256,26 @@ class SplitsService {
    */
   async getSplitsByCollaborator(collaboratorId: string): Promise<Split[]> {
     try {
-      const response = await fetch(`${this.baseURL}/collaborator/${collaboratorId}`, {
-        headers: {
-          'Authorization': `Bearer ${this.getAuthToken()}`
+      const response = await fetch(
+        `${this.baseURL}/collaborator/${collaboratorId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${this.getAuthToken()}`,
+          },
         }
-      });
+      );
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Error fetching splits by collaborator');
+        throw new Error(
+          error.message || "Error fetching splits by collaborator"
+        );
       }
 
       const result: SplitsResponse = await response.json();
       return result.data as Split[];
     } catch (error) {
-      console.error('Error fetching splits by collaborator:', error);
+      console.error("Error fetching splits by collaborator:", error);
       throw error;
     }
   }
@@ -207,19 +287,19 @@ class SplitsService {
     try {
       const response = await fetch(`${this.baseURL}/${splitId}`, {
         headers: {
-          'Authorization': `Bearer ${this.getAuthToken()}`
-        }
+          Authorization: `Bearer ${this.getAuthToken()}`,
+        },
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Error fetching split');
+        throw new Error(error.message || "Error fetching split");
       }
 
       const result: SplitsResponse = await response.json();
       return result.data as Split;
     } catch (error) {
-      console.error('Error fetching split by ID:', error);
+      console.error("Error fetching split by ID:", error);
       throw error;
     }
   }
@@ -230,23 +310,23 @@ class SplitsService {
   async updateSplit(splitId: string, data: UpdateSplitRequest): Promise<Split> {
     try {
       const response = await fetch(`${this.baseURL}/${splitId}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.getAuthToken()}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.getAuthToken()}`,
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Error updating split');
+        throw new Error(error.message || "Error updating split");
       }
 
       const result: SplitsResponse = await response.json();
       return result.data as Split;
     } catch (error) {
-      console.error('Error updating split:', error);
+      console.error("Error updating split:", error);
       throw error;
     }
   }
@@ -257,21 +337,21 @@ class SplitsService {
   async deleteSplit(splitId: string): Promise<Split> {
     try {
       const response = await fetch(`${this.baseURL}/${splitId}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          'Authorization': `Bearer ${this.getAuthToken()}`
-        }
+          Authorization: `Bearer ${this.getAuthToken()}`,
+        },
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Error deleting split');
+        throw new Error(error.message || "Error deleting split");
       }
 
       const result: SplitsResponse = await response.json();
       return result.data as Split;
     } catch (error) {
-      console.error('Error deleting split:', error);
+      console.error("Error deleting split:", error);
       throw error;
     }
   }
@@ -279,23 +359,25 @@ class SplitsService {
   /**
    * Obtener estadísticas de splits
    */
-  async getSplitsStats(type: 'owner' | 'collaborator' = 'owner'): Promise<SplitsStats> {
+  async getSplitsStats(
+    type: "owner" | "collaborator" = "owner"
+  ): Promise<SplitsStats> {
     try {
       const response = await fetch(`${this.baseURL}/stats?type=${type}`, {
         headers: {
-          'Authorization': `Bearer ${this.getAuthToken()}`
-        }
+          Authorization: `Bearer ${this.getAuthToken()}`,
+        },
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Error fetching splits stats');
+        throw new Error(error.message || "Error fetching splits stats");
       }
 
       const result: SplitsResponse = await response.json();
       return result.data as SplitsStats;
     } catch (error) {
-      console.error('Error fetching splits stats:', error);
+      console.error("Error fetching splits stats:", error);
       throw error;
     }
   }
@@ -304,30 +386,35 @@ class SplitsService {
    * Calcular porcentaje total de splits para una canción
    */
   async calculateTotalPercentage(
-    songId: string, 
-    excludeCollaboratorId?: string, 
+    songId: string,
+    excludeCollaboratorId?: string,
     additionalPercentage: number = 0
   ): Promise<number> {
     try {
       const params = new URLSearchParams();
-      if (excludeCollaboratorId) params.append('excludeCollaboratorId', excludeCollaboratorId);
-      if (additionalPercentage > 0) params.append('additionalPercentage', additionalPercentage.toString());
+      if (excludeCollaboratorId)
+        params.append("excludeCollaboratorId", excludeCollaboratorId);
+      if (additionalPercentage > 0)
+        params.append("additionalPercentage", additionalPercentage.toString());
 
-      const response = await fetch(`${this.baseURL}/song/${songId}/percentage?${params.toString()}`, {
-        headers: {
-          'Authorization': `Bearer ${this.getAuthToken()}`
+      const response = await fetch(
+        `${this.baseURL}/song/${songId}/percentage?${params.toString()}`,
+        {
+          headers: {
+            Authorization: `Bearer ${this.getAuthToken()}`,
+          },
         }
-      });
+      );
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Error calculating total percentage');
+        throw new Error(error.message || "Error calculating total percentage");
       }
 
       const result: SplitsResponse = await response.json();
       return (result.data as { totalPercentage: number }).totalPercentage;
     } catch (error) {
-      console.error('Error calculating total percentage:', error);
+      console.error("Error calculating total percentage:", error);
       throw error;
     }
   }
@@ -336,7 +423,7 @@ class SplitsService {
    * Obtener mis splits (con paginación)
    */
   async getMySplits(
-    type: 'owner' | 'collaborator' = 'owner',
+    type: "owner" | "collaborator" = "owner",
     page: number = 1,
     limit: number = 10
   ): Promise<{
@@ -357,18 +444,21 @@ class SplitsService {
       const params = new URLSearchParams({
         type,
         page: page.toString(),
-        limit: limit.toString()
+        limit: limit.toString(),
       });
 
-      const response = await fetch(`${this.baseURL}/my-splits?${params.toString()}`, {
-        headers: {
-          'Authorization': `Bearer ${this.getAuthToken()}`
+      const response = await fetch(
+        `${this.baseURL}/my-splits?${params.toString()}`,
+        {
+          headers: {
+            Authorization: `Bearer ${this.getAuthToken()}`,
+          },
         }
-      });
+      );
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Error fetching my splits');
+        throw new Error(error.message || "Error fetching my splits");
       }
 
       const result: SplitsResponse = await response.json();
@@ -387,18 +477,16 @@ class SplitsService {
         };
       };
     } catch (error) {
-      console.error('Error fetching my splits:', error);
+      console.error("Error fetching my splits:", error);
       throw error;
     }
   }
-
-  
 
   /**
    * Obtener token de autenticación
    */
   private getAuthToken(): string {
-    return localStorage.getItem('token') || '';
+    return localStorage.getItem("token") || "";
   }
 }
 
@@ -411,9 +499,12 @@ export type {
   SplitCondition,
   GeneralCondition,
   CreateSplitRequest,
+  CreateSplitOwnerRequest,
   CreateMultipleSplitsRequest,
   UpdateSplitRequest,
   SplitsStats,
   SplitsResponse,
-  MultipleSplitsResponse
-}; 
+  MultipleSplitsResponse,
+  SplitPayment,
+  SplitCalculation,
+};

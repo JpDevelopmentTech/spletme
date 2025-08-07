@@ -13,6 +13,11 @@ const UseSong = ({id}: {id: string}) => {
         setLoading(false);
     }
 
+        const getOwnerId = () => {
+        const ownerId = song?.ownerId || null;
+        console.log("Owner ID:", ownerId);
+        return ownerId;
+    };
     // Función para obtener colaboradores con sus porcentajes
     const getCollaboratorsWithPercentages = () => {
         if (!song?.collaborators || song.collaborators.length === 0) {
@@ -65,6 +70,7 @@ const UseSong = ({id}: {id: string}) => {
     return {
         song,
         getSong,
+        getOwnerId,
         loading,
         getCollaboratorsWithPercentages,
         getCollaboratorsInfo

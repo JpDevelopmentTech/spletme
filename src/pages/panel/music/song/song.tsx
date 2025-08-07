@@ -253,7 +253,11 @@ export default function Song() {
 
               <div className="bg-white rounded-xl shadow-sm p-6 overflow-hidden col-span-12 border border-indigo-100">
                 <AddCollaborator />
-                <Table collaborators={getCollaboratorsInfo()} songId={song?._id || song?.id} />
+                <Table
+                  collaborators={getCollaboratorsInfo()}
+                  songId={song?._id || song?.id}
+                  song={song}
+                />
               </div>
               <div className="bg-white rounded-xl shadow-sm p-6 overflow-hidden col-span-12 border border-indigo-100">
                 <Behavior />

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { splitsService, type Split, type CreateSplitRequest, type UpdateSplitRequest } from '@/services/splits';
+import { splitsService, type Split, type CreateSplitRequest, type UpdateSplitRequest, CreateOwnerSplitResponse, SplitCondition } from '@/services/splits';
 
 export const useSplits = () => {
   const [loading, setLoading] = useState(false);
@@ -152,6 +152,30 @@ export const useSplits = () => {
     }
   }, []);
 
+  // Crear split
+  // Crear split del owner
+  const createOwnerSplit = useCallback(async (
+    ownerId: string, 
+    data: { 
+      songId: string; 
+      conditions: SplitCondition[] 
+    }
+  ): Promise<CreateOwnerSplitResponse | null> => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const result = await splitsService.createOwnerSplit(ownerId, data);
+      return result;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error creating owner split';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   // Obtener mis splits
   const getMySplits = useCallback(async (
     type: 'owner' | 'collaborator' = 'owner',
@@ -189,6 +213,7 @@ export const useSplits = () => {
     deleteSplit,
     getStats,
     calculateTotalPercentage,
+    createOwnerSplit,
     getMySplits,
     clearError,
   };
