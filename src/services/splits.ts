@@ -57,6 +57,7 @@ interface CreateSplitRequest {
 interface CreateSplitOwnerRequest {
   songId: string;
   conditions: SplitCondition[];
+  
 }
 
 interface CreateMultipleSplitsRequest {
@@ -247,6 +248,27 @@ async createOwnerSplit(data: CreateSplitOwnerRequest): Promise<Split> {
       return result.data as Split[];
     } catch (error) {
       console.error("Error fetching splits by song:", error);
+      throw error;
+    }
+  }
+
+  async getSplitByOwner (ownerId: string): Promise<Split[]> {
+    try {
+      const response = await fetch(`${this.baseURL}/owner/${ownerId}`, {
+        headers: {
+          Authorization: `Bearer ${this.getAuthToken()}`,
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Error fetching splits by owner");
+      }
+
+      const result: SplitsResponse = await response.json();
+      return result.data as Split[];
+    } catch (error) {
+      console.error("Error fetching splits by owner:", error);
       throw error;
     }
   }

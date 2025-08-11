@@ -22,7 +22,15 @@ import useCurrentCollaborator from "../../../../hooks/useCurrentCollaborator";
 
 export default function Song() {
   const { id } = useParams();
-  const { song, loading, getCollaboratorsInfo } = useSong({ id: id || "" });
+  const {
+    song,
+    loading,
+    getCollaboratorsInfo,
+    getOwnerPercentage,
+    getOwnerTotalOwed,
+  } = useSong({
+    id: id || "",
+  });
   const {
     getCurrentUserPercentage,
     getCurrentUserAmount,
@@ -38,7 +46,11 @@ export default function Song() {
     "🚀 ~ Is current user collaborator:",
     isCurrentUserCollaborator()
   );
-  console.log("🚀 ~ Song ~ song:", song);
+  const ownerPercentage = getOwnerPercentage();
+  // const ownerId = 
+  console.log("🚀 ~ Song ~ song:", song?.ownerId?._id);
+  console.log("🚀 ~ Song ~ Owner Percentage:", ownerPercentage);
+  console.log("🚀 ~ Song ~ Owner Info:", getOwnerTotalOwed());
 
   const items = [
     {
@@ -214,7 +226,9 @@ export default function Song() {
                               ${getCurrentUserAmount()}
                             </p>
                             <p className="text-xs text-gray-500 mt-3">
-                              {getCurrentUserPercentage()}%
+                              {getCurrentUserPercentage() ||
+                                getOwnerPercentage()}
+                              %
                             </p>
                           </div>
                         </div>
