@@ -47,10 +47,30 @@ export default function Song() {
     isCurrentUserCollaborator()
   );
   const ownerPercentage = getOwnerPercentage();
-  // const ownerId = 
   console.log("🚀 ~ Song ~ song:", song?.ownerId?._id);
   console.log("🚀 ~ Song ~ Owner Percentage:", ownerPercentage);
   console.log("🚀 ~ Song ~ Owner Info:", getOwnerTotalOwed());
+
+  // Función para obtener el porcentaje del usuario actual con fallback
+  const getUserDisplayPercentage = () => {
+    const collaboratorPercentage = getCurrentUserPercentage();
+    if (collaboratorPercentage && collaboratorPercentage > 0) {
+      return collaboratorPercentage;
+    }
+    return getOwnerPercentage();
+  };
+
+  // Función para obtener el monto del usuario actual con fallback
+  const getUserDisplayAmount = () => {
+    const collaboratorAmount = getCurrentUserAmount();
+    if (collaboratorAmount && parseFloat(collaboratorAmount) > 0) {
+      return collaboratorAmount;
+    }
+    // Si no es colaborador, calcular el monto del owner
+    const ownerPercentage = getOwnerPercentage();
+    const totalIncome = song?.totalNetIncome || 0;
+    return ((ownerPercentage / 100) * totalIncome).toFixed(2);
+  };
 
   const items = [
     {
@@ -69,7 +89,6 @@ export default function Song() {
     return authData?.isLoggedIn === true;
   };
 
-  // Manejar click en botón "Pagar a todos"
   const handlePayAllClick = () => {
     if (isStripeConnected()) {
       // Si ya está conectado, mostrar modal de pago
@@ -81,16 +100,13 @@ export default function Song() {
   };
 
   const handleStripeLoginSuccess = () => {
-    // Aquí podríamos proceder con el pago después del login exitoso
     console.log("Login exitoso en Stripe Connect, procediendo con el pago...");
 
-    // Mostrar alerta de éxito
     setAlertMessage(
       "¡Inicio de sesión exitoso! Te has conectado correctamente con Stripe Connect."
     );
     setAlertType("success");
 
-    // Limpiar la alerta después de 5 segundos
     setTimeout(() => {
       setAlertMessage("");
       setAlertType("");
@@ -98,19 +114,15 @@ export default function Song() {
   };
 
   const handlePaymentSuccess = () => {
-    // Manejar éxito del pago
     console.log("Pago procesado exitosamente");
 
-    // Refrescar el historial de pagos
     setPaymentHistoryRefresh((prev) => prev + 1);
 
-    // Mostrar alerta de éxito del pago
     setAlertMessage(
       "¡Pago procesado exitosamente! Los colaboradores recibirán su parte correspondiente."
     );
     setAlertType("success");
 
-    // Limpiar la alerta después de 5 segundos
     setTimeout(() => {
       setAlertMessage("");
       setAlertType("");
@@ -223,12 +235,10 @@ export default function Song() {
                           </p>
                           <div className="flex gap-3">
                             <p className="text-2xl font-bold text-gray-900">
-                              ${getCurrentUserAmount()}
+                              ${getUserDisplayAmount()}
                             </p>
                             <p className="text-xs text-gray-500 mt-3">
-                              {getCurrentUserPercentage() ||
-                                getOwnerPercentage()}
-                              %
+                              {getUserDisplayPercentage()}%
                             </p>
                           </div>
                         </div>
@@ -277,32 +287,26 @@ export default function Song() {
                 <Behavior />
               </div>
 
-              {/* Statistics card */}
               <div className="bg-white rounded-xl shadow-sm p-6 overflow-hidden col-span-6 border border-indigo-100">
                 <Statistics />
               </div>
 
-              {/* Platforms card */}
               <div className="bg-white rounded-xl shadow-sm p-6 overflow-hidden col-span-6 border border-indigo-100">
                 <Platforms />
               </div>
 
-              {/* Specific data card */}
               <div className="bg-white rounded-xl shadow-sm p-6 overflow-hidden col-span-12 border border-indigo-100">
                 <EspecificData />
               </div>
 
-              {/* History of splits card */}
               <div className="bg-white rounded-xl shadow-sm p-6 overflow-hidden col-span-12 border border-indigo-100">
                 <Historyofsplits />
               </div>
 
-              {/* Extraordinary costs card */}
               <div className="bg-white rounded-xl shadow-sm p-6 overflow-hidden col-span-12 border border-indigo-100">
                 <Extraordinarycosts />
               </div>
 
-              {/* Payment History card */}
               <div className="col-span-12">
                 <PaymentHistory
                   title="Historial de Pagos Realizados"
