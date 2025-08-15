@@ -40,6 +40,10 @@ class SongService {
       const endpoint = this.URI + "/accept-invitation";
       const response = await axios.post(endpoint, {
         token
+      },{
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
       });
       return response.data;
     } catch (error) {
