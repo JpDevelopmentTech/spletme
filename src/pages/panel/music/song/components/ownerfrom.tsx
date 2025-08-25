@@ -15,7 +15,8 @@ import {
 } from "lucide-react";
 import Select from "react-select";
 import { countries, platforms } from "@/const";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   CreateSplitOwnerRequest,
   splitsService,
@@ -89,9 +90,14 @@ export default function OwnerSplitModal({
   });
   const [isExpanded, setIsExpanded] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-
+  const [mounted, setMounted] = useState(false);
 
   const currentUser = LocalStorageService.getItem("user");
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   // Toggle expanded state
   const toggleExpanded = () => {
@@ -333,11 +339,11 @@ const saveOwnerSplit = async () => {
     }),
   };
 
-  return (
+  const modalContent = (
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm w-full"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -887,7 +893,7 @@ const saveOwnerSplit = async () => {
                                                 checked={
                                                   condition.platformsType ===
                                                     option.value ||
-                                                  (condition.platformsType ===
+                                                  (condition.countriesType ===
                                                     undefined &&
                                                     option.value === "all")
                                                 }
@@ -981,4 +987,9 @@ const saveOwnerSplit = async () => {
       )}
     </AnimatePresence>
   );
+
+  // Use React Portal to render at root level
+  if (!mounted) return null;
+  
+  return createPortal(modalContent, document.body);
 }

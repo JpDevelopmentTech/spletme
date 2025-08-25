@@ -1,13 +1,39 @@
 import { ApexOptions } from "apexcharts";
 import ReactApexChart from "react-apexcharts";
+import { motion } from "framer-motion";
+import { 
+  Music, 
+  Play, 
+  BarChart3, 
+  TrendingUp, 
+  Edit3, 
+  Youtube, 
+  Music2, 
+  Smartphone, 
+  Disc3, 
+  ShoppingCart,
+  MoreHorizontal,
+  Eye,
+  Users,
+  Globe
+} from "lucide-react";
 
 const Platforms = () => {
   const series2 = [76, 67, 61, 90, 50, 30];
 
   const options2: ApexOptions = {
     chart: {
-      height: 50,
+      height: 200,
       type: "radialBar",
+      background: 'transparent',
+      dropShadow: {
+        enabled: true,
+        color: '#000',
+        top: 18,
+        left: 7,
+        blur: 10,
+        opacity: 0.1
+      }
     },
     plotOptions: {
       radialBar: {
@@ -16,7 +42,7 @@ const Platforms = () => {
         endAngle: 360,
         hollow: {
           margin: 5,
-          size: "30%",
+          size: "40%",
           background: "transparent",
           image: undefined,
         },
@@ -28,266 +54,250 @@ const Platforms = () => {
             show: false,
           },
         },
+        track: {
+          background: 'rgba(148, 163, 184, 0.1)',
+          strokeWidth: '97%',
+          margin: 5,
+          dropShadow: {
+            enabled: true,
+            top: 2,
+            left: 0,
+            blur: 4,
+            opacity: 0.15
+          }
+        }
       },
     },
-    colors: ["#CF5650", "#94C8E5", "#89D062", "#000000", "#E55FFE", "#666666"],
+    colors: ["#FF0000", "#1DB954", "#000000", "#E55FFE", "#00C7F2", "#666666"],
     labels: [
       "Youtube",
-      "Amazon Music",
       "Spotify",
       "Apple Music",
       "Deezer",
-      "Otra",
+      "Amazon Music",
+      "Other",
     ],
     legend: {
       show: false,
-      floating: true,
-      fontSize: "16px",
-      position: "left",
-      offsetX: 160,
-      offsetY: 15,
-      labels: {
-        useSeriesColors: true,
-      },
-      formatter: function (seriesName, opts) {
-        return seriesName + ":  " + opts.w.globals.series[opts.seriesIndex];
-      },
-      itemMargin: {
-        vertical: 3,
-      },
     },
     responsive: [
       {
         breakpoint: 480,
         options: {
-          legend: {
-            show: false,
+          chart: {
+            height: 150,
           },
         },
       },
     ],
   };
+
+  const platformData = [
+    { name: "Spotify", percentage: 76, color: "#1DB954", icon: Music2, streams: 456 },
+    { name: "Apple Music", percentage: 67, color: "#000000", icon: Smartphone, streams: 398 },
+    { name: "Deezer", percentage: 61, color: "#E55FFE", icon: Disc3, streams: 342 },
+    { name: "Youtube", percentage: 90, color: "#FF0000", icon: Youtube, streams: 789 },
+    { name: "Amazon Music", percentage: 50, color: "#00C7F2", icon: ShoppingCart, streams: 234 },
+    { name: "Other", percentage: 30, color: "#666666", icon: MoreHorizontal, streams: 156 }
+  ];
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20, scale: 0.95 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 15
+      }
+    }
+  };
+
   return (
-    <div className="col-span-6 p-6 border rounded-2xl">
-      <div className="flex flex-col">
-        <span className="font-semibold text-xl">Plataformas</span>
-        <span className="text-sm">Comportamiento por plataforma</span>
-      </div>
-      <div className="flex mt-6 items-center gap-6">
-        <div className="w-1/2">
-          <ReactApexChart
-            options={options2}
-            type="radialBar"
-            series={series2}
-          />
-          <div className="w-full p-3 flex justify-around bg-[#F3F3F3] rounded-full">
-            <button>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="1.5em"
-                height="1.5em"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  fill="currentColor"
-                  d="M16 20v-7h4v7h-4Zm-6 0V4h4v16h-4Zm-6 0V9h4v11H4Z"
-                />
-              </svg>
-            </button>
-            <button className="bg-[#D1D1D1] py-3 px-6 rounded-3xl">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="1.5em"
-                height="1.5em"
-                viewBox="0 0 32 32"
-              >
-                <path
-                  fill="currentColor"
-                  d="M16 30A14.016 14.016 0 0 1 2 16h2A12 12 0 1 0 16 4V2a14 14 0 0 1 0 28Z"
-                />
-                <path
-                  fill="currentColor"
-                  d="M16 26A10.011 10.011 0 0 1 6 16h2a8 8 0 1 0 8-8V6a10 10 0 0 1 0 20Z"
-                />
-                <path
-                  fill="currentColor"
-                  d="M16 22a6.007 6.007 0 0 1-6-6h2a4 4 0 1 0 4-4v-2a6 6 0 0 1 0 12Z"
-                />
-              </svg>
-            </button>
-            <button>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="1.5em"
-                height="1.5em"
-                viewBox="0 0 1024 1024"
-              >
-                <path
-                  fill="currentColor"
-                  d="M888 792H200V168c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v688c0 4.4 3.6 8 8 8h752c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm-616-64h536c4.4 0 8-3.6 8-8V284c0-7.2-8.7-10.7-13.7-5.7L592 488.6l-125.4-124a8.03 8.03 0 0 0-11.3 0l-189 189.6a7.87 7.87 0 0 0-2.3 5.6V720c0 4.4 3.6 8 8 8z"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-        <div className="w-1/2 flex flex-col gap-3">
-          <div className="flex justify-between w-full">
-            <div className="flex gap-1">
-              <svg
-                className="w-6 h-6 text-green-400 dark:text-white"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm13.707-1.293a1 1 0 0 0-1.414-1.414L11 12.586l-1.793-1.793a1 1 0 0 0-1.414 1.414l2.5 2.5a1 1 0 0 0 1.414 0l4-4Z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-              <span>Spotify</span>
+    <motion.div 
+      className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 overflow-hidden"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      <div className="p-6 lg:p-8">
+        {/* Header Section */}
+        <motion.div
+          variants={itemVariants}
+          className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4"
+        >
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg">
+                <Globe className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Platforms</h2>
+                <p className="text-gray-600 dark:text-gray-300">Performance across streaming platforms</p>
+              </div>
             </div>
-            <span>00%</span>
           </div>
-          <div className="flex justify-between w-full">
-            <div className="flex gap-1">
-              <svg
-                className="w-6 h-6 text-black dark:text-white"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm13.707-1.293a1 1 0 0 0-1.414-1.414L11 12.586l-1.793-1.793a1 1 0 0 0-1.414 1.414l2.5 2.5a1 1 0 0 0 1.414 0l4-4Z"
-                  clip-rule="evenodd"
+          
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white text-sm font-semibold rounded-xl hover:from-purple-600 hover:to-blue-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+          >
+            <Edit3 className="w-4 h-4" />
+            Edit Platforms
+          </motion.button>
+        </motion.div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Chart Section */}
+          <motion.div
+            variants={itemVariants}
+            className="space-y-6"
+          >
+            {/* Chart */}
+            <div className="bg-gradient-to-br from-gray-50/80 to-blue-50/80 dark:from-gray-700/80 dark:to-blue-900/20 rounded-2xl p-6 border border-gray-200/50">
+              <div className="text-center mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Distribution Overview</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Streams across platforms</p>
+              </div>
+              
+              <div className="flex justify-center">
+                <ReactApexChart
+                  options={options2}
+                  type="radialBar"
+                  series={series2}
                 />
-              </svg>
-              <span>Apple Music</span>
+              </div>
             </div>
-            <span>00%</span>
-          </div>
-          <div className="flex justify-between w-full">
-            <div className="flex gap-1">
-              <svg
-                className="w-6 h-6 text-pink-400 dark:text-white"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="currentColor"
-                viewBox="0 0 24 24"
+
+            {/* View Toggle Buttons */}
+            <div className="flex items-center justify-center gap-3 bg-gray-100/80 dark:bg-gray-700/80 rounded-2xl p-2">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="p-3 rounded-xl bg-white dark:bg-gray-600 shadow-md text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-500 transition-colors"
               >
-                <path
-                  fill-rule="evenodd"
-                  d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm13.707-1.293a1 1 0 0 0-1.414-1.414L11 12.586l-1.793-1.793a1 1 0 0 0-1.414 1.414l2.5 2.5a1 1 0 0 0 1.414 0l4-4Z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-              <span>Deezer</span>
+                <BarChart3 className="w-5 h-5" />
+              </motion.button>
+              
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="p-3 rounded-xl bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
+              >
+                <TrendingUp className="w-5 h-5" />
+              </motion.button>
+              
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="p-3 rounded-xl bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
+              >
+                <Eye className="w-5 h-5" />
+              </motion.button>
             </div>
-            <span>00%</span>
-          </div>
-          <div className="flex justify-between w-full">
-            <div className="flex gap-1">
-              <svg
-                className="w-6 h-6 text-red-400 dark:text-white"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm13.707-1.293a1 1 0 0 0-1.414-1.414L11 12.586l-1.793-1.793a1 1 0 0 0-1.414 1.414l2.5 2.5a1 1 0 0 0 1.414 0l4-4Z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-              <span>Youtube</span>
+          </motion.div>
+
+          {/* Platform List Section */}
+          <motion.div
+            variants={itemVariants}
+            className="space-y-4"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Platform Performance</h3>
+              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                <Users className="w-4 h-4" />
+                <span>Total: 2,575 streams</span>
+              </div>
             </div>
-            <span>00%</span>
-          </div>
-          <div className="flex justify-between w-full">
-            <div className="flex gap-1">
-              <svg
-                className="w-6 h-6 text-blue-400 dark:text-white"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm13.707-1.293a1 1 0 0 0-1.414-1.414L11 12.586l-1.793-1.793a1 1 0 0 0-1.414 1.414l2.5 2.5a1 1 0 0 0 1.414 0l4-4Z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-              <span>Amazon Music</span>
+
+            {/* Platform Items */}
+            <div className="space-y-3">
+              {platformData.map((platform, index) => (
+                <motion.div
+                  key={platform.name}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 * index }}
+                  whileHover={{ x: 8, scale: 1.02 }}
+                  className="group relative bg-gray-50/80 dark:bg-gray-700/80 hover:bg-gray-100/80 dark:hover:bg-gray-600/80 rounded-2xl p-4 transition-all duration-200 border border-gray-200/50 hover:border-gray-300/50"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div 
+                        className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg"
+                        style={{ backgroundColor: platform.color }}
+                      >
+                        <platform.icon className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">{platform.name}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{platform.streams} streams</p>
+                      </div>
+                    </div>
+                    
+                    <div className="text-right">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: platform.color }}></div>
+                        <span className="text-lg font-bold text-gray-900 dark:text-white">{platform.percentage}%</span>
+                      </div>
+                      <div className="w-20 h-2 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${platform.percentage}%` }}
+                          transition={{ delay: 0.2 + index * 0.1, duration: 0.8 }}
+                          className="h-full rounded-full"
+                          style={{ backgroundColor: platform.color }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
             </div>
-            <span>00%</span>
-          </div>
-          <div className="flex justify-between w-full">
-            <div className="flex gap-1">
-              <svg
-                className="w-6 h-6 text-gray-400 dark:text-white"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm13.707-1.293a1 1 0 0 0-1.414-1.414L11 12.586l-1.793-1.793a1 1 0 0 0-1.414 1.414l2.5 2.5a1 1 0 0 0 1.414 0l4-4Z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-              <span>Otra</span>
-            </div>
-            <span>00%</span>
-          </div>
-          <div className="mt-3 flex justify-center">
-            <button className="bg-quinary text-white p-3 rounded-full flex gap-3">
-              Editar plataformas
-              <svg
-                className="w-6 h-6 text-white dark:text-white"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z"
-                />
-              </svg>
-            </button>
-          </div>
-          <div className="flex flex-col items-center justify-center">
-            <span className="text-3xl font-semibold">
-              1250
-            </span>
-            <span className="text-septenary text-sm">Streams + Views</span>
-          </div>
+
+            {/* Total Stats */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+              className="mt-8 bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-2xl p-6 border border-purple-200/50"
+            >
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <Music className="w-6 h-6 text-purple-600" />
+                  <span className="text-sm font-medium text-purple-700 dark:text-purple-300">Total Performance</span>
+                </div>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white mb-2">2,575</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Streams + Views</p>
+                
+                <div className="flex items-center justify-center gap-4 mt-4 text-sm">
+                  <div className="flex items-center gap-1 text-green-600">
+                    <TrendingUp className="w-4 h-4" />
+                    <span>+12.5%</span>
+                  </div>
+                  <span className="text-gray-400">|</span>
+                  <span className="text-gray-600 dark:text-gray-300">This month</span>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

@@ -3,20 +3,20 @@ import CardSong from "../../../components/cardsong/cardsong";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import CardAlbum from "./song/components/cardAlbum";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import UploadModal from "./components/UploadModal";
-import { Music as MusicIcon, Disc, Search, Upload } from "lucide-react";
+import { Music as MusicIcon, Disc, Search, Grid, List, Plus, TrendingUp } from "lucide-react";
 import UseSongs from "../../../hooks/useSongs";
 import Loading from "../../../components/loading/loading";
 
 export default function Music() {
   const [mode, setMode] = useState<"songs" | "albums">("songs");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const { songs, uploadSongs, loading, getSongs } = UseSongs();
 
   const handleFileSelect = async (file: File) => {
-    // Here you can handle the file upload
-    // For example, you could send it to your backend
     const formData = new FormData();
     formData.append("csvFile", file);
     await uploadSongs(formData);
@@ -24,374 +24,388 @@ export default function Music() {
     getSongs();
   };
 
-  return (
-    <>
-      {loading ? (
-        <Loading />
-      ) : (
-        <>
-          <div className="animate-fade-left">
-            <div className="w-full flex flex-col">
-              <div className="flex justify-center mb-6">
-                <div className="bg-white rounded-lg shadow-sm p-1 inline-flex relative">
-                  <motion.div
-                    className="absolute h-[calc(100%-8px)] w-[calc(50%-4px)] bg-orange-500 rounded-md"
-                    initial={{ x: mode === "songs" ? 4 : "calc(100% + 4px)" }}
-                    animate={{
-                      x: mode === "songs" ? 4 : "calc(100% + 4px)"
-                    }}
-                    transition={{ 
-                      type: "spring", 
-                      stiffness: 500, 
-                      damping: 30,
-                      duration: 0.3
-                    }}
-                  />
-                  <motion.button
-                    className={`relative px-6 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
-                      mode === "songs" ? "text-white" : "text-gray-600 hover:text-gray-900"
-                    }`}
-                    onClick={() => setMode("songs")}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <MusicIcon size={18} />
-                    Canciones
-                  </motion.button>
-                  <motion.button
-                    className={`relative px-6 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
-                      mode === "albums" ? "text-white" : "text-gray-600 hover:text-gray-900"
-                    }`}
-                    onClick={() => setMode("albums")}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <Disc size={18} />
-                    Álbumes
-                  </motion.button>
-                </div>
-              </div>
-              {songs.length === 0 && (
-                <div className="flex flex-col items-center justify-center h-full mt-10">
-                  <MusicIcon size={100} color="gray" />
-                  <h1 className="text-2xl font-bold text-gray-500">
-                    No songs found
-                  </h1>
-                </div>
-              )}
-              {mode === "songs" ? (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-3">
-                  <CardSong song={songs[0]} />
-                  <CardSong song={songs[1]} />
-                  <CardSong song={songs[2]} />
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-3">
-                  <CardAlbum album={songs[0]} />
-                  <CardAlbum album={songs[1]} />
-                  <CardAlbum album={songs[2]} />
-                </div>
-              )}
-            </div>
+  const filteredSongs = songs.filter((song: any) =>
+    song.trackTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    song.artisticLabel?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-            <div className="border-b dark:border-gray-700 mx-4 mt-3">
-              <div className="flex items-center justify-between space-x-4 pt-3">
-                <div className="flex-1 flex items-center space-x-3">
-                  <h5 className="dark:text-white font-semibold">All Songs</h5>
-                </div>
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 15
+      }
+    }
+  };
+
+  if (loading) return <Loading />;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+        {/* Header Section */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-8 lg:mb-12"
+        >
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-3 lg:mb-4">
+            Music Library
+          </h1>
+          <p className="text-base lg:text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto px-4">
+            Manage your songs and albums with powerful tools and beautiful visualizations
+          </p>
+        </motion.div>
+
+        {/* Mode Toggle */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="flex justify-center mb-6 lg:mb-8"
+        >
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-2 shadow-xl border border-white/20">
+            <div className="flex space-x-1">
+              {[
+                { key: "songs", icon: MusicIcon, label: "Songs" },
+                { key: "albums", icon: Disc, label: "Albums" }
+              ].map(({ key, icon: Icon, label }) => (
                 <motion.button
+                  key={key}
+                  className={`relative px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center gap-2 sm:gap-3 ${
+                    mode === key
+                      ? "text-white"
+                      : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                  }`}
+                  onClick={() => setMode(key as "songs" | "albums")}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => setIsModalOpen(true)}
-                  className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-all flex items-center gap-2 shadow-md hover:shadow-lg"
                 >
-                  <Upload size={18} />
-                  Upload Songs
+                  {mode === key && (
+                    <motion.div
+                      layoutId="activeTab"
+                      className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl shadow-lg"
+                      initial={false}
+                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    />
+                  )}
+                  <Icon size={18} className="relative z-10" />
+                  <span className="relative z-10">{label}</span>
                 </motion.button>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Search and Controls */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-4 sm:p-6 shadow-xl border border-white/20 mb-6 lg:mb-8"
+        >
+          <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+            {/* Search Bar */}
+            <div className="flex-1 w-full lg:max-w-md">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <input
+                  type="text"
+                  placeholder="Search songs, albums, or labels..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 dark:text-white"
+                />
               </div>
-              <div className="flex flex-col-reverse md:flex-row items-center justify-between md:space-x-4 py-3">
-                <div className="w-full lg:w-2/3 flex flex-col space-y-3 md:space-y-0 md:flex-row md:items-center">
-                  <form className="w-full md:max-w-sm flex-1 md:mr-4">
-                    <label
-                      htmlFor="default-search"
-                      className="text-sm font-medium text-gray-900 sr-only dark:text-white"
+            </div>
+
+            {/* View Toggle and Upload */}
+            <div className="flex items-center gap-3 w-full lg:w-auto justify-center lg:justify-end">
+              {/* View Mode Toggle */}
+              <div className="bg-gray-100 dark:bg-gray-700 rounded-xl p-1">
+                <div className="flex space-x-1">
+                  {[
+                    { key: "grid", icon: Grid },
+                    { key: "list", icon: List }
+                  ].map(({ key, icon: Icon }) => (
+                    <button
+                      key={key}
+                      onClick={() => setViewMode(key as "grid" | "list")}
+                      className={`p-2 rounded-lg transition-all duration-200 ${
+                        viewMode === key
+                          ? "bg-white dark:bg-gray-600 text-indigo-600 shadow-sm"
+                          : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                      }`}
                     >
-                      Search
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                        <Search
-                          size={18}
-                          className="text-gray-500 dark:text-gray-400"
-                        />
-                      </div>
-                      <input
-                        type="search"
-                        id="default-search"
-                        className="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                        placeholder="Search..."
-                      />
-                      <button
-                        type="submit"
-                        className="text-white absolute right-0 bottom-0 top-0 bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-r-lg text-sm px-4 py-2 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-                      >
-                        Search
-                      </button>
-                    </div>
-                  </form>
+                      <Icon size={18} />
+                    </button>
+                  ))}
                 </div>
               </div>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                  <tr>
-                    <th scope="col" className="p-4">
-                      <div className="flex items-center">
-                        <input
-                          id="checkbox-all"
-                          type="checkbox"
-                          className="w-4 h-4 text-primary-600 bg-gray-100 rounded border-gray-300 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                        />
-                        <label htmlFor="checkbox-all" className="sr-only">
-                          checkbox
-                        </label>
-                      </div>
-                    </th>
-                    <th scope="col" className="px-4 py-3">
-                      Cancion
-                    </th>
-                    <th scope="col" className="px-4 py-3">
-                      Tiene split
-                    </th>
-                    <th scope="col" className="px-4 py-3 text-center">
-                      Porcentaje
-                    </th>
-                    <th scope="col" className="px-4 py-3">
-                      Colaboradores
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-4 py-3 min-w-[14rem] text-center"
-                    >
-                      Propietario
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-4 py-3 min-w-[14rem] text-center"
-                    >
-                      Sello
-                    </th>
-                    <th scope="col" className="px-4 py-3 text-center">
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {songs.length === 0 && (
-                    <tr>
-                      <td colSpan={100} className="text-center">
-                        No songs found
-                      </td>
-                    </tr>
-                  )}
-                  {mode === "songs" && (
-                    <>
-                      {songs.map((song: any) => (
-                        <tr className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
-                          <td className="px-4 py-2 w-4">
-                            <div className="flex items-center">
-                              <input
-                                id="checkbox-table-search-1"
-                                type="checkbox"
-                                onClick={() => null}
-                                className="w-4 h-4 text-primary-600 bg-gray-100 rounded border-gray-300 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                              ></input>
-                              <label
-                                htmlFor="checkbox-table-search-1"
-                                className="sr-only"
-                              >
-                                checkbox
-                              </label>
-                            </div>
-                          </td>
-                          <th
-                            scope="row"
-                            className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"
-                          >
-                            <Link to={"/panel/song/" + song._id}>
-                              {song.trackTitle}
-                            </Link>
-                          </th>
-                          <td className="px-4 py-2 whitespace-nowrap text-center">
-                            <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
-                              {song?.split ? "Si" : "No"}
-                            </span>
-                          </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-center">
-                            <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
-                              {song?.percetaje ||
-                                "No se ha asignado porcentaje a esta canción"}
-                            </span>
-                          </td>
-                          <td className="px-4 py-2 whitespace-nowrap">
-                            <div className="flex -space-x-4 w-28">
-                              {song?.collaborators.lenght > 0 ? song?.collaborators?.map((collaborator: any) => (
-                                <img
-                                  src={collaborator.image}
-                                  alt={collaborator.name}
-                                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
-                                />
-                              )) : <span className="text-gray-500">No hay colaboradores</span>}
-                            </div>
-                          </td>
-                          <td className="px-4 py-2 font-medium whitespace-nowrap">
-                            <div className="flex -space-x-4 w-full justify-center">
-                              <img
-                                src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png"
-                                alt=""
-                                className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
-                              />
-                            </div>
-                          </td>
-                          <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
-                            {song?.artisticLabel}
-                          </td>
-                          <td className="px-4 py-2 whitespace-nowrap font-medium text-gray-900 dark:text-white text-xs">
-                            <div className="flex items-center justify-center">
-                              <svg
-                                className="w-6 h-6 text-green-500 dark:text-white"
-                                aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="24"
-                                height="24"
-                                fill="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  fill-rule="evenodd"
-                                  d="M12 2c-.791 0-1.55.314-2.11.874l-.893.893a.985.985 0 0 1-.696.288H7.04A2.984 2.984 0 0 0 4.055 7.04v1.262a.986.986 0 0 1-.288.696l-.893.893a2.984 2.984 0 0 0 0 4.22l.893.893a.985.985 0 0 1 .288.696v1.262a2.984 2.984 0 0 0 2.984 2.984h1.262c.261 0 .512.104.696.288l.893.893a2.984 2.984 0 0 0 4.22 0l.893-.893a.985.985 0 0 1 .696-.288h1.262a2.984 2.984 0 0 0 2.984-2.984V15.7c0-.261.104-.512.288-.696l.893-.893a2.984 2.984 0 0 0 0-4.22l-.893-.893a.985.985 0 0 1-.288-.696V7.04a2.984 2.984 0 0 0-2.984-2.984h-1.262a.985.985 0 0 1-.696-.288l-.893-.893A2.984 2.984 0 0 0 12 2Zm3.683 7.73a1 1 0 1 0-1.414-1.413l-4.253 4.253-1.277-1.277a1 1 0 0 0-1.415 1.414l1.985 1.984a1 1 0 0 0 1.414 0l4.96-4.96Z"
-                                  clip-rule="evenodd"
-                                />
-                              </svg>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </>
-                  )}
-                </tbody>
-              </table>
-            </div>
-            <nav
-              className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-4"
-              aria-label="Table navigation"
-            >
-              <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
-                Showing
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  1-10
-                </span>
-                of
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  1000
-                </span>
-              </span>
-              <ul className="inline-flex items-stretch -space-x-px">
-                <li>
-                  <a
-                    href="#"
-                    className="flex items-center justify-center h-full py-1.5 px-3 ml-0 text-gray-500 bg-white rounded-l-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                  >
-                    <span className="sr-only">Previous</span>
-                    <svg
-                      className="w-5 h-5"
-                      aria-hidden="true"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                  >
-                    1
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                  >
-                    2
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    aria-current="page"
-                    className="flex items-center justify-center text-sm z-10 py-2 px-3 leading-tight text-primary-600 bg-primary-50 border border-primary-300 hover:bg-primary-100 hover:text-primary-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white"
-                  >
-                    3
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                  >
-                    ...
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                  >
-                    100
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="flex items-center justify-center h-full py-1.5 px-3 leading-tight text-gray-500 bg-white rounded-r-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                  >
-                    <span className="sr-only">Next</span>
-                    <svg
-                      className="w-5 h-5"
-                      aria-hidden="true"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
-                  </a>
-                </li>
-              </ul>
-            </nav>
-          </div>
 
-          <UploadModal
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            onFileSelect={handleFileSelect}
-          />
-        </>
-      )}
-    </>
+              {/* Upload Button */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setIsModalOpen(true)}
+                className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
+              >
+                <Plus size={18} />
+                <span className="hidden sm:inline">Upload</span>
+              </motion.button>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Content */}
+        <AnimatePresence mode="wait">
+          {filteredSongs.length === 0 ? (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="text-center py-16 lg:py-20"
+            >
+              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl p-8 sm:p-12 shadow-xl border border-white/20">
+                <motion.div
+                  animate={{ 
+                    rotate: [0, 10, -10, 0],
+                    scale: [1, 1.1, 1]
+                  }}
+                  transition={{ 
+                    duration: 2,
+                    repeat: Infinity,
+                    repeatType: "reverse"
+                  }}
+                >
+                  <MusicIcon size={80} className="sm:w-20 sm:h-20 lg:w-24 lg:h-24 mx-auto text-gray-400 mb-4 sm:mb-6" />
+                </motion.div>
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-600 dark:text-gray-300 mb-2">
+                  No {mode === "songs" ? "songs" : "albums"} found
+                </h3>
+                <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 mb-6 px-4">
+                  {searchQuery ? "Try adjusting your search terms" : "Start by uploading your first track"}
+                </p>
+                {!searchQuery && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setIsModalOpen(true)}
+                    className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 sm:px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                  >
+                    Upload Your First Track
+                  </motion.button>
+                )}
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="content"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="space-y-6 lg:space-y-8"
+            >
+              {/* Featured Cards Section */}
+              <div className="space-y-4">
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="flex items-center gap-3"
+                >
+                  <TrendingUp className="w-6 h-6 text-indigo-600" />
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">
+                    Featured {mode === "songs" ? "Songs" : "Albums"}
+                  </h2>
+                </motion.div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  {filteredSongs.slice(0, 3).map((song: any) => (
+                    <motion.div
+                      key={song._id}
+                      variants={itemVariants}
+                      whileHover={{ 
+                        y: -8,
+                        transition: { duration: 0.2 }
+                      }}
+                      className="group"
+                    >
+                      {mode === "songs" ? (
+                        <CardSong song={song} />
+                      ) : (
+                        <CardAlbum album={song} />
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Table View */}
+              {viewMode === "list" && (
+                <motion.div
+                  variants={itemVariants}
+                  className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden"
+                >
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-gray-50/80 dark:bg-gray-700/80">
+                        <tr>
+                          <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Track
+                          </th>
+                          <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Split Status
+                          </th>
+                          <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Percentage
+                          </th>
+                          <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Collaborators
+                          </th>
+                          <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Label
+                          </th>
+                          <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Status
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                        {filteredSongs.map((song: any) => (
+                          <motion.tr
+                            key={song._id}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            whileHover={{ backgroundColor: "rgba(59, 130, 246, 0.05)" }}
+                            className="transition-colors duration-200"
+                          >
+                            <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                              <Link 
+                                to={`/panel/song/${song._id}`}
+                                className="flex items-center space-x-3 group"
+                              >
+                                <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10">
+                                  <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center">
+                                    <MusicIcon size={16} className="sm:w-5 sm:h-5 text-white" />
+                                  </div>
+                                </div>
+                                <div>
+                                  <div className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-indigo-600 transition-colors">
+                                    {song.trackTitle}
+                                  </div>
+                                </div>
+                              </Link>
+                            </td>
+                            <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                song?.split 
+                                  ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                  : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
+                              }`}>
+                                {song?.split ? "Yes" : "No"}
+                              </span>
+                            </td>
+                            <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                              {song?.percetaje || "Not assigned"}
+                            </td>
+                            <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                              <div className="flex -space-x-2">
+                                {song?.collaborators?.length > 0 ? (
+                                  song.collaborators.slice(0, 3).map((collaborator: any, idx: number) => (
+                                    <img
+                                      key={idx}
+                                      src={collaborator.image}
+                                      alt={collaborator.name}
+                                      className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-white dark:border-gray-800"
+                                    />
+                                  ))
+                                ) : (
+                                  <span className="text-sm text-gray-500 dark:text-gray-400">None</span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                              {song?.artisticLabel || "Unknown"}
+                            </td>
+                            <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                                Active
+                              </span>
+                            </td>
+                          </motion.tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Grid View */}
+              {viewMode === "grid" && (
+                <motion.div
+                  variants={itemVariants}
+                  className="space-y-6"
+                >
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 }}
+                    className="flex items-center gap-3"
+                  >
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">
+                      All {mode === "songs" ? "Songs" : "Albums"}
+                    </h2>
+                  </motion.div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                    {filteredSongs.slice(3).map((song: any) => (
+                      <motion.div
+                        key={song._id}
+                        variants={itemVariants}
+                        whileHover={{ 
+                          y: -8,
+                          transition: { duration: 0.2 }
+                        }}
+                        className="group"
+                      >
+                        {mode === "songs" ? (
+                          <CardSong song={song} />
+                        ) : (
+                          <CardAlbum album={song} />
+                        )}
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <UploadModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onFileSelect={handleFileSelect}
+      />
+    </div>
   );
 }

@@ -157,6 +157,21 @@ export default function Table({ collaborators, songId, song }: TableProps) {
         onPaymentRegistered={handlePaymentRegistered}
       />
 
+      <OwnerSplitModal
+        isOpen={isOwnerSplitModalOpen}
+        onClose={closeOwnerSplitModal}
+        songId={songId || ""}
+        song={
+          song || {
+            id: songId || "",
+            trackTitle: "",
+            artistName: "",
+            isrc: "",
+          }
+        }
+        onSplitCreated={handleOwnerSplitCreated}
+      />
+
       <div className="col-span-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
@@ -188,21 +203,6 @@ export default function Table({ collaborators, songId, song }: TableProps) {
                 Gestión de Splits y Pagos
               </span>
             </div>
-
-            <OwnerSplitModal
-              isOpen={isOwnerSplitModalOpen}
-              onClose={closeOwnerSplitModal}
-              songId={songId || ""}
-              song={
-                song || {
-                  id: songId || "",
-                  trackTitle: "",
-                  artistName: "",
-                  isrc: "",
-                }
-              }
-              onSplitCreated={handleOwnerSplitCreated}
-            />
 
             <div className="flex gap-2">
               <motion.button
