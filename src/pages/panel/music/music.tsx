@@ -3,10 +3,12 @@ import CardSong from "../../../components/cardsong/cardsong";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import CardAlbum from "./song/components/cardAlbum";
+import UpcAlbumCard from "./song/components/UpcAlbumCard";
 import { motion, AnimatePresence } from "framer-motion";
 import UploadModal from "./components/UploadModal";
 import { Music as MusicIcon, Disc, Search, Grid, List, Plus, TrendingUp } from "lucide-react";
 import UseSongs from "../../../hooks/useSongs";
+import useAlbums from "../../../hooks/useAlbums";
 import Loading from "../../../components/loading/loading";
 
 export default function Music() {
@@ -14,7 +16,8 @@ export default function Music() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const { songs, uploadSongs, loading, getSongs } = UseSongs();
+  const { songs, uploadSongs, loading: songsLoading, getSongs } = UseSongs();
+  const { albums, loading: albumsLoading, hasMoreAlbums, loadMoreAlbums } = useAlbums();
 
   const handleFileSelect = async (file: File) => {
     const formData = new FormData();
@@ -27,6 +30,12 @@ export default function Music() {
   const filteredSongs = songs.filter((song: any) =>
     song.trackTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     song.artisticLabel?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredAlbums = albums.filter((album) =>
+    album.albumTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    album.artistName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    album.artisticLabel?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const containerVariants = {
@@ -51,6 +60,9 @@ export default function Music() {
       }
     }
   };
+
+  const loading = mode === "songs" ? songsLoading : albumsLoading;
+  const currentData = mode === "songs" ? filteredSongs : filteredAlbums;
 
   if (loading) return <Loading />;
 
@@ -174,7 +186,7 @@ export default function Music() {
 
         {/* Content */}
         <AnimatePresence mode="wait">
-          {filteredSongs.length === 0 ? (
+          {currentData.length === 0 ? (
             <motion.div
               key="empty"
               initial={{ opacity: 0, scale: 0.9 }}
@@ -237,9 +249,9 @@ export default function Music() {
                 </motion.div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                  {filteredSongs.slice(0, 3).map((song: any) => (
+                  {currentData.slice(0, 3).map((item: any, index: number) => (
                     <motion.div
-                      key={song._id}
+                      key={mode === "songs" ? item._id : item.upc}
                       variants={itemVariants}
                       whileHover={{ 
                         y: -8,
@@ -248,9 +260,9 @@ export default function Music() {
                       className="group"
                     >
                       {mode === "songs" ? (
-                        <CardSong song={song} />
+                        <CardSong song={item} />
                       ) : (
-                        <CardAlbum album={song} />
+                        <UpcAlbumCard album={item} index={index} />
                       )}
                     </motion.div>
                   ))}
@@ -376,9 +388,9 @@ export default function Music() {
                   </motion.div>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-                    {filteredSongs.slice(3).map((song: any) => (
+                    {currentData.slice(3).map((item: any, index: number) => (
                       <motion.div
-                        key={song._id}
+                        key={mode === "songs" ? item._id : item.upc}
                         variants={itemVariants}
                         whileHover={{ 
                           y: -8,
@@ -387,13 +399,28 @@ export default function Music() {
                         className="group"
                       >
                         {mode === "songs" ? (
-                          <CardSong song={song} />
+                          <CardSong song={item} />
                         ) : (
-                          <CardAlbum album={song} />
+                          <UpcAlbumCard album={item} index={index + 3} />
                         )}
                       </motion.div>
                     ))}
                   </div>
+                  
+                  {/* Load More Button for Albums */}
+                  {mode === "albums" && hasMoreAlbums && (
+                    <div className="flex justify-center mt-8">
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={loadMoreAlbums}
+                        disabled={albumsLoading}
+                        className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
+                      >
+                        {albumsLoading ? "Loading..." : "Load More Albums"}
+                      </motion.button>
+                    </div>
+                  )}
                 </motion.div>
               )}
             </motion.div>

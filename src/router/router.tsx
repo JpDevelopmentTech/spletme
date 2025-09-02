@@ -10,6 +10,7 @@ import Song from "../pages/panel/music/song/song";
 import Collaborator from "../pages/panel/collaborators/pages/collaborator";
 import Payments from "../pages/panel/payments/payments";
 import Album from "../pages/panel/music/album/album";
+import AlbumDetail from "../pages/panel/music/album/AlbumDetail";
 import Onboarding from "../pages/auth/onboarding";
 import EmailLogin from "../pages/auth/email-login";
 import Register from "../pages/auth/register";
@@ -63,6 +64,10 @@ const routes = [
       {
         path: "album/:id",
         element: <Album />
+      },
+      {
+        path: "album/upc/:upc",
+        element: <AlbumDetail />
       },
       {
         path: "report",
