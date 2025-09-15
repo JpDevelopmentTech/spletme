@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DollarSign, Music, TrendingUp, Users, Play, Heart, Share2, Calendar, BarChart3, Globe, Clock, Award } from "lucide-react";
+import { DollarSign, Music, Users, Play, Calendar, BarChart3, Award } from "lucide-react";
 import Title from "../../../../components/title/title";
 import AddCollaborator from "../../collaborators/components/addCollaborator";
 import Behavior from "../../dealers/components/behavior";
@@ -19,7 +19,7 @@ import AlertComponent from "../../../../components/alert/alert";
 import LocalStorageService from "../../../../services/localstorage";
 import PaymentHistory from "../../../../components/PaymentHistory/PaymentHistory";
 import useCurrentCollaborator from "../../../../hooks/useCurrentCollaborator";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 export default function Song() {
   const { id } = useParams();
@@ -412,7 +412,7 @@ export default function Song() {
                 className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 overflow-hidden"
               >
                 <div className="p-6 lg:p-8">
-                  <Behavior />
+                  <Behavior songId={id} />
                 </div>
               </motion.div>
 

@@ -105,6 +105,21 @@ class SongService {
         return null;
       }
   }
+
+  async getMetricPayments(songId: string, date: 'month' | 'day' | 'year') {
+    try {
+      const endpoint = this.URI + "/get-metric-payments/" + songId + "/" + date;
+      const response = await axios.get(endpoint, {
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error getting metric payments:", error);
+      return null;
+    }
+  }
 }
 
 export default new SongService();

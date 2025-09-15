@@ -2,7 +2,6 @@
 import CardSong from "../../../components/cardsong/cardsong";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import CardAlbum from "./song/components/cardAlbum";
 import UpcAlbumCard from "./song/components/UpcAlbumCard";
 import { motion, AnimatePresence } from "framer-motion";
 import UploadModal from "./components/UploadModal";
@@ -13,7 +12,7 @@ import Loading from "../../../components/loading/loading";
 
 export default function Music() {
   const [mode, setMode] = useState<"songs" | "albums">("songs");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const { songs, uploadSongs, loading: songsLoading, getSongs } = UseSongs();
@@ -260,7 +259,7 @@ export default function Music() {
                       className="group"
                     >
                       {mode === "songs" ? (
-                        <CardSong song={item} />
+                        <></>
                       ) : (
                         <UpcAlbumCard album={item} index={index} />
                       )}
@@ -270,7 +269,7 @@ export default function Music() {
               </div>
 
               {/* Table View */}
-              {viewMode === "list" && (
+              {viewMode === "list" && mode === "songs" && (
                 <motion.div
                   variants={itemVariants}
                   className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden"

@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
-import { TrendingUp, Wallet, PieChart, Plus, Minus, Filter } from "lucide-react";
-import { useState } from "react";
+import { TrendingUp, Wallet, Filter } from "lucide-react";
 import UseFilterSongsData from "../../../hooks/useFilterSongsData";
 
 const Balance = () => {

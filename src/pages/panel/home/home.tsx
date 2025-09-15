@@ -25,10 +25,12 @@ import {
   Zap
 } from "lucide-react";
 import UseSongs from "../../../hooks/useSongs";
+import UseFilterSongsData from "@/hooks/useFilterSongsData";
 
 export default function Home() {
   const [selectedTimeframe, setSelectedTimeframe] = useState("7d");
   const { songs } = UseSongs();
+  const { summary } = UseFilterSongsData();
 
   const series = [
     {
@@ -192,7 +194,7 @@ export default function Home() {
               transition={{ delay: 0.4, duration: 0.6 }}
               className="text-4xl sm:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-gray-900 via-purple-800 to-blue-800 bg-clip-text text-transparent mb-4"
             >
-              Welcome Back
+              Bienvenidos a SplitMe
             </motion.h1>
             
             <motion.p 
@@ -201,7 +203,7 @@ export default function Home() {
               transition={{ delay: 0.5, duration: 0.6 }}
               className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-6"
             >
-              Track your music performance, analyze trends, and discover insights to grow your audience
+              Aquí podrás ver el rendimiento de tus canciones, analizar tendencias y descubrir insights para crecer tu audiencia
             </motion.p>
 
             {/* Tour Trigger Button */}
@@ -418,7 +420,7 @@ export default function Home() {
                         <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Income</p>
                         <p className="text-xs text-gray-500 dark:text-gray-400">This month</p>
                       </div>
-                      <p className="text-green-600 dark:text-green-400 font-bold text-lg">$100.00</p>
+                      <p className="text-green-600 dark:text-green-400 font-bold text-lg">${summary.totalNetIncome?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                     </motion.div>
                      
                     <motion.div 
