@@ -33,14 +33,14 @@ interface Song {
 
 
 
-const UseSongs = () => {
+const UseSongs = ( page :number, limit :number ) => {
     const [songs, setSongs] = useState<Song[]>([]);
     const [loading, setLoading] = useState(false);
 
     const getSongs = async () => {
         setLoading(true);
         try {
-            const response = await SongService.getSongs();
+            const response = await SongService.getSongs(page, limit);
             setSongs(response.data);
         } catch (error) {
             console.error(error);
@@ -63,7 +63,7 @@ const UseSongs = () => {
 
     useEffect(() => {
         getSongs();
-    }, []);
+    }, [page, limit]);
     return {
         songs,
         loading,

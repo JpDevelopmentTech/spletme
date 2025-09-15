@@ -4,9 +4,9 @@ class SongService {
   private readonly URI = import.meta.env.VITE_URL_API + "/api/v1/songs";
   private readonly token = localStorage.getItem("token");
 
-  async getSongs() {
+  async getSongs(page :number, limit :number) {
     try {
-        const endpoint = this.URI + "/by-user?page=1&limit=10";
+        const endpoint = this.URI + "/by-user?page=" + page + "&limit=" + limit;
         const response = await axios.get(endpoint, {
             headers: {
                 Authorization: `Bearer ${this.token}`,

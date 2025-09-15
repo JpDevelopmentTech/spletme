@@ -29,7 +29,7 @@ import UseFilterSongsData from "@/hooks/useFilterSongsData";
 
 export default function Home() {
   const [selectedTimeframe, setSelectedTimeframe] = useState("7d");
-  const { songs } = UseSongs();
+  const { songs } = UseSongs(1, 10);
   const { summary } = UseFilterSongsData();
 
   const series = [
