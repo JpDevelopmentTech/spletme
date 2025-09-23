@@ -18,7 +18,7 @@ import type { Album, AlbumTrack } from "../../../../models/album";
 export default function AlbumDetail() {
   const { upc } = useParams<{ upc: string }>();
   const navigate = useNavigate();
-  const { getAlbumByUPC } = useAlbums({ autoLoad: false });
+  const { getAlbumByUPC } = useAlbums(0, 10);
   const [album, setAlbum] = useState<Album | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -145,7 +145,7 @@ export default function AlbumDetail() {
                     ALBUM
                   </p>
                   <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-                    {album.albumTitle}
+                    {album.releaseTitle}
                   </h1>
                   <p className="text-xl text-gray-600 dark:text-gray-300 mb-2">
                     {album.artistName}

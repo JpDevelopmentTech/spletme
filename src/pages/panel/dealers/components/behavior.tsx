@@ -122,16 +122,6 @@ export default function Behavior({ songId }: BehaviorProps) {
         />
         <div className="flex items-center space-x-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
           <button
-            onClick={() => setDateType('day')}
-            className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-              dateType === 'day'
-                ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-            }`}
-          >
-            Día
-          </button>
-          <button
             onClick={() => setDateType('month')}
             className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
               dateType === 'month'

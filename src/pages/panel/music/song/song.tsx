@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { DollarSign, Music, Users, Play, Calendar, BarChart3, Award } from "lucide-react";
+import { DollarSign, Music, Users, Play, Calendar, BarChart3, Award, ArrowLeft } from "lucide-react";
 import Title from "../../../../components/title/title";
 import AddCollaborator from "../../collaborators/components/addCollaborator";
 import Behavior from "../../dealers/components/behavior";
 import EspecificData from "./components/especificData";
 import Table from "./components/table";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Breadcrumb from "../../../../components/breadcrumb/breadcrumb";
 import Statistics from "./components/statistics";
 import Platforms from "./components/platforms";
@@ -23,6 +23,7 @@ import { motion } from "framer-motion";
 
 export default function Song() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const {
     song,
     loading,
@@ -184,7 +185,21 @@ export default function Song() {
             className="mb-8"
           >
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <Title title="Canciones" subtitle="Fecha de vinculación" />
+              <div className="flex items-center gap-4">
+                <motion.button
+                  onClick={() => navigate(-1)}
+                  className="flex items-center gap-2 px-4 py-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm text-gray-700 dark:text-gray-300 rounded-xl shadow-lg border border-white/20 hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 group"
+                  whileHover={{ scale: 1.02, x: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
+                  <span className="font-medium">Regresar</span>
+                </motion.button>
+                <Title title="Canciones" subtitle="Fecha de vinculación" />
+              </div>
               <Breadcrumb items={items} />
             </div>
           </motion.div>
@@ -370,10 +385,7 @@ export default function Song() {
                       <div className="text-center">
                         <span className="text-white/80 text-sm">Total a pagar</span>
                         <p className="text-3xl lg:text-4xl font-bold text-white">
-                          ${song?.totalNetIncome?.toLocaleString("en-US", {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
+                          ${(song?.totalNetIncome - getUserDisplayAmount()).toFixed(2)}
                         </p>
                       </div>
                       

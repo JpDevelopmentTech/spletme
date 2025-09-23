@@ -19,6 +19,7 @@ export interface Album {
   totalGrossIncome: number;
   totalNetIncome: number;
   tracks: AlbumTrack[];
+  releaseTitle: string;
 }
 
 export interface AlbumsPagination {

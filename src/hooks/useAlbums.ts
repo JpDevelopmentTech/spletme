@@ -2,11 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import AlbumService from '../services/albums';
 import type { Album, AlbumsPagination } from '../models/album';
 
-interface UseAlbumsOptions {
-  autoLoad?: boolean;
-  initialSkip?: number;
-  initialLimit?: number;
-}
+
 
 interface UseAlbumsReturn {
   // State
@@ -26,12 +22,16 @@ interface UseAlbumsReturn {
   hasMoreAlbums: boolean;
 }
 
-export const useAlbums = (options: UseAlbumsOptions = {}): UseAlbumsReturn => {
+export const useAlbums = (page: number, limit: number): UseAlbumsReturn => {
   const {
     autoLoad = true,
     initialSkip = 0,
-    initialLimit = 10
-  } = options;
+    initialLimit = limit
+  } = {
+    autoLoad: true,
+    initialSkip: page,
+    initialLimit: limit
+  };
 
   // State
   const [albums, setAlbums] = useState<Album[]>([]);
@@ -116,9 +116,9 @@ export const useAlbums = (options: UseAlbumsOptions = {}): UseAlbumsReturn => {
   // Auto-load albums on mount
   useEffect(() => {
     if (autoLoad) {
-      getAlbums();
+      getAlbums(page, limit);
     }
-  }, [autoLoad, getAlbums]);
+  }, [autoLoad, getAlbums, page, limit]);
 
   return {
     // State

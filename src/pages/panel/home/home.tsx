@@ -516,7 +516,7 @@ export default function Home() {
                   <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                     {songs.length > 0 ? (
                       <>
-                        {songs.slice(0, 4).map((song, index) => (
+                        {songs.slice(0, 2).map((song, index) => (
                           <motion.div
                             key={song._id}
                             initial={{ opacity: 0, y: 20 }}

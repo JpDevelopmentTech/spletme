@@ -190,7 +190,7 @@ const PlatformsCard = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6 }}
-      className="col-span-12 lg:col-span-3 bg-gradient-to-br from-white to-gray-50 backdrop-blur-xl rounded-2xl lg:row-span-3 overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300"
+      className="h-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 overflow-hidden"
     >
       {/* Light effect container */}
       <div className="p-5 h-full flex flex-col">

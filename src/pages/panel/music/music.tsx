@@ -31,7 +31,7 @@ export default function Music() {
     loading: albumsLoading,
     hasMoreAlbums,
     loadMoreAlbums,
-  } = useAlbums();
+  } = useAlbums(page, limit);
 
   const handleFileSelect = async (file: File) => {
     const formData = new FormData();
@@ -387,9 +387,9 @@ export default function Music() {
                                 </div>
                               </div>
                               <div className="flex-1 min-w-0">
-                                <h3 className=" text-sm font-medium text-gray-900 dark:text-white truncate">
+                                <Link to={`/panel/album/upc/${album.upc}`} className=" text-sm font-medium text-gray-900 dark:text-white truncate">
                                   {album.albumTitle}...
-                                </h3>
+                                </Link>
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                   {album.artistName || "Unknown Artist"}
                                 </p>
@@ -564,9 +564,9 @@ export default function Music() {
                                 }}
                                 className="transition-colors duration-200"
                               >
-                                <td className="px-6 py-4 whitespace-nowrap">
+                                <td className="px-6 py-4">
                                   <div className="flex items-center space-x-3 group">
-                                    <div className="flex-shrink-0 h-10 w-10">
+                                    <div className=" h-10">
                                       <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center">
                                         <Disc
                                           size={20}
@@ -575,9 +575,9 @@ export default function Music() {
                                       </div>
                                     </div>
                                     <div>
-                                      <div className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-purple-600 transition-colors">
-                                        {album.albumTitle.slice(0, 20)}...    
-                                      </div>
+                                      <Link to={`/panel/album/upc/${album.upc}`} className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-purple-600 transition-colors">
+                                        {album.releaseTitle}
+                                      </Link>
                                     </div>
                                   </div>
                                 </td>
