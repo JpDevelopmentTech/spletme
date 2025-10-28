@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import SongService from '../services/songs';
 
 interface Release {
@@ -36,8 +36,10 @@ interface Song {
 const UseSongs = ( page :number, limit :number ) => {
     const [songs, setSongs] = useState<Song[]>([]);
     const [loading, setLoading] = useState(false);
+    const [searchResults, setSearchResults] = useState<Song[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
 
-    const getSongs = async () => {
+    const getSongs = useCallback(async () => {
         setLoading(true);
         try {
             const response = await SongService.getSongs(page, limit);
@@ -47,7 +49,31 @@ const UseSongs = ( page :number, limit :number ) => {
         } finally {
             setLoading(false);
         }
-    }
+    }, [page, limit]);
+
+    const searchSongs = useCallback(async (query: string) => {
+        if (!query.trim()) {
+            setSearchResults([]);
+            setIsSearching(false);
+            return;
+        }
+        
+        setIsSearching(true);
+        try {
+            const response = await SongService.searchSongs(query, 1, limit);
+            setSearchResults(response.data);
+        } catch (error) {
+            console.error(error);
+            setSearchResults([]);
+        } finally {
+            setIsSearching(false);
+        }
+    }, [limit]);
+
+    const clearSearch = useCallback(() => {
+        setSearchResults([]);
+        setIsSearching(false);
+    }, []);
 
     const uploadSongs = async (file: FormData) => {
         setLoading(true);
@@ -64,11 +90,16 @@ const UseSongs = ( page :number, limit :number ) => {
     useEffect(() => {
         getSongs();
     }, [page, limit]);
+    
     return {
         songs,
         loading,
         getSongs,
-        uploadSongs
+        uploadSongs,
+        searchSongs,
+        searchResults,
+        isSearching,
+        clearSearch
     }
 }
 

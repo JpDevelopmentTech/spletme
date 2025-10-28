@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import CardSong from "../../../components/cardsong/cardsong";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import UpcAlbumCard from "./song/components/UpcAlbumCard";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import UseSongs from "../../../hooks/useSongs";
 import useAlbums from "../../../hooks/useAlbums";
+import useDebounce from "../../../hooks/useDebounce";
 import Loading from "../../../components/loading/loading";
 
 export default function Music() {
@@ -25,7 +26,20 @@ export default function Music() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const { songs, uploadSongs, loading: songsLoading, getSongs } = UseSongs(page, limit);
+  
+  // Debounce search query to avoid excessive API calls
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  
+  const { 
+    songs, 
+    uploadSongs, 
+    loading: songsLoading, 
+    getSongs,
+    searchSongs,
+    searchResults,
+    isSearching,
+    clearSearch
+  } = UseSongs(page, limit);
   const {
     albums,
     loading: albumsLoading,
@@ -41,11 +55,29 @@ export default function Music() {
     getSongs();
   };
 
-  const filteredSongs = songs.filter(
-    (song: any) =>
-      song.trackTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      song.artisticLabel?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Handle search when debounced query changes
+  useEffect(() => {
+    if (mode === "songs") {
+      if (debouncedSearchQuery.trim()) {
+        searchSongs(debouncedSearchQuery);
+      } else {
+        clearSearch();
+      }
+    }
+  }, [debouncedSearchQuery, mode, searchSongs, clearSearch]);
+
+  // Clear search when switching to albums mode
+  useEffect(() => {
+    if (mode === "albums") {
+      clearSearch();
+      setSearchQuery(""); // Clear search query when switching to albums
+    }
+  }, [mode, clearSearch]);
+
+  // Use search results if searching, otherwise use regular songs
+  const displaySongs = debouncedSearchQuery.trim() && mode === "songs" ? searchResults : songs;
+
+  const filteredSongs = displaySongs;
 
   const filteredAlbums = albums.filter(
     (album) =>
@@ -77,7 +109,7 @@ export default function Music() {
     },
   };
 
-  const loading = mode === "songs" ? songsLoading : albumsLoading;
+  const loading = mode === "songs" ? (songsLoading || isSearching) : albumsLoading;
   const currentData = mode === "songs" ? filteredSongs : filteredAlbums;
 
   if (loading) return <Loading />;
@@ -162,11 +194,16 @@ export default function Music() {
                 />
                 <input
                   type="text"
-                  placeholder="Search songs, albums, or labels..."
+                  placeholder={mode === "songs" ? "Search songs by title, artist, or label..." : "Search albums, or labels..."}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 dark:text-white"
                 />
+                {isSearching && mode === "songs" && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-500"></div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -239,11 +276,13 @@ export default function Music() {
                   No {mode === "songs" ? "songs" : "albums"} found
                 </h3>
                 <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 mb-6 px-4">
-                  {searchQuery
-                    ? "Try adjusting your search terms"
+                  {debouncedSearchQuery && mode === "songs"
+                    ? `No songs found matching "${debouncedSearchQuery}". Try different search terms.`
+                    : searchQuery && mode === "albums"
+                    ? `No albums found matching "${searchQuery}". Try different search terms.`
                     : "Start by uploading your first track"}
                 </p>
-                {!searchQuery && (
+                {!debouncedSearchQuery && (
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -273,8 +312,15 @@ export default function Music() {
                 >
                   <TrendingUp className="w-6 h-6 text-indigo-600" />
                   <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">
-                    Featured {mode === "songs" ? "Songs" : "Albums"}
+                    {debouncedSearchQuery && mode === "songs" && searchResults.length > 0
+                      ? `Search Results for "${debouncedSearchQuery}"`
+                      : `Featured ${mode === "songs" ? "Songs" : "Albums"}`}
                   </h2>
+                  {debouncedSearchQuery && mode === "songs" && searchResults.length > 0 && (
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      Found {searchResults.length} song{searchResults.length !== 1 ? 's' : ''}
+                    </p>
+                  )}
                 </motion.div>
               </div>
 

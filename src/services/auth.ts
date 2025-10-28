@@ -1,7 +1,17 @@
 import axios from "axios";
-import { RegisterSchema } from "../models/user";
+import type { RegisterSchema } from "../models/user";
 
 const URI = import.meta.env.VITE_URL_API + '/api/v1/users';
+
+export interface RegisterSubuserSchema {
+    parentUserId: string;
+    username: string;
+    email: string;
+    password: string;
+    passwordConfirmation: string;
+    name: string;
+    lastName: string;
+}
 
 export const AuthService = {
     login: async (email: string, password: string) => {
@@ -25,6 +35,16 @@ export const AuthService = {
             return response.data;
         } catch (error) {
             return null
+        }
+    },
+    registerSubuser: async (payload: RegisterSubuserSchema) => {
+        try {
+            const endpoint = URI + '/sign-up-subuser';
+            const response = await axios.post(endpoint, payload);
+            return response.data;
+        } catch (error) {
+            console.error('Error registering subuser:', error);
+            return null;
         }
     }
 }

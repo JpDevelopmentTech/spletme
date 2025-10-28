@@ -16,3 +16,12 @@ export interface User {
     }
 }
 
+export interface RegisterSchema {
+    username: string;
+    email: string;
+    password: string;
+    passwordConfirmation: string;
+    name: string;
+    lastName: string;
+}
+

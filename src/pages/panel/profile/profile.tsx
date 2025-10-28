@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, User, Mail, ArrowLeft, Copy, Check, Lock, Eye, EyeOff } from "lucide-react";
+import { Camera, User, Mail, ArrowLeft, Copy, Check, Lock, Eye, EyeOff, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import RegisterSubuserModal from "../../../components/modal/RegisterSubuserModal";
+import LocalStorageService from "../../../services/localstorage";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -17,14 +19,16 @@ const ProfilePage = () => {
     confirmPassword: ""
   });
   const [passwordError, setPasswordError] = useState("");
+  const [showSubuserModal, setShowSubuserModal] = useState(false);
 
-  // Mock user data - In a real app, this would come from your auth context or API
+  // Get user data from localStorage
+  const userFromStorage = LocalStorageService.getItem("user");
   const userData = {
-    username: "jesuspineda18",
-    name: "jesus",
-    lastName: "pineda gambin",
-    email: "jesuspineda18@outlook.es",
-    userId: "AB12CD"
+    username: userFromStorage.username || "jesuspineda18",
+    name: userFromStorage.name || "jesus",
+    lastName: userFromStorage.lastName || "pineda gambin",
+    email: userFromStorage.email || "jesuspineda18@outlook.es",
+    userId: userFromStorage.id || "AB12CD"
   };
 
   const handleCopyId = async () => {
@@ -219,6 +223,23 @@ const ProfilePage = () => {
             <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  Administración de Usuarios
+                </h2>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowSubuserModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span>Crear Subusuario</span>
+                </motion.button>
+              </div>
+            </div>
+
+            <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                   Cambiar Contraseña
                 </h2>
                 <motion.button
@@ -321,6 +342,16 @@ const ProfilePage = () => {
           </div>
         </div>
       </motion.div>
+
+      <RegisterSubuserModal
+        isOpen={showSubuserModal}
+        onClose={() => setShowSubuserModal(false)}
+        parentUserId={userData.userId}
+        onSubuserCreated={() => {
+          console.log('Subuser created successfully');
+          // You can add a refresh logic here if needed
+        }}
+      />
     </div>
   );
 };

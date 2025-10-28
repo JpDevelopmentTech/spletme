@@ -120,6 +120,21 @@ class SongService {
       return null;
     }
   }
+
+  async searchSongs(query: string, page: number = 1, limit: number = 10) {
+    try {
+      const endpoint = this.URI + "/search?q=" + encodeURIComponent(query) + "&page=" + page + "&limit=" + limit;
+      const response = await axios.get(endpoint, {
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error searching songs:", error);
+      return null;
+    }
+  }
 }
 
 export default new SongService();
