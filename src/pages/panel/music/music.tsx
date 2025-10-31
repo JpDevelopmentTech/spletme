@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import CardSong from "../../../components/cardsong/cardsong";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import UpcAlbumCard from "./song/components/UpcAlbumCard";
 import { motion, AnimatePresence } from "framer-motion";
@@ -26,6 +26,8 @@ export default function Music() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [albumSearchResult, setAlbumSearchResult] = useState<any | null>(null);
+  const [isAlbumSearching, setIsAlbumSearching] = useState(false);
   
   // Debounce search query to avoid excessive API calls
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
@@ -36,6 +38,7 @@ export default function Music() {
     loading: songsLoading, 
     getSongs,
     searchSongs,
+    searchSongsByCode,
     searchResults,
     isSearching,
     clearSearch
@@ -45,6 +48,8 @@ export default function Music() {
     loading: albumsLoading,
     hasMoreAlbums,
     loadMoreAlbums,
+    getAlbumByUPC,
+    refreshAlbums,
   } = useAlbums(page, limit);
 
   const handleFileSelect = async (file: File) => {
@@ -55,36 +60,65 @@ export default function Music() {
     getSongs();
   };
 
+  // Helpers to detect codes
+  const looksLikeUPC = (q: string) => /^[0-9]{8,14}$/.test(q.replace(/\s|-/g, ""));
+  const looksLikeISRC = (q: string) => /^[A-Z]{2}[A-Z0-9]{3}[0-9]{7}$/i.test(q.replace(/\s|-/g, "").toUpperCase());
+
   // Handle search when debounced query changes
   useEffect(() => {
     if (mode === "songs") {
+      setAlbumSearchResult(null);
       if (debouncedSearchQuery.trim()) {
-        searchSongs(debouncedSearchQuery);
+        const q = debouncedSearchQuery.trim();
+        if (looksLikeISRC(q) || looksLikeUPC(q)) {
+          searchSongsByCode(q);
+        } else {
+          searchSongs(q);
+        }
       } else {
         clearSearch();
       }
     }
-  }, [debouncedSearchQuery, mode, searchSongs, clearSearch]);
+    if (mode === "albums") {
+      const q = debouncedSearchQuery.trim();
+      if (q && looksLikeUPC(q)) {
+        setIsAlbumSearching(true);
+        setAlbumSearchResult(null);
+        (async () => {
+          const result = await getAlbumByUPC(q.replace(/\s|-/g, ""));
+          setAlbumSearchResult(result);
+          setIsAlbumSearching(false);
+        })();
+      } else {
+        setAlbumSearchResult(null);
+      }
+    }
+  }, [debouncedSearchQuery, mode, searchSongs, clearSearch, searchSongsByCode, getAlbumByUPC]);
 
-  // Clear search when switching to albums mode
+  // Clear search and reload albums when switching to albums mode
   useEffect(() => {
     if (mode === "albums") {
       clearSearch();
       setSearchQuery(""); // Clear search query when switching to albums
+      setAlbumSearchResult(null);
+      // Reload albums when switching to albums mode
+      refreshAlbums();
     }
-  }, [mode, clearSearch]);
+  }, [mode, clearSearch, refreshAlbums]);
 
   // Use search results if searching, otherwise use regular songs
   const displaySongs = debouncedSearchQuery.trim() && mode === "songs" ? searchResults : songs;
 
   const filteredSongs = displaySongs;
 
-  const filteredAlbums = albums.filter(
-    (album) =>
-      album.albumTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      album.artistName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      album.artisticLabel?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredAlbums = albumSearchResult
+    ? [albumSearchResult]
+    : albums.filter(
+      (album) =>
+        album.albumTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        album.artistName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        album.artisticLabel?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -194,16 +228,16 @@ export default function Music() {
                 />
                 <input
                   type="text"
-                  placeholder={mode === "songs" ? "Search songs by title, artist, or label..." : "Search albums, or labels..."}
+                  placeholder={mode === "songs" ? "Search by title, artist, label, ISRC or UPC..." : "Search albums by title/artist/label or UPC..."}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 dark:text-white"
                 />
-                {isSearching && mode === "songs" && (
+                {(isSearching && mode === "songs") || (isAlbumSearching && mode === "albums") ? (
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-500"></div>
                   </div>
-                )}
+                ) : null}
               </div>
             </div>
 

@@ -70,6 +70,25 @@ const UseSongs = ( page :number, limit :number ) => {
         }
     }, [limit]);
 
+    const searchSongsByCode = useCallback(async (code: string) => {
+        if (!code.trim()) {
+            setSearchResults([]);
+            setIsSearching(false);
+            return;
+        }
+
+        setIsSearching(true);
+        try {
+            const response = await SongService.searchSongsByCode(code, 1, limit);
+            setSearchResults(response?.data || []);
+        } catch (error) {
+            console.error(error);
+            setSearchResults([]);
+        } finally {
+            setIsSearching(false);
+        }
+    }, [limit]);
+
     const clearSearch = useCallback(() => {
         setSearchResults([]);
         setIsSearching(false);
@@ -99,7 +118,8 @@ const UseSongs = ( page :number, limit :number ) => {
         searchSongs,
         searchResults,
         isSearching,
-        clearSearch
+        clearSearch,
+        searchSongsByCode
     }
 }
 

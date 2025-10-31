@@ -1,10 +1,26 @@
 import { NavLink } from "react-router-dom";
-import { Home, Music, Users, Handshake, BarChart2, CreditCard, Download, Menu, X, ChevronRight, Settings, LogOut, Bell, Search } from "lucide-react";
+import {
+  Home,
+  Music,
+  Users,
+  Handshake,
+  BarChart2,
+  CreditCard,
+  Download,
+  Menu,
+  X,
+  ChevronRight,
+  LogOut,
+  Bell,
+  Search,
+  User,
+} from "lucide-react";
 import Logo from "../../assets/images/2 - BLANCO.png";
 import logo from "../../assets/images/5 - LOGO.png";
 import { useAuth0 } from "@auth0/auth0-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
+import SelectUser from "../selectUser/selectUser";
 
 const menuAnimation = {
   hidden: { opacity: 0, x: -20 },
@@ -12,19 +28,20 @@ const menuAnimation = {
     opacity: 1,
     x: 0,
     transition: {
-      staggerChildren: 0.1
-    }
-  }
+      staggerChildren: 0.1,
+    },
+  },
 };
 
 const itemAnimation = {
   hidden: { opacity: 0, x: -20 },
-  show: { opacity: 1, x: 0 }
+  show: { opacity: 1, x: 0 },
 };
 
 export default function Sidebar() {
   const { user, logout } = useAuth0();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [openSelectUser, setOpenSelectUser] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const handleLogout = () => {
@@ -41,6 +58,13 @@ export default function Sidebar() {
 
   return (
     <>
+      {openSelectUser && (
+        <SelectUser onClose={() => {
+          setOpenSelectUser(false)
+          //reload the page
+          window.location.reload();
+        }} />
+      )}
       {/* Mobile Menu Button */}
       <motion.button
         initial={{ opacity: 0, scale: 0.8 }}
@@ -73,9 +97,11 @@ export default function Sidebar() {
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
         className={`lg:fixed left-0 top-0 h-full bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl shadow-2xl border-r border-white/20 z-30 transition-all duration-300 ${
-          isCollapsed ? 'lg:w-20' : 'lg:w-80'
+          isCollapsed ? "lg:w-20" : "lg:w-80"
         } ${
-          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+          isMobileMenuOpen
+            ? "translate-x-0"
+            : "-translate-x-full lg:translate-x-0"
         }`}
       >
         <div className="h-full flex flex-col p-4 lg:p-6 relative">
@@ -102,25 +128,35 @@ export default function Sidebar() {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
-            <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`} />
+            <ChevronRight
+              className={`w-4 h-4 transition-transform duration-300 ${
+                isCollapsed ? "rotate-180" : ""
+              }`}
+            />
           </motion.button>
 
           {/* Logo and Profile Section */}
-          <motion.div 
+          <motion.div
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4 }}
             className="flex flex-col items-start space-y-6 mb-8"
           >
-            <motion.div 
+            <motion.div
               whileHover={{ scale: 1.05, rotate: 5 }}
-              className={`${isCollapsed ? 'w-8 h-10' : 'w-10 h-12'} transition-all duration-300`}
+              className={`${
+                isCollapsed ? "w-8 h-10" : "w-10 h-12"
+              } transition-all duration-300`}
             >
-              <img src={logo} alt="Logo" className="w-full h-full object-contain" />
+              <img
+                src={logo}
+                alt="Logo"
+                className="w-full h-full object-contain"
+              />
             </motion.div>
 
             {!isCollapsed && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
@@ -130,24 +166,29 @@ export default function Sidebar() {
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                       <span className="text-white font-bold text-lg">
-                        {user?.name?.charAt(0) || 'U'}
+                        {user?.name?.charAt(0) || "U"}
                       </span>
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-blue-600 dark:text-blue-400">¡Bienvenido!</p>
+                      <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                        ¡Bienvenido!
+                      </p>
                       <p className="text-lg font-bold text-gray-900 dark:text-white truncate">
-                        {user?.name || 'Usuario'}
+                        {user?.name || "Usuario"}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500 dark:text-gray-400">ID: #JKE2365</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      ID: #JKE2365
+                    </span>
                     <motion.button
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       className="p-1.5 bg-gray-200/50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-300/50 dark:hover:bg-gray-600/50 transition-colors"
+                      onClick={() => setOpenSelectUser(true)}
                     >
-                      <Settings className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                      <User className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                     </motion.button>
                   </div>
                 </div>
@@ -158,14 +199,14 @@ export default function Sidebar() {
           {/* Navigation Menu */}
           <div className="flex-1 space-y-6">
             {/* Música Section */}
-            <motion.div 
+            <motion.div
               variants={menuAnimation}
               initial="hidden"
               animate="show"
               className="space-y-3"
             >
               {!isCollapsed && (
-                <motion.span 
+                <motion.span
                   variants={itemAnimation}
                   className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 flex items-center gap-2"
                 >
@@ -173,7 +214,7 @@ export default function Sidebar() {
                   Música
                 </motion.span>
               )}
-              
+
               <motion.div variants={itemAnimation}>
                 <NavLink
                   to="/panel/home"
@@ -186,7 +227,11 @@ export default function Sidebar() {
                   }
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <Home className={`${isCollapsed ? 'w-5 h-5' : 'w-5 h-5'} group-hover:scale-110 transition-transform`} />
+                  <Home
+                    className={`${
+                      isCollapsed ? "w-5 h-5" : "w-5 h-5"
+                    } group-hover:scale-110 transition-transform`}
+                  />
                   {!isCollapsed && <span>Inicio</span>}
                 </NavLink>
               </motion.div>
@@ -203,7 +248,11 @@ export default function Sidebar() {
                   }
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <Music className={`${isCollapsed ? 'w-5 h-5' : 'w-5 h-5'} group-hover:scale-110 transition-transform`} />
+                  <Music
+                    className={`${
+                      isCollapsed ? "w-5 h-5" : "w-5 h-5"
+                    } group-hover:scale-110 transition-transform`}
+                  />
                   {!isCollapsed && <span>Música</span>}
                 </NavLink>
               </motion.div>
@@ -220,7 +269,11 @@ export default function Sidebar() {
                   }
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <Handshake className={`${isCollapsed ? 'w-5 h-5' : 'w-5 h-5'} group-hover:scale-110 transition-transform`} />
+                  <Handshake
+                    className={`${
+                      isCollapsed ? "w-5 h-5" : "w-5 h-5"
+                    } group-hover:scale-110 transition-transform`}
+                  />
                   {!isCollapsed && <span>Distribuidores</span>}
                 </NavLink>
               </motion.div>
@@ -237,21 +290,25 @@ export default function Sidebar() {
                   }
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <Users className={`${isCollapsed ? 'w-5 h-5' : 'w-5 h-5'} group-hover:scale-110 transition-transform`} />
+                  <Users
+                    className={`${
+                      isCollapsed ? "w-5 h-5" : "w-5 h-5"
+                    } group-hover:scale-110 transition-transform`}
+                  />
                   {!isCollapsed && <span>Colaboradores</span>}
                 </NavLink>
               </motion.div>
             </motion.div>
 
             {/* Reportes Section */}
-            <motion.div 
+            <motion.div
               variants={menuAnimation}
               initial="hidden"
               animate="show"
               className="space-y-3"
             >
               {!isCollapsed && (
-                <motion.span 
+                <motion.span
                   variants={itemAnimation}
                   className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 flex items-center gap-2"
                 >
@@ -259,7 +316,7 @@ export default function Sidebar() {
                   Reportes
                 </motion.span>
               )}
-              
+
               <motion.div variants={itemAnimation}>
                 <NavLink
                   to="/panel/balance"
@@ -272,7 +329,11 @@ export default function Sidebar() {
                   }
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <BarChart2 className={`${isCollapsed ? 'w-5 h-5' : 'w-5 h-5'} group-hover:scale-110 transition-transform`} />
+                  <BarChart2
+                    className={`${
+                      isCollapsed ? "w-5 h-5" : "w-5 h-5"
+                    } group-hover:scale-110 transition-transform`}
+                  />
                   {!isCollapsed && <span>Balance</span>}
                 </NavLink>
               </motion.div>
@@ -289,7 +350,11 @@ export default function Sidebar() {
                   }
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <CreditCard className={`${isCollapsed ? 'w-5 h-5' : 'w-5 h-5'} group-hover:scale-110 transition-transform`} />
+                  <CreditCard
+                    className={`${
+                      isCollapsed ? "w-5 h-5" : "w-5 h-5"
+                    } group-hover:scale-110 transition-transform`}
+                  />
                   {!isCollapsed && <span>Pagos</span>}
                 </NavLink>
               </motion.div>
@@ -307,7 +372,7 @@ export default function Sidebar() {
                   <Bell className="w-3 h-3" />
                   Acciones
                 </span>
-                
+
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -321,7 +386,7 @@ export default function Sidebar() {
           </div>
 
           {/* Footer Section */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7 }}
@@ -337,10 +402,12 @@ export default function Sidebar() {
               >
                 <div className="flex items-center gap-2 mb-3">
                   <Download className="w-4 h-4 text-blue-600" />
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Descarga nuestra app</span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Descarga nuestra app
+                  </span>
                 </div>
                 <div className="flex gap-2">
-                  <motion.a 
+                  <motion.a
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     href="#"
@@ -352,7 +419,7 @@ export default function Sidebar() {
                       alt="App Store"
                     />
                   </motion.a>
-                  <motion.a 
+                  <motion.a
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     href="#"
@@ -380,13 +447,19 @@ export default function Sidebar() {
             </motion.button>
 
             {/* Logo */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.9 }}
               className="flex justify-center"
             >
-              <img src={Logo} alt="logo splet me" className={`${isCollapsed ? 'w-8' : 'w-32'} opacity-80 transition-all duration-300`} />
+              <img
+                src={Logo}
+                alt="logo splet me"
+                className={`${
+                  isCollapsed ? "w-8" : "w-32"
+                } opacity-80 transition-all duration-300`}
+              />
             </motion.div>
           </motion.div>
         </div>

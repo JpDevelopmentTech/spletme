@@ -135,6 +135,21 @@ class SongService {
       return null;
     }
   }
+
+  async searchSongsByCode(code: string, page: number = 1, limit: number = 10) {
+    try {
+      const endpoint = this.URI + "/search-code?code=" + encodeURIComponent(code) + "&page=" + page + "&limit=" + limit;
+      const response = await axios.get(endpoint, {
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error searching songs by code:", error);
+      return null;
+    }
+  }
 }
 
 export default new SongService();

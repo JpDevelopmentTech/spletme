@@ -14,6 +14,7 @@ export interface RegisterSubuserSchema {
 }
 
 export const AuthService = {
+  
     login: async (email: string, password: string) => {
         try {
             const endpoint = URI + '/sign-in';
@@ -44,6 +45,20 @@ export const AuthService = {
             return response.data;
         } catch (error) {
             console.error('Error registering subuser:', error);
+            return null;
+        }
+    },
+    getSubUsersByUser: async () => {
+        try {
+            const endpoint = URI + '/subusers';
+            const response = await axios.get(endpoint, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token") || ""}`
+                }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error getting subusers by user:', error);
             return null;
         }
     }
