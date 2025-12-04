@@ -2,12 +2,11 @@
 import ImageProfile from "../../../../../components/imageprofile/imageprofile";
 import Title from "../../../../../components/title/title";
 import { motion } from "framer-motion";
-import { Heart, Play, Share2, Plus, Music, User } from "lucide-react";
+import { Heart, Play, Share2, Plus, User } from "lucide-react";
 import { useState } from "react";
 
 export default function CardSong({ data }: { data: any }) {
   const [isLiked, setIsLiked] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
 
   return (
     <motion.div 

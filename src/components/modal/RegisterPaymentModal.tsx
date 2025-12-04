@@ -11,13 +11,15 @@ interface RegisterPaymentModalProps {
   onPaymentRegistered?: (paymentId: string) => void;
 }
 
-const RegisterPaymentModal = ({ isOpen, onClose, splitId, songTitle, onPaymentRegistered }: RegisterPaymentModalProps) => {
+const RegisterPaymentModal = ({ isOpen, onClose, splitId, songTitle }: RegisterPaymentModalProps) => {
   const [amount, setAmount] = useState<number>(0);
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [platform, setPlatform] = useState<string>('');
   const [country, setCountry] = useState<string>('');
   const [preview, setPreview] = useState<any>(null);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [paymentLoading] = useState(false);
+  const [calculationLoading] = useState(false);
 
   const { loading: splitsLoading, error: splitsError, getSplitsBySong } = useSplits();
 
@@ -298,7 +300,7 @@ const RegisterPaymentModal = ({ isOpen, onClose, splitId, songTitle, onPaymentRe
 
                     {/* Participants */}
                     <div className="space-y-3">
-                      {preview.participants.map((participant, index) => (
+                      {preview.participants.map((participant: any, index: number) => (
                         <div key={index} className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                           <div className="flex items-center justify-between mb-2">
                             <span className="font-medium text-gray-900 dark:text-white">
@@ -312,7 +314,7 @@ const RegisterPaymentModal = ({ isOpen, onClose, splitId, songTitle, onPaymentRe
                             <div>
                               {participant.appliedConditions.length > 0 && (
                                 <div className="flex flex-wrap gap-1 mb-2">
-                                  {participant.appliedConditions.map((condition, condIndex) => (
+                                  {participant.appliedConditions.map((condition: any, condIndex: number) => (
                                     <span key={condIndex} className="text-xs px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded-full">
                                       {condition}
                                     </span>

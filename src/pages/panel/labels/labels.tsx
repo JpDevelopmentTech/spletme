@@ -46,7 +46,7 @@ export default function Labels() {
           transition={{ duration: 0.6 }}
           className="mb-8"
         >
-          <Title text="Labels Musicales" />
+          <Title title="Labels Musicales" />
           <p className="text-gray-600 dark:text-gray-400 mt-2">
             Gestiona tus canciones organizadas por sello discográfico
           </p>

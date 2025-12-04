@@ -17,16 +17,12 @@ export const AlbumsUsageExample: React.FC = () => {
     loading,
     error,
     pagination,
-    getAlbums,
     getAlbumByUPC,
     loadMoreAlbums,
     refreshAlbums,
     hasMoreAlbums,
     clearError
-  } = useAlbums({
-    autoLoad: true,
-    initialLimit: 5
-  });
+  } = useAlbums(0, 5);
 
   // Direct service usage (alternative approach)
   const handleDirectServiceCall = async () => {

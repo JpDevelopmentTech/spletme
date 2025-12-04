@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { splitsService, type Split, type CreateSplitRequest, type UpdateSplitRequest, CreateOwnerSplitResponse, SplitCondition } from '@/services/splits';
+import { splitsService, type Split, type CreateSplitRequest, type UpdateSplitRequest, type CreateSplitOwnerRequest } from '@/services/splits';
 
 export const useSplits = () => {
   const [loading, setLoading] = useState(false);
@@ -11,7 +11,7 @@ export const useSplits = () => {
     setError(null);
     
     try {
-      const result = await splitsService.createSplit(data);
+      const result = await splitsService.createSplit([data]);
       return result;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error creating split';
@@ -32,8 +32,7 @@ export const useSplits = () => {
         songId,
         splits: splits.map(split => ({
           collaboratorId: split.collaboratorId,
-          generalCondition: split.generalCondition,
-          splitConditions: split.splitConditions,
+          conditions: split.conditions,
         })),
       });
       return result;
@@ -152,20 +151,15 @@ export const useSplits = () => {
     }
   }, []);
 
-  // Crear split
   // Crear split del owner
   const createOwnerSplit = useCallback(async (
-    ownerId: string, 
-    data: { 
-      songId: string; 
-      conditions: SplitCondition[] 
-    }
-  ): Promise<CreateOwnerSplitResponse | null> => {
+    data: CreateSplitOwnerRequest
+  ): Promise<Split | null> => {
     setLoading(true);
     setError(null);
 
     try {
-      const result = await splitsService.createOwnerSplit(ownerId, data);
+      const result = await splitsService.createOwnerSplit(data);
       return result;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error creating owner split';

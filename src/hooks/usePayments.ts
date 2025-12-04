@@ -35,12 +35,12 @@ export const usePayments = () => {
     }
   }, []);
 
-  const createPayment = useCallback(async (idCollaborator: string, amount: number, description: string) => {
+  const createPayment = useCallback(async (idCollaborator: string, splitId: string) => {
     try {
       setLoading(true);
       setError('');
 
-      const response = await PaymentsService.createPayment(idCollaborator, amount, description);
+      const response = await PaymentsService.createPayment(idCollaborator, splitId);
       
       if (response.error) {
         setError(response.message || 'Error al crear el pago');

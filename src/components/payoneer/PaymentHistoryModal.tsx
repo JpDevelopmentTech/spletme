@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, History, ArrowUpRight, ArrowDownLeft, Calendar, DollarSign, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { X, History, ArrowUpRight, ArrowDownLeft, Calendar, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { usePayoneer } from '../../hooks/usePayoneer';
 
 interface PaymentHistoryModalProps {

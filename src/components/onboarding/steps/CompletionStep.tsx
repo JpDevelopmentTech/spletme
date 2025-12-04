@@ -2,20 +2,6 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
 const CompletionStep = () => {
-  const confettiVariants = {
-    initial: { opacity: 0, y: -20, rotate: 0 },
-    animate: {
-      opacity: [0, 1, 1, 0],
-      y: [0, -10, 100],
-      rotate: [0, 180, 360],
-      transition: {
-        duration: 3,
-        repeat: Infinity,
-        repeatDelay: 1,
-      }
-    }
-  };
-
   const checkmarkVariants = {
     initial: { pathLength: 0, opacity: 0 },
     animate: {

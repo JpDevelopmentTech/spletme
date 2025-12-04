@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import useMusicBrainz from "../../hooks/useMusicBrainz";
 import ImageProfile from "../imageprofile/imageprofile";
-import { Play, Heart, Share2, MoreVertical, Music, User } from "lucide-react";
+import { Play, Heart, Share2, Music, User } from "lucide-react";
 
 interface CardSongProps {
   song?: {

@@ -83,7 +83,7 @@ export default function LabelDetail() {
               <Tag className="w-8 h-8 text-white" />
             </div>
             <div>
-              <Title text={decodedLabel || 'Sin Label'} />
+              <Title title={decodedLabel || 'Sin Label'} />
               <p className="text-gray-600 dark:text-gray-400 mt-1">
                 {songs.length} {songs.length === 1 ? 'canción' : 'canciones'} en este label
               </p>
