@@ -111,7 +111,7 @@ export default function SelectUser({ onClose, onSelected }: SelectUserProps) {
                     )}
 
                     {!loading && !error && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
                             {subUsers && subUsers.length > 0 ? (
                                 subUsers.map((subUser: SubUser) => {
                                     const isSelected = selectedId === subUser.id;

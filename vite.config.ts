@@ -5,7 +5,9 @@ import react from "@vitejs/plugin-react-swc";
 export default defineConfig(({ mode }) => {
   console.log(mode)
   return {
-    plugins: [react()],
+    plugins: [react({
+      jsxImportSource: 'react'
+    })],
     resolve: {
       alias: {
         "@": "/src",

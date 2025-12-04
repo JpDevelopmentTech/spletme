@@ -60,6 +60,21 @@ class PaymentsService {
             return { error: true, message: "Error getting payments by collaborator" };
         }
     }
+
+    async registerSongPayment(songId: string, amount: number, description?: string): Promise<{error: boolean, data?: any, message?: string}>{
+        try {
+            const endpoint = this.URI + `/song/${songId}/register-payment`;
+            const response = await axios.post(endpoint, {
+                amount,
+                description,
+                paymentDate: new Date().toISOString()
+            }, {headers: this.headers});
+            return response.data;
+        } catch (error) {
+            console.error("Error registering song payment:", error);
+            return { error: true, message: "Error registering song payment" };
+        }
+    }
 }
 
 export default new PaymentsService();

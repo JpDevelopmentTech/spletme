@@ -9,17 +9,26 @@ import {
   User, 
   X, 
   LogOut, 
-  ChevronRight
+  ChevronRight,
+  Users
 } from "lucide-react";
+import SelectUser from "../../components/selectUser/selectUser";
 
 export default function Panel() {
   const { logout } = useAuth0();
   const [showMenu, setShowMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [openSelectUser, setOpenSelectUser] = useState(false);
   const navigate = useNavigate();
 
   return (
     <div className="w-full h-screen bg-gray-50 flex font-custom relative">
+      {openSelectUser && (
+        <SelectUser onClose={() => {
+          setOpenSelectUser(false);
+          window.location.reload();
+        }} />
+      )}
       <Sidebar />
       <div className="w-full h-full ml-80">
         <div className="w-full border-b bg-white h-20 flex items-center justify-between px-8 shadow-sm">
@@ -109,13 +118,32 @@ export default function Panel() {
                   <motion.button
                     whileHover={{ x: 10, scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => navigate("/panel/profile")}
+                    onClick={() => {
+                      setShowMenu(false);
+                      navigate("/panel/profile");
+                    }}
                     className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-200 group"
                   >
                     <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30 group-hover:bg-purple-200 dark:group-hover:bg-purple-900/50 transition-colors duration-200">
                       <User className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                     </div>
                     <span className="text-gray-700 dark:text-gray-200 font-medium">Perfil</span>
+                    <ChevronRight className="h-4 w-4 text-gray-400 ml-auto group-hover:translate-x-1 transition-transform duration-200" />
+                  </motion.button>
+
+                  <motion.button
+                    whileHover={{ x: 10, scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      setShowMenu(false);
+                      setOpenSelectUser(true);
+                    }}
+                    className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-200 group"
+                  >
+                    <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition-colors duration-200">
+                      <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <span className="text-gray-700 dark:text-gray-200 font-medium">Cambiar Usuario</span>
                     <ChevronRight className="h-4 w-4 text-gray-400 ml-auto group-hover:translate-x-1 transition-transform duration-200" />
                   </motion.button>
                 </div>

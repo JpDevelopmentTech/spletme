@@ -150,6 +150,21 @@ class SongService {
       return null;
     }
   }
+
+  async getStadisticsByPlatformAll() {
+    try {
+      const endpoint = this.URI + "/getStadisticsByPlatformAll";
+      const response = await axios.get(endpoint, {
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error getting stadistics by platform:", error);
+      return null;
+    }
+  }
 }
 
 export default new SongService();

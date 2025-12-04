@@ -13,14 +13,22 @@ import {
   LogOut,
   Bell,
   Search,
-  User,
+  Tag,
 } from "lucide-react";
 import Logo from "../../assets/images/2 - BLANCO.png";
 import logo from "../../assets/images/5 - LOGO.png";
 import { useAuth0 } from "@auth0/auth0-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
-import SelectUser from "../selectUser/selectUser";
+import { useState, useEffect } from "react";
+import LocalStorageService from "../../services/localstorage";
+
+interface UserData {
+  username: string;
+  name: string;
+  lastName: string;
+  email: string;
+  userId: string;
+}
 
 const menuAnimation = {
   hidden: { opacity: 0, x: -20 },
@@ -41,8 +49,22 @@ const itemAnimation = {
 export default function Sidebar() {
   const { user, logout } = useAuth0();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [openSelectUser, setOpenSelectUser] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [userData, setUserData] = useState<UserData | null>(null);
+
+  useEffect(() => {
+    // Obtener datos del usuario desde localStorage
+    const userFromStorage = LocalStorageService.getItem("user");
+    if (userFromStorage) {
+      setUserData({
+        username: userFromStorage.username || "",
+        name: userFromStorage.name || "",
+        lastName: userFromStorage.lastName || "",
+        email: userFromStorage.email || "",
+        userId: userFromStorage.id || ""
+      });
+    }
+  }, []);
 
   const handleLogout = () => {
     logout({ logoutParams: { returnTo: window.location.origin } });
@@ -58,13 +80,6 @@ export default function Sidebar() {
 
   return (
     <>
-      {openSelectUser && (
-        <SelectUser onClose={() => {
-          setOpenSelectUser(false)
-          //reload the page
-          window.location.reload();
-        }} />
-      )}
       {/* Mobile Menu Button */}
       <motion.button
         initial={{ opacity: 0, scale: 0.8 }}
@@ -166,30 +181,34 @@ export default function Sidebar() {
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                       <span className="text-white font-bold text-lg">
-                        {user?.name?.charAt(0) || "U"}
+                        {userData?.name?.charAt(0)?.toUpperCase() || user?.name?.charAt(0)?.toUpperCase() || "U"}
                       </span>
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
                         ¡Bienvenido!
                       </p>
                       <p className="text-lg font-bold text-gray-900 dark:text-white truncate">
-                        {user?.name || "Usuario"}
+                        {userData?.name || user?.name || "Usuario"}
                       </p>
+                      {userData?.username && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                          @{userData.username}
+                        </p>
+                      )}
                     </div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      ID: #JKE2365
-                    </span>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      className="p-1.5 bg-gray-200/50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-300/50 dark:hover:bg-gray-600/50 transition-colors"
-                      onClick={() => setOpenSelectUser(true)}
-                    >
-                      <User className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-                    </motion.button>
+                  <div className="flex flex-col gap-1">
+                    {userData?.email && (
+                      <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                        {userData.email}
+                      </p>
+                    )}
+                    {userData?.userId && (
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        ID: {userData.userId}
+                      </span>
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -296,6 +315,27 @@ export default function Sidebar() {
                     } group-hover:scale-110 transition-transform`}
                   />
                   {!isCollapsed && <span>Colaboradores</span>}
+                </NavLink>
+              </motion.div>
+
+              <motion.div variants={itemAnimation}>
+                <NavLink
+                  to="/panel/labels"
+                  className={({ isActive }) =>
+                    `flex items-center space-x-3 px-4 py-3 rounded-2xl transition-all duration-300 group ${
+                      isActive
+                        ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg"
+                        : "text-gray-600 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 hover:text-gray-900 dark:hover:text-white"
+                    }`
+                  }
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <Tag
+                    className={`${
+                      isCollapsed ? "w-5 h-5" : "w-5 h-5"
+                    } group-hover:scale-110 transition-transform`}
+                  />
+                  {!isCollapsed && <span>Labels</span>}
                 </NavLink>
               </motion.div>
             </motion.div>

@@ -26,9 +26,11 @@ import {
 } from "lucide-react";
 import UseSongs from "../../../hooks/useSongs";
 import UseFilterSongsData from "@/hooks/useFilterSongsData";
+import { useSplitPayments } from "@/hooks/useSplitPayments";
 
 export default function Home() {
   const [selectedTimeframe, setSelectedTimeframe] = useState("7d");
+  const { totalAmount } = useSplitPayments();
   const { songs } = UseSongs(1, 10);
   const { summary } = UseFilterSongsData();
 
@@ -232,31 +234,35 @@ export default function Home() {
             {[
               { 
                 title: "Total Streams", 
-                value: "2.4M", 
+                value: summary.totalStreams >= 1000000 
+                  ? `${(summary.totalStreams / 1000000).toFixed(1)}M`
+                  : summary.totalStreams >= 1000
+                  ? `${(summary.totalStreams / 1000).toFixed(1)}K`
+                  : summary.totalStreams?.toLocaleString() || "0", 
                 change: "+12.5%", 
                 icon: Play, 
                 color: "from-blue-500 to-cyan-500",
                 bgColor: "from-blue-500/10 to-cyan-500/10"
               },
               { 
-                title: "Monthly Revenue", 
-                value: "$12,847", 
+                title: "Total Revenue", 
+                value: `$${summary.totalNetIncome?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || "0.00"}`, 
                 change: "+8.2%", 
                 icon: DollarSign, 
                 color: "from-green-500 to-emerald-500",
                 bgColor: "from-green-500/10 to-emerald-500/10"
               },
               { 
-                title: "Active Listeners", 
-                value: "847K", 
+                title: "Total Songs", 
+                value: summary.songsWithMatches?.toLocaleString() || "0", 
                 change: "+15.3%", 
                 icon: Users, 
                 color: "from-purple-500 to-pink-500",
                 bgColor: "from-purple-500/10 to-pink-500/10"
               },
               { 
-                title: "Conversion Rate", 
-                value: "3.2%", 
+                title: "Net Balance", 
+                value: `$${(summary.totalNetIncome - totalAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || "0.00"}`, 
                 change: "+2.1%", 
                 icon: Target, 
                 color: "from-orange-500 to-red-500",
@@ -361,9 +367,31 @@ export default function Home() {
                   {/* Mini Stats */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
                     {[
-                      { label: "Total Streams", value: "325K", icon: Music, color: "text-purple-600", bgColor: "bg-purple-100" },
-                      { label: "Total Views", value: "847K", icon: Youtube, color: "text-red-600", bgColor: "bg-red-100" },
-                      { label: "Total Revenue", value: "$244.19", icon: DollarSign, color: "text-green-600", bgColor: "bg-green-100" }
+                      { 
+                        label: "Total Streams", 
+                        value: summary.totalStreams >= 1000000 
+                          ? `${(summary.totalStreams / 1000000).toFixed(1)}M`
+                          : summary.totalStreams >= 1000
+                          ? `${(summary.totalStreams / 1000).toFixed(1)}K`
+                          : summary.totalStreams?.toLocaleString() || "0", 
+                        icon: Music, 
+                        color: "text-purple-600", 
+                        bgColor: "bg-purple-100" 
+                      },
+                      { 
+                        label: "Total Songs", 
+                        value: summary.songsWithMatches?.toLocaleString() || "0", 
+                        icon: Youtube, 
+                        color: "text-red-600", 
+                        bgColor: "bg-red-100" 
+                      },
+                      { 
+                        label: "Total Revenue", 
+                        value: `$${summary.totalNetIncome?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || "0.00"}`, 
+                        icon: DollarSign, 
+                        color: "text-green-600", 
+                        bgColor: "bg-green-100" 
+                      }
                     ].map((stat, index) => (
                       <motion.div
                         key={stat.label}
@@ -434,7 +462,7 @@ export default function Home() {
                         <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Expense</p>
                         <p className="text-xs text-gray-500 dark:text-gray-400">This month</p>
                       </div>
-                      <p className="text-orange-500 dark:text-orange-400 font-bold text-lg">$50.00</p>
+                      <p className="text-orange-500 dark:text-orange-400 font-bold text-lg">${totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                     </motion.div>
                   </div>
 
@@ -447,7 +475,7 @@ export default function Home() {
                   >
                     <div className="text-center">
                       <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">Net Balance</p>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white">$50.00</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">${(summary.totalNetIncome - totalAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                     </div>
                   </motion.div>
                 </div>

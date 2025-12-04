@@ -1,21 +1,94 @@
 import { ApexOptions } from "apexcharts";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import SongService from "../../services/songs";
+
+interface PlatformStadistic {
+  _id: string;
+  totalStreams: number;
+  totalNetIncome: number;
+  releasesCount: number;
+}
+
+interface PlatformDataItem {
+  name: string;
+  percentage: number;
+  color: string;
+  streams: number;
+  income: number;
+  releases: number;
+}
 
 const PlatformsCard = () => {
   const [chart, setChart] = useState<string>("radialBar");
-  const series2 = [76, 67, 61, 90, 50, 30];
+  const [platformData, setPlatformData] = useState<PlatformDataItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const platforms = [
-    { name: "Youtube", color: "#FF6384", value: 76 },
-    { name: "Amazon Music", color: "#36A2EB", value: 67 },
-    { name: "Spotify", color: "#4BC0C0", value: 61 },
-    { name: "Apple Music", color: "#212121", value: 90 },
-    { name: "Deezer", color: "#9966FF", value: 50 },
-    { name: "Otra", color: "#C9CBCF", value: 30 },
-  ];
+  useEffect(() => {
+    const platformConfig: Record<string, { color: string }> = {
+      "Spotify": { color: "#1DB954" },
+      "Apple Music": { color: "#FA243C" },
+      "YouTube Official Content": { color: "#FF0000" },
+      "YouTube UGC": { color: "#FF0000" },
+      "Deezer": { color: "#FF0092" },
+      "Amazon Premium": { color: "#00C7F2" },
+      "Amazon Ad-Supported": { color: "#00A8E1" },
+      "Facebook / Instagram": { color: "#E4405F" },
+      "iMusica": { color: "#FF6B35" },
+      "Yandex": { color: "#FFCC00" },
+      "iTunes Match": { color: "#FA243C" },
+      "Audiomack": { color: "#FFA500" },
+    };
+
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const response = await SongService.getStadisticsByPlatformAll();
+        const stadistics: PlatformStadistic[] = response?.data || [];
+
+        const totalStreams = stadistics.reduce(
+          (sum, item) => sum + (item.totalStreams || 0),
+          0
+        );
+
+        const mapped: PlatformDataItem[] = stadistics
+          .map((item) => {
+            const name = item._id || "Other";
+            const percentage =
+              totalStreams > 0
+                ? Math.round((item.totalStreams / totalStreams) * 100)
+                : 0;
+            const config = platformConfig[name] || { color: "#666666" };
+
+            return {
+              name,
+              percentage,
+              color: config.color,
+              streams: item.totalStreams,
+              income: item.totalNetIncome,
+              releases: item.releasesCount,
+            };
+          })
+          .sort((a, b) => b.streams - a.streams);
+
+        setPlatformData(mapped);
+      } catch (error) {
+        console.error("Error loading platform stadistics", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const totalStreams = platformData.reduce((sum, p) => sum + p.streams, 0);
+
+  const series2 = platformData.slice(0, 6).map((p) => p.percentage);
+
+  const platformsForLegend = platformData.length > 0 ? platformData : [];
 
   // Chart options for radial and pie
   const options2: ApexOptions = {
@@ -53,8 +126,8 @@ const PlatformsCard = () => {
     stroke: {
       lineCap: "round",
     },
-    colors: platforms.map(p => p.color),
-    labels: platforms.map(p => p.name),
+    colors: platformData.slice(0, 6).map((p) => p.color),
+    labels: platformData.slice(0, 6).map((p) => p.name),
     legend: {
       show: false,
     },
@@ -131,7 +204,7 @@ const PlatformsCard = () => {
     fill: {
       opacity: 1
     },
-    colors: platforms.map(p => p.color),
+    colors: platformData.map((p) => p.color),
     tooltip: {
       theme: "light"
     }
@@ -139,29 +212,9 @@ const PlatformsCard = () => {
 
   const series = [
     {
-      name: "Youtube",
-      data: [28, 45, 35]
-    }, 
-    {
-      name: 'Amazon Music',
-      data: [22, 30, 25],
-    }, 
-    {
-      name: 'Spotify',
-      data: [30, 25, 20],
-    }, 
-    {
-      name: 'Apple Music',
-      data: [25, 15, 18],
-    }, 
-    {
-      name: 'Deezer',
-      data: [15, 10, 12],
-    }, 
-    {
-      name: 'Otra',
-      data: [8, 5, 7],
-    }
+      name: "Streams",
+      data: platformData.slice(0, 6).map((p) => p.streams),
+    },
   ];
 
   const chartVariants = {
@@ -210,7 +263,7 @@ const PlatformsCard = () => {
               transition={{ delay: 0.2 }}
               className="text-gray-500 text-sm"
             >
-              Comportamiento por plataforma
+              Comportamiento por plataforma (global)
             </motion.p>
           </div>
           
@@ -221,8 +274,10 @@ const PlatformsCard = () => {
             className="bg-indigo-50 backdrop-blur-sm rounded-full px-3 py-1.5 border border-indigo-100"
           >
             <div className="text-sm font-medium flex items-center gap-1.5">
-              <span className="text-indigo-600 text-lg font-semibold">1,250</span>
-              <span className="text-indigo-400 text-xs">Streams + Views</span>
+              <span className="text-indigo-600 text-lg font-semibold">
+                {totalStreams.toLocaleString()}
+              </span>
+              <span className="text-indigo-400 text-xs">Streams totales</span>
             </div>
           </motion.div>
         </header>
@@ -236,34 +291,46 @@ const PlatformsCard = () => {
             animate="visible"
             className="w-full h-64"
           >
-            {chart === "bar" && (
-              <ReactApexChart
-                options={options}
-                type="bar"
-                series={series}
-                height="100%"
-                width="100%"
-              />
-            )}
+            {loading ? (
+              <div className="flex items-center justify-center h-full text-gray-400 text-sm">
+                Cargando estad\u00edsticas...
+              </div>
+            ) : platformData.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-gray-400 text-sm gap-2">
+                <span>No hay datos de plataformas a\u00fan</span>
+              </div>
+            ) : (
+              <>
+                {chart === "bar" && (
+                  <ReactApexChart
+                    options={options}
+                    type="bar"
+                    series={series}
+                    height="100%"
+                    width="100%"
+                  />
+                )}
 
-            {chart === "pie" && (
-              <ReactApexChart
-                options={options2}
-                type="pie"
-                series={series2}
-                height="100%"
-                width="100%"
-              />
-            )}
+                {chart === "pie" && (
+                  <ReactApexChart
+                    options={options2}
+                    type="pie"
+                    series={series2}
+                    height="100%"
+                    width="100%"
+                  />
+                )}
 
-            {chart === "radialBar" && (
-              <ReactApexChart
-                options={options2}
-                type="radialBar"
-                series={series2}
-                height="100%"
-                width="100%"
-              />
+                {chart === "radialBar" && (
+                  <ReactApexChart
+                    options={options2}
+                    type="radialBar"
+                    series={series2}
+                    height="100%"
+                    width="100%"
+                  />
+                )}
+              </>
             )}
           </motion.div>
         </div>
@@ -328,7 +395,7 @@ const PlatformsCard = () => {
           animate="visible"
           className="grid grid-cols-2 gap-x-3 gap-y-2 mb-5"
         >
-          {platforms.map((platform) => (
+          {platformsForLegend.map((platform) => (
             <motion.div 
               key={platform.name}
               variants={itemVariants}
@@ -337,7 +404,7 @@ const PlatformsCard = () => {
               <div className="w-6 h-2 rounded-sm" style={{ backgroundColor: platform.color }}></div>
               <div className="flex justify-between w-full">
                 <span className="text-gray-700 text-xs font-medium">{platform.name}</span>
-                <span className="text-gray-500 text-xs">{platform.value}%</span>
+                <span className="text-gray-500 text-xs">{platform.percentage}%</span>
               </div>
             </motion.div>
           ))}

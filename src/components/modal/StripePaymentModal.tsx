@@ -15,6 +15,7 @@ interface StripePaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
   songTitle?: string;
+  songId?: string;
   totalAmount?: number;
   collaborators?: Collaborator[];
   onPaymentSuccess?: () => void;
@@ -23,7 +24,8 @@ interface StripePaymentModalProps {
 const StripePaymentModal = ({ 
   isOpen, 
   onClose, 
-  songTitle, 
+  songTitle,
+  songId, 
   totalAmount = 0,
   collaborators = [],
   onPaymentSuccess 
@@ -52,49 +54,43 @@ const StripePaymentModal = ({
       return;
     }
 
-    if (collaborators.length === 0) {
-      setErrors({ general: 'No hay colaboradores para procesar el pago' });
+    if (!songId) {
+      setErrors({ general: 'No se encontró el ID de la canción' });
       return;
     }
 
     setStep('processing');
     
     try {
-      // Procesar pagos para todos los colaboradores
-      const paymentPromises = collaborators.map(async (collaborator) => {
-        if (collaborator.id) {
-          const collaboratorAmount = (amount * (collaborator.percentage || 0)) / 100;
-          return await PaymentsService.createPayment(
-            collaborator.id, 
-            collaboratorAmount, 
-            description || `Pago por ${songTitle}`
-          );
-        }
-        return null;
-      });
+      // Registrar el pago en el backend
+      const response = await PaymentsService.registerSongPayment(
+        songId,
+        amount,
+        description || undefined
+      );
 
-      const results = await Promise.all(paymentPromises);
-      const hasErrors = results.some(result => result && result.error);
-      
-      if (hasErrors) {
-        setErrors({ general: 'Error al procesar algunos pagos. Por favor intenta de nuevo.' });
+      if (response.error) {
+        setErrors({ general: response.message || 'Error al registrar el pago' });
         setStep('confirm');
         return;
       }
 
+      // Pago exitoso
       setStep('success');
       
-      // Auto-cerrar después del éxito
+      // Llamar al callback después de 2 segundos y cerrar el modal
       setTimeout(() => {
-        onPaymentSuccess?.();
+        if (onPaymentSuccess) {
+          onPaymentSuccess();
+        }
         handleClose();
-      }, 3000);
+      }, 2000);
 
     } catch (error) {
-      setErrors({ general: 'Error al procesar el pago. Por favor intenta de nuevo.' });
+      console.error('Error al procesar el pago:', error);
+      setErrors({ general: 'Error al procesar el pago. Por favor, intenta nuevamente.' });
       setStep('confirm');
     }
-    
   };
 
   const handleClose = () => {
@@ -239,7 +235,7 @@ const StripePaymentModal = ({
           disabled={amount <= 0}
           className="flex-1 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-semibold py-3 rounded-lg transition-all hover:from-indigo-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
         >
-          <span>Procesar Pago</span>
+          <span>Registrar Pago</span>
           <ArrowRight className="w-5 h-5" />
         </button>
       </div>
@@ -256,20 +252,20 @@ const StripePaymentModal = ({
       
       <div>
         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-          Procesando Pago
+          Registrando Pago
         </h3>
         <p className="text-gray-600 dark:text-gray-400">
-          Distribuyendo {formatCurrency(amount)} entre {collaborators.length} colaboradores...
+          Registrando pago de {formatCurrency(amount)} para la canción...
         </p>
       </div>
 
       <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
         <div className="flex items-center justify-center space-x-2 text-blue-800 dark:text-blue-300">
           <Clock className="w-5 h-5" />
-          <span className="font-medium">Procesando con Stripe Connect</span>
+          <span className="font-medium">Guardando registro del pago</span>
         </div>
         <p className="text-sm text-blue-600 dark:text-blue-400 mt-2">
-          Los pagos aparecerán en las cuentas de los colaboradores en 1-3 días hábiles
+          Este pago será descontado del monto total pendiente
         </p>
       </div>
     </div>
@@ -293,10 +289,10 @@ const StripePaymentModal = ({
         transition={{ delay: 0.3 }}
       >
         <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-          ¡Pago Procesado Exitosamente!
+          ¡Pago Registrado Exitosamente!
         </h3>
         <p className="text-gray-600 dark:text-gray-400 mb-6">
-          Se ha distribuido {formatCurrency(amount)} entre {collaborators.length} colaboradores
+          Se ha registrado el pago de {formatCurrency(amount)} para esta canción
         </p>
         
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6 space-y-3">
@@ -331,11 +327,11 @@ const StripePaymentModal = ({
   const getModalTitle = () => {
     switch (step) {
       case 'confirm':
-        return 'Procesar Pago con Stripe';
+        return 'Registrar Pago';
       case 'processing':
-        return 'Procesando Pago';
+        return 'Registrando Pago';
       case 'success':
-        return 'Pago Completado';
+        return 'Pago Registrado';
       default:
         return 'Pago';
     }
@@ -375,7 +371,7 @@ const StripePaymentModal = ({
                     {getModalTitle()}
                   </h2>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Stripe Connect • {songTitle}
+                    {songTitle}
                   </p>
                 </div>
               </div>

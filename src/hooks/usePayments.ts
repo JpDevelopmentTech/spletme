@@ -22,9 +22,12 @@ export const usePayments = () => {
         setError(response.message || 'Error al cargar los pagos');
         setPayments([]);
       } else {
-        setPayments(response.data || []);
+        // Asegurarse de que data sea un array
+        const paymentsData = Array.isArray(response.data) ? response.data : [];
+        setPayments(paymentsData);
       }
     } catch (err) {
+      console.error('Error loading payments:', err);
       setError('Error al conectar con el servidor');
       setPayments([]);
     } finally {
@@ -62,10 +65,12 @@ export const usePayments = () => {
   }, [loadPayments]);
 
   const getTotalAmount = useCallback(() => {
+    if (!Array.isArray(payments)) return 0;
     return payments.reduce((total, payment) => total + payment.amount, 0);
   }, [payments]);
 
   const getPaymentsByDateRange = useCallback((startDate: Date, endDate: Date) => {
+    if (!Array.isArray(payments)) return [];
     return payments.filter(payment => {
       const paymentDate = new Date(payment.createdAt);
       return paymentDate >= startDate && paymentDate <= endDate;

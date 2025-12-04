@@ -3,7 +3,6 @@ import ReactApexChart from "react-apexcharts";
 import { motion } from "framer-motion";
 import { 
   Music, 
-  Play, 
   BarChart3, 
   TrendingUp, 
   Edit3, 
@@ -15,11 +14,64 @@ import {
   MoreHorizontal,
   Eye,
   Users,
-  Globe
+  Globe,
+  Facebook,
+  Radio,
+  LucideIcon
 } from "lucide-react";
 
-const Platforms = () => {
-  const series2 = [76, 67, 61, 90, 50, 30];
+interface ReproductionData {
+  totalStreams: number;
+  totalIncome: number;
+  releasesCount: number;
+  platform: string;
+}
+
+interface PlatformsProps {
+  reproductions?: ReproductionData[];
+}
+
+const Platforms = ({ reproductions = [] }: PlatformsProps) => {
+  // Mapeo de colores e iconos por plataforma
+  const platformConfig: Record<string, { color: string; icon: LucideIcon }> = {
+    "Spotify": { color: "#1DB954", icon: Music2 },
+    "Apple Music": { color: "#FA243C", icon: Smartphone },
+    "YouTube Official Content": { color: "#FF0000", icon: Youtube },
+    "YouTube UGC": { color: "#FF0000", icon: Youtube },
+    "Deezer": { color: "#FF0092", icon: Disc3 },
+    "Amazon Premium": { color: "#00C7F2", icon: ShoppingCart },
+    "Amazon Ad-Supported": { color: "#00A8E1", icon: ShoppingCart },
+    "Facebook / Instagram": { color: "#E4405F", icon: Facebook },
+    "iMusica": { color: "#FF6B35", icon: Music },
+    "Yandex": { color: "#FFCC00", icon: Radio },
+    "iTunes Match": { color: "#FA243C", icon: Smartphone },
+    "Audiomack": { color: "#FFA500", icon: Music },
+  };
+
+  // Calcular el total de streams
+  const totalStreams = reproductions.reduce((sum, item) => sum + item.totalStreams, 0);
+  const totalIncome = reproductions.reduce((sum, item) => sum + item.totalIncome, 0);
+
+  // Calcular porcentajes y preparar datos
+  const platformData = reproductions
+    .map(item => {
+      const percentage = totalStreams > 0 ? Math.round((item.totalStreams / totalStreams) * 100) : 0;
+      const config = platformConfig[item.platform] || { color: "#666666", icon: MoreHorizontal };
+      
+      return {
+        name: item.platform,
+        percentage,
+        color: config.color,
+        icon: config.icon,
+        streams: item.totalStreams,
+        income: item.totalIncome,
+        releases: item.releasesCount
+      };
+    })
+    .sort((a, b) => b.streams - a.streams); // Ordenar por streams descendente
+
+  // Series para el gráfico (top 6 plataformas)
+  const series2 = platformData.slice(0, 6).map(item => item.percentage);
 
   const options2: ApexOptions = {
     chart: {
@@ -68,15 +120,8 @@ const Platforms = () => {
         }
       },
     },
-    colors: ["#FF0000", "#1DB954", "#000000", "#E55FFE", "#00C7F2", "#666666"],
-    labels: [
-      "Youtube",
-      "Spotify",
-      "Apple Music",
-      "Deezer",
-      "Amazon Music",
-      "Other",
-    ],
+    colors: platformData.slice(0, 6).map(item => item.color),
+    labels: platformData.slice(0, 6).map(item => item.name),
     legend: {
       show: false,
     },
@@ -91,15 +136,6 @@ const Platforms = () => {
       },
     ],
   };
-
-  const platformData = [
-    { name: "Spotify", percentage: 76, color: "#1DB954", icon: Music2, streams: 456 },
-    { name: "Apple Music", percentage: 67, color: "#000000", icon: Smartphone, streams: 398 },
-    { name: "Deezer", percentage: 61, color: "#E55FFE", icon: Disc3, streams: 342 },
-    { name: "Youtube", percentage: 90, color: "#FF0000", icon: Youtube, streams: 789 },
-    { name: "Amazon Music", percentage: 50, color: "#00C7F2", icon: ShoppingCart, streams: 234 },
-    { name: "Other", percentage: 30, color: "#666666", icon: MoreHorizontal, streams: 156 }
-  ];
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -220,7 +256,7 @@ const Platforms = () => {
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Platform Performance</h3>
               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                 <Users className="w-4 h-4" />
-                <span>Total: 2,575 streams</span>
+                <span>Total: {totalStreams.toLocaleString()} streams</span>
               </div>
             </div>
 
@@ -245,7 +281,9 @@ const Platforms = () => {
                       </div>
                       <div>
                         <p className="font-medium text-gray-900 dark:text-white">{platform.name}</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{platform.streams} streams</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {platform.streams.toLocaleString()} streams • ${platform.income.toFixed(2)}
+                        </p>
                       </div>
                     </div>
                     
@@ -281,16 +319,25 @@ const Platforms = () => {
                   <Music className="w-6 h-6 text-purple-600" />
                   <span className="text-sm font-medium text-purple-700 dark:text-purple-300">Total Performance</span>
                 </div>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white mb-2">2,575</p>
-                <p className="text-sm text-gray-600 dark:text-gray-300">Streams + Views</p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                  {totalStreams.toLocaleString()}
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Total Streams</p>
                 
-                <div className="flex items-center justify-center gap-4 mt-4 text-sm">
-                  <div className="flex items-center gap-1 text-green-600">
-                    <TrendingUp className="w-4 h-4" />
-                    <span>+12.5%</span>
+                <div className="flex items-center justify-center gap-4 mt-4">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-green-600">
+                      ${totalIncome.toFixed(2)}
+                    </p>
+                    <p className="text-xs text-gray-600 dark:text-gray-300">Total Income</p>
                   </div>
                   <span className="text-gray-400">|</span>
-                  <span className="text-gray-600 dark:text-gray-300">This month</span>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-blue-600">
+                      {reproductions.length}
+                    </p>
+                    <p className="text-xs text-gray-600 dark:text-gray-300">Platforms</p>
+                  </div>
                 </div>
               </div>
             </motion.div>

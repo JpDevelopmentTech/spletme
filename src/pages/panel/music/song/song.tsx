@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { DollarSign, Music, Users, Play, Calendar, BarChart3, Award, ArrowLeft } from "lucide-react";
 import Title from "../../../../components/title/title";
 import AddCollaborator from "../../collaborators/components/addCollaborator";
@@ -157,7 +157,7 @@ export default function Song() {
   if (loading) return <Loading />;
 
   return (
-    <>
+    <React.Fragment>
       <StripeConnectLoginModal
         isOpen={showStripeLoginModal}
         onClose={() => setShowStripeLoginModal(false)}
@@ -208,6 +208,7 @@ export default function Song() {
           {loading ? (
             <Loading />
           ) : (
+            <>
             <motion.div
               variants={containerVariants}
               initial="hidden"
@@ -439,14 +440,7 @@ export default function Song() {
                   </div>
                 </motion.div>
 
-                <motion.div
-                  variants={itemVariants}
-                  className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 overflow-hidden"
-                >
-                  <div className="p-6 lg:p-8">
-                    <Platforms />
-                  </div>
-                </motion.div>
+                <Platforms reproductions={song?.reproductions} />
               </div>
 
               {/* Specific Data Section */}
@@ -456,6 +450,26 @@ export default function Song() {
               >
                 <div className="p-6 lg:p-8">
                   <EspecificData />
+                </div>
+              </motion.div>
+
+              {/* History of Splits Section */}
+              <motion.div
+                variants={itemVariants}
+                className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 overflow-hidden"
+              >
+                <div className="p-6 lg:p-8">
+                  <Historyofsplits />
+                </div>
+              </motion.div>
+
+              {/* Extraordinary Costs Section */}
+              <motion.div
+                variants={itemVariants}
+                className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 overflow-hidden"
+              >
+                <div className="p-6 lg:p-8">
+                  <Extraordinarycosts />
                 </div>
               </motion.div>
 
@@ -493,9 +507,10 @@ export default function Song() {
                 </div>
               </motion.div>
             </motion.div>
+            </>
           )}
         </div>
       </div>
-    </>
+    </React.Fragment>
   );
 }

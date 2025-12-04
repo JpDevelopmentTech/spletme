@@ -1,12 +1,13 @@
 import { motion } from "framer-motion";
 import { TrendingUp, Wallet, Filter } from "lucide-react";
 import UseFilterSongsData from "../../../hooks/useFilterSongsData";
+import { useSplitPayments } from "../../../hooks/useSplitPayments";
 
 const Balance = () => {
 
   const { summary, country, setCountry, platform, setPlatform, startDate, setStartDate, endDate, setEndDate } = UseFilterSongsData();
+  const { payments, isLoading: paymentsLoading, totalAmount } = useSplitPayments();
   
- 
 
   const handleClearFilters = () => {
     setCountry("");
@@ -157,145 +158,64 @@ const Balance = () => {
             </div>
             <div>
               <h3 className="text-lg font-medium text-indigo-900">Egresos</h3>
-              <p className="text-2xl font-bold text-red-600">$0.00</p>
+              <p className="text-2xl font-bold text-red-600">
+                ${paymentsLoading ? '...' : totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </p>
             </div>
           </div>
         </motion.div>
       </div>
 
-      {/* Sección de Movimientos Payoneer */}
+      {/* Sección de Movimientos */}
       <div className="mt-8">
-        <h2 className="text-xl font-semibold text-indigo-900 mb-6">Movimientos Payoneer</h2>
+        <h2 className="text-xl font-semibold text-indigo-900 mb-6">Movimientos</h2>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Ingresos Payoneer */}
+        <div className="grid grid-cols-1 gap-6">
+          {/* Egresos - Split Payments */}
           <div className="bg-white rounded-xl shadow-sm border border-indigo-100">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium text-indigo-900">Ingresos</h3>
-                <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-                  +$2,500.00
-                </span>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-green-100 rounded-lg">
-                      <TrendingUp className="text-green-600" size={20} />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">Pago Spotify</p>
-                      <p className="text-sm text-gray-500">15 Mar 2024</p>
-                    </div>
-                  </div>
-                  <span className="text-green-600 font-medium">+$1,200.00</span>
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-green-100 rounded-lg">
-                      <TrendingUp className="text-green-600" size={20} />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">Pago YouTube</p>
-                      <p className="text-sm text-gray-500">10 Mar 2024</p>
-                    </div>
-                  </div>
-                  <span className="text-green-600 font-medium">+$1,300.00</span>
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-green-100 rounded-lg">
-                      <TrendingUp className="text-green-600" size={20} />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">Colaboración - Artista A</p>
-                      <p className="text-sm text-gray-500">8 Mar 2024</p>
-                    </div>
-                  </div>
-                  <span className="text-green-600 font-medium">+$800.00</span>
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-green-100 rounded-lg">
-                      <TrendingUp className="text-green-600" size={20} />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">Licencia de Música - Usuario B</p>
-                      <p className="text-sm text-gray-500">5 Mar 2024</p>
-                    </div>
-                  </div>
-                  <span className="text-green-600 font-medium">+$450.00</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Egresos Payoneer */}
-          <div className="bg-white rounded-xl shadow-sm border border-indigo-100">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium text-indigo-900">Egresos</h3>
+                <h3 className="text-lg font-medium text-indigo-900">Egresos - Pagos a Colaboradores</h3>
                 <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">
-                  -$1,200.00
+                  -${totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
               
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-red-100 rounded-lg">
-                      <TrendingUp className="text-red-600" size={20} />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">Comisión Payoneer</p>
-                      <p className="text-sm text-gray-500">15 Mar 2024</p>
-                    </div>
+                {paymentsLoading ? (
+                  <div className="flex items-center justify-center p-8">
+                    <p className="text-gray-500">Cargando pagos...</p>
                   </div>
-                  <span className="text-red-600 font-medium">-$200.00</span>
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-red-100 rounded-lg">
-                      <TrendingUp className="text-red-600" size={20} />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">Transferencia a Banco</p>
-                      <p className="text-sm text-gray-500">12 Mar 2024</p>
-                    </div>
+                ) : payments.length === 0 ? (
+                  <div className="flex items-center justify-center p-8">
+                    <p className="text-gray-500">No hay pagos registrados</p>
                   </div>
-                  <span className="text-red-600 font-medium">-$300.00</span>
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-red-100 rounded-lg">
-                      <TrendingUp className="text-red-600" size={20} />
+                ) : (
+                  payments.map((payment) => (
+                    <div key={payment._id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-red-100 rounded-lg">
+                          <TrendingUp className="text-red-600" size={20} />
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">
+                            {payment.description || `Pago a Colaborador - ${payment.idCollaborator}`}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {new Date(payment.createdAt).toLocaleDateString('es-ES', { 
+                              day: 'numeric', 
+                              month: 'short', 
+                              year: 'numeric' 
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-red-600 font-medium">
+                        -${payment.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
                     </div>
-                    <div>
-                      <p className="font-medium text-gray-900">Pago a Productor - Usuario C</p>
-                      <p className="text-sm text-gray-500">10 Mar 2024</p>
-                    </div>
-                  </div>
-                  <span className="text-red-600 font-medium">-$400.00</span>
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-red-100 rounded-lg">
-                      <TrendingUp className="text-red-600" size={20} />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">Pago a Colaborador - Usuario D</p>
-                      <p className="text-sm text-gray-500">8 Mar 2024</p>
-                    </div>
-                  </div>
-                  <span className="text-red-600 font-medium">-$300.00</span>
-                </div>
+                  ))
+                )}
               </div>
             </div>
           </div>
@@ -307,4 +227,4 @@ const Balance = () => {
   );
 };
 
-export default Balance; 
+export default Balance;

@@ -574,10 +574,7 @@ export default function Music() {
                                   >
                                     <div className="flex-shrink-0 h-10 w-10">
                                       <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center">
-                                        <MusicIcon
-                                          size={20}
-                                          className="text-white"
-                                        />
+                                        <img src="" alt="" />
                                       </div>
                                     </div>
                                     <div>

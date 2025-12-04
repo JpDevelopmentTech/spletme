@@ -18,6 +18,8 @@ import Balance from "../pages/panel/balance/balance";
 import Profile from "../pages/panel/profile/profile";
 import AcceptCollaboration from "../pages/collabotarion/acceptCollaboration";
 import Stripe from "../pages/panel/stripe/stripe";
+import LabelsTable from "../pages/panel/labels/labelsTable";
+import LabelDetail from "../pages/panel/labels/labelDetail";
 
 const routes = [
   {
@@ -100,6 +102,14 @@ const routes = [
       {
         path: "profile",
         element: <Profile />
+      },
+      {
+        path: "labels",
+        element: <LabelsTable />
+      },
+      {
+        path: "labels/:label",
+        element: <LabelDetail />
       }
     ],
   },
