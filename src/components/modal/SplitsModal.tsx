@@ -185,7 +185,11 @@ export default function SplitsModal({
 
       const response = await splitsService.createSplit(splitsToCreate);
       console.log(response);
-      onClose();
+      
+      // Recargar la página para mostrar los cambios
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     } catch (error) {
       console.error("Error saving splits:", error);
       alert("Error al guardar los splits. Por favor, intenta de nuevo.");

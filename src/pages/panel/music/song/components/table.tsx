@@ -109,7 +109,10 @@ export default function Table({ collaborators, songId, song }: TableProps) {
   const handleSplitSaved = (splitId: string) => {
     console.log("Split saved with ID:", splitId);
     setCurrentSplitId(splitId);
-    // You can add additional logic here, like refreshing data or showing a notification
+    // Recargar la página para mostrar los cambios
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
   };
 
   const handleOwnerSplitCreated = () => {
