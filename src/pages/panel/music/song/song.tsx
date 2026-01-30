@@ -7,7 +7,6 @@ import EspecificData from "./components/especificData";
 import Table from "./components/table";
 import { useParams, useNavigate } from "react-router-dom";
 import Breadcrumb from "../../../../components/breadcrumb/breadcrumb";
-import Statistics from "./components/statistics";
 import Platforms from "./components/platforms";
 import Historyofsplits from "./components/historyofsplits";
 import Extraordinarycosts from "./components/extraordinarycosts";

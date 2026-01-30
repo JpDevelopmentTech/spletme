@@ -296,7 +296,7 @@ export default function AlbumOwnerSplitModal({
       setShowResults(true);
 
       // Auto-close modal after 3 seconds if all successful
-      if (progress.failed === 0) {
+      if (progress && progress.failed === 0) {
         setAutoCloseCountdown(3);
       } else {
         // If there were failures, just call onSplitsCreated but keep modal open
