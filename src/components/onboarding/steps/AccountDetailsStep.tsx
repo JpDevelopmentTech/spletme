@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { OnboardingData } from "../../../services/onboarding";
 
 interface AccountDetailsStepProps {
-  nextStep: () => void;
+  nextStep: (data?: Partial<OnboardingData>) => void;
   prevStep: () => void;
+  initialData?: OnboardingData;
 }
 
-const AccountDetailsStep = ({ nextStep, prevStep }: AccountDetailsStepProps) => {
+const AccountDetailsStep = ({ nextStep, prevStep, initialData }: AccountDetailsStepProps) => {
   const [formData, setFormData] = useState({
     country: "",
     phone: "",
@@ -15,6 +17,17 @@ const AccountDetailsStep = ({ nextStep, prevStep }: AccountDetailsStepProps) => 
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        country: initialData.country || "",
+        phone: initialData.phone || "",
+        address: initialData.address || "",
+        identification: initialData.identification || "",
+      });
+    }
+  }, [initialData]);
 
   const countries = [
     { code: "CO", name: "Colombia", flag: "🇨🇴" },
@@ -102,7 +115,12 @@ const AccountDetailsStep = ({ nextStep, prevStep }: AccountDetailsStepProps) => 
 
   const handleSubmit = () => {
     if (validateForm()) {
-      nextStep();
+      nextStep({
+        country: formData.country,
+        phone: formData.phone,
+        address: formData.address,
+        identification: formData.identification,
+      });
     }
   };
 

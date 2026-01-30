@@ -10,6 +10,9 @@ const authSlice = createSlice({
         setAuth: (state, action) => {
             state.isAuth = action.payload.isAuth;
             state.user = action.payload.user;
+            // Update localStorage when auth state changes
+            localStorage.setItem("isAuth", action.payload.isAuth);
+            localStorage.setItem("user", JSON.stringify(action.payload.user));
         },
     },
 });

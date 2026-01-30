@@ -1,22 +1,46 @@
 import { motion } from 'framer-motion';
-import { Music2, Tag, TrendingUp, ArrowRight, Disc3, DollarSign, Play, ArrowUpDown, Plus, CheckCircle } from 'lucide-react';
+import { Music2, Tag, TrendingUp, ArrowRight, Disc3, DollarSign, Play, ArrowUpDown, Plus, CheckCircle, FolderPlus, Layers, Sparkles, Edit3, UserPlus } from 'lucide-react';
 import { useLabels } from '../../../hooks/useLabels';
+import { Label } from '../../../services/labels';
 import Loading from '../../../components/loading/loading';
 import { useNavigate } from 'react-router-dom';
 import Title from '../../../components/title/title';
 import { useState } from 'react';
 import CreateSplitsByLabelModal from '../../../components/modal/CreateSplitsByLabelModal';
+import CreateSplitsByCustomLabelModal from '../../../components/modal/CreateSplitsByCustomLabelModal';
+import CreateLabelModal from '../../../components/labels/CreateLabelModal';
+import EditLabelModal from '../../../components/labels/EditLabelModal';
+import InviteCollaboratorToLabelModal from '../../../components/labels/InviteCollaboratorToLabelModal';
 
 type SortField = 'label' | 'count' | 'totalStreams' | 'totalNetIncome';
 type SortOrder = 'asc' | 'desc';
 
+// Extended label type for custom labels
+interface ExtendedLabel extends Label {
+  _id?: string;
+  artisticLabels?: string[];
+  createdAt?: string;
+}
+
 export default function LabelsTable() {
-  const { labels, loading, error, refreshLabels } = useLabels();
+  const { labels, allLabels, customLabels, loading, error, refreshLabels } = useLabels();
   const navigate = useNavigate();
   const [sortField, setSortField] = useState<SortField>('count');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedLabel, setSelectedLabel] = useState<{name: string, count: number} | null>(null);
+  const [isCreateLabelModalOpen, setIsCreateLabelModalOpen] = useState(false);
+  const [customLabelModalOpen, setCustomLabelModalOpen] = useState(false);
+  const [selectedCustomLabel, setSelectedCustomLabel] = useState<{name: string, artisticLabels: string[], count: number} | null>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [labelToEdit, setLabelToEdit] = useState<{id: string, name: string, artisticLabels: string[]} | null>(null);
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [labelToInvite, setLabelToInvite] = useState<{
+    labelType: 'artistic' | 'custom';
+    labelIdentifier: string;
+    labelName: string;
+    songCount: number;
+  } | null>(null);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -27,7 +51,12 @@ export default function LabelsTable() {
     }
   };
 
-  const sortedLabels = [...labels].sort((a, b) => {
+  // Ordenar todos los labels (personalizados + artísticos)
+  const sortedLabels = [...allLabels].sort((a, b) => {
+    // Los labels personalizados siempre van primero
+    if (a.isCustom && !b.isCustom) return -1;
+    if (!a.isCustom && b.isCustom) return 1;
+
     let aValue: number | string = a[sortField];
     let bValue: number | string = b[sortField];
 
@@ -44,9 +73,9 @@ export default function LabelsTable() {
       : (bValue as number) - (aValue as number);
   });
 
-  const totalSongs = labels.reduce((sum, label) => sum + label.count, 0);
-  const totalStreams = labels.reduce((sum, label) => sum + label.totalStreams, 0);
-  const totalIncome = labels.reduce((sum, label) => sum + label.totalNetIncome, 0);
+  const totalSongs = allLabels.reduce((sum, label) => sum + label.count, 0);
+  const totalStreams = allLabels.reduce((sum, label) => sum + label.totalStreams, 0);
+  const totalIncome = allLabels.reduce((sum, label) => sum + label.totalNetIncome, 0);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -69,8 +98,12 @@ export default function LabelsTable() {
     },
   };
 
-  const handleLabelClick = (labelName: string) => {
-    navigate(`/panel/labels/${encodeURIComponent(labelName)}`);
+  const handleLabelClick = (labelName: string, isCustom: boolean = false) => {
+    if (isCustom) {
+      navigate(`/panel/labels/custom/${encodeURIComponent(labelName)}`);
+    } else {
+      navigate(`/panel/labels/${encodeURIComponent(labelName)}`);
+    }
   };
 
   const handleOpenModal = (labelName: string, songCount: number) => {
@@ -85,6 +118,42 @@ export default function LabelsTable() {
     refreshLabels();
   };
 
+  const handleOpenCustomLabelModal = (labelName: string, artisticLabels: string[], songCount: number) => {
+    setSelectedCustomLabel({ name: labelName, artisticLabels, count: songCount });
+    setCustomLabelModalOpen(true);
+  };
+
+  const handleCloseCustomLabelModal = () => {
+    setCustomLabelModalOpen(false);
+    setSelectedCustomLabel(null);
+    refreshLabels();
+  };
+
+  const handleOpenEditModal = (id: string, name: string, artisticLabels: string[]) => {
+    setLabelToEdit({ id, name, artisticLabels });
+    setEditModalOpen(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setEditModalOpen(false);
+    setLabelToEdit(null);
+  };
+
+  const handleOpenInviteModal = (
+    labelType: 'artistic' | 'custom',
+    labelIdentifier: string,
+    labelName: string,
+    songCount: number
+  ) => {
+    setLabelToInvite({ labelType, labelIdentifier, labelName, songCount });
+    setInviteModalOpen(true);
+  };
+
+  const handleCloseInviteModal = () => {
+    setInviteModalOpen(false);
+    setLabelToInvite(null);
+  };
+
   if (loading) return <Loading />;
 
   return (
@@ -95,12 +164,30 @@ export default function LabelsTable() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mb-8"
+          className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
         >
-          <Title title="Labels Musicales" />
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Gestiona tus canciones organizadas por sello discográfico
-          </p>
+          <div>
+            <Title title="Labels Musicales" />
+            <p className="text-gray-600 dark:text-gray-400 mt-2">
+              Gestiona tus canciones organizadas por sello discográfico
+            </p>
+          </div>
+          
+          {/* Create Label Button */}
+          <motion.button
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3 }}
+            whileHover={{ scale: 1.02, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setIsCreateLabelModalOpen(true)}
+            className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group"
+          >
+            <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center group-hover:bg-white/30 transition-colors">
+              <FolderPlus className="w-5 h-5" />
+            </div>
+            <span>Crear Nuevo Label</span>
+          </motion.button>
         </motion.div>
 
         {/* Stats Summary */}
@@ -118,7 +205,10 @@ export default function LabelsTable() {
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Total Labels</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {labels.length}
+                  {allLabels.length}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-500">
+                  {customLabels.length} personalizados • {labels.length} artísticos
                 </p>
               </div>
             </div>
@@ -182,7 +272,7 @@ export default function LabelsTable() {
         )}
 
         {/* Empty State */}
-        {labels.length === 0 && !loading && (
+        {allLabels.length === 0 && !loading && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -199,7 +289,7 @@ export default function LabelsTable() {
         )}
 
         {/* Table */}
-        {labels.length > 0 && (
+        {allLabels.length > 0 && (
           <motion.div
             variants={containerVariants}
             initial="hidden"
@@ -275,21 +365,50 @@ export default function LabelsTable() {
                 <tbody>
                   {sortedLabels.map((label, index) => (
                     <motion.tr
-                      key={index}
+                      key={label.isCustom ? `custom-${index}` : `artistic-${index}`}
                       variants={itemVariants}
-                      className="border-b border-gray-200 dark:border-gray-700 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/10 transition-colors cursor-pointer"
-                      onClick={() => handleLabelClick(label.label)}
+                      className={`border-b border-gray-200 dark:border-gray-700 transition-colors cursor-pointer ${
+                        label.isCustom 
+                          ? 'bg-gradient-to-r from-amber-50/50 to-orange-50/50 dark:from-amber-900/10 dark:to-orange-900/10 hover:from-amber-100/70 hover:to-orange-100/70 dark:hover:from-amber-900/20 dark:hover:to-orange-900/20' 
+                          : 'hover:bg-indigo-50/50 dark:hover:bg-indigo-900/10'
+                      }`}
+                      onClick={() => handleLabelClick(label.label, label.isCustom)}
                     >
                       {/* Label Name */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <Tag className="w-5 h-5 text-white" />
-                          </div>
+                          {/* Icono diferente para labels personalizados vs artísticos */}
+                          {label.isCustom ? (
+                            <div className="relative">
+                              <div className="w-10 h-10 bg-gradient-to-br from-amber-500 via-orange-500 to-red-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                                <Layers className="w-5 h-5 text-white" />
+                              </div>
+                              <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-full flex items-center justify-center shadow-md">
+                                <Sparkles className="w-2.5 h-2.5 text-white" />
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                              <Tag className="w-5 h-5 text-white" />
+                            </div>
+                          )}
                           <div className="min-w-0">
-                            <p className="font-semibold text-gray-900 dark:text-white truncate">
-                              {label.label || 'Sin Label'}
-                            </p>
+                            <div className="flex items-center gap-2">
+                              <p className="font-semibold text-gray-900 dark:text-white truncate">
+                                {label.label || 'Sin Label'}
+                              </p>
+                              {label.isCustom && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-700">
+                                  Personalizado
+                                </span>
+                              )}
+                            </div>
+                            {label.isCustom && (label as ExtendedLabel).artisticLabels && (
+                              <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                                Incluye: {(label as ExtendedLabel).artisticLabels!.slice(0, 2).join(', ')}
+                                {(label as ExtendedLabel).artisticLabels!.length > 2 && ` +${(label as ExtendedLabel).artisticLabels!.length - 2} más`}
+                              </p>
+                            )}
                           </div>
                         </div>
                       </td>
@@ -323,15 +442,24 @@ export default function LabelsTable() {
                       {/* Top Songs */}
                       <td className="px-6 py-4 hidden xl:table-cell">
                         <div className="space-y-1 max-w-xs">
-                          {label.topSongs.slice(0, 2).map((song, idx) => (
-                            <p key={idx} className="text-xs text-gray-600 dark:text-gray-400 truncate">
-                              • {song.trackTitle}
-                            </p>
-                          ))}
-                          {label.topSongs.length > 2 && (
-                            <p className="text-xs text-gray-500 dark:text-gray-500">
-                              +{label.topSongs.length - 2} más
-                            </p>
+                          {label.isCustom ? (
+                            <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+                              <Layers className="w-3.5 h-3.5" />
+                              <span>{(label as ExtendedLabel).artisticLabels?.length || 0} labels agrupados</span>
+                            </div>
+                          ) : (
+                            <>
+                              {label.topSongs?.slice(0, 2).map((song, idx) => (
+                                <p key={idx} className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                                  • {song.trackTitle}
+                                </p>
+                              ))}
+                              {label.topSongs && label.topSongs.length > 2 && (
+                                <p className="text-xs text-gray-500 dark:text-gray-500">
+                                  +{label.topSongs.length - 2} más
+                                </p>
+                              )}
+                            </>
                           )}
                         </div>
                       </td>
@@ -339,41 +467,122 @@ export default function LabelsTable() {
                       {/* Actions */}
                       <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-end gap-2">
-                          {/* Split Status Badge */}
-                          {label.splitProgress.hasAllSplits ? (
-                            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg text-xs font-medium">
-                              <CheckCircle className="w-3.5 h-3.5" />
-                              <span className="hidden lg:inline">Splits Creados</span>
-                            </div>
-                          ) : (
+                          {label.isCustom ? (
+                            // Acciones para labels personalizados
                             <>
-                              {label.splitProgress.withSplits > 0 && (
-                                <div className="hidden lg:flex items-center gap-1 px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded text-xs">
-                                  {label.splitProgress.percentage}%
-                                </div>
-                              )}
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleOpenModal(label.label, label.count);
+                                  handleOpenEditModal(
+                                    (label as ExtendedLabel)._id || '',
+                                    label.label,
+                                    (label as ExtendedLabel).artisticLabels || []
+                                  );
                                 }}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium rounded-lg transition-colors"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-xs font-medium rounded-lg transition-colors"
+                                title="Editar label"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                                <span className="hidden lg:inline">Editar</span>
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOpenInviteModal(
+                                    'custom',
+                                    (label as ExtendedLabel)._id || '',
+                                    label.label,
+                                    label.count
+                                  );
+                                }}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium rounded-lg transition-colors"
+                                title="Invitar colaborador"
+                              >
+                                <UserPlus className="w-3.5 h-3.5" />
+                                <span className="hidden lg:inline">Invitar</span>
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOpenCustomLabelModal(
+                                    label.label,
+                                    (label as ExtendedLabel).artisticLabels || [],
+                                    label.count
+                                  );
+                                }}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white text-xs font-medium rounded-lg transition-colors shadow-md"
                               >
                                 <Plus className="w-3.5 h-3.5" />
                                 <span className="hidden md:inline">Crear Splits</span>
                               </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleLabelClick(label.label, true);
+                                }}
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-medium rounded-lg transition-colors shadow-md"
+                              >
+                                <span className="hidden sm:inline">Ver Detalles</span>
+                                <ArrowRight className="w-4 h-4" />
+                              </button>
+                            </>
+                          ) : (
+                            // Acciones para labels artísticos
+                            <>
+                              {/* Invite Collaborator Button */}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOpenInviteModal(
+                                    'artistic',
+                                    label.label,
+                                    label.label,
+                                    label.count
+                                  );
+                                }}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium rounded-lg transition-colors"
+                                title="Invitar colaborador"
+                              >
+                                <UserPlus className="w-3.5 h-3.5" />
+                                <span className="hidden lg:inline">Invitar</span>
+                              </button>
+                              {/* Split Status Badge */}
+                              {label.splitProgress?.hasAllSplits ? (
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg text-xs font-medium">
+                                  <CheckCircle className="w-3.5 h-3.5" />
+                                  <span className="hidden lg:inline">Splits Creados</span>
+                                </div>
+                              ) : (
+                                <>
+                                  {label.splitProgress?.withSplits > 0 && (
+                                    <div className="hidden lg:flex items-center gap-1 px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded text-xs">
+                                      {label.splitProgress.percentage}%
+                                    </div>
+                                  )}
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleOpenModal(label.label, label.count);
+                                    }}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium rounded-lg transition-colors"
+                                  >
+                                    <Plus className="w-3.5 h-3.5" />
+                                    <span className="hidden md:inline">Crear Splits</span>
+                                  </button>
+                                </>
+                              )}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleLabelClick(label.label, false);
+                                }}
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors"
+                              >
+                                <span className="hidden sm:inline">Ver Detalles</span>
+                                <ArrowRight className="w-4 h-4" />
+                              </button>
                             </>
                           )}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleLabelClick(label.label);
-                            }}
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors"
-                          >
-                            <span className="hidden sm:inline">Ver Detalles</span>
-                            <ArrowRight className="w-4 h-4" />
-                          </button>
                         </div>
                       </td>
                     </motion.tr>
@@ -385,13 +594,68 @@ export default function LabelsTable() {
         )}
       </div>
 
-      {/* Modal */}
+      {/* Modal para crear splits */}
       {selectedLabel && (
         <CreateSplitsByLabelModal
           isOpen={modalOpen}
           onClose={handleCloseModal}
           label={selectedLabel.name}
           songCount={selectedLabel.count}
+        />
+      )}
+
+      {/* Modal para crear nuevo label */}
+      <CreateLabelModal
+        isOpen={isCreateLabelModalOpen}
+        onClose={() => setIsCreateLabelModalOpen(false)}
+        availableLabels={labels}
+        onSuccess={() => {
+          refreshLabels();
+        }}
+      />
+
+      {/* Modal para crear splits por label personalizado */}
+      {selectedCustomLabel && (
+        <CreateSplitsByCustomLabelModal
+          isOpen={customLabelModalOpen}
+          onClose={handleCloseCustomLabelModal}
+          labelName={selectedCustomLabel.name}
+          artisticLabels={selectedCustomLabel.artisticLabels}
+          songCount={selectedCustomLabel.count}
+        />
+      )}
+
+      {/* Modal para editar label personalizado */}
+      {labelToEdit && (
+        <EditLabelModal
+          isOpen={editModalOpen}
+          onClose={handleCloseEditModal}
+          labelId={labelToEdit.id}
+          currentName={labelToEdit.name}
+          currentArtisticLabels={labelToEdit.artisticLabels}
+          availableLabels={labels}
+          onSuccess={() => {
+            refreshLabels();
+            handleCloseEditModal();
+          }}
+          onDelete={() => {
+            refreshLabels();
+          }}
+        />
+      )}
+
+      {/* Modal para invitar colaborador a label */}
+      {labelToInvite && (
+        <InviteCollaboratorToLabelModal
+          isOpen={inviteModalOpen}
+          onClose={handleCloseInviteModal}
+          labelType={labelToInvite.labelType}
+          labelIdentifier={labelToInvite.labelIdentifier}
+          labelName={labelToInvite.labelName}
+          songCount={labelToInvite.songCount}
+          onSuccess={() => {
+            refreshLabels();
+          }}
         />
       )}
     </div>

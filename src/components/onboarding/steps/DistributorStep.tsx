@@ -1,12 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { OnboardingData } from "../../../services/onboarding";
+import believeIcon from "../../../assets/images/believeicon.png";
+import onerpmIcon from "../../../assets/images/onerpmicon.png";
+import orchardIcon from "../../../assets/images/theorchardicon.png";
+import symphonicIcon from "../../../assets/images/symphonicicon.png";
 
 interface DistributorStepProps {
-  nextStep: () => void;
+  nextStep: (data?: Partial<OnboardingData>) => void;
   prevStep: () => void;
+  initialData?: OnboardingData;
 }
 
-const DistributorStep = ({ nextStep, prevStep }: DistributorStepProps) => {
+const DistributorStep = ({ nextStep, prevStep, initialData }: DistributorStepProps) => {
   const [selectedDistributor, setSelectedDistributor] = useState<string | null>(null);
   const [credentials, setCredentials] = useState({
     email: "",
@@ -14,13 +20,26 @@ const DistributorStep = ({ nextStep, prevStep }: DistributorStepProps) => {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  useEffect(() => {
+    if (initialData?.distributor) {
+      setSelectedDistributor(initialData.distributor);
+    }
+    if (initialData?.distributorEmail) {
+      setCredentials(prev => ({
+        ...prev,
+        email: initialData.distributorEmail || "",
+        password: initialData.distributorPassword || "",
+      }));
+    }
+  }, [initialData]);
+
   const distributors = [
     {
       id: "believe",
       name: "Believe",
       description: "Distribución global independiente",
       color: "from-gray-500 to-gray-600",
-      icon: "🎵",
+      icon: believeIcon,
       features: ["Distribución mundial", "Analytics avanzados", "Promoción digital"]
     },
     {
@@ -28,7 +47,7 @@ const DistributorStep = ({ nextStep, prevStep }: DistributorStepProps) => {
       name: "ONErpm",
       description: "Plataforma de distribución moderna",
       color: "from-gray-500 to-gray-600",
-      icon: "🎧",
+      icon: onerpmIcon,
       features: ["Tecnología avanzada", "Soporte 24/7", "Marketing digital"]
     },
     {
@@ -36,7 +55,7 @@ const DistributorStep = ({ nextStep, prevStep }: DistributorStepProps) => {
       name: "The Orchard",
       description: "Distribución premium de Sony Music",
       color: "from-gray-500 to-gray-600",
-      icon: "🎼",
+      icon: orchardIcon,
       features: ["Red global", "Servicios premium", "Soporte especializado"]
     },
     {
@@ -44,7 +63,7 @@ const DistributorStep = ({ nextStep, prevStep }: DistributorStepProps) => {
       name: "Symphonic",
       description: "Distribución independiente completa",
       color: "from-gray-500 to-gray-600",
-      icon: "🎹",
+      icon: symphonicIcon,
       features: ["Distribución completa", "Herramientas de artista", "Soporte personalizado"]
     }
   ];
@@ -87,7 +106,11 @@ const DistributorStep = ({ nextStep, prevStep }: DistributorStepProps) => {
     }
 
     if (validateCredentials()) {
-      nextStep();
+      nextStep({
+        distributor: selectedDistributor,
+        distributorEmail: credentials.email,
+        distributorPassword: credentials.password,
+      });
     }
   };
 
@@ -129,7 +152,7 @@ const DistributorStep = ({ nextStep, prevStep }: DistributorStepProps) => {
                     ? "bg-white/20" 
                     : "bg-gray-50 dark:bg-gray-600"
                 }`}>
-                  {distributor.icon}
+                  <img src={distributor.icon} alt={distributor.name} className="w-full h-full object-contain" />
                 </div>
                 <div>
                   <h3 className={`font-bold text-lg mb-1 ${
@@ -139,25 +162,8 @@ const DistributorStep = ({ nextStep, prevStep }: DistributorStepProps) => {
                   }`}>
                     {distributor.name}
                   </h3>
-                  <p className={`text-sm mb-3 ${
-                    selectedDistributor === distributor.id 
-                      ? "text-white/80" 
-                      : "text-gray-500 dark:text-gray-400"
-                  }`}>
-                    {distributor.description}
-                  </p>
-                  <div className="space-y-1">
-                    {distributor.features.map((feature, idx) => (
-                      <div key={idx} className={`text-xs flex items-center justify-center space-x-1 ${
-                        selectedDistributor === distributor.id 
-                          ? "text-white/70" 
-                          : "text-gray-400 dark:text-gray-500"
-                      }`}>
-                        <span>•</span>
-                        <span>{feature}</span>
-                      </div>
-                    ))}
-                  </div>
+                  
+                
                 </div>
               </div>
             </label>

@@ -13,11 +13,13 @@ import {
   List,
   Plus,
   TrendingUp,
+  Crown,
 } from "lucide-react";
 import UseSongs from "../../../hooks/useSongs";
 import useAlbums from "../../../hooks/useAlbums";
 import useDebounce from "../../../hooks/useDebounce";
 import Loading from "../../../components/loading/loading";
+import AlbumOwnerSplitModal from "./album/components/AlbumOwnerSplitModal";
 
 export default function Music() {
   const [mode, setMode] = useState<"songs" | "albums">("songs");
@@ -28,6 +30,8 @@ export default function Music() {
   const [searchQuery, setSearchQuery] = useState("");
   const [albumSearchResult, setAlbumSearchResult] = useState<any | null>(null);
   const [isAlbumSearching, setIsAlbumSearching] = useState(false);
+  const [isOwnerSplitModalOpen, setIsOwnerSplitModalOpen] = useState(false);
+  const [selectedAlbum, setSelectedAlbum] = useState<any | null>(null);
   
   // Debounce search query to avoid excessive API calls
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
@@ -58,6 +62,11 @@ export default function Music() {
     await uploadSongs(formData);
     setIsModalOpen(false);
     getSongs();
+  };
+
+  const handleOpenOwnerSplitModal = (album: any) => {
+    setSelectedAlbum(album);
+    setIsOwnerSplitModalOpen(true);
   };
 
   // Helpers to detect codes
@@ -381,12 +390,20 @@ export default function Music() {
                             >
                               <div className="flex items-start space-x-3">
                                 <div className="flex-shrink-0 h-12 w-12">
-                                  <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center">
-                                    <MusicIcon
-                                      size={20}
-                                      className="text-white"
+                                  {song?.spotifyData?.album?.images && song.spotifyData.album.images.length > 0 ? (
+                                    <img
+                                      src={song.spotifyData.album.images[0].url}
+                                      alt={`${song.trackTitle} cover`}
+                                      className="h-12 w-12 rounded-lg object-cover"
                                     />
-                                  </div>
+                                  ) : (
+                                    <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center">
+                                      <MusicIcon
+                                        size={20}
+                                        className="text-white"
+                                      />
+                                    </div>
+                                  )}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate">
@@ -462,9 +479,23 @@ export default function Music() {
                           >
                             <div className="flex items-start space-x-3">
                               <div className="flex-shrink-0 h-12 w-12">
-                                <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center">
-                                  <Disc size={20} className="text-white" />
-                                </div>
+                                {album?.coverImage || album?.image ? (
+                                  <img
+                                    src={album.coverImage || album.image}
+                                    alt={`${album.albumTitle} cover`}
+                                    className="h-12 w-12 rounded-lg object-cover"
+                                  />
+                                ) : album?.tracks && album.tracks.length > 0 && album.tracks[0]?.spotifyData?.album?.images && album.tracks[0].spotifyData.album.images.length > 0 ? (
+                                  <img
+                                    src={album.tracks[0].spotifyData.album.images[0].url}
+                                    alt={`${album.albumTitle} cover`}
+                                    className="h-12 w-12 rounded-lg object-cover"
+                                  />
+                                ) : (
+                                  <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center">
+                                    <Disc size={20} className="text-white" />
+                                  </div>
+                                )}
                               </div>
                               <div className="flex-1 min-w-0">
                                 <Link to={`/panel/album/upc/${album.upc}`} className=" text-sm font-medium text-gray-900 dark:text-white truncate">
@@ -551,6 +582,9 @@ export default function Music() {
                               <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider min-w-[100px]">
                                 Status
                               </th>
+                              <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider min-w-[100px]">
+                                Actions
+                              </th>
                             </>
                           )}
                         </tr>
@@ -573,9 +607,20 @@ export default function Music() {
                                     className="flex items-center space-x-3 group"
                                   >
                                     <div className="flex-shrink-0 h-10 w-10">
-                                      <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center">
-                                        <img src="" alt="" />
-                                      </div>
+                                      {song?.spotifyData?.album?.images && song.spotifyData.album.images.length > 0 ? (
+                                        <img
+                                          src={song.spotifyData.album.images[0].url}
+                                          alt={`${song.trackTitle} cover`}
+                                          className="h-10 w-10 rounded-lg object-cover"
+                                        />
+                                      ) : (
+                                        <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center">
+                                          <MusicIcon
+                                            size={18}
+                                            className="text-white"
+                                          />
+                                        </div>
+                                      )}
                                     </div>
                                     <div>
                                       <div className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-indigo-600 transition-colors">
@@ -643,13 +688,27 @@ export default function Music() {
                               >
                                 <td className="px-6 py-4">
                                   <div className="flex items-center space-x-3 group">
-                                    <div className=" h-10">
-                                      <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center">
-                                        <Disc
-                                          size={20}
-                                          className="text-white"
+                                    <div className="h-10 w-10 flex-shrink-0">
+                                      {album?.coverImage || album?.image ? (
+                                        <img
+                                          src={album.coverImage || album.image}
+                                          alt={`${album.albumTitle} cover`}
+                                          className="h-10 w-10 rounded-lg object-cover"
                                         />
-                                      </div>
+                                      ) : album?.tracks && album.tracks.length > 0 && album.tracks[0]?.spotifyData?.album?.images && album.tracks[0].spotifyData.album.images.length > 0 ? (
+                                        <img
+                                          src={album.tracks[0].spotifyData.album.images[0].url}
+                                          alt={`${album.albumTitle} cover`}
+                                          className="h-10 w-10 rounded-lg object-cover"
+                                        />
+                                      ) : (
+                                        <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center">
+                                          <Disc
+                                            size={20}
+                                            className="text-white"
+                                          />
+                                        </div>
+                                      )}
                                     </div>
                                     <div>
                                       <Link to={`/panel/album/upc/${album.upc}`} className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-purple-600 transition-colors">
@@ -679,6 +738,21 @@ export default function Music() {
                                     <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
                                     Active
                                   </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-center">
+                                  <motion.button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleOpenOwnerSplitModal(album);
+                                    }}
+                                    className="inline-flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg text-xs font-semibold hover:shadow-lg transition-all"
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    title="Create owner splits for all songs"
+                                  >
+                                    <Crown size={14} />
+                                    Owner Splits
+                                  </motion.button>
                                 </td>
                               </motion.tr>
                             ))}
@@ -805,6 +879,21 @@ export default function Music() {
         onClose={() => setIsModalOpen(false)}
         onFileSelect={handleFileSelect}
       />
+
+      {/* Album Owner Split Modal */}
+      {selectedAlbum && (
+        <AlbumOwnerSplitModal
+          isOpen={isOwnerSplitModalOpen}
+          onClose={() => {
+            setIsOwnerSplitModalOpen(false);
+            setSelectedAlbum(null);
+          }}
+          album={selectedAlbum}
+          onSplitsCreated={() => {
+            refreshAlbums();
+          }}
+        />
+      )}
     </div>
   );
 }

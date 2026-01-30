@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
+import { OnboardingData } from "../../../services/onboarding";
 
 interface VerificationStepProps {
-  nextStep: () => void;
+  nextStep: (data?: Partial<OnboardingData>) => void;
   prevStep: () => void;
+  initialData?: OnboardingData;
 }
 
-const VerificationStep = ({ nextStep, prevStep }: VerificationStepProps) => {
+const VerificationStep = ({ nextStep, prevStep, initialData }: VerificationStepProps) => {
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [isResending, setIsResending] = useState(false);
   const [countdown, setCountdown] = useState(60);
@@ -85,7 +87,9 @@ const VerificationStep = ({ nextStep, prevStep }: VerificationStepProps) => {
 
     // Simulate verification
     if (fullCode === "123456") {
-      nextStep();
+      nextStep({
+        whatsappVerified: true,
+      });
     } else {
       setError("Código incorrecto. Intenta nuevamente.");
       setCode(["", "", "", "", "", ""]);
@@ -94,7 +98,7 @@ const VerificationStep = ({ nextStep, prevStep }: VerificationStepProps) => {
   };
 
   const isCodeComplete = code.every(digit => digit !== "");
-  const phoneNumber = "+57 300 123 4567"; // This would come from previous step
+  const phoneNumber = initialData?.phone || "+57 300 123 4567";
 
   return (
     <div className="space-y-6">

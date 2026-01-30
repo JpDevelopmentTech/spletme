@@ -4,6 +4,7 @@ import SplitsModal from "../../../../../components/modal/SplitsModal";
 import PaymentHistoryModal from "../../../../../components/modal/PaymentHistoryModal";
 import OwnerSplitModal from "./ownerfrom";
 import RegisterPaymentModal from "../../../../../components/modal/RegisterPaymentModal";
+import PaymentConfirmationModal from "../../../../../components/modal/PaymentConfirmationModal";
 import {
   ChevronLeft,
   ChevronRight,
@@ -17,10 +18,14 @@ import {
   Music,
   History,
   Plus,
+  Wallet,
+  AlertCircle,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { User as UserType } from "../../../../../models/user";
-import payments from "@/services/payments";
+import WalletService from "@/services/wallet";
+import { useWallet } from "@/hooks/useWallet";
+import { Link } from "react-router-dom";
 
 interface Song {
   id?: string;
@@ -65,6 +70,17 @@ export default function Table({ collaborators, songId, song }: TableProps) {
     useState(false);
   const [currentSplitId, setCurrentSplitId] = useState<string>("");
   const [isOwnerSplitModalOpen, setIsOwnerSplitModalOpen] = useState(false);
+  const [isPaymentConfirmationOpen, setIsPaymentConfirmationOpen] = useState(false);
+  const [paymentData, setPaymentData] = useState<{
+    collaboratorId: string;
+    collaboratorName: string;
+    collaboratorEmail: string;
+    amount: number;
+    songId: string;
+  } | null>(null);
+  
+  // Hook de wallet
+  const { wallet, hasWallet, loading: walletLoading } = useWallet();
 
   // Log collaborators for debugging (remove in production)
   // console.log("Collaborators:", collaborators);
@@ -123,13 +139,52 @@ export default function Table({ collaborators, songId, song }: TableProps) {
     // You can add additional logic here, like refreshing data or showing a notification
   };
 
-  const paymentToCollaborator = async (
+  const openPaymentConfirmation = (
     collaboratorId: string,
-    splitId: string
+    collaboratorName: string,
+    collaboratorEmail: string,
+    amount: number,
+    songId: string
   ) => {
-    console.log("Payment to collaborator with ID:", collaboratorId);
-    const response = await payments.createPayment(collaboratorId, splitId);
+    setPaymentData({
+      collaboratorId,
+      collaboratorName,
+      collaboratorEmail,
+      amount,
+      songId,
+    });
+    setIsPaymentConfirmationOpen(true);
+  };
+
+  const closePaymentConfirmation = () => {
+    setIsPaymentConfirmationOpen(false);
+    setPaymentData(null);
+  };
+
+  const paymentToCollaborator = async () => {
+    if (!paymentData) return;
+    
+    console.log("=== PAYMENT DEBUG ===");
+    console.log("Collaborator ID:", paymentData.collaboratorId);
+    console.log("Song ID:", paymentData.songId);
+    console.log("Amount:", paymentData.amount);
+    console.log("Payment data completo:", paymentData);
+    console.log("===================");
+    
+    // Llamar al endpoint de wallet para pagar al colaborador
+    const response = await WalletService.payCollaborator({
+      collaboratorId: paymentData.collaboratorId,
+      songId: paymentData.songId,
+      amount: paymentData.amount,
+    });
+    
     console.log("Response:", response);
+    
+    if (response.error) {
+      throw new Error(response.message || "Error al procesar el pago");
+    }
+    
+ 
   };
 
   return (
@@ -172,7 +227,52 @@ export default function Table({ collaborators, songId, song }: TableProps) {
         onSplitCreated={handleOwnerSplitCreated}
       />
 
+      <PaymentConfirmationModal
+        isOpen={isPaymentConfirmationOpen}
+        onClose={closePaymentConfirmation}
+        onConfirm={paymentToCollaborator}
+        collaboratorName={paymentData?.collaboratorName || ""}
+        collaboratorEmail={paymentData?.collaboratorEmail || ""}
+        amount={paymentData?.amount || 0}
+        walletBalance={wallet?.data?.accounts?.[0]?.balance || 0}
+        currency="USD"
+      />
+
       <div className="col-span-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300">
+        {/* Wallet Warning Banner */}
+        {!walletLoading && !hasWallet && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-2 border-amber-300 dark:border-amber-700 rounded-xl"
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                <AlertCircle className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-bold text-amber-900 dark:text-amber-200 mb-1">
+                  Wallet No Vinculada
+                </h3>
+                <p className="text-sm text-amber-800 dark:text-amber-300 mb-3">
+                  Para poder realizar pagos a tus colaboradores, necesitas vincular una wallet de pago. 
+                  Es rápido y seguro.
+                </p>
+                <Link to="/panel/home">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-semibold shadow-md transition-all duration-200"
+                  >
+                    <Wallet className="w-4 h-4" />
+                    Vincular Wallet Ahora
+                  </motion.button>
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
             <Music className="w-6 h-6" />
@@ -233,13 +333,28 @@ export default function Table({ collaborators, songId, song }: TableProps) {
                     <span className="text-sm">Historial</span>
                   </motion.button>
 
-                  <motion.button
-                    onClick={() => openRegisterPaymentModal(currentSplitId)}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-200 hover:scale-105"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span className="text-sm">Nuevo Pago</span>
-                  </motion.button>
+                  {hasWallet ? (
+                    <motion.button
+                      onClick={() => openRegisterPaymentModal(currentSplitId)}
+                      className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-200 hover:scale-105"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span className="text-sm">Nuevo Pago</span>
+                    </motion.button>
+                  ) : (
+                    <Link to="/panel/home">
+                      <motion.button
+                        className="flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-all duration-200 hover:scale-105"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <AlertCircle className="w-4 h-4" />
+                        <span className="text-sm">Vincular Wallet</span>
+                      </motion.button>
+                    </Link>
+                  )}
                 </>
               )}
             </div>
@@ -340,18 +455,33 @@ export default function Table({ collaborators, songId, song }: TableProps) {
                       Historial
                     </motion.button>
 
-                    <motion.button
-                      onClick={() =>
-                        paymentToCollaborator(
-                          collaborator.id,
-                          collaborator?.splitInfo?.splitId || ""
-                        )
-                      }
-                      className="flex items-center gap-1 px-3 py-1 text-xs bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-900/50 text-green-700 dark:text-green-300 rounded-md transition-all duration-200 hover:scale-105"
-                    >
-                      <Plus className="w-3 h-3" />
-                      Pagar
-                    </motion.button>
+                    {hasWallet ? (
+                      <motion.button
+                        onClick={() =>
+                          openPaymentConfirmation(
+                            collaborator.id,
+                            collaborator.name,
+                            collaborator.email,
+                            Number(collaborator.amountToPay) || 0,
+                            songId || ""
+                          )
+                        }
+                        className="flex items-center gap-1 px-3 py-1 text-xs bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-900/50 text-green-700 dark:text-green-300 rounded-md transition-all duration-200 hover:scale-105"
+                      >
+                        <Plus className="w-3 h-3" />
+                        Pagar
+                      </motion.button>
+                    ) : (
+                      <Link to="/panel/home">
+                        <motion.button
+                          className="flex items-center gap-1 px-3 py-1 text-xs bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/30 dark:hover:bg-amber-900/50 text-amber-700 dark:text-amber-300 rounded-md transition-all duration-200 hover:scale-105"
+                          title="Necesitas vincular una wallet para realizar pagos"
+                        >
+                          <Wallet className="w-3 h-3" />
+                          Vincular Wallet
+                        </motion.button>
+                      </Link>
+                    )}
                   </>
                 </div>
               </div>

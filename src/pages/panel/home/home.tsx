@@ -1,49 +1,89 @@
 import { ApexOptions } from "apexcharts";
 import "./home.css";
 import ReactApexChart from "react-apexcharts";
-import logoPayoneer from "../../../assets/images/payoneer-dark-logo.svg";
 import { Link } from "react-router-dom";
 import CardSong from "../../../components/cardsong/cardsong";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import PlatformsCard from "../../../components/platformsCard/platformsCard";
 import { motion } from "framer-motion";
 import DashboardTour from "../../../components/tour/DashboardTour";
 import { 
   Music, 
-  Youtube, 
   DollarSign, 
-  BarChart3, 
   ArrowUpRight, 
-  ArrowDownRight,
   TrendingUp,
-  Users,
   Play,
-  Calendar,
   Filter,
   Sparkles,
-  Target,
-  Zap
+  Wallet,
+  Plus,
+  CheckCircle2,
+  Send,
+  History,
+  PiggyBank
 } from "lucide-react";
 import UseSongs from "../../../hooks/useSongs";
 import UseFilterSongsData from "@/hooks/useFilterSongsData";
 import { useSplitPayments } from "@/hooks/useSplitPayments";
+import { useWallet } from "@/hooks/useWallet";
+import CreateWalletModal from "@/components/wallet/CreateWalletModal";
+import WithdrawalModal from "@/components/wallet/WithdrawalModal";
+import TransferFundsModal from "@/components/wallet/TransferFundsModal";
+import WalletService from "@/services/wallet";
+import logo from "../../../assets/images/2 - BLANCO.png";
 
 export default function Home() {
   const [selectedTimeframe, setSelectedTimeframe] = useState("7d");
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+  const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false);
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const { totalAmount } = useSplitPayments();
   const { songs } = UseSongs(1, 10);
   const { summary } = UseFilterSongsData();
+  const { wallet, loading: walletLoading, hasWallet, createWallet, refreshWallet } = useWallet();
 
-  const series = [
-    {
-      name: "Streams",
-      data: [31, 40, 28, 51, 42, 109, 100],
-    },
-    {
-      name: "Revenue",
-      data: [11, 32, 45, 32, 34, 52, 41],
-    },
-  ];
+  // Generar categorías mensuales (últimos 6 meses)
+  const monthlyCategories = useMemo(() => {
+    const months: string[] = [];
+    const now = new Date();
+
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(1);
+      d.setHours(0, 0, 0, 0);
+      d.setMonth(now.getMonth() - i);
+      months.push(d.toISOString());
+    }
+
+    return months;
+  }, []);
+
+  // Distribución simple para repartir el total entre los meses (suma = 1)
+  const monthWeights = useMemo(() => [0.1, 0.12, 0.15, 0.18, 0.2, 0.25], []);
+  const weightsSum = monthWeights.reduce((acc, v) => acc + v, 0);
+
+  const series = useMemo(
+    () => [
+      {
+        name: "Streams",
+        data: monthWeights.map((w) =>
+          Math.round(((summary.totalStreams || 0) * w) / weightsSum)
+        ),
+      },
+      {
+        name: "Revenue",
+        data: monthWeights.map((w) =>
+          Number(
+            (
+              ((summary.totalNetIncome || 0) * w) /
+              weightsSum
+            ).toFixed(2)
+          )
+        ),
+      },
+    ],
+    [summary.totalStreams, summary.totalNetIncome, weightsSum, monthWeights]
+  );
 
   const options: ApexOptions = {
     chart: {
@@ -84,15 +124,7 @@ export default function Home() {
     },
     xaxis: {
       type: "datetime",
-      categories: [
-        "2018-09-19T00:00:00.000Z",
-        "2018-09-19T01:30:00.000Z",
-        "2018-09-19T02:30:00.000Z",
-        "2018-09-19T03:30:00.000Z",
-        "2018-09-19T04:30:00.000Z",
-        "2018-09-19T05:30:00.000Z",
-        "2018-09-19T06:30:00.000Z",
-      ],
+      categories: monthlyCategories,
       labels: {
         style: {
           fontSize: '12px',
@@ -109,7 +141,7 @@ export default function Home() {
     },
     tooltip: {
       x: {
-        format: "dd/MM/yy HH:mm",
+        format: "MMM yyyy",
       },
       theme: 'dark',
       style: {
@@ -194,9 +226,9 @@ export default function Home() {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.6 }}
-              className="text-4xl sm:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-gray-900 via-purple-800 to-blue-800 bg-clip-text text-transparent mb-4"
+              className="text-4xl sm:text-5xl lg:text-6xl font-bold  text-gray-900  mb-4 flex items-center justify-center gap-2 "
             >
-              Bienvenidos a SplitMe
+              Bienvenidos a <img src={logo} alt="SplitMe" className="w-48 h-12 grayscale" />
             </motion.h1>
             
             <motion.p 
@@ -256,7 +288,7 @@ export default function Home() {
                 title: "Total Songs", 
                 value: summary.songsWithMatches?.toLocaleString() || "0", 
                 change: "+15.3%", 
-                icon: Users, 
+                icon: Music, 
                 color: "from-purple-500 to-pink-500",
                 bgColor: "from-purple-500/10 to-pink-500/10"
               },
@@ -264,7 +296,7 @@ export default function Home() {
                 title: "Net Balance", 
                 value: `$${(summary.totalNetIncome - totalAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || "0.00"}`, 
                 change: "+2.1%", 
-                icon: Target, 
+                icon: PiggyBank, 
                 color: "from-orange-500 to-red-500",
                 bgColor: "from-orange-500/10 to-red-500/10"
               }
@@ -374,16 +406,16 @@ export default function Home() {
                           : summary.totalStreams >= 1000
                           ? `${(summary.totalStreams / 1000).toFixed(1)}K`
                           : summary.totalStreams?.toLocaleString() || "0", 
-                        icon: Music, 
-                        color: "text-purple-600", 
-                        bgColor: "bg-purple-100" 
+                        icon: Play, 
+                        color: "text-blue-600", 
+                        bgColor: "bg-blue-100" 
                       },
                       { 
                         label: "Total Songs", 
                         value: summary.songsWithMatches?.toLocaleString() || "0", 
-                        icon: Youtube, 
-                        color: "text-red-600", 
-                        bgColor: "bg-red-100" 
+                        icon: Music, 
+                        color: "text-purple-600", 
+                        bgColor: "bg-purple-100" 
                       },
                       { 
                         label: "Total Revenue", 
@@ -420,82 +452,176 @@ export default function Home() {
               data-tour="balance-section"
             >
               <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
-                <div className="p-6 lg:p-8">
-                  {/* Header */}
-                  <div className="flex justify-between items-center mb-8">
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Balance</h2>
-                      <p className="text-gray-600 dark:text-gray-300 flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
-                        June 3, 2024
-                      </p>
-                    </div>
-                    <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center shadow-lg">
-                      <BarChart3 className="w-6 h-6 text-white" />
-                    </div>
-                  </div>
-                  
-                  {/* Balance Overview */}
-                  <div className="space-y-6 mb-8">
-                    <motion.div 
-                      whileHover={{ x: 8, scale: 1.02 }}
-                      className="flex items-center p-4 rounded-2xl bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200/50"
-                    >
-                      <div className="w-10 h-10 bg-green-500 rounded-2xl flex items-center justify-center mr-4 shadow-lg">
-                        <ArrowUpRight className="w-5 h-5 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Income</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">This month</p>
-                      </div>
-                      <p className="text-green-600 dark:text-green-400 font-bold text-lg">${summary.totalNetIncome?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                    </motion.div>
-                     
-                    <motion.div 
-                      whileHover={{ x: 8, scale: 1.02 }}
-                      className="flex items-center p-4 rounded-2xl bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border border-orange-200/50"
-                    >
-                      <div className="w-10 h-10 bg-orange-500 rounded-2xl flex items-center justify-center mr-4 shadow-lg">
-                        <ArrowDownRight className="w-5 h-5 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Expense</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">This month</p>
-                      </div>
-                      <p className="text-orange-500 dark:text-orange-400 font-bold text-lg">${totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                    </motion.div>
-                  </div>
-
-                  {/* Net Balance */}
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.6 }}
-                    className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-2xl p-4 border border-blue-200/50 mb-6"
-                  >
-                    <div className="text-center">
-                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">Net Balance</p>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white">${(summary.totalNetIncome - totalAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                    </div>
-                  </motion.div>
-                </div>
+            
                 
-                {/* Payment Section */}
+                {/* Wallet Section */}
                 <div className="p-6 lg:p-8 bg-gradient-to-r from-gray-50/80 to-blue-50/80 dark:from-gray-700/80 dark:to-blue-900/20">
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-4">Pay securely with</p>
-                  <div className="flex items-center justify-center mb-6">
-                    <img src={logoPayoneer} alt="Payoneer logo" className="h-12" />
-                  </div>
+                  {walletLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                    </div>
+                  ) : hasWallet && wallet ? (
+                    // Usuario tiene wallet
+                    <>
+                      {/* Wallet Status Badge */}
+                      <div className="mb-6">
+                        <motion.div
+                          initial={{ scale: 0.95, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 dark:from-green-500/20 dark:to-emerald-500/20 rounded-2xl p-4 border-2 border-green-500/30"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+                              <CheckCircle2 className="w-6 h-6 text-white" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-base font-bold text-gray-900 dark:text-white">Wallet Connected</p>
+                              <p className="text-sm text-green-600 dark:text-green-400 font-medium">✓ Active & Verified</p>
+                            </div>
+                          </div>
+                        </motion.div>
+                      </div>
 
-                  <motion.button
-                    className="w-full px-6 py-4 text-sm font-semibold text-white bg-gradient-to-r from-[#FF4800] to-[#FF6B35] rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3 group"
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => window.open('https://myaccount.payoneer.com/login', '_blank')}
-                  >
-                    <Zap className="w-5 h-5 group-hover:rotate-12 transition-transform duration-200" />
-                    Login to Payoneer
-                  </motion.button>
+                      {/* Wallet Card */}
+                      <div className="mb-6">
+                        <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                          {/* Decorative elements */}
+                          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                          <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12"></div>
+                          
+                          <div className="relative">
+                            <div className="flex items-center justify-between mb-4">
+                              <Wallet className="w-8 h-8 text-white/80" />
+                              <div className="px-3 py-1 bg-white/20 rounded-full backdrop-blur-sm">
+                                <span className="text-xs font-semibold text-white uppercase tracking-wide">
+                                  {wallet?.status || 'Active'}
+                                </span>
+                              </div>
+                            </div>
+                            
+                            <div className="space-y-3">
+                              {/* Wallet ID */}
+                              <div>
+                                <p className="text-xs text-white/70 uppercase tracking-wider mb-1">Wallet ID</p>
+                                <p className="text-sm font-mono text-white font-medium">
+                                  {wallet?.id?.substring(0, 24)}...
+                                </p>
+                              </div>
+                              
+                              {/* Balance */}
+                              {wallet?.accounts?.[0]?.balance !== undefined && (
+                                <div className="pt-3 border-t border-white/20">
+                                  <p className="text-xs text-white/70 uppercase tracking-wider mb-1">Available Balance</p>
+                                  <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl font-bold text-white">
+                                      ${Number(wallet.accounts[0].balance || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </span>
+                                    <span className="text-sm text-white/70">USD</span>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* Card chip decoration */}
+                            <div className="absolute bottom-4 right-4">
+                              <div className="w-10 h-8 bg-gradient-to-br from-yellow-300 to-yellow-500 rounded opacity-80"></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Quick Actions */}
+                      <div className="space-y-3">
+                        <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Quick Actions</p>
+                        
+                        <motion.button
+                          onClick={() => setIsTransferModalOpen(true)}
+                          whileHover={{ scale: 1.02, y: -2 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-between group"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                              <Send className="w-5 h-5" />
+                            </div>
+                            <div className="text-left">
+                              <p className="text-sm font-semibold">Send Money</p>
+                              <p className="text-xs text-white/70">Transfer to another user</p>
+                            </div>
+                          </div>
+                          <ArrowUpRight className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                        </motion.button>
+
+                        <motion.button
+                          onClick={() => setIsWithdrawalModalOpen(true)}
+                          whileHover={{ scale: 1.02, y: -2 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="w-full px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-between group"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                              <DollarSign className="w-5 h-5" />
+                            </div>
+                            <div className="text-left">
+                              <p className="text-sm font-semibold">Withdraw Funds</p>
+                              <p className="text-xs text-white/70">Transfer to bank</p>
+                            </div>
+                          </div>
+                          <ArrowUpRight className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                        </motion.button>
+                        
+                        <motion.button
+                          whileHover={{ scale: 1.02, y: -2 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="w-full px-4 py-3 bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-500 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between group"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
+                              <History className="w-5 h-5 text-white" />
+                            </div>
+                            <div className="text-left">
+                              <p className="text-sm font-semibold text-gray-900 dark:text-white">View History</p>
+                              <p className="text-xs text-gray-600 dark:text-gray-400">Transaction records</p>
+                            </div>
+                          </div>
+                          <ArrowUpRight className="w-5 h-5 text-gray-400 group-hover:text-blue-500 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
+                        </motion.button>
+                      </div>
+
+         
+                    </>
+                  ) : (
+                    // Usuario NO tiene wallet
+                    <>
+                      <div className="text-center mb-6">
+                        <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                          <Wallet className="w-8 h-8 text-white" />
+                        </div>
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                          No Wallet Connected
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          Create your payment wallet to start receiving payments
+                        </p>
+                      </div>
+
+                      <motion.button
+                        onClick={() => setIsWalletModalOpen(true)}
+                        className="w-full px-6 py-4 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3 group"
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-200" />
+                        Create Wallet
+                      </motion.button>
+
+                      <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                        <p className="text-xs text-blue-600 dark:text-blue-400 text-center">
+                          Secure payments powered by Rapyd
+                        </p>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -587,6 +713,49 @@ export default function Home() {
           </div>
         </div>
       </motion.div>
+
+      {/* Modals */}
+      <CreateWalletModal
+        isOpen={isWalletModalOpen}
+        onClose={() => setIsWalletModalOpen(false)}
+        onSubmit={async (data: { first_name: string; last_name: string; email: string; phone_number: string; contact_type: string; country: string }) => {
+          const result = await createWallet(data);
+          if (result.success) {
+            setIsWalletModalOpen(false);
+            refreshWallet();
+          }
+          return result;
+        }}
+      />
+
+      <WithdrawalModal
+        isOpen={isWithdrawalModalOpen}
+        onClose={() => setIsWithdrawalModalOpen(false)}
+        walletBalance={wallet?.accounts?.[0]?.balance || 0}
+        onWithdrawalSuccess={() => {
+          refreshWallet();
+        }}
+      />
+
+      <TransferFundsModal
+        isOpen={isTransferModalOpen}
+        onClose={() => setIsTransferModalOpen(false)}
+        walletBalance={wallet?.accounts?.[0]?.balance || 0}
+        onTransferConfirm={async (amount, recipientEmail, note) => {
+          const result = await WalletService.sendFundsToUser({
+            amount,
+            recipientEmail,
+            note,
+          });
+          
+          if (!result.error) {
+            // Actualizar el balance de la wallet
+            refreshWallet();
+          }
+          
+          return result;
+        }}
+      />
     </>
   );
 }

@@ -1,13 +1,24 @@
-import { useState } from "react";
+  import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { OnboardingData } from "../../../services/onboarding";
 
 interface ProfessionStepProps {
-  nextStep: () => void;
+  nextStep: (data?: Partial<OnboardingData>) => void;
+  initialData?: OnboardingData;
 }
 
-const ProfessionStep = ({ nextStep }: ProfessionStepProps) => {
+const ProfessionStep = ({ nextStep, initialData }: ProfessionStepProps) => {
   const [selectedProfession, setSelectedProfession] = useState("");
   const [selectedOtherProfession, setSelectedOtherProfession] = useState("");
+
+  useEffect(() => {
+    if (initialData?.profession) {
+      setSelectedProfession(initialData.profession);
+    }
+    if (initialData?.otherProfession) {
+      setSelectedOtherProfession(initialData.otherProfession);
+    }
+  }, [initialData]);
 
   const professions = [
     {
@@ -63,7 +74,10 @@ const ProfessionStep = ({ nextStep }: ProfessionStepProps) => {
 
   const handleSubmit = () => {
     if (selectedProfession && (selectedProfession !== "otro" || selectedOtherProfession)) {
-      nextStep();
+      nextStep({
+        profession: selectedProfession,
+        otherProfession: selectedProfession === "otro" ? selectedOtherProfession : undefined,
+      });
     }
   };
 

@@ -17,9 +17,11 @@ import Register from "../pages/auth/register";
 import Balance from "../pages/panel/balance/balance";
 import Profile from "../pages/panel/profile/profile";
 import AcceptCollaboration from "../pages/collabotarion/acceptCollaboration";
+import AcceptLabelCollaboration from "../pages/collabotarion/acceptLabelCollaboration";
 import Stripe from "../pages/panel/stripe/stripe";
 import LabelsTable from "../pages/panel/labels/labelsTable";
 import LabelDetail from "../pages/panel/labels/labelDetail";
+import CustomLabelDetail from "../pages/panel/labels/customLabelDetail";
 
 const routes = [
   {
@@ -41,6 +43,10 @@ const routes = [
   {
     path: "/collaboration/accept",
     element: <AcceptCollaboration />
+  },
+  {
+    path: "/collaboration/accept-label",
+    element: <AcceptLabelCollaboration />
   },
 
   {
@@ -106,6 +112,10 @@ const routes = [
       {
         path: "labels",
         element: <LabelsTable />
+      },
+      {
+        path: "labels/custom/:label",
+        element: <CustomLabelDetail />
       },
       {
         path: "labels/:label",

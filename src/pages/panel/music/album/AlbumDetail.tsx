@@ -2,18 +2,20 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { 
-  ArrowLeft, 
-  Disc, 
+import {
+  ArrowLeft,
+  Disc,
   Play,
   Download,
   Share2,
-  MoreHorizontal,   
+  MoreHorizontal,
+  Crown,
 } from "lucide-react";
 import { useAlbums } from "../../../../hooks/useAlbums";
 import Loading from "../../../../components/loading/loading";
 import Breadcrumb from "../../../../components/breadcrumb/breadcrumb";
 import type { Album, AlbumTrack } from "../../../../models/album";
+import AlbumOwnerSplitModal from "./components/AlbumOwnerSplitModal";
 
 export default function AlbumDetail() {
   const { upc } = useParams<{ upc: string }>();
@@ -22,6 +24,7 @@ export default function AlbumDetail() {
   const [album, setAlbum] = useState<Album | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isOwnerSplitModalOpen, setIsOwnerSplitModalOpen] = useState(false);
 
   const loadAlbum = useCallback(async () => {
     if (!upc) return;
@@ -214,6 +217,15 @@ export default function AlbumDetail() {
                     <Play size={18} fill="white" />
                     Play Album
                   </button>
+                  <motion.button
+                    onClick={() => setIsOwnerSplitModalOpen(true)}
+                    className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Crown size={18} />
+                    Create Owner Splits
+                  </motion.button>
                   <button className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-6 py-3 rounded-full font-semibold border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center gap-2">
                     <Download size={18} />
                     Download
@@ -326,6 +338,18 @@ export default function AlbumDetail() {
           </div>
         </motion.div>
       </div>
+
+      {/* Album Owner Split Modal */}
+      {album && (
+        <AlbumOwnerSplitModal
+          isOpen={isOwnerSplitModalOpen}
+          onClose={() => setIsOwnerSplitModalOpen(false)}
+          album={album}
+          onSplitsCreated={() => {
+            loadAlbum();
+          }}
+        />
+      )}
     </div>
   );
 }

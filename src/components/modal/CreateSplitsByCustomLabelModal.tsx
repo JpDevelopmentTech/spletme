@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { X, Plus, Trash2, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
+import { X, Plus, Trash2, AlertCircle, CheckCircle, Loader2, Layers, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios';
+import LabelsService from '../../services/labels';
 
 interface Condition {
   type: 'specific' | 'general';
@@ -15,19 +15,55 @@ interface Condition {
   selectedPlatforms: string[];
 }
 
-interface CreateSplitsByLabelModalProps {
+interface CreateSplitsByCustomLabelModalProps {
   isOpen: boolean;
   onClose: () => void;
-  label: string;
+  labelName: string;
+  artisticLabels: string[];
   songCount: number;
 }
 
-export default function CreateSplitsByLabelModal({
+interface SplitResult {
+  customLabel: {
+    name: string;
+    artisticLabels: string[];
+  };
+  successful: Array<{
+    songId: string;
+    trackTitle: string;
+    artistName: string;
+    isrc: string;
+    artisticLabel: string;
+    splitId: string;
+    status: 'created' | 'updated';
+    calculation: {
+      totalOwed: number;
+      releaseCount: number;
+    };
+  }>;
+  failed: Array<{
+    songId: string;
+    trackTitle: string;
+    artisticLabel: string;
+    reason: string;
+    status: 'error';
+  }>;
+  summary: {
+    total: number;
+    created: number;
+    updated: number;
+    skipped: number;
+    errors: number;
+  };
+}
+
+export default function CreateSplitsByCustomLabelModal({
   isOpen,
   onClose,
-  label,
+  labelName,
+  artisticLabels,
   songCount,
-}: CreateSplitsByLabelModalProps) {
+}: CreateSplitsByCustomLabelModalProps) {
   const [conditions, setConditions] = useState<Condition[]>([
     {
       type: 'general',
@@ -41,7 +77,7 @@ export default function CreateSplitsByLabelModal({
   ]);
 
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<SplitResult | null>(null);
   const [error, setError] = useState<string>('');
 
   const addCondition = () => {
@@ -70,7 +106,7 @@ export default function CreateSplitsByLabelModal({
     setConditions(conditions.filter((_, i) => i !== index));
   };
 
-  const updateCondition = (index: number, field: keyof Condition, value: any) => {
+  const updateCondition = <K extends keyof Condition>(index: number, field: K, value: Condition[K]) => {
     const newConditions = [...conditions];
     newConditions[index] = {
       ...newConditions[index],
@@ -87,13 +123,11 @@ export default function CreateSplitsByLabelModal({
     setError('');
     setResult(null);
 
-    // Validaciones
     if (conditions.length === 0) {
       setError('Debes agregar al menos una condición');
       return;
     }
 
-    // Validar que haya exactamente 1 condición general
     const generalConditions = conditions.filter(c => c.type === 'general');
     if (generalConditions.length !== 1) {
       setError('Debe haber exactamente una condición general');
@@ -117,7 +151,6 @@ export default function CreateSplitsByLabelModal({
         return;
       }
 
-      // Validar fechas para condiciones específicas
       if (condition.type === 'specific') {
         if (!condition.fromDate || !condition.toDate) {
           setError('Las condiciones específicas deben tener fechas de inicio y fin');
@@ -133,24 +166,19 @@ export default function CreateSplitsByLabelModal({
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-        `${import.meta.env.VITE_URL_API}/api/v1/labels/create-split-by-label`,
-        {
-          label,
-          conditions,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await LabelsService.createSplitByCustomLabel({
+        labelName,
+        conditions,
+      });
 
-      setResult(response.data.data);
-    } catch (err: any) {
+      if (response.error) {
+        setError(response.message || 'Error al crear los splits');
+      } else if (response.data) {
+        setResult(response.data);
+      }
+    } catch (err) {
       console.error('Error creating splits:', err);
-      setError(err.response?.data?.message || 'Error al crear los splits');
+      setError('Error al crear los splits');
     } finally {
       setLoading(false);
     }
@@ -180,7 +208,6 @@ export default function CreateSplitsByLabelModal({
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -189,7 +216,6 @@ export default function CreateSplitsByLabelModal({
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
           />
 
-          {/* Modal */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -201,19 +227,43 @@ export default function CreateSplitsByLabelModal({
               className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Header */}
-              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                      Crear Splits por Label
-                    </h2>
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="relative">
+                        <div className="w-10 h-10 bg-gradient-to-br from-amber-500 via-orange-500 to-red-500 rounded-xl flex items-center justify-center shadow-lg">
+                          <Layers className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-full flex items-center justify-center shadow-md">
+                          <Sparkles className="w-2.5 h-2.5 text-white" />
+                        </div>
+                      </div>
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                        Crear Splits por Label Personalizado
+                      </h2>
+                    </div>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                      Label: <span className="font-semibold">{label}</span>
+                      Label: <span className="font-semibold text-amber-600 dark:text-amber-400">{labelName}</span>
                     </p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Se crearán splits para {songCount} canciones
+                      Se crearán splits para <span className="font-semibold">{songCount} canciones</span> de {artisticLabels.length} labels agrupados
                     </p>
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {artisticLabels.slice(0, 4).map((label, idx) => (
+                        <span
+                          key={idx}
+                          className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400"
+                        >
+                          {label}
+                        </span>
+                      ))}
+                      {artisticLabels.length > 4 && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
+                          +{artisticLabels.length - 4} más
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <button
                     onClick={handleClose}
@@ -224,11 +274,9 @@ export default function CreateSplitsByLabelModal({
                 </div>
               </div>
 
-              {/* Body */}
               <div className="flex-1 overflow-y-auto p-6">
                 {!result ? (
                   <>
-                    {/* Conditions List */}
                     <div className="space-y-4 mb-6">
                       {conditions.map((condition, index) => (
                         <div
@@ -250,7 +298,6 @@ export default function CreateSplitsByLabelModal({
                           </div>
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* Type */}
                             <div>
                               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Tipo
@@ -260,14 +307,13 @@ export default function CreateSplitsByLabelModal({
                                 onChange={(e) =>
                                   updateCondition(index, 'type', e.target.value as 'specific' | 'general')
                                 }
-                                className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                               >
                                 <option value="general">General</option>
                                 <option value="specific">Específica</option>
                               </select>
                             </div>
 
-                            {/* Percentage */}
                             <div>
                               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Porcentaje
@@ -280,11 +326,10 @@ export default function CreateSplitsByLabelModal({
                                 onChange={(e) =>
                                   updateCondition(index, 'percentage', parseFloat(e.target.value) || 0)
                                 }
-                                className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                               />
                             </div>
 
-                            {/* Description */}
                             <div className="md:col-span-2">
                               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Descripción
@@ -294,11 +339,10 @@ export default function CreateSplitsByLabelModal({
                                 value={condition.description}
                                 onChange={(e) => updateCondition(index, 'description', e.target.value)}
                                 placeholder="Ej: Ingresos de Spotify en USA"
-                                className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                               />
                             </div>
 
-                            {/* Date Range - Only for Specific Type */}
                             {condition.type === 'specific' && (
                               <>
                                 <div>
@@ -309,7 +353,7 @@ export default function CreateSplitsByLabelModal({
                                     type="date"
                                     value={condition.fromDate || ''}
                                     onChange={(e) => updateCondition(index, 'fromDate', e.target.value)}
-                                    className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                                   />
                                 </div>
                                 <div>
@@ -320,7 +364,7 @@ export default function CreateSplitsByLabelModal({
                                     type="date"
                                     value={condition.toDate || ''}
                                     onChange={(e) => updateCondition(index, 'toDate', e.target.value)}
-                                    className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                                   />
                                 </div>
                               </>
@@ -330,16 +374,14 @@ export default function CreateSplitsByLabelModal({
                       ))}
                     </div>
 
-                    {/* Add Condition Button */}
                     <button
                       onClick={addCondition}
-                      className="w-full py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-400 hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex items-center justify-center gap-2"
+                      className="w-full py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-400 hover:border-amber-500 hover:text-amber-600 dark:hover:text-amber-400 transition-colors flex items-center justify-center gap-2"
                     >
                       <Plus className="w-5 h-5" />
                       <span>Agregar Condición</span>
                     </button>
 
-                    {/* Percentage Summary */}
                     <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -379,7 +421,6 @@ export default function CreateSplitsByLabelModal({
                       </div>
                     </div>
 
-                    {/* Error Message */}
                     {error && (
                       <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-3">
                         <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
@@ -388,19 +429,45 @@ export default function CreateSplitsByLabelModal({
                     )}
                   </>
                 ) : (
-                  // Result View
                   <div className="space-y-6">
-                    {/* Success Header */}
                     <div className="text-center">
-                      <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+                      <div className="w-16 h-16 bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <CheckCircle className="w-8 h-8 text-amber-600 dark:text-amber-400" />
                       </div>
                       <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                         Splits Creados Exitosamente
                       </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Label personalizado: <span className="font-semibold text-amber-600 dark:text-amber-400">{labelName}</span>
+                      </p>
                     </div>
 
-                    {/* Summary */}
+                    {result.customLabel && (
+                      <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-4 border border-amber-200 dark:border-amber-800">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Layers className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                          <span className="text-sm font-medium text-amber-700 dark:text-amber-300">
+                            Labels agrupados: {result.customLabel.artisticLabels?.length || artisticLabels.length}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {(result.customLabel.artisticLabels || artisticLabels).slice(0, 6).map((label: string, idx: number) => (
+                            <span
+                              key={idx}
+                              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400"
+                            >
+                              {label}
+                            </span>
+                          ))}
+                          {(result.customLabel.artisticLabels || artisticLabels).length > 6 && (
+                            <span className="text-xs text-amber-600 dark:text-amber-400">
+                              +{(result.customLabel.artisticLabels || artisticLabels).length - 6} más
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                       <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-center">
                         <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
@@ -434,14 +501,13 @@ export default function CreateSplitsByLabelModal({
                       </div>
                     </div>
 
-                    {/* Successful Songs */}
                     {result.successful.length > 0 && (
                       <div>
                         <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
                           Canciones procesadas ({result.successful.length})
                         </h4>
                         <div className="space-y-2 max-h-60 overflow-y-auto">
-                          {result.successful.map((item: any, index: number) => (
+                          {result.successful.map((item, index) => (
                             <div
                               key={index}
                               className={`${
@@ -456,7 +522,7 @@ export default function CreateSplitsByLabelModal({
                                     {item.trackTitle}
                                   </p>
                                   <p className="text-xs text-gray-600 dark:text-gray-400">
-                                    {item.artistName} • ${item.calculation.totalOwed.toFixed(2)}
+                                    {item.artistName} • <span className="text-amber-600 dark:text-amber-400">{item.artisticLabel}</span> • ${item.calculation.totalOwed.toFixed(2)}
                                   </p>
                                 </div>
                                 <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
@@ -473,14 +539,13 @@ export default function CreateSplitsByLabelModal({
                       </div>
                     )}
 
-                    {/* Failed Songs */}
                     {result.failed.length > 0 && (
                       <div>
                         <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
                           Canciones omitidas o con error ({result.failed.length})
                         </h4>
                         <div className="space-y-2 max-h-60 overflow-y-auto">
-                          {result.failed.map((item: any, index: number) => (
+                          {result.failed.map((item, index) => (
                             <div
                               key={index}
                               className="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3"
@@ -488,7 +553,9 @@ export default function CreateSplitsByLabelModal({
                               <p className="text-sm font-medium text-gray-900 dark:text-white">
                                 {item.trackTitle}
                               </p>
-                              <p className="text-xs text-gray-600 dark:text-gray-400">{item.reason}</p>
+                              <p className="text-xs text-gray-600 dark:text-gray-400">
+                                <span className="text-amber-600 dark:text-amber-400">{item.artisticLabel}</span> • {item.reason}
+                              </p>
                             </div>
                           ))}
                         </div>
@@ -498,7 +565,6 @@ export default function CreateSplitsByLabelModal({
                 )}
               </div>
 
-              {/* Footer */}
               <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
                 {!result ? (
                   <>
@@ -512,7 +578,7 @@ export default function CreateSplitsByLabelModal({
                     <button
                       onClick={handleSubmit}
                       disabled={loading || !isValidPercentage}
-                      className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-md"
                     >
                       {loading ? (
                         <>
@@ -527,7 +593,7 @@ export default function CreateSplitsByLabelModal({
                 ) : (
                   <button
                     onClick={handleClose}
-                    className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
+                    className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-lg transition-colors shadow-md"
                   >
                     Cerrar
                   </button>

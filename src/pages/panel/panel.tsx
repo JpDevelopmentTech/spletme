@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import Sidebar from "../../components/sidebar/sidebar";
 import { useAuth0 } from "@auth0/auth0-react";
@@ -20,6 +20,17 @@ export default function Panel() {
   const [searchQuery, setSearchQuery] = useState("");
   const [openSelectUser, setOpenSelectUser] = useState(false);
   const navigate = useNavigate();
+
+  // Check if onboarding is completed
+  useEffect(() => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      if (!user.onboardingCompleted) {
+        navigate("/onboarding");
+      }
+    }
+  }, [navigate]);
 
   return (
     <div className="w-full h-screen bg-gray-50 flex font-custom relative">

@@ -1,13 +1,16 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Music2, Tag, TrendingUp, ArrowRight, Disc3 } from 'lucide-react';
+import { Music2, Tag, TrendingUp, ArrowRight, Disc3, Plus, FolderPlus } from 'lucide-react';
 import { useLabels } from '../../../hooks/useLabels';
 import Loading from '../../../components/loading/loading';
 import { useNavigate } from 'react-router-dom';
 import Title from '../../../components/title/title';
+import CreateLabelModal from '../../../components/labels/CreateLabelModal';
 
 export default function Labels() {
-  const { labels, loading, error } = useLabels();
+  const { labels, loading, error, refreshLabels } = useLabels();
   const navigate = useNavigate();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -34,6 +37,10 @@ export default function Labels() {
     navigate(`/panel/labels/${encodeURIComponent(labelName)}`);
   };
 
+  const handleCreateSuccess = () => {
+    refreshLabels();
+  };
+
   if (loading) return <Loading />;
 
   return (
@@ -44,12 +51,30 @@ export default function Labels() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mb-8"
+          className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
         >
+          <div>
           <Title title="Labels Musicales" />
           <p className="text-gray-600 dark:text-gray-400 mt-2">
             Gestiona tus canciones organizadas por sello discográfico
           </p>
+          </div>
+          
+          {/* Create Label Button */}
+          <motion.button
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3 }}
+            whileHover={{ scale: 1.02, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setIsCreateModalOpen(true)}
+            className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group"
+          >
+            <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center group-hover:bg-white/30 transition-colors">
+              <Plus className="w-5 h-5" />
+            </div>
+            <span>Crear Nuevo Label</span>
+          </motion.button>
         </motion.div>
 
         {/* Stats Summary */}
@@ -122,13 +147,24 @@ export default function Labels() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center py-16"
           >
-            <Disc3 className="w-20 h-20 mx-auto text-gray-400 mb-4" />
+            <div className="w-24 h-24 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Disc3 className="w-12 h-12 text-indigo-500 dark:text-indigo-400" />
+            </div>
             <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
               No se encontraron labels
             </h3>
-            <p className="text-gray-500 dark:text-gray-400">
+            <p className="text-gray-500 dark:text-gray-400 mb-6">
               Aún no tienes canciones con labels asignados
             </p>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsCreateModalOpen(true)}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all"
+            >
+              <FolderPlus className="w-5 h-5" />
+              Crear tu primer label
+            </motion.button>
           </motion.div>
         )}
 
@@ -138,6 +174,29 @@ export default function Labels() {
           animate="visible"
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
         >
+          {/* Create New Label Card */}
+          {labels.length > 0 && (
+            <motion.div
+              variants={itemVariants}
+              whileHover={{ scale: 1.02, y: -5 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setIsCreateModalOpen(true)}
+              className="group cursor-pointer"
+            >
+              <div className="h-full bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border-2 border-dashed border-indigo-300 dark:border-indigo-700 hover:border-indigo-400 dark:hover:border-indigo-600 flex flex-col items-center justify-center min-h-[240px]">
+                <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <Plus className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-lg font-bold text-indigo-700 dark:text-indigo-300 mb-2 text-center">
+                  Crear Nuevo Label
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
+                  Agrupa tus labels artísticos
+                </p>
+              </div>
+            </motion.div>
+          )}
+
           {labels.map((label, index) => (
             <motion.div
               key={index}
@@ -180,7 +239,14 @@ export default function Labels() {
           ))}
         </motion.div>
       </div>
+
+      {/* Create Label Modal */}
+      <CreateLabelModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        availableLabels={labels}
+        onSuccess={handleCreateSuccess}
+      />
     </div>
   );
 }
-

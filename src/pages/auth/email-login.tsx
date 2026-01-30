@@ -2,18 +2,38 @@ import { motion } from "framer-motion";
 import { Mail, Lock, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useDispatch } from "react-redux";
 import { AuthService } from "../../services/auth";
+import { setAuth } from "../../store/states/authSlice";
+
 export default function EmailLogin() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const response = await AuthService.login(email, password);
-    localStorage.setItem('token', response.data.token);
-    localStorage.setItem('user', JSON.stringify(response.data.user));
-    navigate("/onboarding");
+    
+    if (response && response.data) {
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+      localStorage.setItem('isAuth', 'true');
+      
+      // Update Redux state
+      dispatch(setAuth({
+        isAuth: "true",
+        user: response.data.user
+      }));
+      
+      // Check if onboarding is completed
+      if (response.data.user.onboardingCompleted) {
+        navigate("/panel/home");
+      } else {
+        navigate("/onboarding");
+      }
+    }
   };
 
   return (

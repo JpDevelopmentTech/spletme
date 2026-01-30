@@ -436,7 +436,11 @@ export default function Song() {
                   className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 overflow-hidden"
                 >
                   <div className="p-6 lg:p-8">
-                    <Statistics />
+                  <PaymentHistory
+                    title="Historial de Pagos Realizados"
+                    maxHeight="500px"
+                    refreshTrigger={paymentHistoryRefresh}
+                  />
                   </div>
                 </motion.div>
 
@@ -473,39 +477,7 @@ export default function Song() {
                 </div>
               </motion.div>
 
-              {/* History of Splits Section */}
-              <motion.div
-                variants={itemVariants}
-                className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 overflow-hidden"
-              >
-                <div className="p-6 lg:p-8">
-                  <Historyofsplits />
-                </div>
-              </motion.div>
-
-              {/* Extraordinary Costs Section */}
-              <motion.div
-                variants={itemVariants}
-                className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 overflow-hidden"
-              >
-                <div className="p-6 lg:p-8">
-                  <Extraordinarycosts />
-                </div>
-              </motion.div>
-
-              {/* Payment History Section */}
-              <motion.div
-                variants={itemVariants}
-                className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 overflow-hidden"
-              >
-                <div className="p-6 lg:p-8">
-                  <PaymentHistory
-                    title="Historial de Pagos Realizados"
-                    maxHeight="500px"
-                    refreshTrigger={paymentHistoryRefresh}
-                  />
-                </div>
-              </motion.div>
+          
             </motion.div>
             </>
           )}

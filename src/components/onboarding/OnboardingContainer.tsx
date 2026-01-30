@@ -1,18 +1,84 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import ProfessionStep from "./steps/ProfessionStep";
 import AccountDetailsStep from "./steps/AccountDetailsStep";
 import DistributorStep from "./steps/DistributorStep";
 import VerificationStep from "./steps/VerificationStep";
 import CompletionStep from "./steps/CompletionStep";
+import { OnboardingService, OnboardingData } from "../../services/onboarding";
 
 const OnboardingContainer = () => {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
+  const [onboardingData, setOnboardingData] = useState<OnboardingData>({
+    currentStep: 1,
+  });
   const totalSteps = 5;
 
-  const nextStep = () => {
+  // Load user data from localStorage to check onboarding status
+  useEffect(() => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      if (user.onboardingCompleted) {
+        // Redirect to dashboard if already completed
+        navigate("/panel/home");
+        return;
+      }
+      // Load existing onboarding data
+      if (user.onboardingData) {
+        setOnboardingData(user.onboardingData);
+        setCurrentStep(user.onboardingData.currentStep || 1);
+      }
+    }
+  }, [navigate]);
+
+  const updateOnboardingStep = async (stepData: Partial<OnboardingData>, nextStepNumber?: number) => {
+    try {
+      const updatedData: OnboardingData = {
+        ...onboardingData,
+        ...stepData,
+        currentStep: nextStepNumber || currentStep,
+      };
+
+      const response = await OnboardingService.updateOnboarding(updatedData);
+      
+      if (response.data && response.data.user) {
+        // Update localStorage with new user data
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+        setOnboardingData(updatedData);
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error updating onboarding:", error);
+      return false;
+    }
+  };
+
+  const nextStep = async (stepData?: Partial<OnboardingData>) => {
     if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1);
+      const nextStepNumber = currentStep + 1;
+      if (stepData) {
+        const success = await updateOnboardingStep(stepData, nextStepNumber);
+        if (success) {
+          setCurrentStep(nextStepNumber);
+          
+          // If moving to step 5 (completion), the backend will mark onboarding as completed
+          if (nextStepNumber === 5) {
+            // Update local storage to reflect completion
+            const userStr = localStorage.getItem("user");
+            if (userStr) {
+              const user = JSON.parse(userStr);
+              user.onboardingCompleted = true;
+              localStorage.setItem("user", JSON.stringify(user));
+            }
+          }
+        }
+      } else {
+        setCurrentStep(nextStepNumber);
+      }
     }
   };
 
@@ -28,28 +94,28 @@ const OnboardingContainer = () => {
       title: "Profesión",
       description: "Cuéntanos sobre ti",
       icon: "👤",
-      component: <ProfessionStep nextStep={nextStep} />
+      component: <ProfessionStep nextStep={nextStep} initialData={onboardingData} />
     },
     {
       id: 2,
       title: "Detalles",
       description: "Información personal",
       icon: "📋",
-      component: <AccountDetailsStep nextStep={nextStep} prevStep={prevStep} />
+      component: <AccountDetailsStep nextStep={nextStep} prevStep={prevStep} initialData={onboardingData} />
     },
     {
       id: 3,
       title: "Distribuidor",
       description: "Elige tu plataforma",
       icon: "🎵",
-      component: <DistributorStep nextStep={nextStep} prevStep={prevStep} />
+      component: <DistributorStep nextStep={nextStep} prevStep={prevStep} initialData={onboardingData} />
     },
     {
       id: 4,
       title: "Verificación",
       description: "Confirma tu número",
       icon: "📱",
-      component: <VerificationStep nextStep={nextStep} prevStep={prevStep} />
+      component: <VerificationStep nextStep={nextStep} prevStep={prevStep} initialData={onboardingData} />
     },
     {
       id: 5,
@@ -74,12 +140,7 @@ const OnboardingContainer = () => {
               animate={{ opacity: 1, y: 0 }}
               className="flex items-center justify-center mb-4"
             >
-              <div className="w-12 h-12 bg-gradient-to-r from-gray-500 to-gray-700 rounded-xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-                S
-              </div>
-              <span className="ml-3 text-2xl font-bold text-gray-900 dark:text-white">
-                SplitMe
-              </span>
+              <img src="../../assets/images/5 - LOGO.png" alt="SplitMe" className="w-12 h-12" />
             </motion.div>
             <motion.h1
               initial={{ opacity: 0 }}

@@ -1,3 +1,17 @@
+export interface OnboardingData {
+    profession?: string;
+    otherProfession?: string;
+    country?: string;
+    phone?: string;
+    address?: string;
+    identification?: string;
+    distributor?: string;
+    distributorEmail?: string;
+    distributorPassword?: string;
+    whatsappVerified?: boolean;
+    currentStep: number;
+}
+
 export interface User {
     amountToPay: string;
     id: string;
@@ -7,6 +21,8 @@ export interface User {
     percentage?: number;
     role?: string;
     _id?: string;
+    onboardingCompleted?: boolean;
+    onboardingData?: OnboardingData;
     splitInfo?: {
         splitId: string;
         paymentDetails: {
