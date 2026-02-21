@@ -1,12 +1,30 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, Wallet, Mail, User, Phone, MapPin, Globe } from "lucide-react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { X, Wallet, Mail, User, Phone, Globe, AlertCircle, Building2 } from "lucide-react";
 
 interface CreateWalletModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: any) => Promise<{ success: boolean; message?: string }>;
 }
+
+const COUNTRIES = [
+  { code: "US", name: "United States" },
+  { code: "CO", name: "Colombia" },
+  { code: "MX", name: "Mexico" },
+  { code: "AR", name: "Argentina" },
+  { code: "BR", name: "Brazil" },
+  { code: "CL", name: "Chile" },
+  { code: "PE", name: "Peru" },
+  { code: "ES", name: "Spain" },
+  { code: "GB", name: "United Kingdom" },
+];
+
+const inputClass =
+  "w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#F97316] transition-colors bg-white";
+
+const labelClass =
+  "flex items-center gap-1.5 text-xs font-semibold text-gray-700 uppercase tracking-wide mb-1.5";
 
 export default function CreateWalletModal({
   isOpen,
@@ -15,261 +33,240 @@ export default function CreateWalletModal({
 }: CreateWalletModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
     email: "",
     phone_number: "",
-    contact_type: "personal",
+    contact_type: "person",
     country: "US",
   });
 
-  const countries = [
-    { code: "US", name: "United States" },
-    { code: "CO", name: "Colombia" },
-    { code: "MX", name: "Mexico" },
-    { code: "AR", name: "Argentina" },
-    { code: "BR", name: "Brazil" },
-    { code: "CL", name: "Chile" },
-    { code: "PE", name: "Peru" },
-    { code: "ES", name: "Spain" },
-    { code: "GB", name: "United Kingdom" },
-  ];
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setError(null);
+    setFormData({
+      first_name: "",
+      last_name: "",
+      email: "",
+      phone_number: "",
+      contact_type: "person",
+      country: "US",
+    });
+  }, [isOpen]);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
-
     try {
       const result = await onSubmit(formData);
       if (result.success) {
-        // Reset form and close
-        setFormData({
-          first_name: "",
-          last_name: "",
-          email: "",
-          phone_number: "",
-          contact_type: "person",
-          country: "US",
-        });
         onClose();
       } else {
-        setError(result.message || "Error creating wallet");
+        setError(result.message || "Error al crear la wallet");
       }
     } catch (err: any) {
-      setError(err.message || "Error creating wallet");
+      setError(err.message || "Error al crear la wallet");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  if (!mounted || !isOpen) return null;
 
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-          />
-
-          {/* Modal */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative w-full max-w-2xl bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden"
-          >
-            {/* Header */}
-            <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
-                    <Wallet className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-white">
-                      Create Your Wallet
-                    </h2>
-                    <p className="text-blue-100 text-sm">
-                      Set up your payment wallet
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={onClose}
-                  className="text-white/80 hover:text-white transition-colors"
-                >
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
+  const modal = (
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-xl max-w-lg w-full mx-4 overflow-hidden flex flex-col border border-gray-200"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="bg-[#F97316] px-6 py-5 flex items-center justify-between flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center">
+              <Wallet className="w-5 h-5 text-white" />
             </div>
-
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              {error && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4"
-                >
-                  <p className="text-red-600 dark:text-red-400 text-sm">
-                    {error}
-                  </p>
-                </motion.div>
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* First Name */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    <User className="w-4 h-4 inline mr-2" />
-                    First Name
-                  </label>
-                  <input
-                    type="text"
-                    name="first_name"
-                    value={formData.first_name}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="John"
-                  />
-                </div>
-
-                {/* Last Name */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    <User className="w-4 h-4 inline mr-2" />
-                    Last Name
-                  </label>
-                  <input
-                    type="text"
-                    name="last_name"
-                    value={formData.last_name}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="Doe"
-                  />
-                </div>
-              </div>
-
-              {/* Email */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  <Mail className="w-4 h-4 inline mr-2" />
-                  Email
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="john@example.com"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Phone */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    <Phone className="w-4 h-4 inline mr-2" />
-                    Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    name="phone_number"
-                    value={formData.phone_number}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="+1234567890"
-                  />
-                </div>
-
-                {/* Country */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    <Globe className="w-4 h-4 inline mr-2" />
-                    Country
-                  </label>
-                  <select
-                    name="country"
-                    value={formData.country}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  >
-                    {countries.map((country) => (
-                      <option key={country.code} value={country.code}>
-                        {country.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Contact Type */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  <MapPin className="w-4 h-4 inline mr-2" />
-                  Contact Type
-                </label>
-                <select
-                  name="contact_type"
-                  value={formData.contact_type}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                >
-                  <option value="person">Personal</option>
-                  <option value="business">Business</option>
-                </select>
-              </div>
-
-              {/* Buttons */}
-              <div className="flex gap-3 pt-4">
-                <motion.button
-                  type="button"
-                  onClick={onClose}
-                  disabled={loading}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="flex-1 px-6 py-3 rounded-xl border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all disabled:opacity-50"
-                >
-                  Cancel
-                </motion.button>
-                <motion.button
-                  type="submit"
-                  disabled={loading}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold hover:shadow-lg transition-all disabled:opacity-50"
-                >
-                  {loading ? "Creating..." : "Create Wallet"}
-                </motion.button>
-              </div>
-            </form>
-          </motion.div>
+            <div>
+              <h2 className="text-white font-semibold text-base leading-tight">
+                Crear Wallet
+              </h2>
+              <p className="text-white/80 text-xs mt-0.5">
+                Configura tu wallet de pagos
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 transition-colors flex items-center justify-center"
+          >
+            <X className="w-4 h-4 text-white" />
+          </button>
         </div>
-      )}
-    </AnimatePresence>
-  );
-}
 
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="p-5 space-y-4 bg-[#F7F8FA]">
+          {error && (
+            <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-100 rounded-lg">
+              <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-red-700">{error}</p>
+            </div>
+          )}
+
+          {/* Name row */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelClass}>
+                <User className="w-3.5 h-3.5" /> Nombre
+              </label>
+              <input
+                type="text"
+                name="first_name"
+                value={formData.first_name}
+                onChange={handleChange}
+                required
+                placeholder="Juan"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>
+                <User className="w-3.5 h-3.5" /> Apellido
+              </label>
+              <input
+                type="text"
+                name="last_name"
+                value={formData.last_name}
+                onChange={handleChange}
+                required
+                placeholder="Pérez"
+                className={inputClass}
+              />
+            </div>
+          </div>
+
+          {/* Email */}
+          <div>
+            <label className={labelClass}>
+              <Mail className="w-3.5 h-3.5" /> Correo electrónico
+            </label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              placeholder="juan@ejemplo.com"
+              className={inputClass}
+            />
+          </div>
+
+          {/* Phone + Country row */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelClass}>
+                <Phone className="w-3.5 h-3.5" /> Teléfono
+              </label>
+              <input
+                type="tel"
+                name="phone_number"
+                value={formData.phone_number}
+                onChange={handleChange}
+                required
+                placeholder="+1234567890"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>
+                <Globe className="w-3.5 h-3.5" /> País
+              </label>
+              <select
+                name="country"
+                value={formData.country}
+                onChange={handleChange}
+                required
+                className={inputClass}
+              >
+                {COUNTRIES.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Contact type */}
+          <div>
+            <label className={labelClass}>
+              <Building2 className="w-3.5 h-3.5" /> Tipo de contacto
+            </label>
+            <div className="flex rounded-lg border border-gray-200 bg-white p-0.5 gap-0.5">
+              {(["person", "business"] as const).map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() =>
+                    setFormData((prev) => ({ ...prev, contact_type: type }))
+                  }
+                  className={`flex-1 py-2 text-xs font-medium rounded-md transition-colors ${
+                    formData.contact_type === type
+                      ? "bg-[#F97316] text-white"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  {type === "person" ? "Personal" : "Empresa"}
+                </button>
+              ))}
+            </div>
+          </div>
+        </form>
+
+        {/* Footer */}
+        <div className="bg-white border-t border-gray-200 px-5 py-4 flex items-center justify-end gap-3 flex-shrink-0">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors disabled:opacity-50"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            form=""
+            disabled={loading}
+            onClick={handleSubmit}
+            className="flex items-center gap-2 px-5 py-2 bg-[#F97316] hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg transition-colors"
+          >
+            {loading ? (
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <Wallet className="w-4 h-4" />
+            )}
+            {loading ? "Creando..." : "Crear Wallet"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  return createPortal(modal, document.body);
+}

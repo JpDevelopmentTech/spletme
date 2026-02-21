@@ -3,12 +3,10 @@ import { Outlet, useNavigate } from "react-router-dom";
 import Sidebar from "../../components/sidebar/sidebar";
 import { useAuth0 } from "@auth0/auth0-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Search, 
-  Bell, 
-  User, 
-  X, 
-  LogOut, 
+import {
+  User,
+  X,
+  LogOut,
   ChevronRight,
   Users
 } from "lucide-react";
@@ -17,7 +15,6 @@ import SelectUser from "../../components/selectUser/selectUser";
 export default function Panel() {
   const { logout } = useAuth0();
   const [showMenu, setShowMenu] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [openSelectUser, setOpenSelectUser] = useState(false);
   const navigate = useNavigate();
 
@@ -33,7 +30,7 @@ export default function Panel() {
   }, [navigate]);
 
   return (
-    <div className="w-full h-screen bg-gray-50 flex font-custom relative">
+    <div className="w-full h-screen bg-[#F7F8FA] flex font-custom relative">
       {openSelectUser && (
         <SelectUser onClose={() => {
           setOpenSelectUser(false);
@@ -41,45 +38,8 @@ export default function Panel() {
         }} />
       )}
       <Sidebar />
-      <div className="w-full h-full ml-80">
-        <div className="w-full border-b bg-white h-20 flex items-center justify-between px-8 shadow-sm">
-          <div className="w-full lg:w-2/3 flex items-center">
-            <div className="relative w-full max-w-xl">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-gray-400" />
-              </div>
-              <input
-                type="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="block w-full pl-10 pr-3 py-2.5 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                placeholder="Search anything..."
-              />
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="p-2 text-gray-500 rounded-lg hover:bg-gray-100 transition-colors duration-200"
-            >
-              <Bell className="h-5 w-5" />
-            </motion.button>
-
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowMenu(true)}
-              className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white shadow-md hover:shadow-lg transition-all duration-200"
-            >
-              <User className="h-5 w-5" />
-            </motion.button>
-          </div>
-        </div>
-
-        <div className="p-8">
-          <Outlet />
-        </div>
+      <div className="w-full h-full ml-0 lg:ml-[260px] overflow-y-auto">
+        <Outlet />
       </div>
 
       <AnimatePresence>

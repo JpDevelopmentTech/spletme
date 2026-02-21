@@ -2,25 +2,21 @@ import { ApexOptions } from "apexcharts";
 import "./home.css";
 import ReactApexChart from "react-apexcharts";
 import { Link } from "react-router-dom";
-import CardSong from "../../../components/cardsong/cardsong";
 import { useMemo, useState } from "react";
 import PlatformsCard from "../../../components/platformsCard/platformsCard";
-import { motion } from "framer-motion";
 import DashboardTour from "../../../components/tour/DashboardTour";
-import { 
-  Music, 
-  DollarSign, 
-  ArrowUpRight, 
-  TrendingUp,
+import {
+  Music,
+  DollarSign,
   Play,
-  Filter,
-  Sparkles,
   Wallet,
   Plus,
-  CheckCircle2,
   Send,
   History,
-  PiggyBank
+  PiggyBank,
+  ChevronRight,
+  Search,
+  Upload,
 } from "lucide-react";
 import UseSongs from "../../../hooks/useSongs";
 import UseFilterSongsData from "@/hooks/useFilterSongsData";
@@ -30,8 +26,7 @@ import CreateWalletModal from "@/components/wallet/CreateWalletModal";
 import WithdrawalModal from "@/components/wallet/WithdrawalModal";
 import TransferFundsModal from "@/components/wallet/TransferFundsModal";
 import WalletService from "@/services/wallet";
-import logo from "../../../assets/images/2 - BLANCO.png";
-
+import { useAuth0 } from "@auth0/auth0-react";
 export default function Home() {
   const [selectedTimeframe, setSelectedTimeframe] = useState("7d");
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
@@ -41,6 +36,7 @@ export default function Home() {
   const { songs } = UseSongs(1, 10);
   const { summary } = UseFilterSongsData();
   const { wallet, loading: walletLoading, hasWallet, createWallet, refreshWallet } = useWallet();
+  const { user } = useAuth0();
 
   // Generar categorías mensuales (últimos 6 meses)
   const monthlyCategories = useMemo(() => {
@@ -66,18 +62,17 @@ export default function Home() {
     () => [
       {
         name: "Streams",
+        type: "bar",
         data: monthWeights.map((w) =>
           Math.round(((summary.totalStreams || 0) * w) / weightsSum)
         ),
       },
       {
         name: "Revenue",
+        type: "line",
         data: monthWeights.map((w) =>
           Number(
-            (
-              ((summary.totalNetIncome || 0) * w) /
-              weightsSum
-            ).toFixed(2)
+            (((summary.totalNetIncome || 0) * w) / weightsSum).toFixed(2)
           )
         ),
       },
@@ -87,632 +82,457 @@ export default function Home() {
 
   const options: ApexOptions = {
     chart: {
-      toolbar: {
-        show: false,
-      },
-      background: 'transparent',
-      dropShadow: {
-        enabled: true,
-        color: '#000',
-        top: 18,
-        left: 7,
-        blur: 10,
-        opacity: 0.1
-      }
+      toolbar: { show: false },
+      background: "transparent",
     },
-    dataLabels: {
-      enabled: false,
+    plotOptions: {
+      bar: {
+        borderRadius: 6,
+        borderRadiusApplication: "end",
+        columnWidth: "60%",
+      },
     },
     stroke: {
+      width: [0, 2],
       curve: "smooth",
-      width: 3,
     },
-    colors: ['#8B5CF6', '#06B6D4'],
+    markers: {
+      size: [0, 4],
+    },
+    dataLabels: { enabled: false },
+    colors: ["#111827", "#22C55E"],
     grid: {
-      borderColor: 'rgba(148, 163, 184, 0.1)',
-      strokeDashArray: 5,
-      xaxis: {
-        lines: {
-          show: false
-        }
-      },
-      yaxis: {
-        lines: {
-          show: true
-        }
-      }
+      borderColor: "#F3F4F6",
+      strokeDashArray: 0,
+      xaxis: { lines: { show: false } },
+      yaxis: { lines: { show: true } },
     },
     xaxis: {
       type: "datetime",
       categories: monthlyCategories,
       labels: {
-        style: {
-          fontSize: '12px',
-          colors: '#64748B'
+        style: { fontSize: "11px", colors: "#9CA3AF" },
+        datetimeFormatter: { month: "MMM" },
+      },
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+    },
+    yaxis: [
+      {
+        seriesName: "Streams",
+        labels: {
+          style: { colors: "#9CA3AF", fontSize: "11px" },
+          formatter: (val: number) => {
+            if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M`;
+            if (val >= 1_000) return `${(val / 1_000).toFixed(1)}K`;
+            return String(Math.round(val));
+          },
         },
       },
-    },
-    yaxis: {
-      labels: {
-        style: {
-          colors: '#64748B'
-        }
-      }
-    },
-    tooltip: {
-      x: {
-        format: "MMM yyyy",
+      {
+        seriesName: "Revenue",
+        opposite: true,
+        labels: {
+          style: { colors: "#22C55E", fontSize: "11px" },
+          formatter: (val: number) => `$${val.toFixed(2)}`,
+        },
       },
-      theme: 'dark',
-      style: {
-        fontSize: '12px'
-      }
+    ],
+    tooltip: {
+      x: { format: "MMM yyyy" },
+      theme: "light",
+      style: { fontSize: "12px" },
+      y: [
+        {
+          formatter: (val: number) => {
+            if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M streams`;
+            if (val >= 1_000) return `${(val / 1_000).toFixed(1)}K streams`;
+            return `${Math.round(val)} streams`;
+          },
+        },
+        {
+          formatter: (val: number) => `$${val.toFixed(2)}`,
+        },
+      ],
     },
-    fill: {
-      type: 'gradient',
-      gradient: {
-        shade: 'light',
-        type: "vertical",
-        shadeIntensity: 0.4,
-        gradientToColors: ['rgba(139, 92, 246, 0.1)', 'rgba(6, 182, 212, 0.1)'],
-        inverseColors: false,
-        opacityFrom: 0.8,
-        opacityTo: 0.1,
-        stops: [0, 100]
-      }
-    }
-  };
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30, scale: 0.95 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: {
-        type: "spring",
-        stiffness: 100,
-        damping: 15
-      }
-    }
+    legend: { show: false },
   };
 
   const timeframeOptions = [
-    { value: "7d", label: "7D", active: selectedTimeframe === "7d" },
-    { value: "30d", label: "30D", active: selectedTimeframe === "30d" },
-    { value: "90d", label: "90D", active: selectedTimeframe === "90d" },
-    { value: "1y", label: "1Y", active: selectedTimeframe === "1y" }
+    { value: "7d", label: "7D" },
+    { value: "30d", label: "30D" },
+    { value: "90d", label: "90D" },
+    { value: "1y", label: "1Y" },
   ];
-  
+
+  const formatStreams = (val: number) => {
+    if (val >= 1000000) return `${(val / 1000000).toFixed(1)}M`;
+    if (val >= 1000) return `${(val / 1000).toFixed(1)}K`;
+    return val?.toLocaleString() || "0";
+  };
+
+  const formatCurrency = (val: number) =>
+    `$${val?.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || "0.00"}`;
+
+  const netBalance = summary.totalNetIncome - totalAmount;
+
   return (
     <>
       <DashboardTour />
-      
-      <motion.div 
-        className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-      >
-        <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Hero Header Section */}
-          <motion.div
-            variants={itemVariants}
-            className="text-center mb-12"
+
+      <div className="min-h-screen bg-[#F7F8FA]">
+        <div className="px-6 lg:px-10 py-8 flex flex-col gap-7">
+          {/* Header */}
+          <div
+            className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
             data-tour="hero-header"
           >
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.6 }}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-full border border-purple-200/50 mb-4"
-            >
-              <Sparkles className="w-4 h-4 text-purple-600" />
-              <span className="text-sm font-medium text-purple-700 dark:text-purple-300">Dashboard Analytics</span>
-            </motion.div>
-            
-            <motion.h1 
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-              className="text-4xl sm:text-5xl lg:text-6xl font-bold  text-gray-900  mb-4 flex items-center justify-center gap-2 "
-            >
-              Bienvenidos a <img src={logo} alt="SplitMe" className="w-48 h-12 grayscale" />
-            </motion.h1>
-            
-            <motion.p 
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.6 }}
-              className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-6"
-            >
-              Aquí podrás ver el rendimiento de tus canciones, analizar tendencias y descubrir insights para crecer tu audiencia
-            </motion.p>
+            <div className="flex flex-col gap-1">
+              <h1 className="text-2xl font-bold text-gray-900">
+                Welcome back, {user?.name}
+              </h1>
+              <p className="text-sm text-gray-500">
+                Here's what's happening with your music
+              </p>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <button className="flex items-center gap-2 px-3.5 py-2.5 bg-white border border-gray-200 rounded-[10px] text-gray-400 text-[13px] hover:border-gray-300 transition-colors">
+                <Search className="w-4 h-4" />
+                <span>Search...</span>
+              </button>
+              <Link
+                to="/panel/music"
+                className="flex items-center gap-2 px-4 py-2.5 bg-orange-500 text-white rounded-[10px] text-[13px] font-semibold hover:bg-orange-600 transition-colors"
+              >
+                <Upload className="w-4 h-4" />
+                Upload Song
+              </Link>
+            </div>
+          </div>
 
-            {/* Tour Trigger Button */}
-            <motion.button
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.8, duration: 0.5 }}
-              onClick={() => {
-                // Trigger tour restart by clearing localStorage and reloading
-                localStorage.removeItem('dashboard-tour-completed');
-                window.location.reload();
-              }}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
-            >
-              <Sparkles className="w-5 h-5" />
-              Iniciar Tour del Dashboard
-            </motion.button>
-          </motion.div>
-
-          {/* Quick Stats Cards */}
-          <motion.div
-            variants={itemVariants}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
+          {/* Stats Row */}
+          <div
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
             data-tour="stats-cards"
           >
-            {[
-              { 
-                title: "Total Streams", 
-                value: summary.totalStreams >= 1000000 
-                  ? `${(summary.totalStreams / 1000000).toFixed(1)}M`
-                  : summary.totalStreams >= 1000
-                  ? `${(summary.totalStreams / 1000).toFixed(1)}K`
-                  : summary.totalStreams?.toLocaleString() || "0", 
-                change: "+12.5%", 
-                icon: Play, 
-                color: "from-blue-500 to-cyan-500",
-                bgColor: "from-blue-500/10 to-cyan-500/10"
-              },
-              { 
-                title: "Total Revenue", 
-                value: `$${summary.totalNetIncome?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || "0.00"}`, 
-                change: "+8.2%", 
-                icon: DollarSign, 
-                color: "from-green-500 to-emerald-500",
-                bgColor: "from-green-500/10 to-emerald-500/10"
-              },
-              { 
-                title: "Total Songs", 
-                value: summary.songsWithMatches?.toLocaleString() || "0", 
-                change: "+15.3%", 
-                icon: Music, 
-                color: "from-purple-500 to-pink-500",
-                bgColor: "from-purple-500/10 to-pink-500/10"
-              },
-              { 
-                title: "Net Balance", 
-                value: `$${(summary.totalNetIncome - totalAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || "0.00"}`, 
-                change: "+2.1%", 
-                icon: PiggyBank, 
-                color: "from-orange-500 to-red-500",
-                bgColor: "from-orange-500/10 to-red-500/10"
-              }
-            ].map((stat, index) => (
-              <motion.div
-                key={stat.title}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 * index }}
-                whileHover={{ y: -8, scale: 1.02 }}
-                className="group relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-white/20 overflow-hidden"
-              >
-                {/* Background Effects */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${stat.bgColor} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-                <div className={`absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br ${stat.color} rounded-full blur-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-500`} />
-                
-                <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className={`w-12 h-12 bg-gradient-to-br ${stat.color} rounded-2xl flex items-center justify-center shadow-lg`}>
-                      <stat.icon className="w-6 h-6 text-white" />
-                    </div>
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.2 + index * 0.1 }}
-                      className="flex items-center gap-1 text-green-600 text-sm font-medium"
-                    >
-                      <TrendingUp className="w-4 h-4" />
-                      {stat.change}
-                    </motion.div>
-                  </div>
-                  
-                  <h3 className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">{stat.title}</h3>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+            {/* Total Streams */}
+            <div className="bg-white rounded-xl p-5 border border-gray-200">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-medium text-gray-500">Total Streams</span>
+                <Play className="w-4 h-4 text-gray-400" />
+              </div>
+              <p className="text-[28px] font-bold text-gray-900 leading-tight">
+                {formatStreams(summary.totalStreams)}
+              </p>
+              <span className="text-xs font-medium text-green-500 mt-1 inline-block">
+                &uarr; 12.5%
+              </span>
+            </div>
 
-          {/* Main Content Grid */}
-          <div className="grid grid-cols-12 gap-8">
-            {/* Performance Analytics Chart */}
-            <motion.div
-              variants={itemVariants}
-              className="col-span-12 xl:col-span-8"
+            {/* Total Revenue */}
+            <div className="bg-white rounded-xl p-5 border border-gray-200">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-medium text-gray-500">Total Revenue</span>
+                <DollarSign className="w-4 h-4 text-green-500" />
+              </div>
+              <p className="text-[28px] font-bold text-green-500 leading-tight">
+                {formatCurrency(summary.totalNetIncome)}
+              </p>
+              <span className="text-xs font-medium text-green-500 mt-1 inline-block">
+                &uarr; 8.2%
+              </span>
+            </div>
+
+            {/* Total Songs */}
+            <div className="bg-white rounded-xl p-5 border border-gray-200">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-medium text-gray-500">Total Songs</span>
+                <Music className="w-4 h-4 text-gray-400" />
+              </div>
+              <p className="text-[28px] font-bold text-gray-900 leading-tight">
+                {summary.songsWithMatches?.toLocaleString() || "0"}
+              </p>
+              <span className="text-xs font-medium text-green-500 mt-1 inline-block">
+                &uarr; 15.3%
+              </span>
+            </div>
+
+            {/* Net Balance */}
+            <div className="bg-white rounded-xl p-5 border border-gray-200">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-medium text-gray-500">Net Balance</span>
+                <PiggyBank className="w-4 h-4 text-gray-400" />
+              </div>
+              <p className="text-[28px] font-bold text-gray-900 leading-tight">
+                {formatCurrency(netBalance)}
+              </p>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-xs font-medium text-green-500">
+                  +{formatCurrency(summary.totalNetIncome)}
+                </span>
+                <span className="text-xs font-medium text-red-500">
+                  &ndash;{formatCurrency(totalAmount)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Main Row: Chart + Wallet */}
+          <div className="flex flex-col xl:flex-row gap-4">
+            {/* Performance Chart */}
+            <div
+              className="flex-1 bg-white rounded-xl p-6 border border-gray-200"
               data-tour="analytics-chart"
             >
-              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
-                <div className="p-6 lg:p-8">
-                  {/* Chart Header */}
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-                    <div className="space-y-2">
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Performance Analytics</h2>
-                      <p className="text-gray-600 dark:text-gray-300">Track your music performance over time</p>
-                    </div>
-                     
-                    {/* Timeframe Selector */}
-                    <div className="flex items-center gap-2 bg-gray-100/80 dark:bg-gray-700/80 rounded-2xl p-1">
-                      {timeframeOptions.map((option) => (
-                        <motion.button
-                          key={option.value}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                            option.active
-                              ? "bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-md"
-                              : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-                          }`}
-                          onClick={() => setSelectedTimeframe(option.value)}
-                        >
-                          {option.label}
-                        </motion.button>
-                      ))}
-                    </div>
+              <div className="flex flex-col gap-5">
+                {/* Chart Header */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                  <div className="flex flex-col gap-0.5">
+                    <h2 className="text-base font-semibold text-gray-900">Performance</h2>
+                    <p className="text-xs text-gray-400">Streams & revenue over time</p>
                   </div>
-                  
-                  {/* Chart Legend */}
-                  <div className="flex flex-wrap gap-3 mb-6">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-                      <span className="text-sm text-gray-600 dark:text-gray-300">Streams</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-cyan-500 rounded-full"></div>
-                      <span className="text-sm text-gray-600 dark:text-gray-300">Revenue</span>
-                    </div>
-                  </div>
-                  
-                  {/* Chart */}
-                  <div className="h-[350px]">
-                    <ReactApexChart
-                      options={options}
-                      series={series}
-                      type="area"
-                      height="100%"
-                      width="100%"
-                    />
-                  </div>
-                  
-                  {/* Mini Stats */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
-                    {[
-                      { 
-                        label: "Total Streams", 
-                        value: summary.totalStreams >= 1000000 
-                          ? `${(summary.totalStreams / 1000000).toFixed(1)}M`
-                          : summary.totalStreams >= 1000
-                          ? `${(summary.totalStreams / 1000).toFixed(1)}K`
-                          : summary.totalStreams?.toLocaleString() || "0", 
-                        icon: Play, 
-                        color: "text-blue-600", 
-                        bgColor: "bg-blue-100" 
-                      },
-                      { 
-                        label: "Total Songs", 
-                        value: summary.songsWithMatches?.toLocaleString() || "0", 
-                        icon: Music, 
-                        color: "text-purple-600", 
-                        bgColor: "bg-purple-100" 
-                      },
-                      { 
-                        label: "Total Revenue", 
-                        value: `$${summary.totalNetIncome?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || "0.00"}`, 
-                        icon: DollarSign, 
-                        color: "text-green-600", 
-                        bgColor: "bg-green-100" 
-                      }
-                    ].map((stat, index) => (
-                      <motion.div
-                        key={stat.label}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 + index * 0.1 }}
-                        whileHover={{ y: -4, scale: 1.02 }}
-                        className="bg-gray-50/80 dark:bg-gray-700/80 rounded-2xl p-4 text-center group hover:bg-gray-100/80 dark:hover:bg-gray-600/80 transition-colors duration-200"
+                  <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
+                    {timeframeOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        className={`px-3.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                          selectedTimeframe === option.value
+                            ? "bg-white text-gray-900 shadow-sm"
+                            : "text-gray-500 hover:text-gray-700"
+                        }`}
+                        onClick={() => setSelectedTimeframe(option.value)}
                       >
-                        <div className={`w-10 h-10 ${stat.bgColor} rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-200`}>
-                          <stat.icon className={`w-5 h-5 ${stat.color}`} />
-                        </div>
-                        <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">{stat.label}</p>
-                        <p className="text-lg font-bold text-gray-900 dark:text-white">{stat.value}</p>
-                      </motion.div>
+                        {option.label}
+                      </button>
                     ))}
                   </div>
                 </div>
-              </div>
-            </motion.div>
 
-            {/* Balance & Payment Section */}
-            <motion.div
-              variants={itemVariants}
-              className="col-span-12 xl:col-span-4"
-              data-tour="balance-section"
-            >
-              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
-            
-                
-                {/* Wallet Section */}
-                <div className="p-6 lg:p-8 bg-gradient-to-r from-gray-50/80 to-blue-50/80 dark:from-gray-700/80 dark:to-blue-900/20">
-                  {walletLoading ? (
-                    <div className="flex items-center justify-center py-8">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                    </div>
-                  ) : hasWallet && wallet ? (
-                    // Usuario tiene wallet
-                    <>
-                      {/* Wallet Status Badge */}
-                      <div className="mb-6">
-                        <motion.div
-                          initial={{ scale: 0.95, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 dark:from-green-500/20 dark:to-emerald-500/20 rounded-2xl p-4 border-2 border-green-500/30"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-                              <CheckCircle2 className="w-6 h-6 text-white" />
-                            </div>
-                            <div className="flex-1">
-                              <p className="text-base font-bold text-gray-900 dark:text-white">Wallet Connected</p>
-                              <p className="text-sm text-green-600 dark:text-green-400 font-medium">✓ Active & Verified</p>
-                            </div>
-                          </div>
-                        </motion.div>
-                      </div>
+                {/* Chart Legend */}
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 bg-gray-900 rounded-sm" />
+                    <span className="text-[11px] text-gray-500">Streams</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 bg-green-500 rounded-sm" />
+                    <span className="text-[11px] text-gray-500">Revenue</span>
+                  </div>
+                </div>
 
-                      {/* Wallet Card */}
-                      <div className="mb-6">
-                        <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl p-6 shadow-xl relative overflow-hidden">
-                          {/* Decorative elements */}
-                          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
-                          <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12"></div>
-                          
-                          <div className="relative">
-                            <div className="flex items-center justify-between mb-4">
-                              <Wallet className="w-8 h-8 text-white/80" />
-                              <div className="px-3 py-1 bg-white/20 rounded-full backdrop-blur-sm">
-                                <span className="text-xs font-semibold text-white uppercase tracking-wide">
-                                  {wallet?.status || 'Active'}
-                                </span>
-                              </div>
-                            </div>
-                            
-                            <div className="space-y-3">
-                              {/* Wallet ID */}
-                              <div>
-                                <p className="text-xs text-white/70 uppercase tracking-wider mb-1">Wallet ID</p>
-                                <p className="text-sm font-mono text-white font-medium">
-                                  {wallet?.id?.substring(0, 24)}...
-                                </p>
-                              </div>
-                              
-                              {/* Balance */}
-                              {wallet?.accounts?.[0]?.balance !== undefined && (
-                                <div className="pt-3 border-t border-white/20">
-                                  <p className="text-xs text-white/70 uppercase tracking-wider mb-1">Available Balance</p>
-                                  <div className="flex items-baseline gap-2">
-                                    <span className="text-3xl font-bold text-white">
-                                      ${Number(wallet.accounts[0].balance || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                    </span>
-                                    <span className="text-sm text-white/70">USD</span>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                            
-                            {/* Card chip decoration */}
-                            <div className="absolute bottom-4 right-4">
-                              <div className="w-10 h-8 bg-gradient-to-br from-yellow-300 to-yellow-500 rounded opacity-80"></div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Quick Actions */}
-                      <div className="space-y-3">
-                        <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Quick Actions</p>
-                        
-                        <motion.button
-                          onClick={() => setIsTransferModalOpen(true)}
-                          whileHover={{ scale: 1.02, y: -2 }}
-                          whileTap={{ scale: 0.98 }}
-                          className="w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-between group"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                              <Send className="w-5 h-5" />
-                            </div>
-                            <div className="text-left">
-                              <p className="text-sm font-semibold">Send Money</p>
-                              <p className="text-xs text-white/70">Transfer to another user</p>
-                            </div>
-                          </div>
-                          <ArrowUpRight className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                        </motion.button>
-
-                        <motion.button
-                          onClick={() => setIsWithdrawalModalOpen(true)}
-                          whileHover={{ scale: 1.02, y: -2 }}
-                          whileTap={{ scale: 0.98 }}
-                          className="w-full px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-between group"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                              <DollarSign className="w-5 h-5" />
-                            </div>
-                            <div className="text-left">
-                              <p className="text-sm font-semibold">Withdraw Funds</p>
-                              <p className="text-xs text-white/70">Transfer to bank</p>
-                            </div>
-                          </div>
-                          <ArrowUpRight className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                        </motion.button>
-                        
-                        <motion.button
-                          whileHover={{ scale: 1.02, y: -2 }}
-                          whileTap={{ scale: 0.98 }}
-                          className="w-full px-4 py-3 bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-500 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between group"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
-                              <History className="w-5 h-5 text-white" />
-                            </div>
-                            <div className="text-left">
-                              <p className="text-sm font-semibold text-gray-900 dark:text-white">View History</p>
-                              <p className="text-xs text-gray-600 dark:text-gray-400">Transaction records</p>
-                            </div>
-                          </div>
-                          <ArrowUpRight className="w-5 h-5 text-gray-400 group-hover:text-blue-500 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
-                        </motion.button>
-                      </div>
-
-         
-                    </>
-                  ) : (
-                    // Usuario NO tiene wallet
-                    <>
-                      <div className="text-center mb-6">
-                        <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                          <Wallet className="w-8 h-8 text-white" />
-                        </div>
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-                          No Wallet Connected
-                        </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          Create your payment wallet to start receiving payments
-                        </p>
-                      </div>
-
-                      <motion.button
-                        onClick={() => setIsWalletModalOpen(true)}
-                        className="w-full px-6 py-4 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3 group"
-                        whileHover={{ scale: 1.02, y: -2 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-200" />
-                        Create Wallet
-                      </motion.button>
-
-                      <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-                        <p className="text-xs text-blue-600 dark:text-blue-400 text-center">
-                          Secure payments powered by Rapyd
-                        </p>
-                      </div>
-                    </>
-                  )}
+                {/* Chart */}
+                <div className="h-[180px]">
+                  <ReactApexChart
+                    options={options}
+                    series={series}
+                    type="line"
+                    height="100%"
+                    width="100%"
+                  />
                 </div>
               </div>
-            </motion.div>
+            </div>
 
-            {/* Platforms Section */}
-            <motion.div
-              variants={itemVariants}
-              className="col-span-12 lg:col-span-4"
+            {/* Wallet */}
+            <div
+              className="w-full xl:w-[360px] bg-white rounded-xl p-6 border border-gray-200 flex flex-col gap-5"
+              data-tour="balance-section"
+            >
+              {walletLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" />
+                </div>
+              ) : hasWallet && wallet ? (
+                <>
+                  {/* Wallet Header */}
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-base font-semibold text-gray-900">Wallet</h2>
+                    <span className="px-2.5 py-1 bg-green-50 text-green-500 text-[11px] font-semibold rounded-full">
+                      Active
+                    </span>
+                  </div>
+
+                  {/* Balance */}
+                  <div className="flex flex-col gap-1 py-4 border-y border-gray-100">
+                    <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">
+                      Available Balance
+                    </span>
+                    <span className="text-[32px] font-bold text-green-500 leading-tight">
+                      ${Number(wallet.accounts?.[0]?.balance || 0).toLocaleString("en-US", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </span>
+                    <span className="text-[11px] text-gray-400">USD</span>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex flex-col gap-2">
+                    <button
+                      onClick={() => setIsTransferModalOpen(true)}
+                      className="w-full flex items-center justify-between px-4 py-3 bg-orange-500 text-white rounded-[10px] hover:bg-orange-600 transition-colors"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Send className="w-4 h-4" />
+                        <span className="text-[13px] font-semibold">Send Money</span>
+                      </div>
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+
+                    <button
+                      onClick={() => setIsWithdrawalModalOpen(true)}
+                      className="w-full flex items-center justify-between px-4 py-3 bg-[#F7F8FA] border border-gray-200 rounded-[10px] hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <DollarSign className="w-4 h-4 text-gray-500" />
+                        <span className="text-[13px] font-medium text-gray-700">Withdraw Funds</span>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-gray-400" />
+                    </button>
+
+                    <button className="w-full flex items-center justify-between px-4 py-3 bg-[#F7F8FA] border border-gray-200 rounded-[10px] hover:bg-gray-100 transition-colors">
+                      <div className="flex items-center gap-2.5">
+                        <History className="w-4 h-4 text-gray-500" />
+                        <span className="text-[13px] font-medium text-gray-700">View History</span>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-gray-400" />
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* No Wallet */}
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-base font-semibold text-gray-900">Wallet</h2>
+                  </div>
+                  <div className="flex flex-col items-center text-center py-6 gap-3">
+                    <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center">
+                      <Wallet className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="text-sm font-semibold text-gray-900">No Wallet Connected</h3>
+                    <p className="text-xs text-gray-500">
+                      Create your payment wallet to start receiving payments
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setIsWalletModalOpen(true)}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-orange-500 text-white rounded-[10px] text-[13px] font-semibold hover:bg-orange-600 transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Create Wallet
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Bottom Row: Platforms + Top Songs */}
+          <div className="flex flex-col xl:flex-row gap-4">
+            {/* Platforms */}
+            <div
+              className="w-full xl:w-[360px]"
               data-tour="platforms-section"
             >
               <PlatformsCard />
-            </motion.div>
+            </div>
 
-            {/* Top Songs Section */}
-            <motion.div
-              variants={itemVariants}
-              className="col-span-12 lg:col-span-8"
+            {/* Top Songs */}
+            <div
+              className="flex-1 bg-white rounded-xl p-6 border border-gray-200"
               data-tour="top-songs"
             >
-              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
-                <div className="p-6 lg:p-8">
-                  {/* Header */}
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-                    <div className="space-y-2">
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Top Songs</h2>
-                      <p className="text-gray-600 dark:text-gray-300">Your best performing tracks this month</p>
-                    </div>
-                     
-                    <div className="flex items-center gap-3">
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="p-2 rounded-xl bg-gray-100/80 dark:bg-gray-700/80 text-gray-600 dark:text-gray-300 hover:bg-gray-200/80 dark:hover:bg-gray-600/80 transition-colors"
-                      >
-                        <Filter className="w-5 h-5" />
-                      </motion.button>
-                      
-                      <Link to="/panel/music" className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white text-sm font-semibold rounded-xl hover:from-purple-600 hover:to-blue-600 transition-all duration-200 shadow-lg hover:shadow-xl">
-                        View all
-                        <ArrowUpRight className="w-4 h-4" />
-                      </Link>
-                    </div>
-                  </div>
-
-                  {/* Songs Grid */}
-                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                    {songs.length > 0 ? (
-                      <>
-                        {songs.slice(0, 2).map((song, index) => (
-                          <motion.div
-                            key={song._id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.1 * index }}
-                            whileHover={{ y: -4, scale: 1.02 }}
-                            className="transform transition-all duration-200"
-                          >
-                            <CardSong song={song} />
-                          </motion.div>
-                        ))}
-                      </>
-                    ) : (
-                      <div className="col-span-2 flex flex-col items-center justify-center py-16 px-4">
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.8 }}
-                          className="w-20 h-20 bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/20 dark:to-blue-900/20 rounded-full flex items-center justify-center mb-6"
-                        >
-                          <Music className="w-10 h-10 text-purple-600 dark:text-purple-400" />
-                        </motion.div>
-                        <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-3">No songs yet</h3>
-                        <p className="text-gray-500 dark:text-gray-400 text-center max-w-sm mb-6">
-                          Upload your first song to start tracking your music performance and analytics
-                        </p>
-                        <Link 
-                          to="/panel/music" 
-                          className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold rounded-xl hover:from-purple-600 hover:to-blue-600 transition-all duration-200 shadow-lg hover:shadow-xl"
-                        >
-                          <Music className="w-5 h-5" />
-                          Upload song
-                        </Link>
-                      </div>
-                    )}
-                  </div>
+              <div className="flex flex-col gap-4">
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                  <h2 className="text-base font-semibold text-gray-900">Top Songs</h2>
+                  <Link
+                    to="/panel/music"
+                    className="text-xs font-medium text-orange-500 hover:text-orange-600 transition-colors"
+                  >
+                    View all
+                  </Link>
                 </div>
+
+                {/* Songs Table */}
+                {songs.length > 0 ? (
+                  <div className="flex flex-col">
+                    {/* Table Header */}
+                    <div className="flex items-center py-2.5 border-b border-gray-100">
+                      <div className="flex-1">
+                        <span className="text-[11px] font-semibold text-gray-400 uppercase">Song</span>
+                      </div>
+                      <div className="w-[100px]">
+                        <span className="text-[11px] font-semibold text-gray-400 uppercase">Streams</span>
+                      </div>
+                      <div className="w-[100px]">
+                        <span className="text-[11px] font-semibold text-gray-400 uppercase">Revenue</span>
+                      </div>
+                      <div className="w-[80px]">
+                        <span className="text-[11px] font-semibold text-gray-400 uppercase">Status</span>
+                      </div>
+                    </div>
+
+                    {/* Table Rows */}
+                    {songs.slice(0, 4).map((song, index) => (
+                      <div
+                        key={song._id}
+                        className="flex items-center py-3 border-b border-gray-100 last:border-b-0"
+                      >
+                        <div className="flex-1 flex flex-col gap-0.5 min-w-0">
+                          <span className="text-[13px] font-semibold text-gray-900 truncate">
+                            {song.trackTitle || `Song ${index + 1}`}
+                          </span>
+                          <span className="text-[11px] text-gray-400 truncate">
+                            {song.artistName || ""}
+                          </span>
+                        </div>
+                        <div className="w-[100px]">
+                          <span className="text-[13px] font-medium text-gray-900">
+                            {formatStreams(song.totalStreams || 0)}
+                          </span>
+                        </div>
+                        <div className="w-[100px]">
+                          <span className="text-[13px] font-medium text-green-500">
+                            {formatCurrency(song.totalNetIncome || 0)}
+                          </span>
+                        </div>
+                        <div className="w-[80px]">
+                          <span
+                            className={`inline-block px-2 py-0.5 text-[10px] font-semibold rounded-full ${
+                              index === 0
+                                ? "bg-amber-100 text-amber-700"
+                                : "bg-gray-100 text-gray-500"
+                            }`}
+                          >
+                            {index === 0 ? "Trending" : "Stable"}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-12 gap-3">
+                    <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center">
+                      <Music className="w-7 h-7 text-gray-400" />
+                    </div>
+                    <h3 className="text-sm font-semibold text-gray-700">No songs yet</h3>
+                    <p className="text-xs text-gray-400 text-center max-w-xs">
+                      Upload your first song to start tracking your music performance
+                    </p>
+                    <Link
+                      to="/panel/music"
+                      className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white text-xs font-semibold rounded-lg hover:bg-orange-600 transition-colors"
+                    >
+                      <Music className="w-4 h-4" />
+                      Upload song
+                    </Link>
+                  </div>
+                )}
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Modals */}
       <CreateWalletModal
@@ -747,12 +567,11 @@ export default function Home() {
             recipientEmail,
             note,
           });
-          
+
           if (!result.error) {
-            // Actualizar el balance de la wallet
             refreshWallet();
           }
-          
+
           return result;
         }}
       />

@@ -1,4 +1,3 @@
-import { AnimatePresence, motion } from "framer-motion";
 import {
   Music,
   Trash2,
@@ -12,6 +11,7 @@ import {
   ChevronDown,
   Save,
   Sparkles,
+  AlertCircle,
 } from "lucide-react";
 import Select from "react-select";
 import { countries, platforms } from "@/const";
@@ -24,7 +24,6 @@ import {
 } from "@/services/splits";
 import LocalStorageService from "@/services/localstorage";
 
-// Definir interfaz para el objeto song
 interface Song {
   id?: string;
   _id?: string;
@@ -58,7 +57,7 @@ interface OwnerSplitModalProps {
   isOpen: boolean;
   onClose: () => void;
   songId: string;
-  song: Song; 
+  song: Song;
   onSplitCreated?: () => void;
 }
 
@@ -70,6 +69,94 @@ interface OwnerFormData {
   selectedPlatforms: { value: string; label: string }[];
   splitConditions: SplitCondition[];
   type: "general" | "specific";
+}
+
+const toSelectOptions = (
+  values: string[],
+  opts: { value: string; label: string }[]
+): { value: string; label: string }[] =>
+  (values || []).map((v) => opts.find((o) => o.value === v) ?? { value: v, label: v });
+
+const selectStyles = {
+  control: (base: Record<string, unknown>) => ({
+    ...base,
+    border: "1px solid #e5e7eb",
+    borderRadius: "8px",
+    padding: "2px",
+    boxShadow: "none",
+    backgroundColor: "white",
+    "&:hover": { border: "1px solid #F97316" },
+    "&:focus-within": { border: "1px solid #F97316" },
+  }),
+  option: (
+    base: Record<string, unknown>,
+    { isSelected, isFocused }: { isSelected: boolean; isFocused: boolean }
+  ) => ({
+    ...base,
+    backgroundColor: isSelected ? "#F97316" : isFocused ? "#fff7ed" : "white",
+    color: isSelected ? "white" : "#374151",
+    fontSize: "13px",
+  }),
+  multiValue: (base: Record<string, unknown>) => ({
+    ...base,
+    backgroundColor: "#fff7ed",
+    borderRadius: "6px",
+  }),
+  multiValueLabel: (base: Record<string, unknown>) => ({
+    ...base,
+    color: "#c2410c",
+    fontWeight: "500",
+    fontSize: "12px",
+  }),
+  multiValueRemove: (base: Record<string, unknown>) => ({
+    ...base,
+    color: "#c2410c",
+    "&:hover": { backgroundColor: "#F97316", color: "white" },
+  }),
+  placeholder: (base: Record<string, unknown>) => ({
+    ...base,
+    fontSize: "13px",
+    color: "#9ca3af",
+  }),
+};
+
+type FilterType = "all" | "except" | "only";
+
+function FilterSegment({
+  value,
+  onChange,
+  labels,
+  name,
+}: {
+  value: FilterType;
+  onChange: (v: FilterType) => void;
+  labels: { all: string; except: string; only: string };
+  name: string;
+}) {
+  const options: { val: FilterType; label: string }[] = [
+    { val: "all", label: labels.all },
+    { val: "except", label: labels.except },
+    { val: "only", label: labels.only },
+  ];
+  return (
+    <div className="flex rounded-lg border border-gray-200 bg-gray-50 p-0.5 gap-0.5">
+      {options.map((opt) => (
+        <button
+          key={opt.val}
+          type="button"
+          onClick={() => onChange(opt.val)}
+          className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+            value === opt.val
+              ? "bg-white text-gray-900 border border-gray-200"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+          aria-label={`${name} ${opt.label}`}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
 }
 
 export default function OwnerSplitModal({
@@ -88,8 +175,9 @@ export default function OwnerSplitModal({
     splitConditions: [],
     type: "general",
   });
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isGeneralExpanded, setIsGeneralExpanded] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
   const currentUser = LocalStorageService.getItem("user");
@@ -99,38 +187,74 @@ export default function OwnerSplitModal({
     return () => setMounted(false);
   }, []);
 
-  // Toggle expanded state
-  const toggleExpanded = () => {
-    setIsExpanded(!isExpanded);
-  };
+  useEffect(() => {
+    if (!isOpen) return;
+    setErrorMessage(null);
 
-  // Actualizar datos del formulario
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const conditions: SplitCondition[] = (song as any)?.ownerId?.split?.conditions ?? [];
+
+    if (conditions.length === 0) {
+      setOwnerForm({
+        percentage: "",
+        countriesType: "all",
+        selectedCountries: [],
+        platformsType: "all",
+        selectedPlatforms: [],
+        splitConditions: [],
+        type: "general",
+      });
+      setIsGeneralExpanded(true);
+      return;
+    }
+
+    const general = conditions.find((c) => c.type === "general");
+    const specifics = conditions.filter((c) => c.type === "specific");
+
+    setOwnerForm({
+      percentage: general ? String(general.percentage) : "",
+      countriesType: (general?.countriesType as FilterType) || "all",
+      selectedCountries: toSelectOptions(
+        (general?.selectedCountries as string[]) || [],
+        countries
+      ),
+      platformsType: (general?.platformsType as FilterType) || "all",
+      selectedPlatforms: toSelectOptions(
+        (general?.selectedPlatforms as string[]) || [],
+        platforms
+      ),
+      splitConditions: specifics.map((c) => ({
+        ...c,
+        selectedCountries: toSelectOptions(
+          (c.selectedCountries as string[]) || [],
+          countries
+        ),
+        selectedPlatforms: toSelectOptions(
+          (c.selectedPlatforms as string[]) || [],
+          platforms
+        ),
+      })) as unknown as SplitCondition[],
+      type: "general",
+    });
+    setIsGeneralExpanded(true);
+  }, [isOpen]);
+
   const updateOwnerForm = (
     field: keyof OwnerFormData,
     value: string | readonly { value: string; label: string }[]
   ) => {
-    setOwnerForm((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setOwnerForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Actualizar condiciones específicas de split
   const updateSplitCondition = (
     conditionIndex: number,
     field: string,
-    value:
-      | string
-      | readonly { value: string; label: string }[]
-      | readonly string[]
+    value: string | readonly { value: string; label: string }[] | readonly string[]
   ) => {
     setOwnerForm((prev) => ({
       ...prev,
-      splitConditions: (prev.splitConditions || []).map(
-        (condition, index) =>
-          index === conditionIndex
-            ? { ...condition, [field]: value }
-            : condition
+      splitConditions: prev.splitConditions.map((condition, index) =>
+        index === conditionIndex ? { ...condition, [field]: value } : condition
       ),
     }));
   };
@@ -155,841 +279,495 @@ export default function OwnerSplitModal({
   const removeSplitCondition = (conditionIndex: number) => {
     setOwnerForm((prev) => ({
       ...prev,
-      splitConditions: prev.splitConditions.filter(
-        (_, index) => index !== conditionIndex
-      ),
+      splitConditions: prev.splitConditions.filter((_, i) => i !== conditionIndex),
     }));
   };
 
-  // Improved saveOwnerSplit function with additional validation
-const saveOwnerSplit = async () => {
-  try {
+  const saveOwnerSplit = async () => {
+    setErrorMessage(null);
     setIsLoading(true);
 
-    // Validar datos básicos
-    if (!songId) {
-      alert('Error: ID de canción no válido');
-      return;
-    }
-
-    if (!currentUser?.id) {
-      alert('Error: No se pudo obtener la información del usuario. Por favor, inicia sesión de nuevo.');
-      return;
-    }
-
-    // Crear las condiciones desde el formulario
-    const conditions: SplitCondition[] = [];
-
-    // Agregar condición general si hay porcentaje
-    if (ownerForm.percentage && parseFloat(ownerForm.percentage) > 0) {
-      const generalCondition = {
-        percentage: parseFloat(ownerForm.percentage),
-        selectedCountries: ownerForm.selectedCountries.map(c => c.value),
-        countriesType: ownerForm.countriesType,
-        selectedPlatforms: ownerForm.selectedPlatforms.map(p => p.value),
-        platformsType: ownerForm.platformsType,
-        type: "general" as const,
-      };
-      
-      // Validar que el porcentaje sea válido
-      if (generalCondition.percentage <= 0 || generalCondition.percentage > 100) {
-        alert('El porcentaje debe estar entre 0 y 100');
+    try {
+      if (!songId) {
+        setErrorMessage("ID de canción no válido.");
         return;
       }
-      
-      conditions.push(generalCondition);
-    }
-
-    // Agregar condiciones específicas
-    ownerForm.splitConditions.forEach((condition, index) => {
-      const percentage = typeof condition.percentage === 'string' ? parseFloat(condition.percentage) : condition.percentage;
-      
-      if (percentage <= 0 || percentage > 100) {
-        alert(`El porcentaje de la condición específica #${index + 1} debe estar entre 0 y 100`);
+      if (!currentUser?.id) {
+        setErrorMessage("No se pudo obtener la información del usuario. Por favor, inicia sesión de nuevo.");
         return;
       }
 
-      const specificCondition = {
-        fromDate: condition.fromDate,
-        toDate: condition.toDate,
-        percentage: percentage,
-        selectedCountries: Array.isArray(condition.selectedCountries) 
-          ? condition.selectedCountries.map(c => typeof c === 'string' ? c : (c as { value: string; label: string }).value)
-          : [],
-        countriesType: condition.countriesType || "all" as const,
-        selectedPlatforms: Array.isArray(condition.selectedPlatforms)
-          ? condition.selectedPlatforms.map(p => typeof p === 'string' ? p : (p as { value: string; label: string }).value)
-          : [],
-        platformsType: condition.platformsType || "all" as const,
-        type: "specific" as const,
-      };
-      
-      conditions.push(specificCondition);
-    });
+      const conditions: SplitCondition[] = [];
 
-    // Verificar que hay al menos una condición válida
-    if (conditions.length === 0) {
-      alert('Por favor, configura al menos una condición (porcentaje general o condición específica)');
-      return;
-    }
-
-    // Crear el objeto con la estructura correcta
-    const ownerSplitData: CreateSplitOwnerRequest = {
-      songId: songId,
-      conditions: conditions
-    };
-
-    console.log('=== DEBUGGING OWNER SPLIT CREATION ===');
-    console.log('Song ID:', songId);
-    console.log('Current User:', currentUser);
-    console.log('Owner Form Data:', ownerForm);
-    console.log('Processed Conditions:', conditions);
-    console.log('Final Request Data:', JSON.stringify(ownerSplitData, null, 2));
-    console.log('=== END DEBUG INFO ===');
-
-    // Enviar el objeto directamente
-    const response = await splitsService.createOwnerSplit(ownerSplitData);
-    console.log('Owner split created successfully:', response);
-    
-    if (onSplitCreated) {
-      onSplitCreated();
-    }
-    
-    onClose();
-
-  } catch (error: any) {
-    console.error('=== ERROR CREATING OWNER SPLIT ===');
-    console.error('Full error object:', error);
-    
-    if (error.response) {
-      console.error('Response data:', error.response.data);
-      console.error('Response status:', error.response.status);
-      console.error('Response headers:', error.response.headers);
-      
-      // Try to extract meaningful error message
-      let errorMessage = 'Error desconocido del servidor';
-      
-      if (error.response.data) {
-        if (typeof error.response.data === 'string') {
-          errorMessage = error.response.data;
-        } else if (error.response.data.message) {
-          errorMessage = error.response.data.message;
-        } else if (error.response.data.error) {
-          errorMessage = error.response.data.error;
-        } else if (error.response.data.details) {
-          errorMessage = JSON.stringify(error.response.data.details);
+      // Condición general
+      if (ownerForm.percentage && parseFloat(ownerForm.percentage) > 0) {
+        const pct = parseFloat(ownerForm.percentage);
+        if (pct <= 0 || pct > 100) {
+          setErrorMessage("El porcentaje general debe estar entre 1 y 100.");
+          return;
         }
+        conditions.push({
+          percentage: pct,
+          selectedCountries: ownerForm.selectedCountries.map((c) => c.value),
+          countriesType: ownerForm.countriesType,
+          selectedPlatforms: ownerForm.selectedPlatforms.map((p) => p.value),
+          platformsType: ownerForm.platformsType,
+          type: "general",
+        });
       }
-      
-      alert(`Error del servidor (${error.response.status}): ${errorMessage}`);
-    } else if (error.request) {
-      console.error('Request error:', error.request);
-      alert('Error de conexión. Por favor, verifica tu conexión a internet.');
-    } else {
-      console.error('Error message:', error.message);
-      alert(`Error: ${error.message}`);
-    }
-    console.error('=== END ERROR INFO ===');
-  } finally {
-    setIsLoading(false);
-  }
-};
 
-  // Custom styles for react-select
-  const selectStyles = {
-    control: (base: Record<string, unknown>) => ({
-      ...base,
-      border: "1px solid #e5e7eb",
-      borderRadius: "12px",
-      padding: "4px",
-      boxShadow: "none",
-      "&:hover": {
-        border: "1px solid #f59e0b",
-      },
-      "&:focus-within": {
-        border: "1px solid #f59e0b",
-        boxShadow: "0 0 0 3px rgba(245, 158, 11, 0.1)",
-      },
-    }),
-    option: (
-      base: Record<string, unknown>,
-      { isSelected, isFocused }: { isSelected: boolean; isFocused: boolean }
-    ) => ({
-      ...base,
-      backgroundColor: isSelected ? "#f59e0b" : isFocused ? "#fef3c7" : "white",
-      color: isSelected ? "white" : "#374151",
-    }),
-    multiValue: (base: Record<string, unknown>) => ({
-      ...base,
-      backgroundColor: "#fef3c7",
-      borderRadius: "8px",
-    }),
-    multiValueLabel: (base: Record<string, unknown>) => ({
-      ...base,
-      color: "#92400e",
-      fontWeight: "500",
-    }),
-    multiValueRemove: (base: Record<string, unknown>) => ({
-      ...base,
-      color: "#92400e",
-      "&:hover": {
-        backgroundColor: "#f59e0b",
-        color: "white",
-      },
-    }),
+      // Condiciones específicas — for...of para que el return funcione correctamente
+      for (let i = 0; i < ownerForm.splitConditions.length; i++) {
+        const condition = ownerForm.splitConditions[i];
+        const pct =
+          typeof condition.percentage === "string"
+            ? parseFloat(condition.percentage)
+            : condition.percentage;
+
+        if (!pct || pct <= 0 || pct > 100) {
+          setErrorMessage(
+            `El porcentaje de la condición específica #${i + 1} debe estar entre 1 y 100.`
+          );
+          return;
+        }
+
+        conditions.push({
+          fromDate: condition.fromDate,
+          toDate: condition.toDate,
+          percentage: pct,
+          selectedCountries: Array.isArray(condition.selectedCountries)
+            ? condition.selectedCountries.map((c) =>
+                typeof c === "string" ? c : (c as { value: string; label: string }).value
+              )
+            : [],
+          countriesType: condition.countriesType || "all",
+          selectedPlatforms: Array.isArray(condition.selectedPlatforms)
+            ? condition.selectedPlatforms.map((p) =>
+                typeof p === "string" ? p : (p as { value: string; label: string }).value
+              )
+            : [],
+          platformsType: condition.platformsType || "all",
+          type: "specific",
+        });
+      }
+
+      if (conditions.length === 0) {
+        setErrorMessage("Configura al menos una condición con un porcentaje válido.");
+        return;
+      }
+
+      const ownerSplitData: CreateSplitOwnerRequest = { songId, conditions };
+
+      await splitsService.createOwnerSplit(ownerSplitData);
+
+      if (onSplitCreated) onSplitCreated();
+      onClose();
+    } catch (error: unknown) {
+      const err = error as {
+        response?: { status: number; data?: { message?: string; error?: string; details?: unknown } };
+        request?: unknown;
+        message?: string;
+      };
+
+      if (err.response?.data) {
+        const data = err.response.data;
+        const msg =
+          data.message ||
+          data.error ||
+          (data.details ? JSON.stringify(data.details) : null) ||
+          "Error desconocido del servidor.";
+        setErrorMessage(`Error ${err.response.status}: ${msg}`);
+      } else if (err.request) {
+        setErrorMessage("Error de conexión. Verifica tu conexión a internet.");
+      } else {
+        setErrorMessage(err.message || "Error inesperado.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const modalContent = (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm w-full"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-        >
-          <motion.div
-            className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full mx-4 max-h-[95vh] overflow-hidden flex flex-col"
-            initial={{ scale: 0.9, y: 50, opacity: 0 }}
-            animate={{ scale: 1, y: 0, opacity: 1 }}
-            exit={{ scale: 0.9, y: 50, opacity: 0 }}
-            transition={{ type: "spring", damping: 20, stiffness: 300 }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Enhanced Header */}
-            <div className="relative bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 p-8 text-white overflow-hidden">
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-amber-500/20 to-orange-500/20"
-                animate={{
-                  background: [
-                    "linear-gradient(45deg, rgba(245, 158, 11, 0.2), rgba(249, 115, 22, 0.2))",
-                    "linear-gradient(135deg, rgba(249, 115, 22, 0.2), rgba(245, 158, 11, 0.2))",
-                    "linear-gradient(45deg, rgba(245, 158, 11, 0.2), rgba(249, 115, 22, 0.2))",
-                  ],
-                }}
-                transition={{ duration: 4, repeat: Infinity }}
-              />
+  if (!mounted || !isOpen) return null;
 
-              <div className="relative flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <motion.div
-                    className="p-3 rounded-2xl bg-white/20 backdrop-blur-sm"
-                    whileHover={{ scale: 1.1, rotate: 5 }}
-                    transition={{ type: "spring", stiffness: 400 }}
-                  >
-                    <Crown className="w-8 h-8 text-white" />
-                  </motion.div>
-                  <div>
-                    <motion.h2
-                      className="text-3xl font-bold mb-1"
-                      initial={{ x: -20, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      transition={{ delay: 0.1 }}
-                    >
-                      Configurar Split del Owner
-                    </motion.h2>
-                    <motion.p
-                      className="text-white/80 text-lg"
-                      initial={{ x: -20, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      transition={{ delay: 0.2 }}
-                    >
-                      {song?.trackTitle || "Canción"} - Configuración de propietario
-                    </motion.p>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const hasExistingSplit = ((song as any)?.ownerId?.split?.conditions ?? []).length > 0;
+
+  const modalContent = (
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-xl max-w-3xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col border border-gray-200"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="bg-[#F97316] px-6 py-5 flex items-center justify-between flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center">
+              <Crown className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-white font-semibold text-base leading-tight">
+                  Owner Split
+                </h2>
+                {hasExistingSplit && (
+                  <span className="px-2 py-0.5 bg-white/20 text-white text-[10px] font-semibold rounded-full">
+                    Editando
+                  </span>
+                )}
+              </div>
+              <p className="text-white/80 text-xs mt-0.5 truncate max-w-xs">
+                {song?.trackTitle || "Canción"}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 transition-colors flex items-center justify-center"
+          >
+            <X className="w-4 h-4 text-white" />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto bg-[#F7F8FA] p-5 space-y-4">
+
+          {/* Sección: Condición General */}
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            {/* Section header */}
+            <button
+              type="button"
+              onClick={() => setIsGeneralExpanded((v) => !v)}
+              className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors border-b border-gray-100"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
+                  <Settings className="w-4 h-4 text-[#F97316]" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">Condición General</p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Aplica cuando no hay condiciones específicas activas
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {ownerForm.percentage && (
+                  <span className="px-2.5 py-1 bg-orange-50 text-[#F97316] text-xs font-semibold rounded-full">
+                    {ownerForm.percentage}%
+                  </span>
+                )}
+                <ChevronDown
+                  className={`w-4 h-4 text-gray-400 transition-transform ${
+                    isGeneralExpanded ? "rotate-180" : ""
+                  }`}
+                />
+              </div>
+            </button>
+
+            {/* Section body */}
+            {isGeneralExpanded && (
+              <div className="px-5 py-5 space-y-5">
+                {/* Porcentaje */}
+                <div className="space-y-1.5">
+                  <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                    <Percent className="w-3.5 h-3.5" />
+                    Porcentaje
+                  </label>
+                  <div className="relative max-w-xs">
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      placeholder="0.00"
+                      value={ownerForm.percentage}
+                      onChange={(e) => updateOwnerForm("percentage", e.target.value)}
+                      className="w-full pl-4 pr-10 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-900 font-semibold focus:outline-none focus:border-[#F97316] transition-colors"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium">
+                      %
+                    </span>
                   </div>
                 </div>
 
-                <motion.button
-                  onClick={onClose}
-                  className="p-2 rounded-xl bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-colors"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <X className="w-6 h-6 text-white" />
-                </motion.button>
-              </div>
+                {/* Países */}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                    <Globe className="w-3.5 h-3.5" />
+                    Países
+                  </label>
+                  <FilterSegment
+                    value={ownerForm.countriesType}
+                    onChange={(v) => updateOwnerForm("countriesType", v)}
+                    labels={{ all: "Todos", except: "Excepto", only: "Solo" }}
+                    name="países"
+                  />
+                  {ownerForm.countriesType !== "all" && (
+                    <Select
+                      isMulti
+                      options={countries}
+                      value={ownerForm.selectedCountries}
+                      onChange={(selected) =>
+                        updateOwnerForm("selectedCountries", selected || [])
+                      }
+                      styles={selectStyles}
+                      placeholder="Seleccionar países..."
+                      noOptionsMessage={() => "No hay países disponibles"}
+                    />
+                  )}
+                </div>
 
-              {/* Decorative elements */}
-              <motion.div
-                className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full"
-                animate={{
-                  scale: [1, 1.2, 1],
-                  opacity: [0.3, 0.1, 0.3],
-                }}
-                transition={{ duration: 3, repeat: Infinity }}
-              />
-              <motion.div
-                className="absolute -bottom-6 -left-6 w-32 h-32 bg-white/5 rounded-full"
-                animate={{
-                  scale: [1.2, 1, 1.2],
-                  opacity: [0.1, 0.3, 0.1],
-                }}
-                transition={{ duration: 4, repeat: Infinity }}
-              />
+                {/* Plataformas */}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                    <Music className="w-3.5 h-3.5" />
+                    Plataformas
+                  </label>
+                  <FilterSegment
+                    value={ownerForm.platformsType}
+                    onChange={(v) => updateOwnerForm("platformsType", v)}
+                    labels={{ all: "Todas", except: "Excepto", only: "Solo" }}
+                    name="plataformas"
+                  />
+                  {ownerForm.platformsType !== "all" && (
+                    <Select
+                      isMulti
+                      options={platforms}
+                      value={ownerForm.selectedPlatforms}
+                      onChange={(selected) =>
+                        updateOwnerForm("selectedPlatforms", selected || [])
+                      }
+                      styles={selectStyles}
+                      placeholder="Seleccionar plataformas..."
+                      noOptionsMessage={() => "No hay plataformas disponibles"}
+                    />
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Sección: Condiciones Específicas */}
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-[#F97316]" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">Condiciones Específicas</p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Aplican por período de tiempo, país o plataforma
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={addSplitCondition}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F97316] hover:bg-orange-600 text-white text-xs font-semibold rounded-lg transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Añadir
+              </button>
             </div>
 
-            {/* Enhanced Body */}
-            <div className="flex-1 overflow-y-auto p-8 bg-gray-50">
-              <motion.div
-                className="space-y-6"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-              >
-                <motion.div
-                  className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  whileHover={{
-                    boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)",
-                  }}
-                >
-                  {/* Owner Header */}
-                  <motion.div
-                    className="p-6 bg-gradient-to-r from-amber-50 to-orange-50 border-b border-amber-100 cursor-pointer"
-                    onClick={toggleExpanded}
-                    whileHover={{
-                      backgroundColor: "rgba(245, 158, 11, 0.05)",
-                    }}
+            {ownerForm.splitConditions.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-10 px-6 text-center">
+                <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center mb-3">
+                  <Calendar className="w-5 h-5 text-gray-400" />
+                </div>
+                <p className="text-sm font-medium text-gray-700 mb-1">Sin condiciones específicas</p>
+                <p className="text-xs text-gray-400 max-w-xs">
+                  Agrega condiciones para definir porcentajes distintos según período, país o plataforma.
+                </p>
+              </div>
+            ) : (
+              <div className="p-5 space-y-4">
+                {ownerForm.splitConditions.map((condition, conditionIndex) => (
+                  <div
+                    key={conditionIndex}
+                    className="bg-[#F7F8FA] rounded-xl border border-gray-200 p-4 space-y-4"
                   >
+                    {/* Condition header */}
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <motion.div
-                          className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white shadow-lg"
-                          whileHover={{ scale: 1.1 }}
-                        >
-                          <Crown className="w-7 h-7" />
-                        </motion.div>
-                        <div>
-                          <h3 className="text-xl font-bold text-gray-900 mb-1">
-                            {currentUser?.name || "Owner"}
-                          </h3>
-                          <p className="text-gray-600 text-sm flex items-center gap-2">
-                            <span>{currentUser?.email}</span>
-                            {ownerForm.percentage && (
-                              <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded-lg text-xs font-medium">
-                                {ownerForm.percentage}%
-                              </span>
-                            )}
-                          </p>
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-md bg-orange-100 flex items-center justify-center">
+                          <span className="text-[10px] font-bold text-[#F97316]">
+                            {conditionIndex + 1}
+                          </span>
+                        </div>
+                        <span className="text-sm font-semibold text-gray-900">
+                          Condición específica
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeSplitCondition(conditionIndex)}
+                        className="w-7 h-7 rounded-lg hover:bg-red-50 flex items-center justify-center transition-colors text-gray-400 hover:text-red-500"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    {/* Dates + percentage */}
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                          Desde
+                        </label>
+                        <input
+                          type="date"
+                          value={condition.fromDate || ""}
+                          onChange={(e) =>
+                            updateSplitCondition(conditionIndex, "fromDate", e.target.value)
+                          }
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:border-[#F97316] transition-colors bg-white"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                          Hasta
+                        </label>
+                        <input
+                          type="date"
+                          value={condition.toDate || ""}
+                          onChange={(e) =>
+                            updateSplitCondition(conditionIndex, "toDate", e.target.value)
+                          }
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:border-[#F97316] transition-colors bg-white"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                          Porcentaje
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            step="0.01"
+                            value={condition.percentage || ""}
+                            onChange={(e) =>
+                              updateSplitCondition(conditionIndex, "percentage", e.target.value)
+                            }
+                            className="w-full pl-3 pr-8 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 font-semibold focus:outline-none focus:border-[#F97316] transition-colors bg-white"
+                          />
+                          <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-gray-400">
+                            %
+                          </span>
                         </div>
                       </div>
-
-                      <motion.div
-                        animate={{ rotate: isExpanded ? 180 : 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="p-2 rounded-xl bg-amber-100 hover:bg-amber-200 transition-colors"
-                      >
-                        <ChevronDown className="w-5 h-5 text-amber-700" />
-                      </motion.div>
                     </div>
-                  </motion.div>
 
-                  {/* Collapsible Content */}
-                  <AnimatePresence>
-                    {isExpanded && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="p-6 space-y-6">
-                          {/* General Condition Section */}
-                          <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6">
-                            <div className="flex items-center gap-3 mb-4">
-                              <Settings className="w-6 h-6 text-amber-600" />
-                              <div>
-                                <h4 className="text-lg font-semibold text-gray-900">
-                                  Condición General
-                                </h4>
-                                <p className="text-sm text-gray-600">
-                                  Configuración base que se aplica cuando no
-                                  hay condiciones específicas activas
-                                </p>
-                              </div>
-                            </div>
+                    {/* Countries + Platforms */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                          <Globe className="w-3 h-3" />
+                          Países
+                        </label>
+                        <FilterSegment
+                          value={(condition.countriesType as FilterType) || "all"}
+                          onChange={(v) =>
+                            updateSplitCondition(conditionIndex, "countriesType", v)
+                          }
+                          labels={{ all: "Todos", except: "Excepto", only: "Solo" }}
+                          name={`países-${conditionIndex}`}
+                        />
+                        {condition.countriesType && condition.countriesType !== "all" && (
+                          <Select
+                            isMulti
+                            options={countries}
+                            value={
+                              Array.isArray(condition.selectedCountries)
+                                ? (condition.selectedCountries as unknown as { value: string; label: string }[])
+                                : []
+                            }
+                            onChange={(selected) =>
+                              updateSplitCondition(conditionIndex, "selectedCountries", selected || [])
+                            }
+                            styles={selectStyles}
+                            placeholder="Seleccionar..."
+                          />
+                        )}
+                      </div>
 
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                              {/* Percentage Input */}
-                              <div className="space-y-2">
-                                <label className="flex items-center gap-2 text-sm font-medium text-gray-900">
-                                  <Percent className="w-4 h-4" />
-                                  Porcentaje de Split
-                                </label>
-                                <div className="relative">
-                                  <input
-                                    type="number"
-                                    min="0"
-                                    max="100"
-                                    step="0.01"
-                                    placeholder="0.00"
-                                    value={ownerForm.percentage}
-                                    onChange={(e) =>
-                                      updateOwnerForm("percentage", e.target.value)
-                                    }
-                                    className="w-full pl-4 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all text-gray-900 font-medium"
-                                  />
-                                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
-                                    %
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Countries Configuration */}
-                              <div className="space-y-3 col-span-2">
-                                <label className="flex items-center gap-2 text-sm font-medium text-gray-900">
-                                  <Globe className="w-4 h-4" />
-                                  Configuración de Países
-                                </label>
-                                <div className="space-y-2">
-                                  {[
-                                    {
-                                      value: "all",
-                                      label: "Todos los países",
-                                    },
-                                    {
-                                      value: "except",
-                                      label: "Excepto países seleccionados",
-                                    },
-                                    {
-                                      value: "only",
-                                      label: "Solo países seleccionados",
-                                    },
-                                  ].map((option) => (
-                                    <motion.label
-                                      key={option.value}
-                                      className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors"
-                                      whileHover={{ scale: 1.02 }}
-                                      whileTap={{ scale: 0.98 }}
-                                    >
-                                      <input
-                                        type="radio"
-                                        name="countries-type"
-                                        checked={
-                                          ownerForm.countriesType === option.value
-                                        }
-                                        onChange={() =>
-                                          updateOwnerForm(
-                                            "countriesType",
-                                            option.value as "all" | "except" | "only"
-                                          )
-                                        }
-                                        className="w-4 h-4 text-amber-500 focus:ring-amber-500/20"
-                                      />
-                                      <span className="text-sm text-gray-900">
-                                        {option.label}
-                                      </span>
-                                    </motion.label>
-                                  ))}
-                                </div>
-
-                                {(ownerForm.countriesType === "except" ||
-                                  ownerForm.countriesType === "only") && (
-                                  <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: "auto" }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                  >
-                                    <Select
-                                      isMulti
-                                      options={countries}
-                                      value={ownerForm.selectedCountries}
-                                      onChange={(selected) =>
-                                        updateOwnerForm(
-                                          "selectedCountries",
-                                          selected || []
-                                        )
-                                      }
-                                      styles={selectStyles}
-                                      placeholder="Seleccionar países..."
-                                      noOptionsMessage={() =>
-                                        "No hay países disponibles"
-                                      }
-                                    />
-                                  </motion.div>
-                                )}
-                              </div>
-
-                              {/* Platforms Configuration */}
-                              <div className="space-y-3 lg:col-span-2">
-                                <label className="flex items-center gap-2 text-sm font-medium text-gray-900">
-                                  <Music className="w-4 h-4" />
-                                  Configuración de Plataformas
-                                </label>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                                  {[
-                                    {
-                                      value: "all",
-                                      label: "Todas las plataformas",
-                                    },
-                                    {
-                                      value: "except",
-                                      label: "Excepto plataformas seleccionadas",
-                                    },
-                                    {
-                                      value: "only",
-                                      label: "Solo plataformas seleccionadas",
-                                    },
-                                  ].map((option) => (
-                                    <motion.label
-                                      key={option.value}
-                                      className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors"
-                                      whileHover={{ scale: 1.02 }}
-                                      whileTap={{ scale: 0.98 }}
-                                    >
-                                      <input
-                                        type="radio"
-                                        name="platforms-type"
-                                        checked={
-                                          ownerForm.platformsType === option.value
-                                        }
-                                        onChange={() =>
-                                          updateOwnerForm(
-                                            "platformsType",
-                                            option.value as "all" | "except" | "only"
-                                          )
-                                        }
-                                        className="w-4 h-4 text-amber-500 focus:ring-amber-500/20"
-                                      />
-                                      <span className="text-sm text-gray-900">
-                                        {option.label}
-                                      </span>
-                                    </motion.label>
-                                  ))}
-                                </div>
-
-                                {(ownerForm.platformsType === "except" ||
-                                  ownerForm.platformsType === "only") && (
-                                  <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: "auto" }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                  >
-                                    <Select
-                                      isMulti
-                                      options={platforms}
-                                      value={ownerForm.selectedPlatforms}
-                                      onChange={(selected) =>
-                                        updateOwnerForm(
-                                          "selectedPlatforms",
-                                          selected || []
-                                        )
-                                      }
-                                      styles={selectStyles}
-                                      placeholder="Seleccionar plataformas..."
-                                      noOptionsMessage={() =>
-                                        "No hay plataformas disponibles"
-                                      }
-                                    />
-                                  </motion.div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Conditional Splits Section */}
-                          <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <Sparkles className="w-6 h-6 text-orange-500" />
-                                <div>
-                                  <h4 className="text-lg font-semibold text-gray-900">
-                                    Condiciones Específicas
-                                  </h4>
-                                  <p className="text-sm text-gray-600">
-                                    Configuraciones que se aplican en
-                                    períodos específicos
-                                  </p>
-                                </div>
-                              </div>
-
-                              <motion.button
-                                onClick={addSplitCondition}
-                                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl hover:shadow-lg transition-all"
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                              >
-                                <Plus className="w-4 h-4" />
-                                Añadir Condición
-                              </motion.button>
-                            </div>
-
-                            {/* Conditional Splits List */}
-                            <div className="space-y-4">
-                              {(ownerForm.splitConditions || []).map(
-                                (condition, conditionIndex) => (
-                                  <motion.div
-                                    key={conditionIndex}
-                                    className="bg-gradient-to-r from-orange-50 to-orange-25 rounded-2xl p-6 border border-orange-200"
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -20 }}
-                                    transition={{
-                                      delay: conditionIndex * 0.1,
-                                    }}
-                                  >
-                                    <div className="flex items-center justify-between mb-4">
-                                      <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-lg bg-orange-200 flex items-center justify-center">
-                                          <Calendar className="w-4 h-4 text-orange-600" />
-                                        </div>
-                                        <h5 className="font-semibold text-gray-900">
-                                          Condición #{conditionIndex + 1}
-                                        </h5>
-                                      </div>
-
-                                      <motion.button
-                                        onClick={() =>
-                                          removeSplitCondition(conditionIndex)
-                                        }
-                                        className="p-2 rounded-lg text-red-500 hover:bg-red-50 transition-colors"
-                                        whileHover={{ scale: 1.1 }}
-                                        whileTap={{ scale: 0.9 }}
-                                      >
-                                        <Trash2 className="w-4 h-4" />
-                                      </motion.button>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                                      <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-900">
-                                          Fecha de inicio
-                                        </label>
-                                        <input
-                                          type="date"
-                                          value={condition.fromDate}
-                                          onChange={(e) =>
-                                            updateSplitCondition(
-                                              conditionIndex,
-                                              "fromDate",
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
-                                        />
-                                      </div>
-
-                                      <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-900">
-                                          Fecha de fin
-                                        </label>
-                                        <input
-                                          type="date"
-                                          value={condition.toDate}
-                                          onChange={(e) =>
-                                            updateSplitCondition(
-                                              conditionIndex,
-                                              "toDate",
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
-                                        />
-                                      </div>
-
-                                      <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-900">
-                                          Porcentaje
-                                        </label>
-                                        <div className="relative">
-                                          <input
-                                            type="number"
-                                            min="0"
-                                            max="100"
-                                            step="0.01"
-                                            value={condition.percentage}
-                                            onChange={(e) =>
-                                              updateSplitCondition(
-                                                conditionIndex,
-                                                "percentage",
-                                                e.target.value
-                                              )
-                                            }
-                                            className="w-full pl-3 pr-8 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
-                                          />
-                                          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
-                                            %
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-
-                                    {/* Countries and Platforms for conditions */}
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                      <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-900">
-                                          Países
-                                        </label>
-                                        <div className="flex gap-2 text-xs">
-                                          {[
-                                            { value: "all", label: "Todos" },
-                                            { value: "except", label: "Excepto" },
-                                            { value: "only", label: "Solo" },
-                                          ].map((option) => (
-                                            <label
-                                              key={option.value}
-                                              className="flex items-center gap-1 cursor-pointer"
-                                            >
-                                              <input
-                                                type="radio"
-                                                name={`countries-condition-${conditionIndex}`}
-                                                checked={
-                                                  condition.countriesType ===
-                                                    option.value ||
-                                                  (condition.countriesType ===
-                                                    undefined &&
-                                                    option.value === "all")
-                                                }
-                                                onChange={() =>
-                                                  updateSplitCondition(
-                                                    conditionIndex,
-                                                    "countriesType",
-                                                    option.value
-                                                  )
-                                                }
-                                                className="w-3 h-3"
-                                              />
-                                              <span>{option.label}</span>
-                                            </label>
-                                          ))}
-                                        </div>
-                                        {condition.countriesType !== "all" && (
-                                          <Select
-                                            isMulti
-                                            options={countries}
-                                            onChange={(selected) =>
-                                              updateSplitCondition(
-                                                conditionIndex,
-                                                "countries",
-                                                selected || []
-                                              )
-                                            }
-                                            styles={selectStyles}
-                                            placeholder="Seleccionar..."
-                                          />
-                                        )}
-                                      </div>
-
-                                      <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-900">
-                                          Plataformas
-                                        </label>
-                                        <div className="flex gap-2 text-xs">
-                                          {[
-                                            { value: "all", label: "Todas" },
-                                            { value: "except", label: "Excepto" },
-                                            { value: "only", label: "Solo" },
-                                          ].map((option) => (
-                                            <label
-                                              key={option.value}
-                                              className="flex items-center gap-1 cursor-pointer"
-                                            >
-                                              <input
-                                                type="radio"
-                                                name={`platforms-condition-${conditionIndex}`}
-                                                checked={
-                                                  condition.platformsType ===
-                                                    option.value ||
-                                                  (condition.countriesType ===
-                                                    undefined &&
-                                                    option.value === "all")
-                                                }
-                                                onChange={() =>
-                                                  updateSplitCondition(
-                                                    conditionIndex,
-                                                    "platformsType",
-                                                    option.value
-                                                  )
-                                                }
-                                                className="w-3 h-3"
-                                              />
-                                              <span>{option.label}</span>
-                                            </label>
-                                          ))}
-                                        </div>
-                                        {condition.platformsType !== "all" && (
-                                          <Select
-                                            isMulti
-                                            options={platforms}
-                                            onChange={(selected) =>
-                                              updateSplitCondition(
-                                                conditionIndex,
-                                                "platforms",
-                                                selected || []
-                                              )
-                                            }
-                                            styles={selectStyles}
-                                            placeholder="Seleccionar..."
-                                          />
-                                        )}
-                                      </div>
-                                    </div>
-                                  </motion.div>
-                                )
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              </motion.div>
-            </div>
-
-            {/* Enhanced Footer */}
-            <div className="p-6 bg-white border-t border-gray-100">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-600">
-                  Configurando split como propietario de la canción
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <motion.button
-                    onClick={onClose}
-                    className="px-6 py-3 text-gray-600 hover:text-gray-900 transition-colors font-medium"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    Cancelar
-                  </motion.button>
-
-                  <motion.button
-                    onClick={saveOwnerSplit}
-                    disabled={isLoading}
-                    className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    {isLoading ? (
-                      <motion.div
-                        className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
-                        animate={{ rotate: 360 }}
-                        transition={{
-                          duration: 1,
-                          repeat: Infinity,
-                          ease: "linear",
-                        }}
-                      />
-                    ) : (
-                      <Save className="w-4 h-4" />
-                    )}
-                    {isLoading ? "Creando Split..." : "Crear Split del Owner"}
-                  </motion.button>
-                </div>
+                      <div className="space-y-2">
+                        <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                          <Music className="w-3 h-3" />
+                          Plataformas
+                        </label>
+                        <FilterSegment
+                          value={(condition.platformsType as FilterType) || "all"}
+                          onChange={(v) =>
+                            updateSplitCondition(conditionIndex, "platformsType", v)
+                          }
+                          labels={{ all: "Todas", except: "Excepto", only: "Solo" }}
+                          name={`plataformas-${conditionIndex}`}
+                        />
+                        {condition.platformsType && condition.platformsType !== "all" && (
+                          <Select
+                            isMulti
+                            options={platforms}
+                            value={
+                              Array.isArray(condition.selectedPlatforms)
+                                ? (condition.selectedPlatforms as unknown as { value: string; label: string }[])
+                                : []
+                            }
+                            onChange={(selected) =>
+                              updateSplitCondition(conditionIndex, "selectedPlatforms", selected || [])
+                            }
+                            styles={selectStyles}
+                            placeholder="Seleccionar..."
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
+            )}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="bg-white border-t border-gray-200 px-6 py-4 flex-shrink-0">
+          {errorMessage && (
+            <div className="flex items-start gap-2 mb-3 p-3 bg-red-50 border border-red-100 rounded-lg">
+              <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-red-700">{errorMessage}</p>
             </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          )}
+          <div className="flex items-center justify-end gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={saveOwnerSplit}
+              disabled={isLoading}
+              className="flex items-center gap-2 px-5 py-2 bg-[#F97316] hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg transition-colors"
+            >
+              {isLoading ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <Save className="w-4 h-4" />
+              )}
+              {isLoading ? "Guardando..." : hasExistingSplit ? "Actualizar Split" : "Crear Split"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 
-  // Use React Portal to render at root level
-  if (!mounted) return null;
-  
   return createPortal(modalContent, document.body);
 }

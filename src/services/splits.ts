@@ -165,14 +165,18 @@ class SplitsService {
   /**
    * Crear un nuevo split
    */
-  async createSplit(data: CreateSplitRequest[]): Promise<Split> {
+  async createSplit(data: CreateSplitRequest[]): Promise<Split[]> {
     try {
-      const response = await axios.post(
-        this.baseURL + "/collaborator",
-        data[0],
-        { headers: this.headers }
-      );
-      return response.data;
+      const results: Split[] = [];
+      for (const splitRequest of data) {
+        const response = await axios.post(
+          this.baseURL + "/collaborator",
+          splitRequest,
+          { headers: this.headers }
+        );
+        results.push(response.data);
+      }
+      return results;
     } catch (error) {
       console.error("Error creating split:", error);
       throw error;

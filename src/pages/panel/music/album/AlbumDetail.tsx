@@ -1,21 +1,27 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useCallback } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   ArrowLeft,
-  Disc,
+  Music2,
+  Disc3,
   Play,
-  Download,
-  Share2,
-  MoreHorizontal,
+  DollarSign,
   Crown,
+  AlertCircle,
+  ArrowUpDown,
+  ChevronUp,
+  ChevronDown,
+  Search,
 } from "lucide-react";
 import { useAlbums } from "../../../../hooks/useAlbums";
 import Loading from "../../../../components/loading/loading";
-import Breadcrumb from "../../../../components/breadcrumb/breadcrumb";
 import type { Album, AlbumTrack } from "../../../../models/album";
 import AlbumOwnerSplitModal from "./components/AlbumOwnerSplitModal";
+import { useMemo } from "react";
+
+type SortField = "title" | "streams" | "revenue";
+type SortDir = "asc" | "desc";
 
 export default function AlbumDetail() {
   const { upc } = useParams<{ upc: string }>();
@@ -26,330 +32,371 @@ export default function AlbumDetail() {
   const [error, setError] = useState<string | null>(null);
   const [isOwnerSplitModalOpen, setIsOwnerSplitModalOpen] = useState(false);
 
+  const [search, setSearch] = useState("");
+  const [sortField, setSortField] = useState<SortField>("streams");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
+
   const loadAlbum = useCallback(async () => {
     if (!upc) return;
-    
     setLoading(true);
     setError(null);
-    
     try {
       const albumData = await getAlbumByUPC(upc);
       if (albumData) {
         setAlbum(albumData);
       } else {
-        setError("Album not found");
+        setError("Álbum no encontrado");
       }
-    } catch (err) {
-      setError("Error loading album");
-      console.error("Error loading album:", err);
+    } catch {
+      setError("Error al cargar el álbum");
     } finally {
       setLoading(false);
     }
   }, [upc, getAlbumByUPC]);
 
   useEffect(() => {
-    if (upc) {
-      loadAlbum();
-    }
+    if (upc) loadAlbum();
   }, [upc, loadAlbum]);
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-    }).format(amount);
+  const formatCurrency = (amount: number) =>
+    `$${amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+  const formatStreams = (val: number) => {
+    if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M`;
+    if (val >= 1_000) return `${(val / 1_000).toFixed(1)}K`;
+    return val.toLocaleString();
   };
 
-  const formatNumber = (num: number) => {
-    return new Intl.NumberFormat('en-US').format(num);
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortField(field);
+      setSortDir("desc");
+    }
   };
 
-  const breadcrumbItems = [
-    { label: "Panel", url: "/panel" },
-    { label: "Music", url: "/panel/music" },
-    { label: album?.albumTitle || "Album", url: "" }
-  ];
+  const filteredTracks = useMemo(() => {
+    if (!album) return [];
+    const q = search.trim().toLowerCase();
+    const filtered = q
+      ? album.tracks.filter(
+          (t) =>
+            t.trackTitle?.toLowerCase().includes(q) ||
+            t.isrc?.toLowerCase().includes(q)
+        )
+      : [...album.tracks];
+
+    filtered.sort((a, b) => {
+      let diff = 0;
+      if (sortField === "title") {
+        diff = (a.trackTitle || "").localeCompare(b.trackTitle || "");
+      } else if (sortField === "streams") {
+        diff = (a.totalStreams || 0) - (b.totalStreams || 0);
+      } else {
+        diff = (a.totalNetIncome || 0) - (b.totalNetIncome || 0);
+      }
+      return sortDir === "asc" ? diff : -diff;
+    });
+
+    return filtered;
+  }, [album, search, sortField, sortDir]);
+
+  const SortIcon = ({ field }: { field: SortField }) => {
+    if (sortField !== field) return <ArrowUpDown className="w-3.5 h-3.5 text-gray-300" />;
+    return sortDir === "asc" ? (
+      <ChevronUp className="w-3.5 h-3.5 text-[#F97316]" />
+    ) : (
+      <ChevronDown className="w-3.5 h-3.5 text-[#F97316]" />
+    );
+  };
 
   if (loading) return <Loading />;
-  
+
   if (error || !album) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-            {error || "Album not found"}
-          </h1>
-          <Link 
-            to="/panel/music" 
-            className="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
+      <div className="min-h-screen bg-[#F7F8FA] px-6 lg:px-10 py-8 space-y-6">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate("/panel/music")}
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-600 text-sm font-medium hover:bg-gray-50 transition-colors"
           >
-            Back to Music
-          </Link>
+            <ArrowLeft className="w-4 h-4" />
+            Regresar
+          </button>
+        </div>
+        <div className="flex items-start gap-2 p-4 bg-red-50 border border-red-100 rounded-xl max-w-lg">
+          <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-red-700">{error || "Álbum no encontrado"}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
-        
-        {/* Breadcrumb */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-6"
-        >
-          <Breadcrumb items={breadcrumbItems} />
-        </motion.div>
+    <div className="min-h-screen bg-[#F7F8FA] px-6 lg:px-10 py-8 space-y-6">
 
-        {/* Back Button */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="mb-8"
-        >
-          <Link 
-            to="/panel/music" 
-            className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate("/panel/music")}
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-600 text-sm font-medium hover:bg-gray-50 transition-colors"
           >
-            <ArrowLeft size={20} />
-            <span>Back to Music</span>
-          </Link>
-        </motion.div>
+            <ArrowLeft className="w-4 h-4" />
+            Regresar
+          </button>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Detalle del Álbum</h1>
+            <p className="text-sm text-gray-500 mt-0.5">Pistas y métricas del álbum</p>
+          </div>
+        </div>
 
-        {/* Album Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden mb-8"
-        >
-          <div className="p-8 lg:p-12">
-            <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
-              
-              {/* Album Cover */}
-              <div className="flex justify-center lg:justify-start">
-                <div className="relative group">
-                  <div className="w-48 h-48 lg:w-64 lg:h-64 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-3xl flex items-center justify-center shadow-2xl">
-                    <Disc size={80} className="text-white" />
-                  </div>
-                  <div className="absolute inset-0 bg-black/20 rounded-3xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <Play size={32} className="text-white" fill="white" />
-                  </div>
-                </div>
-              </div>
+        {/* Breadcrumb + action */}
+        <div className="flex items-center gap-4">
+          <div className="hidden sm:flex items-center gap-2 text-sm">
+            <Link to="/panel/music" className="text-gray-400 hover:text-gray-600">
+              Música
+            </Link>
+            <span className="text-gray-300">/</span>
+            <span className="text-gray-900 font-medium truncate max-w-[160px]">
+              {album.releaseTitle || album.albumTitle}
+            </span>
+          </div>
+          <button
+            onClick={() => setIsOwnerSplitModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-[#F97316] hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition-colors"
+          >
+            <Crown className="w-4 h-4" />
+            Owner Splits
+          </button>
+        </div>
+      </div>
 
-              {/* Album Info */}
-              <div className="flex-1 text-center lg:text-left">
-                <div className="mb-6">
-                  <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 mb-2">
-                    ALBUM
-                  </p>
-                  <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-                    {album.releaseTitle}
-                  </h1>
-                  <p className="text-xl text-gray-600 dark:text-gray-300 mb-2">
-                    {album.artistName}
-                  </p>
-                  {album.artisticLabel && (
-                    <p className="text-gray-500 dark:text-gray-400">
-                      {album.artisticLabel}
-                    </p>
-                  )}
-                </div>
+      {/* Hero Card */}
+      <div className="bg-white border border-gray-200 rounded-xl p-6 flex flex-col sm:flex-row gap-6">
+        {/* Cover */}
+        <div className="w-40 h-40 rounded-xl overflow-hidden flex-shrink-0 self-center sm:self-start bg-orange-50 flex items-center justify-center">
+          {album.coverImage?.[0]?.[0]?.url ? (
+            <img
+              src={album.coverImage[0][0].url}
+              alt={album.releaseTitle || album.albumTitle}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <Disc3 className="w-16 h-16 text-[#F97316]" />
+          )}
+        </div>
 
-                {/* UPC */}
-                <div className="mb-8">
-                  <div className="inline-flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-full px-6 py-3">
-                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      UPC:
-                    </span>
-                    <span className="text-sm font-mono text-gray-900 dark:text-white">
-                      {album.upc}
-                    </span>
-                  </div>
-                </div>
+        {/* Info */}
+        <div className="flex-1 flex flex-col gap-4">
+          <div>
+            <span className="text-xs font-semibold text-[#F97316] uppercase tracking-wide">
+              Álbum
+            </span>
+            <h2 className="text-2xl font-bold text-gray-900 mt-1">
+              {album.releaseTitle || album.albumTitle}
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">{album.artistName}</p>
+            {album.artisticLabel && (
+              <p className="text-xs text-gray-400 mt-0.5">{album.artisticLabel}</p>
+            )}
+          </div>
 
-                {/* Stats */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                  <div className="text-center lg:text-left">
-                    <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-                      {album.totalTracks}
-                    </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      Tracks
-                    </div>
-                  </div>
-                  
-                  <div className="text-center lg:text-left">
-                    <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-                      {formatNumber(album.totalStreams)}
-                    </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      Total Streams
-                    </div>
-                  </div>
-                  
-                  <div className="text-center lg:text-left">
-                    <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-                      {formatCurrency(album.totalGrossIncome)}
-                    </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      Gross Revenue
-                    </div>
-                  </div>
-                  
-                  <div className="text-center lg:text-left">
-                    <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-                      {formatCurrency(album.totalNetIncome)}
-                    </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      Net Revenue
-                    </div>
-                  </div>
-                </div>
+          {/* UPC */}
+          <div className="inline-flex items-center gap-2 w-fit px-3 py-1.5 bg-gray-100 rounded-full">
+            <span className="text-xs font-semibold text-gray-500">UPC</span>
+            <span className="text-xs font-mono text-gray-900">{album.upc}</span>
+          </div>
+        </div>
+      </div>
 
-                {/* Action Buttons */}
-                <div className="flex flex-wrap justify-center lg:justify-start gap-4">
-                  <button className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2">
-                    <Play size={18} fill="white" />
-                    Play Album
-                  </button>
-                  <motion.button
-                    onClick={() => setIsOwnerSplitModalOpen(true)}
-                    className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+      {/* Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center">
+              <Music2 className="w-4 h-4 text-[#F97316]" />
+            </div>
+            <span className="text-xs font-medium text-gray-500">Pistas</span>
+          </div>
+          <p className="text-2xl font-bold text-gray-900">{album.totalTracks}</p>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
+              <Play className="w-4 h-4 text-blue-600" />
+            </div>
+            <span className="text-xs font-medium text-gray-500">Total Streams</span>
+          </div>
+          <p className="text-2xl font-bold text-gray-900">{formatStreams(album.totalStreams)}</p>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 bg-purple-50 rounded-lg flex items-center justify-center">
+              <DollarSign className="w-4 h-4 text-purple-600" />
+            </div>
+            <span className="text-xs font-medium text-gray-500">Ingresos Brutos</span>
+          </div>
+          <p className="text-2xl font-bold text-gray-900">{formatCurrency(album.totalGrossIncome)}</p>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center">
+              <DollarSign className="w-4 h-4 text-green-600" />
+            </div>
+            <span className="text-xs font-medium text-gray-500">Ingresos Netos</span>
+          </div>
+          <p className="text-2xl font-bold text-green-600">{formatCurrency(album.totalNetIncome)}</p>
+        </div>
+      </div>
+
+      {/* Tracks Table */}
+      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+
+        {/* Toolbar */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-6 py-4 border-b border-gray-100">
+          <div className="flex items-center gap-2">
+            <Music2 className="w-4 h-4 text-gray-400" />
+            <span className="text-sm font-semibold text-gray-900">Pistas</span>
+            <span className="ml-1 px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-semibold rounded-full">
+              {filteredTracks.length}
+            </span>
+          </div>
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Buscar por título o ISRC..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#F97316] transition-colors"
+            />
+          </div>
+        </div>
+
+        {filteredTracks.length > 0 ? (
+          <table className="w-full">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-100">
+                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide w-10">
+                  #
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  <button
+                    onClick={() => handleSort("title")}
+                    className="flex items-center gap-1.5 hover:text-gray-700 transition-colors"
                   >
-                    <Crown size={18} />
-                    Create Owner Splits
-                  </motion.button>
-                  <button className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-6 py-3 rounded-full font-semibold border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center gap-2">
-                    <Download size={18} />
-                    Download
+                    Título
+                    <SortIcon field="title" />
                   </button>
-                  <button className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-6 py-3 rounded-full font-semibold border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center gap-2">
-                    <Share2 size={18} />
-                    Share
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden sm:table-cell">
+                  ISRC
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  <button
+                    onClick={() => handleSort("streams")}
+                    className="flex items-center gap-1.5 hover:text-gray-700 transition-colors"
+                  >
+                    Streams
+                    <SortIcon field="streams" />
                   </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  <button
+                    onClick={() => handleSort("revenue")}
+                    className="flex items-center gap-1.5 hover:text-gray-700 transition-colors"
+                  >
+                    Ingresos
+                    <SortIcon field="revenue" />
+                  </button>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {filteredTracks.map((track: AlbumTrack, index: number) => (
+                <tr
+                  key={track.isrc || index}
+                  onClick={() => navigate(`/panel/song/${track._id}`)}
+                  className="hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  {/* # */}
+                  <td className="px-6 py-4">
+                    <span className="text-sm text-gray-400 font-medium">{index + 1}</span>
+                  </td>
 
-        {/* Tracks List */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden"
-        >
-          <div className="p-8">
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Tracks
-              </h2>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                {album.totalTracks} songs
-              </div>
-            </div>
+                  {/* Title */}
+                  <td className="px-4 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Music2 className="w-4 h-4 text-[#F97316]" />
+                      </div>
+                      <p className="text-sm font-semibold text-gray-900 truncate max-w-[180px]">
+                        {track.trackTitle}
+                      </p>
+                    </div>
+                  </td>
 
-            {/* Tracks Table */}
-            <div className="overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200 dark:border-gray-700">
-                      <th className="text-left py-4 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">
-                        #
-                      </th>
-                      <th className="text-left py-4 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">
-                        TITLE
-                      </th>
-                      <th className="text-right py-4 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">
-                        STREAMS
-                      </th>
-                      <th className="text-right py-4 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">
-                        REVENUE
-                      </th>
-                      <th className="text-center py-4 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">
-                        
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                                         {album.tracks.map((track: AlbumTrack, index: number) => (
-                       <motion.tr
-                         key={track.isrc}
-                         initial={{ opacity: 0, x: -20 }}
-                         animate={{ opacity: 1, x: 0 }}
-                         transition={{ delay: 0.3 + index * 0.05 }}
-                         className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group cursor-pointer"
-                         onClick={() => navigate(`/panel/song/${track._id}`)}
-                       >
-                         <td className="py-4 px-4">
-                           <div className="flex items-center justify-center w-8 h-8 text-gray-400 dark:text-gray-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
-                             <span className="text-sm font-medium group-hover:hidden">
-                               {index + 1}
-                             </span>
-                             <Play size={16} className="hidden group-hover:block" fill="currentColor" />
-                           </div>
-                         </td>
-                         <td className="py-4 px-4">
-                           <div>
-                             <div className="font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                               {track.trackTitle}
-                             </div>
-                             <div className="text-sm text-gray-500 dark:text-gray-400">
-                               ISRC: {track.isrc}
-                             </div>
-                           </div>
-                         </td>
-                         <td className="py-4 px-4 text-right">
-                           <div className="font-semibold text-gray-900 dark:text-white">
-                             {formatNumber(track.totalStreams)}
-                           </div>
-                         </td>
-                         <td className="py-4 px-4 text-right">
-                           <div className="font-semibold text-gray-900 dark:text-white">
-                             {formatCurrency(track.totalNetIncome)}
-                           </div>
-                         </td>
-                         <td className="py-4 px-4 text-center">
-                           <button 
-                             className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full"
-                             onClick={(e) => {
-                               e.stopPropagation(); // Prevent row click when clicking the button
-                               // Add menu functionality here if needed
-                             }}
-                           >
-                             <MoreHorizontal size={16} className="text-gray-500 dark:text-gray-400" />
-                           </button>
-                         </td>
-                       </motion.tr>
-                     ))}
-                  </tbody>
-                </table>
-              </div>
+                  {/* ISRC */}
+                  <td className="px-4 py-4 hidden sm:table-cell">
+                    <span className="text-xs font-mono text-gray-500">
+                      {track.isrc || "—"}
+                    </span>
+                  </td>
+
+                  {/* Streams */}
+                  <td className="px-4 py-4">
+                    <span className="text-sm font-semibold text-gray-900">
+                      {formatStreams(track.totalStreams || 0)}
+                    </span>
+                  </td>
+
+                  {/* Revenue */}
+                  <td className="px-4 py-4">
+                    <span className="text-sm font-semibold text-green-600">
+                      {formatCurrency(track.totalNetIncome || 0)}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mb-3">
+              <Music2 className="w-6 h-6 text-gray-400" />
             </div>
+            <p className="text-sm font-semibold text-gray-700 mb-1">
+              {search ? "Sin resultados" : "Sin pistas"}
+            </p>
+            <p className="text-xs text-gray-400 max-w-xs">
+              {search
+                ? `No se encontraron pistas para "${search}"`
+                : "No hay pistas registradas para este álbum"}
+            </p>
+            {search && (
+              <button
+                onClick={() => setSearch("")}
+                className="mt-3 text-xs font-medium text-[#F97316] hover:underline"
+              >
+                Limpiar búsqueda
+              </button>
+            )}
           </div>
-        </motion.div>
+        )}
       </div>
 
       {/* Album Owner Split Modal */}
-      {album && (
-        <AlbumOwnerSplitModal
-          isOpen={isOwnerSplitModalOpen}
-          onClose={() => setIsOwnerSplitModalOpen(false)}
-          album={album}
-          onSplitsCreated={() => {
-            loadAlbum();
-          }}
-        />
-      )}
+      <AlbumOwnerSplitModal
+        isOpen={isOwnerSplitModalOpen}
+        onClose={() => setIsOwnerSplitModalOpen(false)}
+        album={album}
+        onSplitsCreated={loadAlbum}
+      />
     </div>
   );
 }

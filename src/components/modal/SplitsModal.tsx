@@ -1,8 +1,6 @@
-import { AnimatePresence, motion } from "framer-motion";
 import {
   Music,
   Trash2,
-  User,
   X,
   Plus,
   Globe,
@@ -13,6 +11,7 @@ import {
   ChevronDown,
   Save,
   Sparkles,
+  AlertCircle,
 } from "lucide-react";
 import { User as UserType } from "@/models/user";
 import Select from "react-select";
@@ -43,6 +42,122 @@ interface CollaboratorFormData {
   type: "general" | "specific";
 }
 
+type FilterType = "all" | "except" | "only";
+
+const AVATAR_COLORS = [
+  "bg-orange-500",
+  "bg-blue-500",
+  "bg-purple-500",
+  "bg-green-500",
+  "bg-rose-500",
+  "bg-teal-500",
+];
+
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .slice(0, 2)
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase();
+}
+
+const selectStyles = {
+  control: (base: Record<string, unknown>) => ({
+    ...base,
+    border: "1px solid #e5e7eb",
+    borderRadius: "8px",
+    padding: "2px",
+    boxShadow: "none",
+    backgroundColor: "white",
+    "&:hover": { border: "1px solid #F97316" },
+    "&:focus-within": { border: "1px solid #F97316" },
+  }),
+  option: (
+    base: Record<string, unknown>,
+    { isSelected, isFocused }: { isSelected: boolean; isFocused: boolean }
+  ) => ({
+    ...base,
+    backgroundColor: isSelected ? "#F97316" : isFocused ? "#fff7ed" : "white",
+    color: isSelected ? "white" : "#374151",
+    fontSize: "13px",
+  }),
+  multiValue: (base: Record<string, unknown>) => ({
+    ...base,
+    backgroundColor: "#fff7ed",
+    borderRadius: "6px",
+  }),
+  multiValueLabel: (base: Record<string, unknown>) => ({
+    ...base,
+    color: "#c2410c",
+    fontWeight: "500",
+    fontSize: "12px",
+  }),
+  multiValueRemove: (base: Record<string, unknown>) => ({
+    ...base,
+    color: "#c2410c",
+    "&:hover": { backgroundColor: "#F97316", color: "white" },
+  }),
+  placeholder: (base: Record<string, unknown>) => ({
+    ...base,
+    fontSize: "13px",
+    color: "#9ca3af",
+  }),
+};
+
+function FilterSegment({
+  value,
+  onChange,
+  labels,
+  name,
+}: {
+  value: FilterType;
+  onChange: (v: FilterType) => void;
+  labels: { all: string; except: string; only: string };
+  name: string;
+}) {
+  const options: { val: FilterType; label: string }[] = [
+    { val: "all", label: labels.all },
+    { val: "except", label: labels.except },
+    { val: "only", label: labels.only },
+  ];
+  return (
+    <div className="flex rounded-lg border border-gray-200 bg-gray-50 p-0.5 gap-0.5">
+      {options.map((opt) => (
+        <button
+          key={opt.val}
+          type="button"
+          onClick={() => onChange(opt.val)}
+          className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+            value === opt.val
+              ? "bg-white text-gray-900 border border-gray-200"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+          aria-label={`${name} ${opt.label}`}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+const toSelectOptions = (
+  values: string[],
+  opts: { value: string; label: string }[]
+): { value: string; label: string }[] =>
+  (values || []).map((v) => opts.find((o) => o.value === v) ?? { value: v, label: v });
+
+const defaultFormData = (): CollaboratorFormData => ({
+  percentage: "",
+  countriesType: "all",
+  selectedCountries: [],
+  platformsType: "all",
+  selectedPlatforms: [],
+  splitConditions: [],
+  type: "general",
+});
+
 export default function SplitsModal({
   collaborators,
   isOpen,
@@ -56,6 +171,7 @@ export default function SplitsModal({
     Record<string, boolean>
   >({});
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -63,31 +179,73 @@ export default function SplitsModal({
     return () => setMounted(false);
   }, []);
 
-  // Toggle expanded state for collaborator
-  const toggleCollaboratorExpanded = (collaboratorId: string) => {
+  useEffect(() => {
+    if (!isOpen) return;
+    setErrorMessage(null);
+
+    const initialForms: Record<string, CollaboratorFormData> = {};
+
+    for (const collaborator of collaborators) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const conditions: SplitCondition[] = (collaborator as any)?.split?.conditions ?? [];
+      if (conditions.length === 0) continue;
+
+      const general = conditions.find((c) => c.type === "general");
+      const specifics = conditions.filter((c) => c.type === "specific");
+
+      initialForms[collaborator.id] = {
+        percentage: general ? String(general.percentage) : "",
+        countriesType: (general?.countriesType as FilterType) || "all",
+        selectedCountries: toSelectOptions(
+          (general?.selectedCountries as string[]) || [],
+          countries
+        ),
+        platformsType: (general?.platformsType as FilterType) || "all",
+        selectedPlatforms: toSelectOptions(
+          (general?.selectedPlatforms as string[]) || [],
+          platforms
+        ),
+        splitConditions: specifics.map((c) => ({
+          ...c,
+          selectedCountries: toSelectOptions(
+            (c.selectedCountries as string[]) || [],
+            countries
+          ),
+          selectedPlatforms: toSelectOptions(
+            (c.selectedPlatforms as string[]) || [],
+            platforms
+          ),
+        })) as unknown as SplitCondition[],
+        type: "general",
+      };
+    }
+
+    setCollaboratorForms(initialForms);
+  }, [isOpen]);
+
+  // Initialize form for a collaborator if not yet present
+  const getForm = (collaboratorId: string): CollaboratorFormData =>
+    collaboratorForms[collaboratorId] ?? defaultFormData();
+
+  const toggleExpanded = (collaboratorId: string) => {
     setExpandedCollaborators((prev) => ({
       ...prev,
       [collaboratorId]: !prev[collaboratorId],
     }));
   };
 
-  // Actualizar datos del formulario de un colaborador específico
-  const updateCollaboratorForm = (
+  const updateForm = (
     collaboratorId: string,
     field: keyof CollaboratorFormData,
     value: string | readonly { value: string; label: string }[]
   ) => {
     setCollaboratorForms((prev) => ({
       ...prev,
-      [collaboratorId]: {
-        ...prev[collaboratorId],
-        [field]: value,
-      },
+      [collaboratorId]: { ...getForm(collaboratorId), [field]: value },
     }));
   };
 
-  // Actualizar condiciones específicas de split
-  const updateSplitCondition = (
+  const updateCondition = (
     collaboratorId: string,
     conditionIndex: number,
     field: string,
@@ -96,897 +254,687 @@ export default function SplitsModal({
       | readonly { value: string; label: string }[]
       | readonly string[]
   ) => {
-    setCollaboratorForms((prev) => ({
-      ...prev,
-      [collaboratorId]: {
-        ...prev[collaboratorId],
-        splitConditions: (prev[collaboratorId]?.splitConditions || []).map(
-          (condition, index) =>
-            index === conditionIndex
-              ? { ...condition, [field]: value }
-              : condition
-        ),
-      },
-    }));
+    setCollaboratorForms((prev) => {
+      const form = prev[collaboratorId] ?? defaultFormData();
+      return {
+        ...prev,
+        [collaboratorId]: {
+          ...form,
+          splitConditions: form.splitConditions.map((c, i) =>
+            i === conditionIndex ? { ...c, [field]: value } : c
+          ),
+        },
+      };
+    });
   };
 
-  const addSplitCondition = (collaboratorId: string) => {
-    setCollaboratorForms((prev) => ({
-      ...prev,
-      [collaboratorId]: {
-        ...prev[collaboratorId],
-        splitConditions: [
-          ...prev[collaboratorId].splitConditions,
-          {
-            percentage: 0,
-            selectedCountries: [],
-            countriesType: "all",
-            selectedPlatforms: [],
-            platformsType: "all",
-            type: "specific",
-          },
-        ],
-      },
-    }));
+  const addCondition = (collaboratorId: string) => {
+    setCollaboratorForms((prev) => {
+      const form = prev[collaboratorId] ?? defaultFormData();
+      return {
+        ...prev,
+        [collaboratorId]: {
+          ...form,
+          splitConditions: [
+            ...form.splitConditions,
+            {
+              percentage: 0,
+              selectedCountries: [],
+              countriesType: "all",
+              selectedPlatforms: [],
+              platformsType: "all",
+              type: "specific",
+            },
+          ],
+        },
+      };
+    });
   };
 
-  const removeSplitCondition = (
-    collaboratorId: string,
-    conditionIndex: number
-  ) => {
-    setCollaboratorForms((prev) => ({
-      ...prev,
-      [collaboratorId]: {
-        ...prev[collaboratorId],
-        splitConditions: prev[collaboratorId].splitConditions.filter(
-          (_, index) => index !== conditionIndex
-        ),
-      },
-    }));
+  const removeCondition = (collaboratorId: string, conditionIndex: number) => {
+    setCollaboratorForms((prev) => {
+      const form = prev[collaboratorId] ?? defaultFormData();
+      return {
+        ...prev,
+        [collaboratorId]: {
+          ...form,
+          splitConditions: form.splitConditions.filter(
+            (_, i) => i !== conditionIndex
+          ),
+        },
+      };
+    });
   };
 
   const saveSplit = async () => {
+    setErrorMessage(null);
     setIsLoading(true);
+
     try {
-      // Convertir los datos del formulario al formato del backend
       const splitsToCreate: CreateSplitRequest[] = [];
 
       for (const [collaboratorId, formData] of Object.entries(
         collaboratorForms
       )) {
-        if (formData.percentage && parseFloat(formData.percentage) > 0) {
-          const splitRequest: CreateSplitRequest = {
-            songId,
-            collaboratorId,
-            conditions: formData.splitConditions.map((condition) => ({
-              fromDate: condition.fromDate,
-              toDate: condition.toDate,
-              percentage: condition.percentage,
-              selectedCountries: condition.selectedCountries || [],
-              countriesType: condition.countriesType,
-              selectedPlatforms: condition.selectedPlatforms || [],
-              platformsType: condition.platformsType,
-              type: condition.type,
-            })),
-          };
+        if (!formData.percentage || parseFloat(formData.percentage) <= 0)
+          continue;
 
-          splitRequest.conditions?.push({
-            percentage: parseFloat(formData.percentage),
-            selectedCountries: formData.selectedCountries.map((c) => c.value),
-            selectedPlatforms: formData.selectedPlatforms.map((p) => p.value),
-            countriesType: formData.countriesType,
-            platformsType: formData.platformsType,
-            type: "general",
-          });
+        const conditions: SplitCondition[] = formData.splitConditions.map(
+          (condition) => ({
+            fromDate: condition.fromDate,
+            toDate: condition.toDate,
+            percentage: condition.percentage,
+            selectedCountries: condition.selectedCountries || [],
+            countriesType: condition.countriesType,
+            selectedPlatforms: condition.selectedPlatforms || [],
+            platformsType: condition.platformsType,
+            type: condition.type,
+          })
+        );
 
-          splitsToCreate.push(splitRequest);
-        }
+        conditions.push({
+          percentage: parseFloat(formData.percentage),
+          selectedCountries: formData.selectedCountries.map((c) => c.value),
+          selectedPlatforms: formData.selectedPlatforms.map((p) => p.value),
+          countriesType: formData.countriesType,
+          platformsType: formData.platformsType,
+          type: "general",
+        });
+
+        splitsToCreate.push({ songId, collaboratorId, conditions });
       }
 
-      const response = await splitsService.createSplit(splitsToCreate);
-      console.log(response);
-      
-      // Recargar la página para mostrar los cambios
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
-    } catch (error) {
-      console.error("Error saving splits:", error);
-      alert("Error al guardar los splits. Por favor, intenta de nuevo.");
+      if (splitsToCreate.length === 0) {
+        setErrorMessage(
+          "Configura al menos un colaborador con un porcentaje válido."
+        );
+        return;
+      }
+
+      await splitsService.createSplit(splitsToCreate);
+
+      setTimeout(() => window.location.reload(), 300);
+    } catch (error: unknown) {
+      const err = error as {
+        response?: {
+          status: number;
+          data?: { message?: string; error?: string };
+        };
+        message?: string;
+      };
+      if (err.response?.data) {
+        const msg =
+          err.response.data.message ||
+          err.response.data.error ||
+          "Error del servidor.";
+        setErrorMessage(`Error ${err.response.status}: ${msg}`);
+      } else {
+        setErrorMessage(err.message || "Error inesperado.");
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Custom styles for react-select
-  const selectStyles = {
-    control: (base: Record<string, unknown>) => ({
-      ...base,
-      border: "1px solid #e5e7eb",
-      borderRadius: "12px",
-      padding: "4px",
-      boxShadow: "none",
-      "&:hover": {
-        border: "1px solid #219EBC",
-      },
-      "&:focus-within": {
-        border: "1px solid #219EBC",
-        boxShadow: "0 0 0 3px rgba(33, 158, 188, 0.1)",
-      },
-    }),
-    option: (
-      base: Record<string, unknown>,
-      { isSelected, isFocused }: { isSelected: boolean; isFocused: boolean }
-    ) => ({
-      ...base,
-      backgroundColor: isSelected ? "#219EBC" : isFocused ? "#8ECAE6" : "white",
-      color: isSelected ? "white" : "#374151",
-    }),
-    multiValue: (base: Record<string, unknown>) => ({
-      ...base,
-      backgroundColor: "#8ECAE6",
-      borderRadius: "8px",
-    }),
-    multiValueLabel: (base: Record<string, unknown>) => ({
-      ...base,
-      color: "#023047",
-      fontWeight: "500",
-    }),
-    multiValueRemove: (base: Record<string, unknown>) => ({
-      ...base,
-      color: "#023047",
-      "&:hover": {
-        backgroundColor: "#219EBC",
-        color: "white",
-      },
-    }),
-  };
+  if (!mounted || !isOpen) return null;
+
+  const configuredCount = Object.values(collaboratorForms).filter(
+    (f) => f.percentage && parseFloat(f.percentage) > 0
+  ).length;
 
   const modalContent = (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-        >
-          <motion.div
-            className="bg-white rounded-3xl shadow-2xl max-w-5xl w-full mx-4 max-h-[95vh] overflow-hidden flex flex-col"
-            initial={{ scale: 0.9, y: 50, opacity: 0 }}
-            animate={{ scale: 1, y: 0, opacity: 1 }}
-            exit={{ scale: 0.9, y: 50, opacity: 0 }}
-            transition={{ type: "spring", damping: 20, stiffness: 300 }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Enhanced Header */}
-            <div className="relative bg-gradient-to-r from-tertiary via-secondary to-tertiary p-8 text-white overflow-hidden">
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-tertiary/20 to-secondary/20"
-                animate={{
-                  background: [
-                    "linear-gradient(45deg, rgba(33, 158, 188, 0.2), rgba(142, 202, 230, 0.2))",
-                    "linear-gradient(135deg, rgba(142, 202, 230, 0.2), rgba(33, 158, 188, 0.2))",
-                    "linear-gradient(45deg, rgba(33, 158, 188, 0.2), rgba(142, 202, 230, 0.2))",
-                  ],
-                }}
-                transition={{ duration: 4, repeat: Infinity }}
-              />
-
-              <div className="relative flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <motion.div
-                    className="p-3 rounded-2xl bg-white/20 backdrop-blur-sm"
-                    whileHover={{ scale: 1.1, rotate: 5 }}
-                    transition={{ type: "spring", stiffness: 400 }}
-                  >
-                    <Users className="w-8 h-8 text-white" />
-                  </motion.div>
-                  <div>
-                    <motion.h2
-                      className="text-3xl font-bold mb-1"
-                      initial={{ x: -20, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      transition={{ delay: 0.1 }}
-                    >
-                      Configurar Splits
-                    </motion.h2>
-                    <motion.p
-                      className="text-white/80 text-lg"
-                      initial={{ x: -20, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      transition={{ delay: 0.2 }}
-                    >
-                      Distribuye los ingresos entre colaboradores
-                    </motion.p>
-                  </div>
-                </div>
-
-                <motion.button
-                  onClick={onClose}
-                  className="p-2 rounded-xl bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-colors"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <X className="w-6 h-6 text-white" />
-                </motion.button>
-              </div>
-
-              {/* Decorative elements */}
-              <motion.div
-                className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full"
-                animate={{
-                  scale: [1, 1.2, 1],
-                  opacity: [0.3, 0.1, 0.3],
-                }}
-                transition={{ duration: 3, repeat: Infinity }}
-              />
-              <motion.div
-                className="absolute -bottom-6 -left-6 w-32 h-32 bg-white/5 rounded-full"
-                animate={{
-                  scale: [1.2, 1, 1.2],
-                  opacity: [0.1, 0.3, 0.1],
-                }}
-                transition={{ duration: 4, repeat: Infinity }}
-              />
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-xl max-w-3xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col border border-gray-200"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="bg-[#F97316] px-6 py-5 flex items-center justify-between flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center">
+              <Users className="w-5 h-5 text-white" />
             </div>
+            <div>
+              <h2 className="text-white font-semibold text-base leading-tight">
+                Configurar Splits
+              </h2>
+              <p className="text-white/80 text-xs mt-0.5">
+                {collaborators.length} colaborador
+                {collaborators.length !== 1 ? "es" : ""} disponible
+                {collaborators.length !== 1 ? "s" : ""}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 transition-colors flex items-center justify-center"
+          >
+            <X className="w-4 h-4 text-white" />
+          </button>
+        </div>
 
-            {/* Enhanced Body */}
-            <div className="flex-1 overflow-y-auto p-8 bg-gray-50">
-              <motion.div
-                className="space-y-6"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-              >
-                {collaborators.map((collaborator, index) => {
-                  // Inicializar formulario si no existe
-                  if (!collaboratorForms[collaborator.id]) {
-                    setCollaboratorForms((prev) => ({
-                      ...prev,
-                      [collaborator.id]: {
-                        percentage: "",
-                        countriesType: "all",
-                        selectedCountries: [],
-                        platformsType: "all",
-                        selectedPlatforms: [],
-                        splitConditions: [],
-                        type: "general",
-                      },
-                    }));
-                  }
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto bg-[#F7F8FA] p-5 space-y-3">
+          {collaborators.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mb-3">
+                <Users className="w-6 h-6 text-gray-400" />
+              </div>
+              <p className="text-sm font-semibold text-gray-700 mb-1">
+                Sin colaboradores
+              </p>
+              <p className="text-xs text-gray-400">
+                Agrega colaboradores a la canción primero.
+              </p>
+            </div>
+          ) : (
+            collaborators.map((collaborator, idx) => {
+              const form = getForm(collaborator.id);
+              const isExpanded = expandedCollaborators[collaborator.id] ?? false;
+              const avatarColor = AVATAR_COLORS[idx % AVATAR_COLORS.length];
+              const hasPercentage =
+                form.percentage && parseFloat(form.percentage) > 0;
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const hasExistingSplit = ((collaborator as any)?.split?.conditions ?? []).length > 0;
 
-                  const formData = collaboratorForms[collaborator.id] || {
-                    percentage: "",
-                    countriesType: "all",
-                    selectedCountries: [],
-                    platformsType: "all",
-                    selectedPlatforms: [],
-                    splitConditions: [],
-                    type: "general",
-                  };
-
-                  const isExpanded = expandedCollaborators[collaborator.id];
-
-                  return (
-                    <motion.div
-                      key={collaborator.id}
-                      className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.1 * index }}
-                      whileHover={{
-                        boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)",
-                      }}
-                    >
-                      {/* Collaborator Header */}
-                      <motion.div
-                        className="p-6 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100 cursor-pointer"
-                        onClick={() =>
-                          toggleCollaboratorExpanded(collaborator.id)
-                        }
-                        whileHover={{
-                          backgroundColor: "rgba(142, 202, 230, 0.05)",
-                        }}
+              return (
+                <div
+                  key={collaborator.id}
+                  className="bg-white rounded-xl border border-gray-200 overflow-hidden"
+                >
+                  {/* Collaborator header — clickable to expand */}
+                  <button
+                    type="button"
+                    onClick={() => toggleExpanded(collaborator.id)}
+                    className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-9 h-9 rounded-full ${avatarColor} flex items-center justify-center flex-shrink-0`}
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <motion.div
-                              className="w-14 h-14 rounded-2xl bg-gradient-to-br from-secondary to-tertiary flex items-center justify-center text-white shadow-lg"
-                              whileHover={{ scale: 1.1 }}
-                            >
-                              <User className="w-7 h-7" />
-                            </motion.div>
-                            <div>
-                              <h3 className="text-xl font-bold text-quaternary mb-1">
-                                {collaborator.name}
-                              </h3>
-                              <p className="text-septenary text-sm flex items-center gap-2">
-                                <span>{collaborator.email}</span>
-                                {formData.percentage && (
-                                  <span className="px-2 py-1 bg-secondary/20 text-tertiary rounded-lg text-xs font-medium">
-                                    {formData.percentage}%
-                                  </span>
-                                )}
-                              </p>
+                        <span className="text-white text-xs font-bold">
+                          {getInitials(collaborator.name || "?")}
+                        </span>
+                      </div>
+                      <div className="text-left">
+                        <p className="text-sm font-semibold text-gray-900">
+                          {collaborator.name}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {collaborator.email}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {hasExistingSplit && (
+                        <span className="px-2 py-0.5 bg-green-50 text-green-700 text-[10px] font-semibold rounded-full border border-green-100">
+                          Configurado
+                        </span>
+                      )}
+                      {hasPercentage && (
+                        <span className="px-2.5 py-1 bg-orange-50 text-[#F97316] text-xs font-semibold rounded-full">
+                          {form.percentage}%
+                        </span>
+                      )}
+                      <ChevronDown
+                        className={`w-4 h-4 text-gray-400 transition-transform ${
+                          isExpanded ? "rotate-180" : ""
+                        }`}
+                      />
+                    </div>
+                  </button>
+
+                  {/* Expanded content */}
+                  {isExpanded && (
+                    <div className="border-t border-gray-100 px-5 py-5 space-y-5 bg-[#F7F8FA]">
+                      {/* General Condition */}
+                      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                        <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
+                          <div className="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center">
+                            <Settings className="w-3.5 h-3.5 text-[#F97316]" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold text-gray-900">
+                              Condición General
+                            </p>
+                            <p className="text-xs text-gray-400">
+                              Base cuando no hay condiciones específicas activas
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="px-4 py-4 space-y-4">
+                          {/* Percentage */}
+                          <div className="space-y-1.5">
+                            <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                              <Percent className="w-3.5 h-3.5" />
+                              Porcentaje del pool disponible
+                            </label>
+                            <div className="relative max-w-xs">
+                              <input
+                                type="number"
+                                min="0"
+                                max="100"
+                                step="0.01"
+                                placeholder="0.00"
+                                value={form.percentage}
+                                onChange={(e) =>
+                                  updateForm(
+                                    collaborator.id,
+                                    "percentage",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full pl-4 pr-10 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-900 font-semibold focus:outline-none focus:border-[#F97316] transition-colors"
+                              />
+                              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium">
+                                %
+                              </span>
                             </div>
                           </div>
 
-                          <motion.div
-                            animate={{ rotate: isExpanded ? 180 : 0 }}
-                            transition={{ duration: 0.3 }}
-                            className="p-2 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors"
-                          >
-                            <ChevronDown className="w-5 h-5 text-septenary" />
-                          </motion.div>
+                          {/* Countries */}
+                          <div className="space-y-2">
+                            <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                              <Globe className="w-3.5 h-3.5" />
+                              Países
+                            </label>
+                            <FilterSegment
+                              value={form.countriesType}
+                              onChange={(v) =>
+                                updateForm(collaborator.id, "countriesType", v)
+                              }
+                              labels={{
+                                all: "Todos",
+                                except: "Excepto",
+                                only: "Solo",
+                              }}
+                              name={`países-${collaborator.id}`}
+                            />
+                            {form.countriesType !== "all" && (
+                              <Select
+                                isMulti
+                                options={countries}
+                                value={form.selectedCountries}
+                                onChange={(selected) =>
+                                  updateForm(
+                                    collaborator.id,
+                                    "selectedCountries",
+                                    selected || []
+                                  )
+                                }
+                                styles={selectStyles}
+                                placeholder="Seleccionar países..."
+                                noOptionsMessage={() =>
+                                  "No hay países disponibles"
+                                }
+                              />
+                            )}
+                          </div>
+
+                          {/* Platforms */}
+                          <div className="space-y-2">
+                            <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                              <Music className="w-3.5 h-3.5" />
+                              Plataformas
+                            </label>
+                            <FilterSegment
+                              value={form.platformsType}
+                              onChange={(v) =>
+                                updateForm(collaborator.id, "platformsType", v)
+                              }
+                              labels={{
+                                all: "Todas",
+                                except: "Excepto",
+                                only: "Solo",
+                              }}
+                              name={`plataformas-${collaborator.id}`}
+                            />
+                            {form.platformsType !== "all" && (
+                              <Select
+                                isMulti
+                                options={platforms}
+                                value={form.selectedPlatforms}
+                                onChange={(selected) =>
+                                  updateForm(
+                                    collaborator.id,
+                                    "selectedPlatforms",
+                                    selected || []
+                                  )
+                                }
+                                styles={selectStyles}
+                                placeholder="Seleccionar plataformas..."
+                                noOptionsMessage={() =>
+                                  "No hay plataformas disponibles"
+                                }
+                              />
+                            )}
+                          </div>
                         </div>
-                      </motion.div>
+                      </div>
 
-                      {/* Collapsible Content */}
-                      <AnimatePresence>
-                        {isExpanded && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.3 }}
-                            className="overflow-hidden"
+                      {/* Specific Conditions */}
+                      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                          <div className="flex items-center gap-3">
+                            <div className="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center">
+                              <Sparkles className="w-3.5 h-3.5 text-[#F97316]" />
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-gray-900">
+                                Condiciones Específicas
+                              </p>
+                              <p className="text-xs text-gray-400">
+                                Por período, país o plataforma
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => addCondition(collaborator.id)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F97316] hover:bg-orange-600 text-white text-xs font-semibold rounded-lg transition-colors"
                           >
-                            <div className="p-6 space-y-6">
-                              {/* General Condition Section */}
-                              <div className="bg-gradient-to-r from-secondary/10 to-tertiary/10 rounded-2xl p-6">
-                                <div className="flex items-center gap-3 mb-4">
-                                  <Settings className="w-6 h-6 text-tertiary" />
-                                  <div>
-                                    <h4 className="text-lg font-semibold text-quaternary">
-                                      Condición General
-                                    </h4>
-                                    <p className="text-sm text-septenary">
-                                      Configuración base que se aplica cuando no
-                                      hay condiciones específicas activas
-                                    </p>
-                                  </div>
-                                </div>
+                            <Plus className="w-3 h-3" />
+                            Añadir
+                          </button>
+                        </div>
 
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                  {/* Percentage Input */}
-                                  <div className="space-y-2">
-                                    <label className="flex items-center gap-2 text-sm font-medium text-quaternary">
-                                      <Percent className="w-4 h-4" />
-                                      Porcentaje de Split
-                                    </label>
-                                    <div className="relative">
+                        {form.splitConditions.length === 0 ? (
+                          <div className="flex flex-col items-center py-8 text-center px-4">
+                            <div className="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center mb-2">
+                              <Calendar className="w-4 h-4 text-gray-400" />
+                            </div>
+                            <p className="text-xs font-medium text-gray-600 mb-0.5">
+                              Sin condiciones específicas
+                            </p>
+                            <p className="text-xs text-gray-400">
+                              Aplica solo la condición general.
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="p-4 space-y-3">
+                            {form.splitConditions.map(
+                              (condition, conditionIndex) => (
+                                <div
+                                  key={conditionIndex}
+                                  className="bg-[#F7F8FA] rounded-xl border border-gray-200 p-4 space-y-3"
+                                >
+                                  {/* Condition header */}
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-6 h-6 rounded-md bg-orange-100 flex items-center justify-center">
+                                        <span className="text-[10px] font-bold text-[#F97316]">
+                                          {conditionIndex + 1}
+                                        </span>
+                                      </div>
+                                      <span className="text-xs font-semibold text-gray-900">
+                                        Condición específica
+                                      </span>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        removeCondition(
+                                          collaborator.id,
+                                          conditionIndex
+                                        )
+                                      }
+                                      className="w-7 h-7 rounded-lg hover:bg-red-50 flex items-center justify-center transition-colors text-gray-400 hover:text-red-500"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+
+                                  {/* Dates + percentage */}
+                                  <div className="grid grid-cols-3 gap-3">
+                                    <div className="space-y-1">
+                                      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                        Desde
+                                      </label>
                                       <input
-                                        type="number"
-                                        min="0"
-                                        max="100"
-                                        step="0.01"
-                                        placeholder="0.00"
-                                        value={formData.percentage}
+                                        type="date"
+                                        value={condition.fromDate || ""}
                                         onChange={(e) =>
-                                          updateCollaboratorForm(
+                                          updateCondition(
                                             collaborator.id,
-                                            "percentage",
+                                            conditionIndex,
+                                            "fromDate",
                                             e.target.value
                                           )
                                         }
-                                        className="w-full pl-4 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-tertiary/20 focus:border-tertiary transition-all text-quaternary font-medium"
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-xs text-gray-900 focus:outline-none focus:border-[#F97316] transition-colors bg-white"
                                       />
-                                      <div className="absolute right-3 top-1/2 -translate-y-1/2 text-septenary">
-                                        %
+                                    </div>
+                                    <div className="space-y-1">
+                                      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                        Hasta
+                                      </label>
+                                      <input
+                                        type="date"
+                                        value={condition.toDate || ""}
+                                        onChange={(e) =>
+                                          updateCondition(
+                                            collaborator.id,
+                                            conditionIndex,
+                                            "toDate",
+                                            e.target.value
+                                          )
+                                        }
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-xs text-gray-900 focus:outline-none focus:border-[#F97316] transition-colors bg-white"
+                                      />
+                                    </div>
+                                    <div className="space-y-1">
+                                      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                        Porcentaje
+                                      </label>
+                                      <div className="relative">
+                                        <input
+                                          type="number"
+                                          min="0"
+                                          max="100"
+                                          step="0.01"
+                                          value={condition.percentage || ""}
+                                          onChange={(e) =>
+                                            updateCondition(
+                                              collaborator.id,
+                                              conditionIndex,
+                                              "percentage",
+                                              e.target.value
+                                            )
+                                          }
+                                          className="w-full pl-3 pr-7 py-2 border border-gray-200 rounded-lg text-xs text-gray-900 font-semibold focus:outline-none focus:border-[#F97316] transition-colors bg-white"
+                                        />
+                                        <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-gray-400">
+                                          %
+                                        </span>
                                       </div>
                                     </div>
                                   </div>
 
-                                  {/* Countries Configuration */}
-                                  <div className="space-y-3 col-span-2">
-                                    <label className="flex items-center gap-2 text-sm font-medium text-quaternary">
-                                      <Globe className="w-4 h-4" />
-                                      Configuración de Países
-                                    </label>
-                                    <div className="space-y-2">
-                                      {[
-                                        {
-                                          value: "all",
-                                          label: "Todos los países",
-                                        },
-                                        {
-                                          value: "except",
-                                          label: "Excepto países seleccionados",
-                                        },
-                                        {
-                                          value: "only",
-                                          label: "Solo países seleccionados",
-                                        },
-                                      ].map((option) => (
-                                        <motion.label
-                                          key={option.value}
-                                          className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors"
-                                          whileHover={{ scale: 1.02 }}
-                                          whileTap={{ scale: 0.98 }}
-                                        >
-                                          <input
-                                            type="radio"
-                                            name={`countries-${collaborator.id}`}
-                                            checked={
-                                              formData.countriesType ===
-                                              option.value
-                                            }
-                                            onChange={() =>
-                                              updateCollaboratorForm(
-                                                collaborator.id,
-                                                "countriesType",
-                                                option.value as
-                                                  | "all"
-                                                  | "except"
-                                                  | "only"
-                                              )
-                                            }
-                                            className="w-4 h-4 text-tertiary focus:ring-tertiary/20"
-                                          />
-                                          <span className="text-sm text-quaternary">
-                                            {option.label}
-                                          </span>
-                                        </motion.label>
-                                      ))}
-                                    </div>
-
-                                    {(formData.countriesType === "except" ||
-                                      formData.countriesType === "only") && (
-                                      <motion.div
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: "auto" }}
-                                        exit={{ opacity: 0, height: 0 }}
-                                      >
-                                        <Select
-                                          isMulti
-                                          options={countries}
-                                          value={formData.selectedCountries}
-                                          onChange={(selected) =>
-                                            updateCollaboratorForm(
-                                              collaborator.id,
-                                              "selectedCountries",
-                                              selected || []
-                                            )
-                                          }
-                                          styles={selectStyles}
-                                          placeholder="Seleccionar países..."
-                                          noOptionsMessage={() =>
-                                            "No hay países disponibles"
-                                          }
-                                        />
-                                      </motion.div>
-                                    )}
-                                  </div>
-
-                                  {/* Platforms Configuration */}
-                                  <div className="space-y-3 lg:col-span-2">
-                                    <label className="flex items-center gap-2 text-sm font-medium text-quaternary">
-                                      <Music className="w-4 h-4" />
-                                      Configuración de Plataformas
-                                    </label>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                                      {[
-                                        {
-                                          value: "all",
-                                          label: "Todas las plataformas",
-                                        },
-                                        {
-                                          value: "except",
-                                          label:
-                                            "Excepto plataformas seleccionadas",
-                                        },
-                                        {
-                                          value: "only",
-                                          label:
-                                            "Solo plataformas seleccionadas",
-                                        },
-                                      ].map((option) => (
-                                        <motion.label
-                                          key={option.value}
-                                          className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors"
-                                          whileHover={{ scale: 1.02 }}
-                                          whileTap={{ scale: 0.98 }}
-                                        >
-                                          <input
-                                            type="radio"
-                                            name={`platforms-${collaborator.id}`}
-                                            checked={
-                                              formData.platformsType ===
-                                              option.value
-                                            }
-                                            onChange={() =>
-                                              updateCollaboratorForm(
-                                                collaborator.id,
-                                                "platformsType",
-                                                option.value as
-                                                  | "all"
-                                                  | "except"
-                                                  | "only"
-                                              )
-                                            }
-                                            className="w-4 h-4 text-tertiary focus:ring-tertiary/20"
-                                          />
-                                          <span className="text-sm text-quaternary">
-                                            {option.label}
-                                          </span>
-                                        </motion.label>
-                                      ))}
-                                    </div>
-
-                                    {(formData.platformsType === "except" ||
-                                      formData.platformsType === "only") && (
-                                      <motion.div
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: "auto" }}
-                                        exit={{ opacity: 0, height: 0 }}
-                                      >
-                                        <Select
-                                          isMulti
-                                          options={platforms}
-                                          value={formData.selectedPlatforms}
-                                          onChange={(selected) =>
-                                            updateCollaboratorForm(
-                                              collaborator.id,
-                                              "selectedPlatforms",
-                                              selected || []
-                                            )
-                                          }
-                                          styles={selectStyles}
-                                          placeholder="Seleccionar plataformas..."
-                                          noOptionsMessage={() =>
-                                            "No hay plataformas disponibles"
-                                          }
-                                        />
-                                      </motion.div>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Conditional Splits Section */}
-                              <div className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-3">
-                                    <Sparkles className="w-6 h-6 text-quinary" />
-                                    <div>
-                                      <h4 className="text-lg font-semibold text-quaternary">
-                                        Condiciones Específicas
-                                      </h4>
-                                      <p className="text-sm text-septenary">
-                                        Configuraciones que se aplican en
-                                        períodos específicos
-                                      </p>
-                                    </div>
-                                  </div>
-
-                                  <motion.button
-                                    onClick={() =>
-                                      addSplitCondition(collaborator.id)
-                                    }
-                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-quinary to-quinary/80 text-white rounded-xl hover:shadow-lg transition-all"
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                  >
-                                    <Plus className="w-4 h-4" />
-                                    Añadir Condición
-                                  </motion.button>
-                                </div>
-
-                                {/* Conditional Splits List */}
-                                <div className="space-y-4">
-                                  {(formData.splitConditions || []).map(
-                                    (condition, conditionIndex) => (
-                                      <motion.div
-                                        key={conditionIndex}
-                                        className="bg-gradient-to-r from-quinary/10 to-quinary/5 rounded-2xl p-6 border border-quinary/20"
-                                        initial={{ opacity: 0, x: -20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: -20 }}
-                                        transition={{
-                                          delay: conditionIndex * 0.1,
+                                  {/* Countries + Platforms */}
+                                  <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-1.5">
+                                      <label className="flex items-center gap-1 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                        <Globe className="w-3 h-3" />
+                                        Países
+                                      </label>
+                                      <FilterSegment
+                                        value={
+                                          (condition.countriesType as FilterType) ||
+                                          "all"
+                                        }
+                                        onChange={(v) =>
+                                          updateCondition(
+                                            collaborator.id,
+                                            conditionIndex,
+                                            "countriesType",
+                                            v
+                                          )
+                                        }
+                                        labels={{
+                                          all: "Todos",
+                                          except: "Excepto",
+                                          only: "Solo",
                                         }}
-                                      >
-                                        <div className="flex items-center justify-between mb-4">
-                                          <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-quinary/20 flex items-center justify-center">
-                                              <Calendar className="w-4 h-4 text-quinary" />
-                                            </div>
-                                            <h5 className="font-semibold text-quaternary">
-                                              Condición #{conditionIndex + 1}
-                                            </h5>
-                                          </div>
-
-                                          <motion.button
-                                            onClick={() =>
-                                              removeSplitCondition(
+                                        name={`países-cond-${collaborator.id}-${conditionIndex}`}
+                                      />
+                                      {condition.countriesType &&
+                                        condition.countriesType !== "all" && (
+                                          <Select
+                                            isMulti
+                                            options={countries}
+                                            value={
+                                              Array.isArray(
+                                                condition.selectedCountries
+                                              )
+                                                ? (condition.selectedCountries as unknown as {
+                                                    value: string;
+                                                    label: string;
+                                                  }[])
+                                                : []
+                                            }
+                                            onChange={(selected) =>
+                                              updateCondition(
                                                 collaborator.id,
-                                                conditionIndex
+                                                conditionIndex,
+                                                "selectedCountries",
+                                                selected || []
                                               )
                                             }
-                                            className="p-2 rounded-lg text-red-500 hover:bg-red-50 transition-colors"
-                                            whileHover={{ scale: 1.1 }}
-                                            whileTap={{ scale: 0.9 }}
-                                          >
-                                            <Trash2 className="w-4 h-4" />
-                                          </motion.button>
-                                        </div>
+                                            styles={selectStyles}
+                                            placeholder="Seleccionar..."
+                                          />
+                                        )}
+                                    </div>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                                          <div className="space-y-2">
-                                            <label className="text-sm font-medium text-quaternary">
-                                              Fecha de inicio
-                                            </label>
-                                            <input
-                                              type="date"
-                                              value={condition.fromDate}
-                                              onChange={(e) =>
-                                                updateSplitCondition(
-                                                  collaborator.id,
-                                                  conditionIndex,
-                                                  "fromDate",
-                                                  e.target.value
-                                                )
-                                              }
-                                              className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-quinary/20 focus:border-quinary transition-all"
-                                            />
-                                          </div>
-
-                                          <div className="space-y-2">
-                                            <label className="text-sm font-medium text-quaternary">
-                                              Fecha de fin
-                                            </label>
-                                            <input
-                                              type="date"
-                                              value={condition.toDate}
-                                              onChange={(e) =>
-                                                updateSplitCondition(
-                                                  collaborator.id,
-                                                  conditionIndex,
-                                                  "toDate",
-                                                  e.target.value
-                                                )
-                                              }
-                                              className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-quinary/20 focus:border-quinary transition-all"
-                                            />
-                                          </div>
-
-                                          <div className="space-y-2">
-                                            <label className="text-sm font-medium text-quaternary">
-                                              Porcentaje
-                                            </label>
-                                            <div className="relative">
-                                              <input
-                                                type="number"
-                                                min="0"
-                                                max="100"
-                                                step="0.01"
-                                                value={condition.percentage}
-                                                onChange={(e) =>
-                                                  updateSplitCondition(
-                                                    collaborator.id,
-                                                    conditionIndex,
-                                                    "percentage",
-                                                    e.target.value
-                                                  )
-                                                }
-                                                className="w-full pl-3 pr-8 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-quinary/20 focus:border-quinary transition-all"
-                                              />
-                                              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-septenary text-sm">
-                                                %
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>
-
-                                        {/* Countries and Platforms for conditions - Similar structure but more compact */}
-                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                          <div className="space-y-2">
-                                            <label className="text-sm font-medium text-quaternary">
-                                              Países
-                                            </label>
-                                            <div className="flex gap-2 text-xs">
-                                              {[
-                                                {
-                                                  value: "all",
-                                                  label: "Todos",
-                                                },
-                                                {
-                                                  value: "except",
-                                                  label: "Excepto",
-                                                },
-                                                {
-                                                  value: "only",
-                                                  label: "Solo",
-                                                },
-                                              ].map((option) => (
-                                                <label
-                                                  key={option.value}
-                                                  className="flex items-center gap-1 cursor-pointer"
-                                                >
-                                                  <input
-                                                    type="radio"
-                                                    name={`countries-${collaborator.id}-${conditionIndex}`}
-                                                    checked={
-                                                      condition.countriesType ===
-                                                        option.value ||
-                                                      (condition.countriesType ===
-                                                        undefined &&
-                                                        option.value === "all")
-                                                    }
-                                                    onChange={() =>
-                                                      updateSplitCondition(
-                                                        collaborator.id,
-                                                        conditionIndex,
-                                                        "countriesType",
-                                                        option.value
-                                                      )
-                                                    }
-                                                    className="w-3 h-3"
-                                                  />
-                                                  <span>{option.label}</span>
-                                                </label>
-                                              ))}
-                                            </div>
-                                            {condition.countriesType !==
-                                              "all" && (
-                                              <Select<
-                                                {
-                                                  value: string;
-                                                  label: string;
-                                                },
-                                                true
-                                              >
-                                                isMulti
-                                                options={countries}
-                                                onChange={(selected) =>
-                                                  updateSplitCondition(
-                                                    collaborator.id,
-                                                    conditionIndex,
-                                                    "countries",
-                                                    selected || []
-                                                  )
-                                                }
-                                                styles={selectStyles}
-                                                placeholder="Seleccionar..."
-                                              />
-                                            )}
-                                          </div>
-
-                                          <div className="space-y-2">
-                                            <label className="text-sm font-medium text-quaternary">
-                                              Plataformas
-                                            </label>
-                                            <div className="flex gap-2 text-xs">
-                                              {[
-                                                {
-                                                  value: "all",
-                                                  label: "Todas",
-                                                },
-                                                {
-                                                  value: "except",
-                                                  label: "Excepto",
-                                                },
-                                                {
-                                                  value: "only",
-                                                  label: "Solo",
-                                                },
-                                              ].map((option) => (
-                                                <label
-                                                  key={option.value}
-                                                  className="flex items-center gap-1 cursor-pointer"
-                                                >
-                                                  <input
-                                                    type="radio"
-                                                    name={`platforms-${collaborator.id}-${conditionIndex}`}
-                                                    checked={
-                                                      condition.platformsType ===
-                                                        option.value ||
-                                                      (condition.platformsType ===
-                                                        undefined &&
-                                                        option.value === "all")
-                                                    }
-                                                    onChange={() =>
-                                                      updateSplitCondition(
-                                                        collaborator.id,
-                                                        conditionIndex,
-                                                        "platformsType",
-                                                        option.value
-                                                      )
-                                                    }
-                                                    className="w-3 h-3"
-                                                  />
-                                                  <span>{option.label}</span>
-                                                </label>
-                                              ))}
-                                            </div>
-                                            {condition.platformsType !==
-                                              "all" && (
-                                              <Select
-                                                isMulti
-                                                options={platforms}
-                                                onChange={(selected) =>
-                                                  updateSplitCondition(
-                                                    collaborator.id,
-                                                    conditionIndex,
-                                                    "platforms",
-                                                    selected || []
-                                                  )
-                                                }
-                                                styles={selectStyles}
-                                                placeholder="Seleccionar..."
-                                              />
-                                            )}
-                                          </div>
-                                        </div>
-                                      </motion.div>
-                                    )
-                                  )}
+                                    <div className="space-y-1.5">
+                                      <label className="flex items-center gap-1 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                        <Music className="w-3 h-3" />
+                                        Plataformas
+                                      </label>
+                                      <FilterSegment
+                                        value={
+                                          (condition.platformsType as FilterType) ||
+                                          "all"
+                                        }
+                                        onChange={(v) =>
+                                          updateCondition(
+                                            collaborator.id,
+                                            conditionIndex,
+                                            "platformsType",
+                                            v
+                                          )
+                                        }
+                                        labels={{
+                                          all: "Todas",
+                                          except: "Excepto",
+                                          only: "Solo",
+                                        }}
+                                        name={`plataformas-cond-${collaborator.id}-${conditionIndex}`}
+                                      />
+                                      {condition.platformsType &&
+                                        condition.platformsType !== "all" && (
+                                          <Select
+                                            isMulti
+                                            options={platforms}
+                                            value={
+                                              Array.isArray(
+                                                condition.selectedPlatforms
+                                              )
+                                                ? (condition.selectedPlatforms as unknown as {
+                                                    value: string;
+                                                    label: string;
+                                                  }[])
+                                                : []
+                                            }
+                                            onChange={(selected) =>
+                                              updateCondition(
+                                                collaborator.id,
+                                                conditionIndex,
+                                                "selectedPlatforms",
+                                                selected || []
+                                              )
+                                            }
+                                            styles={selectStyles}
+                                            placeholder="Seleccionar..."
+                                          />
+                                        )}
+                                    </div>
+                                  </div>
                                 </div>
-                              </div>
-                            </div>
-                          </motion.div>
+                              )
+                            )}
+                          </div>
                         )}
-                      </AnimatePresence>
-                    </motion.div>
-                  );
-                })}
-              </motion.div>
-            </div>
-
-            {/* Enhanced Footer */}
-            <div className="p-6 bg-white border-t border-gray-100">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-septenary">
-                  {collaborators.length} colaborador
-                  {collaborators.length !== 1 ? "es" : ""} configurado
-                  {collaborators.length !== 1 ? "s" : ""}
+                      </div>
+                    </div>
+                  )}
                 </div>
+              );
+            })
+          )}
+        </div>
 
-                <div className="flex items-center gap-3">
-                  <motion.button
-                    onClick={onClose}
-                    className="px-6 py-3 text-septenary hover:text-quaternary transition-colors font-medium"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    Cancelar
-                  </motion.button>
-
-                  <motion.button
-                    onClick={saveSplit}
-                    disabled={isLoading}
-                    className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-tertiary to-secondary text-white rounded-xl font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    {isLoading ? (
-                      <motion.div
-                        className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
-                        animate={{ rotate: 360 }}
-                        transition={{
-                          duration: 1,
-                          repeat: Infinity,
-                          ease: "linear",
-                        }}
-                      />
-                    ) : (
-                      <Save className="w-4 h-4" />
-                    )}
-                    {isLoading ? "Guardando..." : "Guardar Configuración"}
-                  </motion.button>
-                </div>
-              </div>
+        {/* Footer */}
+        <div className="bg-white border-t border-gray-200 px-6 py-4 flex-shrink-0">
+          {errorMessage && (
+            <div className="flex items-start gap-2 mb-3 p-3 bg-red-50 border border-red-100 rounded-lg">
+              <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-red-700">{errorMessage}</p>
             </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          )}
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-gray-500">
+              {configuredCount > 0 ? (
+                <>
+                  <span className="font-semibold text-gray-900">
+                    {configuredCount}
+                  </span>{" "}
+                  colaborador{configuredCount !== 1 ? "es" : ""} configurado
+                  {configuredCount !== 1 ? "s" : ""}
+                </>
+              ) : (
+                "Ningún colaborador configurado aún"
+              )}
+            </span>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={saveSplit}
+                disabled={isLoading || configuredCount === 0}
+                className="flex items-center gap-2 px-5 py-2 bg-[#F97316] hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg transition-colors"
+              >
+                {isLoading ? (
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4" />
+                )}
+                {isLoading
+                  ? "Guardando..."
+                  : Object.keys(collaboratorForms).some(
+                      (id) =>
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        ((collaborators.find((c) => c.id === id) as any)?.split?.conditions ?? []).length > 0
+                    )
+                  ? "Actualizar Splits"
+                  : "Guardar Splits"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 
-  // Use React Portal to render at root level
-  if (!mounted) return null;
-  
   return createPortal(modalContent, document.body);
 }

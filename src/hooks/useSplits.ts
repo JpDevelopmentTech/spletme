@@ -12,7 +12,7 @@ export const useSplits = () => {
     
     try {
       const result = await splitsService.createSplit([data]);
-      return result;
+      return result?.[0] ?? null;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error creating split';
       setError(errorMessage);

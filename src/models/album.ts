@@ -20,6 +20,7 @@ export interface Album {
   totalNetIncome: number;
   tracks: AlbumTrack[];
   releaseTitle: string;
+  coverImage?: { url: string; height: number; width: number }[][];
 }
 
 export interface AlbumsPagination {
