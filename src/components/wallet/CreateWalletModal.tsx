@@ -39,7 +39,7 @@ export default function CreateWalletModal({
     last_name: "",
     email: "",
     phone_number: "",
-    contact_type: "person",
+    contact_type: "personal",
     country: "US",
   });
 
@@ -56,7 +56,7 @@ export default function CreateWalletModal({
       last_name: "",
       email: "",
       phone_number: "",
-      contact_type: "person",
+      contact_type: "personal",
       country: "US",
     });
   }, [isOpen]);
@@ -219,7 +219,7 @@ export default function CreateWalletModal({
               <Building2 className="w-3.5 h-3.5" /> Tipo de contacto
             </label>
             <div className="flex rounded-lg border border-gray-200 bg-white p-0.5 gap-0.5">
-              {(["person", "business"] as const).map((type) => (
+              {(["personal", "business"] as const).map((type) => (
                 <button
                   key={type}
                   type="button"
@@ -232,7 +232,7 @@ export default function CreateWalletModal({
                       : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
-                  {type === "person" ? "Personal" : "Empresa"}
+                  {type === "personal" ? "Personal" : "Empresa"}
                 </button>
               ))}
             </div>
