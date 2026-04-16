@@ -1,6 +1,19 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, User, Mail, ArrowLeft, Copy, Check, Lock, Eye, EyeOff, UserPlus } from "lucide-react";
+import {
+  Camera,
+  User,
+  Mail,
+  ArrowLeft,
+  Copy,
+  Check,
+  Lock,
+  Eye,
+  EyeOff,
+  UserPlus,
+  Music4,
+  LucideLanguages,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import RegisterSubuserModal from "../../../components/modal/RegisterSubuserModal";
 import LocalStorageService from "../../../services/localstorage";
@@ -16,10 +29,12 @@ const ProfilePage = () => {
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
   const [passwordError, setPasswordError] = useState("");
   const [showSubuserModal, setShowSubuserModal] = useState(false);
+  const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
+  const availableLanguages = ["Español", "English", "Português", "Français"];
 
   // Get user data from localStorage
   const userFromStorage = LocalStorageService.getItem("user");
@@ -28,7 +43,10 @@ const ProfilePage = () => {
     name: userFromStorage.name || "jesus",
     lastName: userFromStorage.lastName || "pineda gambin",
     email: userFromStorage.email || "jesuspineda18@outlook.es",
-    userId: userFromStorage.id || "AB12CD"
+    userId: userFromStorage.id || "AB12CD",
+    onboardingData: {
+      Profession: userFromStorage.onboardingData?.Profession || "Artista",
+    },
   };
 
   const handleCopyId = async () => {
@@ -37,7 +55,7 @@ const ProfilePage = () => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy text: ', err);
+      console.error("Failed to copy text: ", err);
     }
   };
 
@@ -54,16 +72,16 @@ const ProfilePage = () => {
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setPasswordData(prev => ({
+    setPasswordData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
     setPasswordError("");
   };
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       setPasswordError("Las contraseñas nuevas no coinciden");
       return;
@@ -76,11 +94,11 @@ const ProfilePage = () => {
 
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       setPasswordData({
         currentPassword: "",
         newPassword: "",
-        confirmPassword: ""
+        confirmPassword: "",
       });
       setShowPasswordForm(false);
     } catch (error) {
@@ -103,7 +121,51 @@ const ProfilePage = () => {
           <span>Volver</span>
         </button>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+        <div className="bg-white shadow-xl p-8">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative flex justify-end"
+          >
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              type="button"
+              onClick={() => setShowLanguageDropdown((prev) => !prev)}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg "
+              aria-expanded={showLanguageDropdown}
+            >
+              <LucideLanguages size={25} className="text-indigo-600 dark:text-indigo-400" />
+              <span className="font-semibold">Español</span>
+              <span
+                className={`text-xs transition-transform duration-200 ${
+                  showLanguageDropdown ? "rotate-180" : ""
+                }`}
+              >
+                ▼
+              </span>
+            </motion.button>
+
+            <AnimatePresence>
+              {showLanguageDropdown && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  className="absolute top-12 right-0 w-48 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg z-20"
+                >
+                  {availableLanguages.map((language) => (
+                    <div
+                      key={language}
+                      className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 first:rounded-t-lg last:rounded-b-lg"
+                    >
+                      {language}
+                    </div>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
           <div className="flex flex-col items-center mb-8">
             <div className="relative group">
               <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
@@ -136,9 +198,18 @@ const ProfilePage = () => {
             <h1 className="mt-4 text-2xl font-bold text-gray-900 dark:text-white">
               {userData.name} {userData.lastName}
             </h1>
-            <p className="text-gray-500 dark:text-gray-400">@{userData.username}</p>
+            <p className="text-gray-500 dark:text-gray-400">
+              @{userData.username}
+            </p>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-2 mt-2 text-gray-600 dark:text-gray-300"
+            >
+              <Music4 className="w-6 h-6 text-indigo-500" />{" "}
+              <p className="text-lg">{userData.onboardingData?.Profession}</p>
+            </motion.div>
           </div>
-
           <div className="space-y-6">
             <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-xl text-white">
               <div className="p-3 bg-white/20 rounded-lg backdrop-blur-sm">
@@ -189,7 +260,9 @@ const ProfilePage = () => {
                 <User className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Nombre completo</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Nombre completo
+                </p>
                 <p className="text-gray-900 dark:text-white font-medium">
                   {userData.name} {userData.lastName}
                 </p>
@@ -201,7 +274,9 @@ const ProfilePage = () => {
                 <Mail className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Correo electrónico</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Correo electrónico
+                </p>
                 <p className="text-gray-900 dark:text-white font-medium">
                   {userData.email}
                 </p>
@@ -213,7 +288,9 @@ const ProfilePage = () => {
                 <User className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Nombre de usuario</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Nombre de usuario
+                </p>
                 <p className="text-gray-900 dark:text-white font-medium">
                   {userData.username}
                 </p>
@@ -249,7 +326,9 @@ const ProfilePage = () => {
                   className="flex items-center gap-2 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors duration-200"
                 >
                   <Lock className="w-4 h-4" />
-                  <span>{showPasswordForm ? "Cancelar" : "Cambiar Contraseña"}</span>
+                  <span>
+                    {showPasswordForm ? "Cancelar" : "Cambiar Contraseña"}
+                  </span>
                 </motion.button>
               </div>
 
@@ -274,10 +353,16 @@ const ProfilePage = () => {
                       />
                       <button
                         type="button"
-                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                        onClick={() =>
+                          setShowCurrentPassword(!showCurrentPassword)
+                        }
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                       >
-                        {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        {showCurrentPassword ? (
+                          <EyeOff className="w-5 h-5" />
+                        ) : (
+                          <Eye className="w-5 h-5" />
+                        )}
                       </button>
                     </div>
 
@@ -295,7 +380,11 @@ const ProfilePage = () => {
                         onClick={() => setShowNewPassword(!showNewPassword)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                       >
-                        {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        {showNewPassword ? (
+                          <EyeOff className="w-5 h-5" />
+                        ) : (
+                          <Eye className="w-5 h-5" />
+                        )}
                       </button>
                     </div>
 
@@ -310,10 +399,16 @@ const ProfilePage = () => {
                       />
                       <button
                         type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                       >
-                        {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        {showConfirmPassword ? (
+                          <EyeOff className="w-5 h-5" />
+                        ) : (
+                          <Eye className="w-5 h-5" />
+                        )}
                       </button>
                     </div>
 
@@ -348,7 +443,7 @@ const ProfilePage = () => {
         onClose={() => setShowSubuserModal(false)}
         parentUserId={userData.userId}
         onSubuserCreated={() => {
-          console.log('Subuser created successfully');
+          console.log("Subuser created successfully");
           // You can add a refresh logic here if needed
         }}
       />
@@ -356,4 +451,4 @@ const ProfilePage = () => {
   );
 };
 
-export default ProfilePage; 
+export default ProfilePage;
