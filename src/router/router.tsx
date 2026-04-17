@@ -14,6 +14,7 @@ import AlbumDetail from "../pages/panel/music/album/AlbumDetail";
 import Onboarding from "../pages/auth/onboarding";
 import EmailLogin from "../pages/auth/email-login";
 import Register from "../pages/auth/register";
+import PasswordRecoveryRequest from "../pages/auth/password-recoveryRequest";
 import Balance from "../pages/panel/balance/balance";
 import Profile from "../pages/panel/profile/profile";
 import AcceptCollaboration from "../pages/collabotarion/acceptCollaboration";
@@ -35,6 +36,10 @@ const routes = [
   {
     path: "/auth/register",
     element: <Register />
+  },
+  {
+    path: "/auth/password-recovery",
+    element: <PasswordRecoveryRequest />
   },
   {
     path: "/onboarding",
