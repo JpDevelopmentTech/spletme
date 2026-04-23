@@ -19,6 +19,44 @@ export interface PasswordRecoveryResponse {
     status: number;
 }
 
+export interface UnlinkSubuserResponse {
+    success: boolean;
+    message: string;
+}
+
+const normalizeAuthToken = (token: string | null | undefined): string => {
+    const rawToken = (token || "").trim();
+    if (!rawToken) {
+        return "";
+    }
+
+    return rawToken.replace(/^Bearer\s+/i, "").trim();
+}
+
+const getAuthHeaders = (): Record<string, string> => {
+    const token = normalizeAuthToken(localStorage.getItem("token"));
+    if (!token) {
+        return {};
+    }
+
+    return {
+        Authorization: `Bearer ${token}`
+    };
+}
+
+const getMessageFromPayload = (payload: unknown, fallback: string): string => {
+    if (
+        payload &&
+        typeof payload === "object" &&
+        "message" in payload &&
+        typeof (payload as { message?: unknown }).message === "string"
+    ) {
+        return (payload as { message: string }).message;
+    }
+
+    return fallback;
+}
+
 
 export const AuthService = {
   
@@ -59,15 +97,43 @@ export const AuthService = {
         try {
             const endpoint = URI + '/subusers';
             const response = await axios.get(endpoint, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem("token") || ""}`
-                }
+                headers: getAuthHeaders()
             });
             return response.data;
         } catch (error) {
             console.error('Error getting subusers by user:', error);
             return null;
         }
+    },
+    unlinkSubuser: async (subuserId: string): Promise<UnlinkSubuserResponse> => {
+        if (!subuserId.trim()) {
+            return {
+                success: false,
+                message: "ID de subperfil inválido"
+            };
+        }
+
+        try {
+            const endpoint = `${URI}/subusers/unlink`;
+            const response = await axios.post(endpoint, {
+                subuserId
+            }, {
+                headers: getAuthHeaders()
+            });
+
+            return {
+                success: true,
+                message: response.data?.message || "Subperfil desvinculado correctamente"
+            };
+        } catch (error) {
+            return {
+                success: false,
+                message: getMessageFromPayload(
+                    axios.isAxiosError(error) ? error.response?.data : undefined,
+                    "No se pudo desvincular el subperfil"
+                )
+            };
+        };
     },
 
     sentPasswordRecoveryRequest: async (email: string): Promise<PasswordRecoveryResponse> => {

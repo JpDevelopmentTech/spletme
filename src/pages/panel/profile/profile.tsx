@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import RegisterSubuserModal from "../../../components/modal/RegisterSubuserModal";
+import SubprofileManagementModal from "../../../components/modal/SubprofileManagementModal";
 import LocalStorageService from "../../../services/localstorage";
 import useConvertCountry  from "../../../hooks/useConvertCountry";
 
@@ -34,6 +35,7 @@ const ProfilePage = () => {
   });
   const [passwordError, setPasswordError] = useState("");
   const [showSubuserModal, setShowSubuserModal] = useState(false);
+  const [showSubprofileManagementModal, setShowSubprofileManagementModal] = useState(false);
   
   // Get user data from localStorage
   const userFromStorage = LocalStorageService.getItem("user");
@@ -276,16 +278,16 @@ const ProfilePage = () => {
             <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  Administración de Usuarios
+                  Subperfiles
                 </h2>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => setShowSubuserModal(true)}
+                  onClick={() => setShowSubprofileManagementModal(true)}
                   className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200"
                 >
                   <UserPlus className="w-4 h-4" />
-                  <span>Crear Subusuario</span>
+                  <span>Gestionar subperfiles</span>
                 </motion.button>
               </div>
             </div>
@@ -413,6 +415,12 @@ const ProfilePage = () => {
           </div>
         </div>
       </motion.div>
+
+      <SubprofileManagementModal
+        isOpen={showSubprofileManagementModal}
+        onClose={() => setShowSubprofileManagementModal(false)}
+        onOpenCreateSubprofile={() => setShowSubuserModal(true)}
+      />
 
       <RegisterSubuserModal
         isOpen={showSubuserModal}
