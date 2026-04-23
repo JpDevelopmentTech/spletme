@@ -1,6 +1,15 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, User, Mail, ArrowLeft, Copy, Check, Lock, Eye, EyeOff, UserPlus } from "lucide-react";
+import {
+  Camera,
+  User,
+  Mail,
+  ArrowLeft,
+  Copy,
+  Check,
+  Lock,
+  UserPlus,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import RegisterSubuserModal from "../../../components/modal/RegisterSubuserModal";
 import LocalStorageService from "../../../services/localstorage";
@@ -9,16 +18,6 @@ const ProfilePage = () => {
   const navigate = useNavigate();
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [showPasswordForm, setShowPasswordForm] = useState(false);
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: ""
-  });
-  const [passwordError, setPasswordError] = useState("");
   const [showSubuserModal, setShowSubuserModal] = useState(false);
 
   // Get user data from localStorage
@@ -28,7 +27,7 @@ const ProfilePage = () => {
     name: userFromStorage.name || "jesus",
     lastName: userFromStorage.lastName || "pineda gambin",
     email: userFromStorage.email || "jesuspineda18@outlook.es",
-    userId: userFromStorage.id || "AB12CD"
+    userId: userFromStorage.id || "AB12CD",
   };
 
   const handleCopyId = async () => {
@@ -37,7 +36,7 @@ const ProfilePage = () => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy text: ', err);
+      console.error("Failed to copy text: ", err);
     }
   };
 
@@ -49,42 +48,6 @@ const ProfilePage = () => {
         setProfileImage(reader.result as string);
       };
       reader.readAsDataURL(file);
-    }
-  };
-
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setPasswordData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    setPasswordError("");
-  };
-
-  const handlePasswordSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setPasswordError("Las contraseñas nuevas no coinciden");
-      return;
-    }
-
-    if (passwordData.newPassword.length < 8) {
-      setPasswordError("La nueva contraseña debe tener al menos 8 caracteres");
-      return;
-    }
-
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setPasswordData({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: ""
-      });
-      setShowPasswordForm(false);
-    } catch (error) {
-      setPasswordError("Error al cambiar la contraseña");
     }
   };
 
@@ -136,7 +99,9 @@ const ProfilePage = () => {
             <h1 className="mt-4 text-2xl font-bold text-gray-900 dark:text-white">
               {userData.name} {userData.lastName}
             </h1>
-            <p className="text-gray-500 dark:text-gray-400">@{userData.username}</p>
+            <p className="text-gray-500 dark:text-gray-400">
+              @{userData.username}
+            </p>
           </div>
 
           <div className="space-y-6">
@@ -189,7 +154,9 @@ const ProfilePage = () => {
                 <User className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Nombre completo</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Nombre completo
+                </p>
                 <p className="text-gray-900 dark:text-white font-medium">
                   {userData.name} {userData.lastName}
                 </p>
@@ -201,7 +168,9 @@ const ProfilePage = () => {
                 <Mail className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Correo electrónico</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Correo electrónico
+                </p>
                 <p className="text-gray-900 dark:text-white font-medium">
                   {userData.email}
                 </p>
@@ -213,7 +182,9 @@ const ProfilePage = () => {
                 <User className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Nombre de usuario</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Nombre de usuario
+                </p>
                 <p className="text-gray-900 dark:text-white font-medium">
                   {userData.username}
                 </p>
@@ -245,99 +216,13 @@ const ProfilePage = () => {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => setShowPasswordForm(!showPasswordForm)}
+                  onClick={() => navigate("/panel/profile/change-password")}
                   className="flex items-center gap-2 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors duration-200"
                 >
                   <Lock className="w-4 h-4" />
-                  <span>{showPasswordForm ? "Cancelar" : "Cambiar Contraseña"}</span>
+                  <span>Ir a cambiar contraseña</span>
                 </motion.button>
               </div>
-
-              <AnimatePresence>
-                {showPasswordForm && (
-                  <motion.form
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    onSubmit={handlePasswordSubmit}
-                    className="space-y-4 overflow-hidden"
-                  >
-                    <div className="relative">
-                      <input
-                        type={showCurrentPassword ? "text" : "password"}
-                        name="currentPassword"
-                        value={passwordData.currentPassword}
-                        onChange={handlePasswordChange}
-                        placeholder="Contraseña actual"
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                      >
-                        {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                      </button>
-                    </div>
-
-                    <div className="relative">
-                      <input
-                        type={showNewPassword ? "text" : "password"}
-                        name="newPassword"
-                        value={passwordData.newPassword}
-                        onChange={handlePasswordChange}
-                        placeholder="Nueva contraseña"
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowNewPassword(!showNewPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                      >
-                        {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                      </button>
-                    </div>
-
-                    <div className="relative">
-                      <input
-                        type={showConfirmPassword ? "text" : "password"}
-                        name="confirmPassword"
-                        value={passwordData.confirmPassword}
-                        onChange={handlePasswordChange}
-                        placeholder="Confirmar nueva contraseña"
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                      >
-                        {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                      </button>
-                    </div>
-
-                    {passwordError && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-red-500 text-sm"
-                      >
-                        {passwordError}
-                      </motion.p>
-                    )}
-
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      type="submit"
-                      className="w-full py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-lg hover:from-indigo-600 hover:to-indigo-700 transition-all duration-200 font-medium"
-                    >
-                      Cambiar Contraseña
-                    </motion.button>
-                  </motion.form>
-                )}
-              </AnimatePresence>
             </div>
           </div>
         </div>
@@ -348,7 +233,7 @@ const ProfilePage = () => {
         onClose={() => setShowSubuserModal(false)}
         parentUserId={userData.userId}
         onSubuserCreated={() => {
-          console.log('Subuser created successfully');
+          console.log("Subuser created successfully");
           // You can add a refresh logic here if needed
         }}
       />
@@ -356,4 +241,4 @@ const ProfilePage = () => {
   );
 };
 
-export default ProfilePage; 
+export default ProfilePage;

@@ -138,7 +138,7 @@ const CompletionStep = () => {
           </div>
           <div className="flex items-center space-x-1">
             <span className="w-2 h-2 bg-gray-500 rounded-full"></span>
-            <span>WhatsApp verificado</span>
+            <span>Cuenta verificada</span>
           </div>
         </div>
       </motion.div>

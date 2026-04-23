@@ -1,8 +1,9 @@
 import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, ShieldCheck, ArrowLeft } from "lucide-react";
+import { Mail, ShieldCheck, ArrowLeft, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AuthService } from "../../services/auth";
+import { PasswordRecoverySessionHelper } from "@/helpers/passwordRecoverySession";
 
 const CODE_LENGTH = 6;
 
@@ -12,6 +13,7 @@ export default function PasswordRecoveryRequest() {
 
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(true);
   const [isSendingRequest, setIsSendingRequest] = useState(false);
+  const [isVerifyingCode, setIsVerifyingCode] = useState(false);
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
   const [sentEmail, setSentEmail] = useState("");
@@ -45,6 +47,7 @@ export default function PasswordRecoveryRequest() {
       return;
     }
 
+    PasswordRecoverySessionHelper.clear();
     setSentEmail(normalizedEmail);
     setIsEmailModalOpen(false);
     setCodeDigits(Array(CODE_LENGTH).fill(""));
@@ -100,7 +103,7 @@ export default function PasswordRecoveryRequest() {
     }
   };
 
-  const handleVerifyCode = (e: React.FormEvent) => {
+  const handleVerifyCode = async (e: React.FormEvent) => {
     e.preventDefault();
     const fullCode = codeDigits.join("");
 
@@ -109,8 +112,25 @@ export default function PasswordRecoveryRequest() {
       return;
     }
 
+    setIsVerifyingCode(true);
     setCodeError("");
-  };
+
+    const verificationResponse = await AuthService.sentcodeForPasswordRecovery(
+      sentEmail,
+      fullCode
+    );
+
+    if (!verificationResponse.success) {
+      setCodeError(verificationResponse.message || "Código inválido o expirado");
+      setIsVerifyingCode(false);
+      return;
+    }
+
+    const verifiedCode = verificationResponse.token?.trim() || fullCode;
+    PasswordRecoverySessionHelper.save(sentEmail, verifiedCode);
+    navigate("/panel/profile/change-password", { state: { email: sentEmail, token: verifiedCode } });
+    setIsVerifyingCode(false);
+  }
 
   return (
     <section className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
@@ -161,6 +181,7 @@ export default function PasswordRecoveryRequest() {
                   onChange={(e) => handleDigitChange(index, e.target.value)}
                   onKeyDown={(e) => handleDigitKeyDown(index, e)}
                   onPaste={handleCodePaste}
+                  disabled={isVerifyingCode}
                   className="w-12 h-14 text-center text-xl font-semibold border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               ))}
@@ -174,14 +195,16 @@ export default function PasswordRecoveryRequest() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               type="submit"
-              className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold py-3 px-6 rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+              disabled={isVerifyingCode}
+              className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold py-3 px-6 rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              Validar código
+              {isVerifyingCode ? "Verificando código..." : "Validar código"}
             </motion.button>
 
             <button
               type="button"
               onClick={() => setIsEmailModalOpen(true)}
+              disabled={isVerifyingCode}
               className="w-full text-blue-600 hover:text-blue-700 text-sm font-medium"
             >
               Reenviar / cambiar correo
@@ -251,6 +274,27 @@ export default function PasswordRecoveryRequest() {
                   {isSendingRequest ? "Enviando..." : "Enviar código"}
                 </motion.button>
               </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isVerifyingCode && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4"
+          >
+            <motion.div
+              initial={{ scale: 0.96, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.96, opacity: 0, y: 10 }}
+              className="w-full max-w-xs rounded-2xl bg-white p-6 shadow-2xl flex flex-col items-center gap-3"
+            >
+              <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+              <p className="text-gray-800 font-semibold">Verificando código...</p>
             </motion.div>
           </motion.div>
         )}

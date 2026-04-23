@@ -21,6 +21,12 @@ export interface User {
     percentage?: number;
     role?: string;
     _id?: string;
+    accountVerified?: boolean;
+    accountVerification?: {
+        codeHash?: string;
+        expiresAt?: string;
+        attempts?: number;
+    };
     onboardingCompleted?: boolean;
     onboardingData?: OnboardingData;
     splitInfo?: {

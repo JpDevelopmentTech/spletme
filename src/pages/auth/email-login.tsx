@@ -11,32 +11,42 @@ export default function EmailLogin() {
   const dispatch = useDispatch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const handleForgotPassword = () => {
     navigate("/auth/password-recovery");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const response = await AuthService.login(email, password);
+    setErrorMessage("");
+    setIsSubmitting(true);
+
+    const response = await AuthService.login(email.trim().toLowerCase(), password);
     
-    if (response && response.data) {
+    if (response && response.data && response.data.token && response.data.user) {
+      const user = { ...response.data.user };
+
       localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+      localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('isAuth', 'true');
       
       // Update Redux state
       dispatch(setAuth({
         isAuth: "true",
-        user: response.data.user
+        user,
       }));
       
-      // Check if onboarding is completed
-      if (response.data.user.onboardingCompleted) {
-        navigate("/panel/home");
-      } else {
+      if (user.accountVerified === false || !user.onboardingCompleted) {
         navigate("/onboarding");
+      } else {
+        navigate("/panel/home");
       }
+    } else {
+      setErrorMessage("No pudimos iniciar sesión. Verifica tus credenciales.");
     }
+
+    setIsSubmitting(false);
   };
 
   return (
@@ -58,9 +68,15 @@ export default function EmailLogin() {
             Back to Login
           </motion.button>
 
-          <h1 className="text-3xl font-bold text-gray-800 mb-6">Sign in with Email</h1>
+            <h1 className="text-3xl font-bold text-gray-800 mb-6">Sign in with Email</h1>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+            {errorMessage && (
+              <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {errorMessage}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                 Email Address
@@ -125,16 +141,17 @@ export default function EmailLogin() {
               </div>
             </div>
 
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              type="submit"
-              className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold py-3 px-6 rounded-xl 
-                       hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold py-3 px-6 rounded-xl 
+                       hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed
                        shadow-lg hover:shadow-xl flex items-center justify-center gap-3"
-            >
-              Sign in
-            </motion.button>
+              >
+                {isSubmitting ? "Signing in..." : "Sign in"}
+              </motion.button>
           </form>
         </motion.div>
       </div>

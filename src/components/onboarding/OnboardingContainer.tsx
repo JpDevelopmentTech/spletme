@@ -11,6 +11,8 @@ import { OnboardingService, OnboardingData } from "../../services/onboarding";
 const OnboardingContainer = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
+  const [verificationEmail, setVerificationEmail] = useState("");
+  const [onboardingError, setOnboardingError] = useState("");
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({
     currentStep: 1,
   });
@@ -21,16 +23,27 @@ const OnboardingContainer = () => {
     const userStr = localStorage.getItem("user");
     if (userStr) {
       const user = JSON.parse(userStr);
-      if (user.onboardingCompleted) {
+      const isAccountVerified = user.accountVerified !== false;
+      const email = typeof user.email === "string" ? user.email.trim().toLowerCase() : "";
+      const storedStep = user.onboardingData?.currentStep || 1;
+      const initialStep = isAccountVerified ? storedStep : Math.min(storedStep, 4);
+
+      if (email) {
+        setVerificationEmail(email);
+      }
+
+      if (user.onboardingCompleted && isAccountVerified) {
         // Redirect to dashboard if already completed
         navigate("/panel/home");
         return;
       }
-      // Load existing onboarding data
-      if (user.onboardingData) {
-        setOnboardingData(user.onboardingData);
-        setCurrentStep(user.onboardingData.currentStep || 1);
-      }
+
+      setCurrentStep(initialStep);
+      setOnboardingData((prev) => ({
+        ...prev,
+        ...(user.onboardingData || {}),
+        currentStep: initialStep,
+      }));
     }
   }, [navigate]);
 
@@ -59,8 +72,34 @@ const OnboardingContainer = () => {
 
   const nextStep = async (stepData?: Partial<OnboardingData>) => {
     if (currentStep < totalSteps) {
+      setOnboardingError("");
       const nextStepNumber = currentStep + 1;
       if (stepData) {
+        if (nextStepNumber === 4) {
+          if (!verificationEmail) {
+            setOnboardingError("No encontramos un correo para enviar el código de verificación.");
+            return;
+          }
+
+          try {
+            const requestResponse = await OnboardingService.requestAccountVerificationCode(
+              verificationEmail,
+            );
+
+            if (!requestResponse.accepted) {
+              setOnboardingError("No fue posible enviar el código de verificación.");
+              return;
+            }
+          } catch (error) {
+            setOnboardingError(
+              error instanceof Error
+                ? error.message
+                : "No fue posible enviar el código de verificación.",
+            );
+            return;
+          }
+        }
+
         const success = await updateOnboardingStep(stepData, nextStepNumber);
         if (success) {
           setCurrentStep(nextStepNumber);
@@ -75,6 +114,8 @@ const OnboardingContainer = () => {
               localStorage.setItem("user", JSON.stringify(user));
             }
           }
+        } else {
+          setOnboardingError("No pudimos guardar tu progreso. Intenta nuevamente.");
         }
       } else {
         setCurrentStep(nextStepNumber);
@@ -113,9 +154,16 @@ const OnboardingContainer = () => {
     {
       id: 4,
       title: "Verificación",
-      description: "Confirma tu número",
-      icon: "📱",
-      component: <VerificationStep nextStep={nextStep} prevStep={prevStep} initialData={onboardingData} />
+      description: "Confirma tu correo",
+      icon: "📧",
+      component: (
+        <VerificationStep
+          nextStep={nextStep}
+          prevStep={prevStep}
+          initialData={onboardingData}
+          verificationEmail={verificationEmail}
+        />
+      )
     },
     {
       id: 5,
@@ -268,6 +316,12 @@ const OnboardingContainer = () => {
                 {currentStepData.description}
               </motion.p>
             </div>
+
+            {onboardingError && (
+              <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
+                {onboardingError}
+              </div>
+            )}
 
             <AnimatePresence mode="wait">
               <motion.div

@@ -1,17 +1,26 @@
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { OnboardingData } from "../../../services/onboarding";
+import { OnboardingData, OnboardingService } from "../../../services/onboarding";
 
 interface VerificationStepProps {
   nextStep: (data?: Partial<OnboardingData>) => void;
   prevStep: () => void;
   initialData?: OnboardingData;
+  verificationEmail: string;
 }
 
-const VerificationStep = ({ nextStep, prevStep, initialData }: VerificationStepProps) => {
+const CODE_LENGTH = 6;
+
+const VerificationStep = ({
+  nextStep,
+  prevStep,
+  verificationEmail,
+}: VerificationStepProps) => {
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [isResending, setIsResending] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   const [countdown, setCountdown] = useState(60);
+  const [successMessage, setSuccessMessage] = useState("");
   const [error, setError] = useState("");
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -23,15 +32,15 @@ const VerificationStep = ({ nextStep, prevStep, initialData }: VerificationStepP
   }, [countdown]);
 
   const handleInputChange = (index: number, value: string) => {
-    if (value.length > 1) return;
-    
+    const digit = value.replace(/\D/g, "").slice(-1);
     const newCode = [...code];
-    newCode[index] = value;
+    newCode[index] = digit;
     setCode(newCode);
     setError("");
+    setSuccessMessage("");
 
     // Auto-focus next input
-    if (value && index < 5) {
+    if (digit && index < CODE_LENGTH - 1) {
       inputRefs.current[index + 1]?.focus();
     }
   };
@@ -44,38 +53,59 @@ const VerificationStep = ({ nextStep, prevStep, initialData }: VerificationStepP
 
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData("text").slice(0, 6);
+    const pastedData = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, CODE_LENGTH);
     const newCode = [...code];
     
-    for (let i = 0; i < pastedData.length && i < 6; i++) {
-      if (/^\d$/.test(pastedData[i])) {
-        newCode[i] = pastedData[i];
-      }
+    for (let i = 0; i < pastedData.length && i < CODE_LENGTH; i++) {
+      newCode[i] = pastedData[i];
     }
     
     setCode(newCode);
     setError("");
+    setSuccessMessage("");
     
     // Focus the next empty input or the last one
     const nextEmptyIndex = newCode.findIndex(digit => digit === "");
-    const focusIndex = nextEmptyIndex === -1 ? 5 : nextEmptyIndex;
+    const focusIndex = nextEmptyIndex === -1 ? CODE_LENGTH - 1 : nextEmptyIndex;
     inputRefs.current[focusIndex]?.focus();
   };
 
   const handleResendCode = async () => {
+    if (!verificationEmail) {
+      setError("No encontramos tu correo para reenviar el código.");
+      return;
+    }
+
+    setError("");
+    setSuccessMessage("");
     setIsResending(true);
-    setCountdown(60);
-    
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const response = await OnboardingService.requestAccountVerificationCode(
+        verificationEmail,
+      );
+
+      if (!response.accepted) {
+        setError("No fue posible reenviar el código.");
+        return;
+      }
+
+      setCountdown(60);
+      setSuccessMessage("Te enviamos un nuevo código de verificación.");
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "No fue posible reenviar el código.",
+      );
+    } finally {
       setIsResending(false);
-    }, 2000);
+    }
   };
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
     const fullCode = code.join("");
     
-    if (fullCode.length !== 6) {
+    if (fullCode.length !== CODE_LENGTH) {
       setError("Por favor ingresa el código completo");
       return;
     }
@@ -85,20 +115,51 @@ const VerificationStep = ({ nextStep, prevStep, initialData }: VerificationStepP
       return;
     }
 
-    // Simulate verification
-    if (fullCode === "123456") {
+    if (!verificationEmail) {
+      setError("No encontramos tu correo para validar el código.");
+      return;
+    }
+
+    setIsVerifying(true);
+    setError("");
+    setSuccessMessage("");
+
+    try {
+      const verificationResponse = await OnboardingService.verifyAccountCode(
+        verificationEmail,
+        fullCode,
+      );
+
+      if (!verificationResponse.verified) {
+        setError("Código inválido o expirado.");
+        return;
+      }
+
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        user.accountVerified = true;
+        localStorage.setItem("user", JSON.stringify(user));
+      }
+
       nextStep({
         whatsappVerified: true,
       });
-    } else {
-      setError("Código incorrecto. Intenta nuevamente.");
+    } catch (verificationError) {
+      setError(
+        verificationError instanceof Error
+          ? verificationError.message
+          : "Código inválido o expirado.",
+      );
       setCode(["", "", "", "", "", ""]);
       inputRefs.current[0]?.focus();
+    } finally {
+      setIsVerifying(false);
     }
   };
 
   const isCodeComplete = code.every(digit => digit !== "");
-  const phoneNumber = initialData?.phone || "+57 300 123 4567";
+  const emailToVerify = verificationEmail || "tu correo";
 
   return (
     <div className="space-y-6">
@@ -110,17 +171,17 @@ const VerificationStep = ({ nextStep, prevStep, initialData }: VerificationStepP
           transition={{ delay: 0.2 }}
           className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-gray-400 to-gray-600 rounded-full text-white text-3xl shadow-lg"
         >
-          📱
+          📧
         </motion.div>
         
         <div>
           <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-            Verifica tu número de WhatsApp
+            Verifica tu cuenta
           </h3>
           <p className="text-gray-600 dark:text-gray-400">
             Hemos enviado un código de verificación a{" "}
             <span className="font-semibold text-gray-900 dark:text-white">
-              {phoneNumber}
+              {emailToVerify}
             </span>
           </p>
         </div>
@@ -173,6 +234,18 @@ const VerificationStep = ({ nextStep, prevStep, initialData }: VerificationStepP
             </p>
           </motion.div>
         )}
+
+        {successMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center"
+          >
+            <p className="text-sm text-green-600 dark:text-green-400">
+              {successMessage}
+            </p>
+          </motion.div>
+        )}
       </motion.div>
 
       {/* Resend Code */}
@@ -196,7 +269,7 @@ const VerificationStep = ({ nextStep, prevStep, initialData }: VerificationStepP
         ) : (
           <button
             onClick={handleResendCode}
-            disabled={isResending}
+            disabled={isResending || isVerifying}
             className="text-sm font-semibold text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors duration-200 disabled:opacity-50"
           >
             {isResending ? (
@@ -225,31 +298,11 @@ const VerificationStep = ({ nextStep, prevStep, initialData }: VerificationStepP
               Consejos para recibir el código
             </h4>
             <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
-              <li>• Verifica que WhatsApp esté instalado y activo</li>
-              <li>• Revisa tu bandeja de mensajes de WhatsApp</li>
+              <li>• Revisa tu bandeja de entrada y spam</li>
+              <li>• Verifica que tu correo sea correcto</li>
               <li>• Asegúrate de tener conexión a internet</li>
               <li>• El código expira en 10 minutos</li>
             </ul>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Demo Code Info */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-        className="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4 border border-yellow-200 dark:border-yellow-800"
-      >
-        <div className="flex items-start space-x-3">
-          <div className="text-yellow-500 text-xl">🧪</div>
-          <div>
-            <h4 className="font-semibold text-yellow-900 dark:text-yellow-100 mb-1">
-              Modo Demo
-            </h4>
-            <p className="text-sm text-yellow-700 dark:text-yellow-300">
-              Para esta demostración, usa el código: <span className="font-mono font-bold">123456</span>
-            </p>
           </div>
         </div>
       </motion.div>
@@ -258,11 +311,12 @@ const VerificationStep = ({ nextStep, prevStep, initialData }: VerificationStepP
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7 }}
+        transition={{ delay: 0.6 }}
         className="flex space-x-4 pt-6"
       >
         <button
           onClick={prevStep}
+          disabled={isVerifying}
           className="flex-1 py-3 px-6 rounded-xl font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-all duration-300"
         >
           ← Anterior
@@ -270,14 +324,14 @@ const VerificationStep = ({ nextStep, prevStep, initialData }: VerificationStepP
         
         <button
           onClick={handleVerify}
-          disabled={!isCodeComplete}
+          disabled={!isCodeComplete || isVerifying}
           className={`flex-1 py-3 px-6 rounded-xl font-semibold text-white transition-all duration-300 ${
-            isCodeComplete
+            isCodeComplete && !isVerifying
               ? "bg-gradient-to-r from-gray-500 to-gray-700 hover:from-gray-600 hover:to-gray-800 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               : "bg-gray-300 cursor-not-allowed dark:bg-gray-600"
           }`}
         >
-          Verificar →
+          {isVerifying ? "Verificando..." : "Verificar →"}
         </button>
       </motion.div>
     </div>

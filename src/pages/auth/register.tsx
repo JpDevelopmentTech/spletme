@@ -3,6 +3,7 @@ import { Mail, Lock, User, ArrowLeft, UserCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { AuthService } from "../../services/auth";
+import { OnboardingService } from "../../services/onboarding";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -14,6 +15,9 @@ export default function Register() {
     password: "",
     passwordConfirmation: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -25,10 +29,29 @@ export default function Register() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage("");
+    setSuccessMessage("");
+    setIsSubmitting(true);
+
     const response = await AuthService.register(formData);
-    if(response) {
-      navigate('/auth/email-login');
+    if (!response) {
+      setErrorMessage("No se pudo crear la cuenta. Intenta nuevamente.");
+      setIsSubmitting(false);
+      return;
     }
+
+    try {
+      await OnboardingService.requestAccountVerificationCode(formData.email);
+    } catch {
+      // El backend ya envía el código al registrarse; ignoramos fallos del reenvío explícito.
+    }
+
+    setSuccessMessage("Cuenta creada. Te enviamos un código de verificación a tu correo.");
+    setIsSubmitting(false);
+
+    setTimeout(() => {
+      navigate('/auth/email-login');
+    }, 1200);
   };
 
   return (
@@ -51,6 +74,18 @@ export default function Register() {
           </motion.button>
 
           <h1 className="text-3xl font-bold text-gray-800 mb-6">Create Account</h1>
+
+          {errorMessage && (
+            <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {errorMessage}
+            </div>
+          )}
+
+          {successMessage && (
+            <div className="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+              {successMessage}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
@@ -181,16 +216,17 @@ export default function Register() {
               </div>
             </div>
 
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              type="submit"
-              className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold py-3 px-6 rounded-xl 
-                       hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold py-3 px-6 rounded-xl 
+                       hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed
                        shadow-lg hover:shadow-xl flex items-center justify-center gap-3"
-            >
-              Create Account
-            </motion.button>
+              >
+                {isSubmitting ? "Creating account..." : "Create Account"}
+              </motion.button>
 
             <p className="text-center text-sm text-gray-600">
               By creating an account, you agree to our{" "}
