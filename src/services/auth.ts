@@ -13,6 +13,13 @@ export interface RegisterSubuserSchema {
     lastName: string;
 }
 
+export interface PasswordRecoveryResponse {
+    success: boolean;
+    message: string;
+    status: number;
+}
+
+
 export const AuthService = {
   
     login: async (email: string, password: string) => {
@@ -60,6 +67,36 @@ export const AuthService = {
         } catch (error) {
             console.error('Error getting subusers by user:', error);
             return null;
+        }
+    },
+
+    sentPasswordRecoveryRequest: async (email: string): Promise<PasswordRecoveryResponse> => {
+        try {
+            const endpoint = URI + '/password-recovery/request';
+            const response = await axios.post(endpoint, { email }, {
+                validateStatus: (status) =>
+                    (status >= 200 && status < 300) || status === 404 || status === 409
+            });
+
+            if (response.status === 404 || response.status === 409) {
+                return {
+                    success: false,
+                    message: 'correo no encontrado',
+                    status: response.status
+                };
+            }
+
+            return {
+                success: true,
+                message: response.data?.message || 'If the email exists, the recovery code was sent',
+                status: response.status
+            };
+        } catch (error) {
+            if (axios.isAxiosError(error) && (error.response?.status === 404 || error.response?.status === 409)) {
+                return { success: false, message: 'correo no encontrado', status: error.response.status };
+            }
+
+            return { success: false, message: 'No se pudo enviar el código', status: 500 };
         }
     }
 }

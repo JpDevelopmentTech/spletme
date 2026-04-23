@@ -13,10 +13,13 @@ import {
   UserPlus,
   Music4,
   LucideLanguages,
+  Earth,
+  MapPinHouseIcon,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import RegisterSubuserModal from "../../../components/modal/RegisterSubuserModal";
 import LocalStorageService from "../../../services/localstorage";
+import useConvertCountry  from "../../../hooks/useConvertCountry";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -36,6 +39,7 @@ const ProfilePage = () => {
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
   const availableLanguages = ["Español", "English", "Português", "Français"];
 
+  
   // Get user data from localStorage
   const userFromStorage = LocalStorageService.getItem("user");
   const userData = {
@@ -46,8 +50,12 @@ const ProfilePage = () => {
     userId: userFromStorage.id || "AB12CD",
     onboardingData: {
       Profession: userFromStorage.onboardingData?.Profession || "Artista",
+      country: userFromStorage.onboardingData?.country || "Colombia",
+      address:
+      userFromStorage.onboardingData?.address || "Calle 123 #45-67, Bogotá",
     },
   };
+  const countryName = useConvertCountry(userData.onboardingData.country);
 
   const handleCopyId = async () => {
     try {
@@ -208,6 +216,31 @@ const ProfilePage = () => {
             >
               <Music4 className="w-6 h-6 text-indigo-500" />{" "}
               <p className="text-lg">{userData.onboardingData?.Profession}</p>
+          </div>
+          <div className="flex gap-2">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 2, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="flex justify-center items-center w-fit rounded-2xl py-3 px-5 m-2 gap-2"
+            >
+              <Earth className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              <div>
+                <p>Pais</p>
+                <p className="text-sm">{countryName}</p>
+              </div>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 2, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="flex justify-center items-center w-fit rounded-2xl py-3 px-5 m-2 gap-2"
+            >
+              <MapPinHouseIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              <div>
+                <p>Dirección</p>
+                <p className="text-sm">{userData.onboardingData.address}</p>
+              </div>
             </motion.div>
           </div>
           <div className="space-y-6">
