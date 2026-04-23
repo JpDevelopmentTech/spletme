@@ -23,6 +23,7 @@ import Stripe from "../pages/panel/stripe/stripe";
 import LabelsTable from "../pages/panel/labels/labelsTable";
 import LabelDetail from "../pages/panel/labels/labelDetail";
 import CustomLabelDetail from "../pages/panel/labels/customLabelDetail";
+import ChangePasswordPage from "@/pages/panel/profile/change-password";
 
 const routes = [
   {
@@ -113,6 +114,10 @@ const routes = [
       {
         path: "profile",
         element: <Profile />
+      },
+      {
+        path: "change-password",
+        element: <ChangePasswordPage />
       },
       {
         path: "labels",

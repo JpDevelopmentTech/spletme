@@ -216,7 +216,7 @@ const ProfilePage = () => {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => navigate("/panel/profile/change-password")}
+                  onClick={() => navigate("/panel/change-password")}
                   className="flex items-center gap-2 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors duration-200"
                 >
                   <Lock className="w-4 h-4" />

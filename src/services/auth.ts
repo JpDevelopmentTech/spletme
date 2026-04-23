@@ -243,17 +243,14 @@ export const AuthService = {
   },
 
   changePassword: async (
-    email: string,
     newPassword: string,
     newPasswordConfirmation: string,
     currentPassword?: string,
     token?: string,
-    userId?: string,
   ): Promise<ChangePasswordResponse> => {
     try {
       const endpoint = URI + "/password/change";
-      const authToken = normalizeAuthToken(token || localStorage.getItem("token"));
-      const normalizedEmail = email.trim().toLowerCase();
+      const authToken = token || localStorage.getItem("token");
       if (!authToken) {
         return {
           success: false,
@@ -262,20 +259,10 @@ export const AuthService = {
         };
       }
 
-      if (!normalizedEmail) {
-        return {
-          success: false,
-          message: "Debes enviar un correo válido",
-          status: 400,
-        };
-      }
-
       const payload = {
-        email: normalizedEmail,
         newPassword,
         newPasswordConfirmation,
         token: authToken,
-        ...(userId ? { userId, userid: userId } : {}),
         ...(currentPassword ? { currentPassword } : {}),
       };
 

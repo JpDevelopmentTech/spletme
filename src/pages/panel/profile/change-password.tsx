@@ -25,7 +25,6 @@ const ChangePasswordPage = () => {
   const recoveryToken = stateRecoveryToken || persistedRecoverySession?.verificationCode || "";
   const userFromStorage = LocalStorageService.getItem("user");
   const authToken = (localStorage.getItem("token") || "").trim();
-  const currentUserId = (userFromStorage.id || userFromStorage.userId || "").toString().trim();
   const userEmail = (userFromStorage.email || "").toString().trim().toLowerCase();
   const canUseRecoveryFlow = Boolean(recoveryEmail && recoveryToken);
   const canUseUserFlow = Boolean(authToken);
@@ -98,12 +97,10 @@ const ChangePasswordPage = () => {
             passwordData.confirmPassword
           )
         : await AuthService.changePassword(
-            normalizedEmail,
             passwordData.newPassword,
             passwordData.confirmPassword,
             passwordData.currentPassword,
             authToken,
-            currentUserId
           );
 
       if (!response.success) {
@@ -183,18 +180,7 @@ const ChangePasswordPage = () => {
             onSubmit={handlePasswordSubmit}
             className="space-y-4"
           >
-            <div className="relative">
-              <input
-                type="email"
-                name="email"
-                value={passwordData.email}
-                onChange={handlePasswordChange}
-                placeholder="Correo electrónico"
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                required
-                disabled={isSubmitting}
-              />
-            </div>
+
 
             <div className="relative">
               <input
