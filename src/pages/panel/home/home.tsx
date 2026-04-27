@@ -189,18 +189,16 @@ export default function Home() {
       <div className="min-h-screen bg-[#F7F8FA]">
         <div className="px-6 lg:px-10 py-8 flex flex-col gap-7">
           {/* Header */}
-          <div
-            className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
-            data-tour="hero-header"
-          >
+          <div data-tour="hero-header" className="flex flex-col gap-1.5">
             <div className="flex flex-col gap-1">
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-[#111827]">
                 Bienvenido de vuelta, {user?.name}
               </h1>
-              <p className="text-sm text-gray-500">
-                Aqui lo que ha pasado con tu musica los ultimos dias
+              <p className="text-sm text-[#6B7280]">
+                Aquí lo que ha pasado con tu música los últimos días
               </p>
             </div>
+            <div className="w-10 h-0.5 rounded-full bg-[#F97316]" />
           </div>
 
           {/* Stats Row */}
@@ -223,11 +221,10 @@ export default function Home() {
               </span>
             </div>
 
-
-            {/* Total Revenue */}
+            {/* Ingresos Totales */}
             <div className="bg-white col-span-4 rounded-xl p-5 border border-gray-200">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-medium text-gray-500">Total Revenue</span>
+                <span className="text-xs font-medium text-gray-500">Ingresos Totales</span>
                 <DollarSign className="w-4 h-4 text-green-500" />
               </div>
               <p className="text-[28px] font-bold text-green-500 leading-tight">
@@ -238,10 +235,10 @@ export default function Home() {
               </span>
             </div>
 
-            {/* Total Songs */}
+            {/* Canciones */}
             <div className="bg-white col-span-4 rounded-xl p-5 border border-gray-200">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-medium text-gray-500">Total Songs</span>
+                <span className="text-xs font-medium text-gray-500">Canciones</span>
                 <Music className="w-4 h-4 text-gray-400" />
               </div>
               <p className="text-[28px] font-bold text-gray-900 leading-tight">
@@ -256,8 +253,8 @@ export default function Home() {
                 {/* Chart Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                   <div className="flex flex-col gap-0.5">
-                    <h2 className="text-base font-semibold text-gray-900">Performance</h2>
-                    <p className="text-xs text-gray-400">Streams & revenue over time</p>
+                    <h2 className="text-base font-semibold text-gray-900">Rendimiento</h2>
+                    <p className="text-xs text-gray-400">Streams e ingresos en el tiempo</p>
                   </div>
                   <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
                     {timeframeOptions.map((option) => (
@@ -283,7 +280,7 @@ export default function Home() {
                   </div>
                   <div className="flex items-center gap-1.5">
                     <div className="w-2 h-2 bg-green-500 rounded-sm" />
-                    <span className="text-[11px] text-gray-500">Revenue</span>
+                    <span className="text-[11px] text-gray-500">Ingresos</span>
                   </div>
                 </div>
 
@@ -303,7 +300,7 @@ export default function Home() {
             {/* Net Balance */}
             <div className="bg-white rounded-xl p-5 border border-gray-200 col-span-2">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-medium text-gray-500">Net Balance</span>
+                <span className="text-xs font-medium text-gray-500">Balance Neto</span>
                 <PiggyBank className="w-4 h-4 text-gray-400" />
               </div>
               <p className="text-[28px] font-bold text-gray-900 leading-tight">
@@ -334,16 +331,16 @@ export default function Home() {
                 <>
                   {/* Wallet Header */}
                   <div className="flex items-center justify-between">
-                    <h2 className="text-base font-semibold text-gray-900">Wallet</h2>
+                    <h2 className="text-base font-semibold text-gray-900">Billetera</h2>
                     <span className="px-2.5 py-1 bg-green-50 text-green-500 text-[11px] font-semibold rounded-full">
-                      Active
+                      Activa
                     </span>
                   </div>
 
                   {/* Balance */}
                   <div className="flex flex-col gap-1 py-4 border-y border-gray-100">
                     <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">
-                      Available Balance
+                      Balance Disponible
                     </span>
                     <span className="text-[32px] font-bold text-green-500 leading-tight">
                       ${Number(wallet.accounts?.[0]?.balance || 0).toLocaleString("en-US", {
@@ -362,7 +359,7 @@ export default function Home() {
                     >
                       <div className="flex items-center gap-2.5">
                         <Send className="w-4 h-4" />
-                        <span className="text-[13px] font-semibold">Send Money</span>
+                        <span className="text-[13px] font-semibold">Enviar dinero</span>
                       </div>
                       <ChevronRight className="w-4 h-4" />
                     </button>
@@ -373,7 +370,7 @@ export default function Home() {
                     >
                       <div className="flex items-center gap-2.5">
                         <DollarSign className="w-4 h-4 text-gray-500" />
-                        <span className="text-[13px] font-medium text-gray-700">Withdraw Funds</span>
+                        <span className="text-[13px] font-medium text-gray-700">Retirar fondos</span>
                       </div>
                       <ChevronRight className="w-4 h-4 text-gray-400" />
                     </button>
@@ -381,7 +378,7 @@ export default function Home() {
                     <button className="w-full flex items-center justify-between px-4 py-3 bg-[#F7F8FA] border border-gray-200 rounded-[10px] hover:bg-gray-100 transition-colors">
                       <div className="flex items-center gap-2.5">
                         <History className="w-4 h-4 text-gray-500" />
-                        <span className="text-[13px] font-medium text-gray-700">View History</span>
+                        <span className="text-[13px] font-medium text-gray-700">Ver historial</span>
                       </div>
                       <ChevronRight className="w-4 h-4 text-gray-400" />
                     </button>
@@ -389,17 +386,17 @@ export default function Home() {
                 </>
               ) : (
                 <>
-                  {/* No Wallet */}
+                  {/* Sin billetera */}
                   <div className="flex items-center justify-between">
-                    <h2 className="text-base font-semibold text-gray-900">Wallet</h2>
+                    <h2 className="text-base font-semibold text-gray-900">Billetera</h2>
                   </div>
                   <div className="flex flex-col items-center text-center py-6 gap-3">
                     <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center">
                       <Wallet className="w-6 h-6 text-white" />
                     </div>
-                    <h3 className="text-sm font-semibold text-gray-900">No Wallet Connected</h3>
+                    <h3 className="text-sm font-semibold text-gray-900">Sin billetera conectada</h3>
                     <p className="text-xs text-gray-500">
-                      Create your payment wallet to start receiving payments
+                      Crea tu billetera de pago para comenzar a recibir pagos
                     </p>
                   </div>
                   <button
@@ -407,7 +404,7 @@ export default function Home() {
                     className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-orange-500 text-white rounded-[10px] text-[13px] font-semibold hover:bg-orange-600 transition-colors"
                   >
                     <Plus className="w-4 h-4" />
-                    Create Wallet
+                    Crear billetera
                   </button>
                 </>
               )}
@@ -420,12 +417,12 @@ export default function Home() {
               <div className="flex flex-col gap-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
-                  <h2 className="text-base font-semibold text-gray-900">Top Songs</h2>
+                  <h2 className="text-base font-semibold text-gray-900">Canciones Principales</h2>
                   <Link
                     to="/panel/music"
                     className="text-xs font-medium text-orange-500 hover:text-orange-600 transition-colors"
                   >
-                    View all
+                    Ver todas
                   </Link>
                 </div>
 
@@ -435,16 +432,16 @@ export default function Home() {
                     {/* Table Header */}
                     <div className="flex items-center py-2.5 border-b border-gray-100">
                       <div className="flex-1">
-                        <span className="text-[11px] font-semibold text-gray-400 uppercase">Song</span>
+                        <span className="text-[11px] font-semibold text-gray-400 uppercase">Canción</span>
                       </div>
                       <div className="w-[100px]">
                         <span className="text-[11px] font-semibold text-gray-400 uppercase">Streams</span>
                       </div>
                       <div className="w-[100px]">
-                        <span className="text-[11px] font-semibold text-gray-400 uppercase">Revenue</span>
+                        <span className="text-[11px] font-semibold text-gray-400 uppercase">Ingresos</span>
                       </div>
                       <div className="w-[80px]">
-                        <span className="text-[11px] font-semibold text-gray-400 uppercase">Status</span>
+                        <span className="text-[11px] font-semibold text-gray-400 uppercase">Estado</span>
                       </div>
                     </div>
 
@@ -471,7 +468,7 @@ export default function Home() {
 
                         <div className="flex-1 flex flex-col gap-0.5 min-w-0">
                           <span className="text-[13px] font-semibold text-gray-900 truncate">
-                            {song.trackTitle || `Song ${index + 1}`}
+                            {song.trackTitle || `Canción ${index + 1}`}
                           </span>
                           <span className="text-[11px] text-gray-400 truncate">
                             {song.artistName || ""}
@@ -494,7 +491,7 @@ export default function Home() {
                               : "bg-gray-100 text-gray-500"
                               }`}
                           >
-                            {index === 0 ? "Trending" : "Stable"}
+                            {index === 0 ? "Tendencia" : "Estable"}
                           </span>
                         </div>
                       </div>
@@ -505,16 +502,16 @@ export default function Home() {
                     <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center">
                       <Music className="w-7 h-7 text-gray-400" />
                     </div>
-                    <h3 className="text-sm font-semibold text-gray-700">No songs yet</h3>
+                    <h3 className="text-sm font-semibold text-gray-700">Sin canciones aún</h3>
                     <p className="text-xs text-gray-400 text-center max-w-xs">
-                      Upload your first song to start tracking your music performance
+                      Sube tu primera canción para comenzar a ver el rendimiento de tu música
                     </p>
                     <Link
                       to="/panel/music"
                       className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white text-xs font-semibold rounded-lg hover:bg-orange-600 transition-colors"
                     >
                       <Music className="w-4 h-4" />
-                      Upload song
+                      Subir canción
                     </Link>
                   </div>
                 )}
@@ -527,19 +524,6 @@ export default function Home() {
           </div>
 
 
-          {/* Bottom Row: Platforms + Top Songs */}
-          <div className="flex flex-col xl:flex-row gap-4">
-            {/* Platforms */}
-            <div
-              className="w-full xl:w-[360px]"
-              data-tour="platforms-section"
-            >
-
-            </div>
-
-            {/* Top Songs */}
-        
-          </div>
         </div>
       </div>
 

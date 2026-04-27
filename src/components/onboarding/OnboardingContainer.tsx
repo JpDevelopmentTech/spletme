@@ -23,26 +23,23 @@ const OnboardingContainer = () => {
     const userStr = localStorage.getItem("user");
     if (userStr) {
       const user = JSON.parse(userStr);
-      const isAccountVerified = user.accountVerified !== false;
       const email = typeof user.email === "string" ? user.email.trim().toLowerCase() : "";
       const storedStep = user.onboardingData?.currentStep || 1;
-      const initialStep = isAccountVerified ? storedStep : Math.min(storedStep, 4);
 
       if (email) {
         setVerificationEmail(email);
       }
 
-      if (user.onboardingCompleted && isAccountVerified) {
-        // Redirect to dashboard if already completed
+      if (user.onboardingCompleted) {
         navigate("/panel/home");
         return;
       }
 
-      setCurrentStep(initialStep);
+      setCurrentStep(storedStep);
       setOnboardingData((prev) => ({
         ...prev,
         ...(user.onboardingData || {}),
-        currentStep: initialStep,
+        currentStep: storedStep,
       }));
     }
   }, [navigate]);

@@ -25,13 +25,13 @@ interface UserData {
 }
 
 const navItems = [
-  { to: "/panel/home", label: "Overview", icon: Home },
-  { to: "/panel/music", label: "Music", icon: Music },
-  { to: "/panel/dealers", label: "Distributors", icon: Handshake },
-  { to: "/panel/collaborators", label: "Collaborators", icon: Users },
-  { to: "/panel/labels", label: "Labels", icon: Tag },
-  { to: "/panel/balance", label: "Analytics", icon: BarChart2 },
-  { to: "/panel/wallet", label: "Wallet", icon: Wallet },
+  { to: "/panel/home", label: "Inicio", icon: Home },
+  { to: "/panel/music", label: "Música", icon: Music },
+  { to: "/panel/dealers", label: "Distribuidores", icon: Handshake },
+  { to: "/panel/collaborators", label: "Colaboradores", icon: Users },
+  { to: "/panel/labels", label: "Etiquetas", icon: Tag },
+  { to: "/panel/balance", label: "Analíticas", icon: BarChart2 },
+  { to: "/panel/wallet", label: "Billetera", icon: Wallet },
 ];
 
 export default function Sidebar() {
@@ -56,139 +56,187 @@ export default function Sidebar() {
     logout({ logoutParams: { returnTo: window.location.origin } });
   };
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
   const displayName = userData?.name || user?.name || "User";
   const displayEmail = userData?.email || user?.email || "";
   const initials =
     (displayName.charAt(0) || "U").toUpperCase() +
-    (userData?.lastName?.charAt(0) || displayName.split(" ")[1]?.charAt(0) || "").toUpperCase();
+    (
+      userData?.lastName?.charAt(0) ||
+      displayName.split(" ")[1]?.charAt(0) ||
+      ""
+    ).toUpperCase();
 
   return (
     <>
-      {/* Mobile Menu Button */}
+      {/* Mobile menu button */}
       <button
-        onClick={toggleMobileMenu}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2.5 bg-white rounded-xl shadow-md border border-gray-200"
+        onClick={() => setIsMobileMenuOpen(true)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2.5 rounded-xl transition-colors"
+        style={{ backgroundColor: "#0F172A", border: "1px solid #1E293B" }}
       >
-        <Menu className="w-5 h-5 text-gray-700" />
+        <Menu className="w-5 h-5 text-white" />
       </button>
 
-      {/* Mobile Overlay */}
+      {/* Mobile overlay */}
       {isMobileMenuOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/40 z-40"
-          onClick={toggleMobileMenu}
+          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <div
-        className={`fixed left-0 top-0 h-full bg-white border-r border-gray-200 z-30 w-[260px] transition-transform duration-300 ${
-          isMobileMenuOpen
-            ? "translate-x-0"
-            : "-translate-x-full lg:translate-x-0"
+        className={`fixed left-0 top-0 h-full z-30 w-[260px] flex flex-col transition-transform duration-300 ${
+          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
+        style={{ backgroundColor: "#0F172A", borderRight: "1px solid #1E293B" }}
       >
-        <div className="h-full flex flex-col justify-between py-8 px-6">
-          {/* Top Section */}
-          <div className="flex flex-col gap-8">
-            {/* Logo */}
-            <div className="flex items-center gap-2.5 px-2">
-              
-              <img src="/src/assets/images/2 - BLANCO.png" alt="SplitMe" className="w-full" />
-            </div>
-
-            {/* Close button for mobile */}
-            <button
-              onClick={toggleMobileMenu}
-              className="lg:hidden absolute top-6 right-4 p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            {/* Navigation */}
-            <nav className="flex flex-col gap-1">
-              {navItems.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-sm transition-colors ${
-                      isActive
-                        ? "bg-[#F7F8FA] text-gray-900 font-semibold"
-                        : "text-gray-500 hover:bg-gray-50 font-medium"
-                    }`
-                  }
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {({ isActive }) => (
-                    <>
-                      <item.icon
-                        className={`w-[18px] h-[18px] ${
-                          isActive ? "text-orange-500" : "text-gray-400"
-                        }`}
-                      />
-                      <span>{item.label}</span>
-                    </>
-                  )}
-                </NavLink>
-              ))}
-
-              {/* Settings */}
-              <NavLink
-                to="/panel/profile"
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-sm transition-colors ${
-                    isActive
-                      ? "bg-[#F7F8FA] text-gray-900 font-semibold"
-                      : "text-gray-500 hover:bg-gray-50 font-medium"
-                  }`
-                }
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {({ isActive }) => (
-                  <>
-                    <Settings
-                      className={`w-[18px] h-[18px] ${
-                        isActive ? "text-orange-500" : "text-gray-400"
-                      }`}
-                    />
-                    <span>Settings</span>
-                  </>
-                )}
-              </NavLink>
-            </nav>
+        {/* Top bar — logo */}
+        <div
+          className="flex items-center gap-2.5 px-6 flex-shrink-0"
+          style={{ height: 64, borderBottom: "1px solid #1E293B" }}
+        >
+          <div
+            className="flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
+            style={{ width: 36, height: 36, borderRadius: 9, backgroundColor: "#F97316" }}
+          >
+            S
           </div>
+          <span className="text-white font-bold text-lg flex-1">SplitMe</span>
 
-          {/* Bottom Section */}
-          <div className="flex flex-col gap-4">
-            {/* Logout */}
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-sm text-gray-500 hover:bg-red-50 hover:text-red-600 font-medium transition-colors"
+          <button
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="lg:hidden p-1.5 rounded-lg transition-colors"
+            style={{ color: "#94A3B8" }}
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex flex-col gap-0.5 p-3 flex-1 overflow-y-auto">
+          {navItems.map(({ to, label, icon: Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={({ isActive }) =>
+                `flex items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-sm font-medium transition-colors ${
+                  isActive ? "font-semibold" : ""
+                }`
+              }
+              style={({ isActive }) => ({
+                backgroundColor: isActive ? "rgba(249,115,22,0.12)" : "transparent",
+                color: isActive ? "#F97316" : "#94A3B8",
+              })}
+              onMouseEnter={(e) => {
+                const el = e.currentTarget;
+                if (!el.classList.contains("font-semibold")) {
+                  el.style.backgroundColor = "rgba(255,255,255,0.05)";
+                  el.style.color = "#FFFFFF";
+                }
+              }}
+              onMouseLeave={(e) => {
+                const el = e.currentTarget;
+                if (!el.classList.contains("font-semibold")) {
+                  el.style.backgroundColor = "transparent";
+                  el.style.color = "#94A3B8";
+                }
+              }}
             >
-              <LogOut className="w-[18px] h-[18px]" />
-              <span>Logout</span>
-            </button>
+              {({ isActive }) => (
+                <>
+                  <Icon
+                    className="w-[18px] h-[18px] flex-shrink-0"
+                    style={{ color: isActive ? "#F97316" : "#475569" }}
+                  />
+                  <span>{label}</span>
+                </>
+              )}
+            </NavLink>
+          ))}
 
-            {/* Account Card */}
-            <div className="bg-[#F7F8FA] rounded-xl p-3 flex items-center gap-3">
-              <div className="w-9 h-9 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-xs font-semibold text-white">
-                  {initials}
-                </span>
-              </div>
-              <div className="flex flex-col gap-0.5 min-w-0">
-                <span className="text-[13px] font-semibold text-gray-900 truncate">
-                  {displayName}
-                </span>
-                <span className="text-[11px] text-gray-400 truncate">
-                  {displayEmail}
-                </span>
-              </div>
+          {/* Settings */}
+          <NavLink
+            to="/panel/profile"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className={({ isActive }) =>
+              `flex items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-sm font-medium transition-colors ${
+                isActive ? "font-semibold" : ""
+              }`
+            }
+            style={({ isActive }) => ({
+              backgroundColor: isActive ? "rgba(249,115,22,0.12)" : "transparent",
+              color: isActive ? "#F97316" : "#94A3B8",
+            })}
+            onMouseEnter={(e) => {
+              const el = e.currentTarget;
+              if (!el.classList.contains("font-semibold")) {
+                el.style.backgroundColor = "rgba(255,255,255,0.05)";
+                el.style.color = "#FFFFFF";
+              }
+            }}
+            onMouseLeave={(e) => {
+              const el = e.currentTarget;
+              if (!el.classList.contains("font-semibold")) {
+                el.style.backgroundColor = "transparent";
+                el.style.color = "#94A3B8";
+              }
+            }}
+          >
+            {({ isActive }) => (
+              <>
+                <Settings
+                  className="w-[18px] h-[18px] flex-shrink-0"
+                  style={{ color: isActive ? "#F97316" : "#475569" }}
+                />
+                <span>Ajustes</span>
+              </>
+            )}
+          </NavLink>
+        </nav>
+
+        {/* Bottom section */}
+        <div className="flex flex-col gap-2 p-3 flex-shrink-0">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-sm font-medium transition-colors"
+            style={{ color: "#94A3B8" }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = "rgba(239,68,68,0.1)";
+              (e.currentTarget as HTMLButtonElement).style.color = "#F87171";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent";
+              (e.currentTarget as HTMLButtonElement).style.color = "#94A3B8";
+            }}
+          >
+            <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
+            <span>Cerrar sesión</span>
+          </button>
+
+          {/* Account card */}
+          <div
+            className="flex items-center gap-3 p-3 rounded-xl"
+            style={{ backgroundColor: "#1E293B" }}
+          >
+            <div
+              className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+              style={{ backgroundColor: "#F97316" }}
+            >
+              <span className="text-xs font-semibold text-white">{initials}</span>
+            </div>
+            <div className="flex flex-col gap-0.5 min-w-0">
+              <span
+                className="text-[13px] font-semibold truncate"
+                style={{ color: "#F1F5F9" }}
+              >
+                {displayName}
+              </span>
+              <span className="text-[11px] truncate" style={{ color: "#64748B" }}>
+                {displayEmail}
+              </span>
             </div>
           </div>
         </div>

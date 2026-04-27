@@ -1,16 +1,15 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   Camera,
   User,
   Mail,
-  ArrowLeft,
   Copy,
   Check,
   Lock,
   UserPlus,
-  LucideLanguages,
+  AtSign,
   Pencil,
+  Hash,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import RegisterSubuserModal from "../../../components/modal/RegisterSubuserModal";
@@ -30,20 +29,17 @@ const ProfilePage = () => {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [showSubuserModal, setShowSubuserModal] = useState(false);
-  const [showSubprofileManagementModal, setShowSubprofileManagementModal] =
-    useState(false);
-  const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
+  const [showSubprofileManagementModal, setShowSubprofileManagementModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const availableLanguages = ["Español", "English", "Português", "Français"];
 
   const [userData, setUserData] = useState(() => {
-    const userFromStorage = LocalStorageService.getItem("user");
+    const u = LocalStorageService.getItem("user");
     return {
-      username: userFromStorage.username || "jesuspineda18",
-      name: userFromStorage.name || "jesus",
-      lastName: userFromStorage.lastName || "pineda gambin",
-      email: userFromStorage.email || "jesuspineda18@outlook.es",
-      userId: userFromStorage.id || "AB12CD",
+      username: u.username || "jesuspineda18",
+      name: u.name || "Jesus",
+      lastName: u.lastName || "Pineda",
+      email: u.email || "jesuspineda18@outlook.es",
+      userId: u.id || "AB12CD",
     };
   });
 
@@ -52,18 +48,16 @@ const ProfilePage = () => {
       await navigator.clipboard.writeText(userData.userId);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy text: ", err);
+    } catch {
+      // clipboard not available
     }
   };
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileImage(reader.result as string);
-      };
+      reader.onloadend = () => setProfileImage(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
@@ -76,263 +70,251 @@ const ProfilePage = () => {
       name: updatedData.name ?? userData.name,
       lastName: updatedData.lastName ?? userData.lastName,
     });
-
-    if (!response) {
-      throw new Error("No se pudo actualizar el perfil");
-    }
-
-    setUserData((prev) => ({
-      ...prev,
-      ...updatedData,
-    }));
+    if (!response) throw new Error("No se pudo actualizar el perfil");
+    setUserData((prev) => ({ ...prev, ...updatedData }));
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-2xl mx-auto"
-      >
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white mb-8"
-        >
-          <ArrowLeft className="h-5 w-5" />
-          <span>Volver</span>
-        </button>
+    <div className="min-h-screen bg-[#F7F8FA] px-10 py-8">
+      <div style={{ maxWidth: 680 }}>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="relative flex justify-end"
-          >
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              type="button"
-              onClick={() => setShowLanguageDropdown((prev) => !prev)}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg"
-              aria-expanded={showLanguageDropdown}
-            >
-              <LucideLanguages
-                size={25}
-                className="text-indigo-600 dark:text-indigo-400"
-              />
-              <span className="font-semibold">Español</span>
-              <span
-                className={`text-xs transition-transform duration-200 ${
-                  showLanguageDropdown ? "rotate-180" : ""
-                }`}
-              >
-                ▼
-              </span>
-            </motion.button>
-
-            <AnimatePresence>
-              {showLanguageDropdown && (
-                <motion.div
-                  initial={{ opacity: 0, y: -8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  className="absolute top-12 right-0 w-48 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg z-20"
-                >
-                  {availableLanguages.map((language) => (
-                    <div
-                      key={language}
-                      className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 first:rounded-t-lg last:rounded-b-lg"
-                    >
-                      {language}
-                    </div>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-
-          <div className="flex flex-col items-center mb-8">
-            <div className="relative group">
-              <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
-                {profileImage ? (
-                  <img
-                    src={profileImage}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <User className="w-16 h-16 text-gray-400" />
-                  </div>
-                )}
-              </div>
-              <label
-                htmlFor="profile-image"
-                className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity duration-200"
-              >
-                <Camera className="w-8 h-8 text-white" />
-              </label>
-              <input
-                id="profile-image"
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="hidden"
-              />
-            </div>
-            <h1 className="mt-4 text-2xl font-bold text-gray-900 dark:text-white">
-              {userData.name} {userData.lastName}
-            </h1>
-            <p className="text-gray-500 dark:text-gray-400">
-              @{userData.username}
-            </p>
-          </div>
-
-          <div className="space-y-6">
-            <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-xl text-white">
-              <div className="p-3 bg-white/20 rounded-lg backdrop-blur-sm">
-                <User className="w-5 h-5" />
-              </div>
-              <div className="flex-grow">
-                <p className="text-sm text-white/80">ID de Usuario</p>
-                <div className="flex items-center gap-3">
-                  <p className="font-mono text-lg font-bold tracking-wider">
-                    {userData.userId}
-                  </p>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleCopyId}
-                    className="p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors duration-200"
-                  >
-                    <AnimatePresence mode="wait">
-                      {copied ? (
-                        <motion.div
-                          key="check"
-                          initial={{ scale: 0, rotate: -180 }}
-                          animate={{ scale: 1, rotate: 0 }}
-                          exit={{ scale: 0, rotate: 180 }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          <Check className="w-4 h-4" />
-                        </motion.div>
-                      ) : (
-                        <motion.div
-                          key="copy"
-                          initial={{ scale: 0, rotate: 180 }}
-                          animate={{ scale: 1, rotate: 0 }}
-                          exit={{ scale: 0, rotate: -180 }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          <Copy className="w-4 h-4" />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </motion.button>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-              <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
-                <User className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Nombre completo
-                </p>
-                <p className="text-gray-900 dark:text-white font-medium">
-                  {userData.name} {userData.lastName}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-              <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
-                <Mail className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Correo electrónico
-                </p>
-                <p className="text-gray-900 dark:text-white font-medium">
-                  {userData.email}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-              <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
-                <User className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Nombre de usuario
-                </p>
-                <p className="text-gray-900 dark:text-white font-medium">
-                  {userData.username}
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setShowEditModal(true)}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-white bg-purple-600 hover:bg-purple-700 active:scale-95 transition-all"
-            >
-              <Pencil className="w-4 h-4" />
-              Editar perfil
-            </button>
-
-            <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  Subperfiles
-                </h2>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setShowSubprofileManagementModal(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200"
-                >
-                  <UserPlus className="w-4 h-4" />
-                  <span>Gestionar subperfiles</span>
-                </motion.button>
-              </div>
-            </div>
-            <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  Cambiar Contraseña
-                </h2>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => navigate("/panel/change-password")}
-                  className="flex items-center gap-2 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors duration-200"
-                >
-                  <Lock className="w-4 h-4" />
-                  <span>Ir a cambiar contraseña</span>
-                </motion.button>
-              </div>
-            </div>
-          </div>
+        {/* Page title */}
+        <div className="flex flex-col gap-1.5 mb-6">
+          <h1 className="text-2xl font-bold text-[#111827]">Mi Perfil</h1>
+          <div className="w-10 h-0.5 rounded-full bg-[#F97316]" />
         </div>
-      </motion.div>
 
+        <div className="flex flex-col gap-4">
+
+          {/* ── Profile hero card ── */}
+          <div
+            className="overflow-hidden"
+            style={{ borderRadius: 16, border: "1px solid #E5E7EB", backgroundColor: "#FFFFFF" }}
+          >
+            <div
+              className="flex items-center gap-4 px-6 py-5"
+              style={{ backgroundColor: "#0F172A" }}
+            >
+              {/* Avatar */}
+              <div className="relative group flex-shrink-0">
+                <div
+                  className="flex items-center justify-center overflow-hidden"
+                  style={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: "50%",
+                    backgroundColor: "#1E293B",
+                    border: "1px solid #334155",
+                  }}
+                >
+                  {profileImage ? (
+                    <img
+                      src={profileImage}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User size={36} color="#64748B" />
+                  )}
+                </div>
+                <label
+                  htmlFor="profile-image"
+                  className="absolute inset-0 flex items-center justify-center rounded-full cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+                >
+                  <Camera size={20} color="#FFFFFF" />
+                </label>
+                <input
+                  id="profile-image"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+              </div>
+
+              {/* Name + username */}
+              <div className="flex flex-col gap-1 flex-1 min-w-0">
+                <h2 className="text-xl font-bold text-white truncate">
+                  {userData.name} {userData.lastName}
+                </h2>
+                <p className="text-sm truncate" style={{ color: "#94A3B8" }}>
+                  @{userData.username}
+                </p>
+              </div>
+
+              {/* Edit button */}
+              <button
+                onClick={() => setShowEditModal(true)}
+                className="flex items-center gap-1.5 text-sm font-semibold text-white flex-shrink-0 transition-opacity hover:opacity-90"
+                style={{ padding: "8px 16px", borderRadius: 8, backgroundColor: "#F97316" }}
+              >
+                <Pencil size={14} />
+                Editar perfil
+              </button>
+            </div>
+          </div>
+
+          {/* ── Info card ── */}
+          <div
+            className="overflow-hidden"
+            style={{ borderRadius: 16, border: "1px solid #E5E7EB", backgroundColor: "#FFFFFF" }}
+          >
+            {/* User ID */}
+            <div
+              className="flex items-center gap-3 px-5"
+              style={{ height: 60, backgroundColor: "#FFF7ED", borderBottom: "1px solid #E5E7EB" }}
+            >
+              <div
+                className="flex items-center justify-center flex-shrink-0"
+                style={{ width: 36, height: 36, borderRadius: 8, backgroundColor: "#FDBA74" }}
+              >
+                <Hash size={16} color="#FFFFFF" />
+              </div>
+              <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                <span className="text-[11px] font-medium" style={{ color: "#9CA3AF" }}>
+                  ID de Usuario
+                </span>
+                <span className="text-sm font-bold truncate" style={{ color: "#92400E" }}>
+                  {userData.userId}
+                </span>
+              </div>
+              <button
+                onClick={handleCopyId}
+                className="flex items-center justify-center flex-shrink-0 transition-opacity hover:opacity-80"
+                style={{ width: 32, height: 32, borderRadius: 6, backgroundColor: "#F97316" }}
+              >
+                {copied ? (
+                  <Check size={14} color="#FFFFFF" />
+                ) : (
+                  <Copy size={14} color="#FFFFFF" />
+                )}
+              </button>
+            </div>
+
+            {/* Full name */}
+            <div
+              className="flex items-center gap-3 px-5"
+              style={{ height: 60, borderBottom: "1px solid #E5E7EB" }}
+            >
+              <div
+                className="flex items-center justify-center flex-shrink-0"
+                style={{ width: 36, height: 36, borderRadius: 8, backgroundColor: "#F3F4F6" }}
+              >
+                <User size={16} color="#9CA3AF" />
+              </div>
+              <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                <span className="text-[11px] font-medium" style={{ color: "#9CA3AF" }}>
+                  Nombre completo
+                </span>
+                <span className="text-sm font-medium text-[#111827] truncate">
+                  {userData.name} {userData.lastName}
+                </span>
+              </div>
+            </div>
+
+            {/* Email */}
+            <div
+              className="flex items-center gap-3 px-5"
+              style={{ height: 60, borderBottom: "1px solid #E5E7EB" }}
+            >
+              <div
+                className="flex items-center justify-center flex-shrink-0"
+                style={{ width: 36, height: 36, borderRadius: 8, backgroundColor: "#F3F4F6" }}
+              >
+                <Mail size={16} color="#9CA3AF" />
+              </div>
+              <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                <span className="text-[11px] font-medium" style={{ color: "#9CA3AF" }}>
+                  Correo electrónico
+                </span>
+                <span className="text-sm font-medium text-[#111827] truncate">
+                  {userData.email}
+                </span>
+              </div>
+            </div>
+
+            {/* Username */}
+            <div
+              className="flex items-center gap-3 px-5"
+              style={{ height: 60 }}
+            >
+              <div
+                className="flex items-center justify-center flex-shrink-0"
+                style={{ width: 36, height: 36, borderRadius: 8, backgroundColor: "#F3F4F6" }}
+              >
+                <AtSign size={16} color="#9CA3AF" />
+              </div>
+              <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                <span className="text-[11px] font-medium" style={{ color: "#9CA3AF" }}>
+                  Nombre de usuario
+                </span>
+                <span className="text-sm font-medium text-[#111827] truncate">
+                  @{userData.username}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Subprofiles ── */}
+          <div
+            className="flex items-center gap-4 px-5 py-4"
+            style={{ borderRadius: 16, border: "1px solid #E5E7EB", backgroundColor: "#FFFFFF" }}
+          >
+            <div className="flex flex-col gap-1 flex-1 min-w-0">
+              <span className="text-[15px] font-semibold text-[#111827]">Subperfiles</span>
+              <span className="text-xs text-[#6B7280]">
+                Gestiona los subperfiles vinculados a tu cuenta
+              </span>
+            </div>
+            <button
+              onClick={() => setShowSubprofileManagementModal(true)}
+              className="flex items-center gap-1.5 text-sm font-semibold text-white flex-shrink-0 transition-opacity hover:opacity-90"
+              style={{ padding: "8px 14px", borderRadius: 8, backgroundColor: "#F97316" }}
+            >
+              <UserPlus size={14} />
+              Gestionar
+            </button>
+          </div>
+
+          {/* ── Change password ── */}
+          <div
+            className="flex items-center gap-4 px-5 py-4"
+            style={{ borderRadius: 16, border: "1px solid #E5E7EB", backgroundColor: "#FFFFFF" }}
+          >
+            <div className="flex flex-col gap-1 flex-1 min-w-0">
+              <span className="text-[15px] font-semibold text-[#111827]">Cambiar contraseña</span>
+              <span className="text-xs text-[#6B7280]">
+                Actualiza tu contraseña de acceso
+              </span>
+            </div>
+            <button
+              onClick={() => navigate("/panel/change-password")}
+              className="flex items-center gap-1.5 text-sm font-semibold text-white flex-shrink-0 transition-opacity hover:opacity-90"
+              style={{ padding: "8px 14px", borderRadius: 8, backgroundColor: "#111827" }}
+            >
+              <Lock size={14} />
+              Cambiar contraseña
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      {/* Modals */}
       <SubprofileManagementModal
         isOpen={showSubprofileManagementModal}
         onClose={() => setShowSubprofileManagementModal(false)}
         onOpenCreateSubprofile={() => setShowSubuserModal(true)}
       />
 
-      <AnimatePresence>
-        {showEditModal && (
-          <UpdateModal
-            user={userData}
-            onClose={() => setShowEditModal(false)}
-            onSave={handleSaveProfile}
-          />
-        )}
-      </AnimatePresence>
+      {showEditModal && (
+        <UpdateModal
+          user={userData}
+          onClose={() => setShowEditModal(false)}
+          onSave={handleSaveProfile}
+        />
+      )}
 
       <RegisterSubuserModal
         isOpen={showSubuserModal}

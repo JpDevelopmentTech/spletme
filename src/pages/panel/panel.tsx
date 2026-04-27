@@ -23,7 +23,7 @@ export default function Panel() {
     const userStr = localStorage.getItem("user");
     if (userStr) {
       const user = JSON.parse(userStr);
-      if (!user.onboardingCompleted || user.accountVerified === false) {
+      if (!user.onboardingCompleted) {
         navigate("/onboarding");
       }
     }
