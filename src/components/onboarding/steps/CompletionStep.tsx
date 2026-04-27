@@ -81,6 +81,20 @@ const CompletionStep = () => {
         <p className="text-sm text-[#9A3412]">
           ¡Bienvenido a SplitMe! Tu cuenta está lista para comenzar.
         </p>
+        <div className="flex items-center justify-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
+          <div className="flex items-center space-x-1">
+            <span className="w-2 h-2 bg-gray-500 rounded-full"></span>
+            <span>Perfil completo</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <span className="w-2 h-2 bg-gray-500 rounded-full"></span>
+            <span>Distribuidor conectado</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <span className="w-2 h-2 bg-gray-500 rounded-full"></span>
+            <span>Cuenta verificada</span>
+          </div>
+        </div>
       </div>
 
       {/* CTA */}
@@ -100,4 +114,4 @@ const CompletionStep = () => {
   );
 };
 
-export default CompletionStep;
+export default CompletionStep; 

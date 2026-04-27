@@ -8,7 +8,6 @@ import Collaborators from "../pages/panel/collaborators/collaborators";
 import Dealers from "../pages/panel/dealers/dealers";
 import Song from "../pages/panel/music/song/song";
 import Collaborator from "../pages/panel/collaborators/pages/collaborator";
-import Payments from "../pages/panel/payments/payments";
 import Album from "../pages/panel/music/album/album";
 import AlbumDetail from "../pages/panel/music/album/AlbumDetail";
 import Onboarding from "../pages/auth/onboarding";
@@ -24,6 +23,7 @@ import Stripe from "../pages/panel/stripe/stripe";
 import LabelsTable from "../pages/panel/labels/labelsTable";
 import LabelDetail from "../pages/panel/labels/labelDetail";
 import CustomLabelDetail from "../pages/panel/labels/customLabelDetail";
+import ChangePasswordPage from "@/pages/panel/profile/change-password";
 
 const routes = [
   {
@@ -114,6 +114,10 @@ const routes = [
       {
         path: "wallet",
         element: <WalletPage />
+      },
+      {
+        path: "change-password",
+        element: <ChangePasswordPage />
       },
       {
         path: "labels",

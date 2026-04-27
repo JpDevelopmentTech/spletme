@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import ProfessionStep from "./steps/ProfessionStep";
 import AccountDetailsStep from "./steps/AccountDetailsStep";
 import VerificationStep from "./steps/VerificationStep";
@@ -12,6 +13,8 @@ const TOTAL_STEPS = 4;
 const OnboardingContainer = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
+  const [verificationEmail, setVerificationEmail] = useState("");
+  const [onboardingError, setOnboardingError] = useState("");
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({
     currentStep: 1,
   });
@@ -20,14 +23,27 @@ const OnboardingContainer = () => {
     const userStr = localStorage.getItem("user");
     if (userStr) {
       const user = JSON.parse(userStr);
-      if (user.onboardingCompleted) {
+      const isAccountVerified = user.accountVerified !== false;
+      const email = typeof user.email === "string" ? user.email.trim().toLowerCase() : "";
+      const storedStep = user.onboardingData?.currentStep || 1;
+      const initialStep = isAccountVerified ? storedStep : Math.min(storedStep, 4);
+
+      if (email) {
+        setVerificationEmail(email);
+      }
+
+      if (user.onboardingCompleted && isAccountVerified) {
+        // Redirect to dashboard if already completed
         navigate("/panel/home");
         return;
       }
-      if (user.onboardingData) {
-        setOnboardingData(user.onboardingData);
-        setCurrentStep(user.onboardingData.currentStep || 1);
-      }
+
+      setCurrentStep(initialStep);
+      setOnboardingData((prev) => ({
+        ...prev,
+        ...(user.onboardingData || {}),
+        currentStep: initialStep,
+      }));
     }
   }, [navigate]);
 
@@ -55,8 +71,34 @@ const OnboardingContainer = () => {
 
   const nextStep = async (stepData?: Partial<OnboardingData>) => {
     if (currentStep < TOTAL_STEPS) {
+      setOnboardingError("");
       const nextStepNumber = currentStep + 1;
       if (stepData) {
+        if (nextStepNumber === 3) {
+          if (!verificationEmail) {
+            setOnboardingError("No encontramos un correo para enviar el código de verificación.");
+            return;
+          }
+
+          try {
+            const requestResponse = await OnboardingService.requestAccountVerificationCode(
+              verificationEmail,
+            );
+
+            if (!requestResponse.accepted) {
+              setOnboardingError("No fue posible enviar el código de verificación.");
+              return;
+            }
+          } catch (error) {
+            setOnboardingError(
+              error instanceof Error
+                ? error.message
+                : "No fue posible enviar el código de verificación.",
+            );
+            return;
+          }
+        }
+
         const success = await updateOnboardingStep(stepData, nextStepNumber);
         if (success) {
           setCurrentStep(nextStepNumber);
@@ -68,6 +110,8 @@ const OnboardingContainer = () => {
               localStorage.setItem("user", JSON.stringify(user));
             }
           }
+        } else {
+          setOnboardingError("No pudimos guardar tu progreso. Intenta nuevamente.");
         }
       } else {
         setCurrentStep(nextStepNumber);
@@ -82,12 +126,18 @@ const OnboardingContainer = () => {
   const steps = [
     {
       id: 1,
+      title: "Completa tu perfil",
+      description: "Cuéntanos sobre tu profesión",
+      icon: "👤",
       component: (
         <ProfessionStep nextStep={nextStep} initialData={onboardingData} />
       ),
     },
     {
       id: 2,
+      title: "Datos de cuenta",
+      description: "Configura tu información principal",
+      icon: "🧾",
       component: (
         <AccountDetailsStep
           nextStep={nextStep}
@@ -98,19 +148,27 @@ const OnboardingContainer = () => {
     },
     {
       id: 3,
+      title: "Verificación",
+      description: "Confirma tu correo",
+      icon: "📧",
       component: (
         <VerificationStep
           nextStep={nextStep}
           prevStep={prevStep}
           initialData={onboardingData}
+          verificationEmail={verificationEmail}
         />
       ),
     },
     {
       id: 4,
+      title: "¡Listo!",
+      description: "Tu cuenta ya está verificada",
+      icon: "✅",
       component: <CompletionStep />,
     },
   ];
+  const currentStepData = steps[currentStep - 1];
 
   const isLastStep = currentStep === TOTAL_STEPS;
 
@@ -195,21 +253,65 @@ const OnboardingContainer = () => {
           })}
         </div>
 
-        {/* Step Card */}
-        <div
-          className="w-full bg-white"
-          style={{
-            maxWidth: 660,
-            borderRadius: 16,
-            border: "1px solid #E5E7EB",
-            padding: 40,
-          }}
-        >
-          {steps[currentStep - 1].component}
+        {/* Contenido del paso actual */}
+        <div className="max-w-2xl mx-auto">
+          <motion.div
+            key={currentStep}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-100 dark:border-gray-700"
+          >
+            <div className="text-center mb-6">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2 }}
+                className="text-4xl mb-3"
+              >
+                {currentStepData.icon}
+              </motion.div>
+              <motion.h2
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-2xl font-bold text-gray-900 dark:text-white mb-2"
+              >
+                {currentStepData.title}
+              </motion.h2>
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="text-gray-600 dark:text-gray-400"
+              >
+                {currentStepData.description}
+              </motion.p>
+            </div>
+
+            {onboardingError && (
+              <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
+                {onboardingError}
+              </div>
+            )}
+
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentStep}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                {currentStepData.component}
+              </motion.div>
+            </AnimatePresence>
+          </motion.div>
         </div>
       </div>
     </div>
   );
 };
 
-export default OnboardingContainer;
+export default OnboardingContainer; 
