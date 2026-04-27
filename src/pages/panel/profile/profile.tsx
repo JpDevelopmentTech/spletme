@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import RegisterSubuserModal from "../../../components/modal/RegisterSubuserModal";
+import SubprofileManagementModal from "../../../components/modal/SubprofileManagementModal";
 import LocalStorageService from "../../../services/localstorage";
 
 const ProfilePage = () => {
@@ -20,10 +21,11 @@ const ProfilePage = () => {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [showSubuserModal, setShowSubuserModal] = useState(false);
+  const [showSubprofileManagementModal, setShowSubprofileManagementModal] =
+    useState(false);
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
   const availableLanguages = ["Español", "English", "Português", "Français"];
 
-  // Get user data from localStorage
   const userFromStorage = LocalStorageService.getItem("user");
   const userData = {
     username: userFromStorage.username || "jesuspineda18",
@@ -31,12 +33,6 @@ const ProfilePage = () => {
     lastName: userFromStorage.lastName || "pineda gambin",
     email: userFromStorage.email || "jesuspineda18@outlook.es",
     userId: userFromStorage.id || "AB12CD",
-    onboardingData: {
-      Profession: userFromStorage.onboardingData?.Profession || "Artista",
-      country: userFromStorage.onboardingData?.country || "Colombia",
-      address:
-        userFromStorage.onboardingData?.address || "Calle 123 #45-67, Bogotá",
-    },
   };
 
   const handleCopyId = async () => {
@@ -75,7 +71,7 @@ const ProfilePage = () => {
           <span>Volver</span>
         </button>
 
-        <div className="bg-white shadow-xl p-8">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -86,7 +82,7 @@ const ProfilePage = () => {
               whileTap={{ scale: 0.97 }}
               type="button"
               onClick={() => setShowLanguageDropdown((prev) => !prev)}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg "
+              className="flex items-center gap-2 px-4 py-2 rounded-lg"
               aria-expanded={showLanguageDropdown}
             >
               <LucideLanguages
@@ -123,6 +119,7 @@ const ProfilePage = () => {
               )}
             </AnimatePresence>
           </motion.div>
+
           <div className="flex flex-col items-center mb-8">
             <div className="relative group">
               <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
@@ -155,9 +152,7 @@ const ProfilePage = () => {
             <h1 className="mt-4 text-2xl font-bold text-gray-900 dark:text-white">
               {userData.name} {userData.lastName}
             </h1>
-            <p className="text-gray-500 dark:text-gray-400">
-              @{userData.username}
-            </p>
+            <p className="text-gray-500 dark:text-gray-400">@{userData.username}</p>
           </div>
 
           <div className="space-y-6">
@@ -203,131 +198,92 @@ const ProfilePage = () => {
                   </motion.button>
                 </div>
               </div>
+            </div>
 
-              <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-                <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
-                  <Mail className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Correo electrónico
-                  </p>
-                  <p className="text-gray-900 dark:text-white font-medium">
-                    {userData.email}
-                  </p>
-                </div>
+            <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+              <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
+                <User className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
               </div>
-
-              <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-                <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
-                  <User className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Nombre de usuario
-                  </p>
-                  <p className="text-gray-900 dark:text-white font-medium">
-                    {userData.username}
-                  </p>
-                </div>
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Nombre completo
+                </p>
+                <p className="text-gray-900 dark:text-white font-medium">
+                  {userData.name} {userData.lastName}
+                </p>
               </div>
+            </div>
 
-              <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                    Administración de Usuarios
-                  </h2>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setShowSubuserModal(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200"
-                  >
-                    <UserPlus className="w-4 h-4" />
-                    <span>Crear Subusuario</span>
-                  </motion.button>
-                </div>
+            <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+              <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
+                <Mail className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
               </div>
-
-              <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-                <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
-                  <User className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Nombre completo
-                  </p>
-                  <p className="text-gray-900 dark:text-white font-medium">
-                    {userData.name} {userData.lastName}
-                  </p>
-                </div>
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Correo electrónico
+                </p>
+                <p className="text-gray-900 dark:text-white font-medium">
+                  {userData.email}
+                </p>
               </div>
+            </div>
 
-              <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-                <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
-                  <Mail className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Correo electrónico
-                  </p>
-                  <p className="text-gray-900 dark:text-white font-medium">
-                    {userData.email}
-                  </p>
-                </div>
+            <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+              <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
+                <User className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
               </div>
-
-              <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-                <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
-                  <User className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Nombre de usuario
-                  </p>
-                  <p className="text-gray-900 dark:text-white font-medium">
-                    {userData.username}
-                  </p>
-                </div>
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Nombre de usuario
+                </p>
+                <p className="text-gray-900 dark:text-white font-medium">
+                  {userData.username}
+                </p>
               </div>
+            </div>
 
-              <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                    Administración de Usuarios
-                  </h2>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setShowSubuserModal(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200"
-                  >
-                    <UserPlus className="w-4 h-4" />
-                    <span>Crear Subusuario</span>
-                  </motion.button>
-                </div>
+            <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  Subperfiles
+                </h2>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowSubprofileManagementModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span>Gestionar subperfiles</span>
+                </motion.button>
               </div>
+            </div>
 
-              <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                    Cambiar Contraseña
-                  </h2>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => navigate("/panel/change-password")}
-                    className="flex items-center gap-2 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors duration-200"
-                  >
-                    <Lock className="w-4 h-4" />
-                    <span>Ir a cambiar contraseña</span>
-                  </motion.button>
-                </div>
+            <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  Cambiar Contraseña
+                </h2>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => navigate("/panel/change-password")}
+                  className="flex items-center gap-2 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors duration-200"
+                >
+                  <Lock className="w-4 h-4" />
+                  <span>Ir a cambiar contraseña</span>
+                </motion.button>
               </div>
             </div>
           </div>
         </div>
       </motion.div>
+
+      <SubprofileManagementModal
+        isOpen={showSubprofileManagementModal}
+        onClose={() => setShowSubprofileManagementModal(false)}
+        onOpenCreateSubprofile={() => setShowSubuserModal(true)}
+      />
 
       <RegisterSubuserModal
         isOpen={showSubuserModal}
@@ -335,7 +291,6 @@ const ProfilePage = () => {
         parentUserId={userData.userId}
         onSubuserCreated={() => {
           console.log("Subuser created successfully");
-          // You can add a refresh logic here if needed
         }}
       />
     </div>

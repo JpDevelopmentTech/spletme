@@ -13,6 +13,14 @@ export interface RegisterSubuserSchema {
   lastName: string;
 }
 
+export interface UpdateUserSchema {
+  userId: string;
+  username: string;
+  email: string;
+  name: string;
+  lastName: string;
+}
+
 export interface PasswordRecoveryResponse {
   success: boolean;
   message: string;
@@ -25,6 +33,7 @@ export interface CodeVerificationResponse {
   status: number;
   token?: string;
 }
+
 export interface ResetPasswordResponse {
   success: boolean;
   message: string;
@@ -35,6 +44,11 @@ export interface ChangePasswordResponse {
   success: boolean;
   message: string;
   status: number;
+}
+
+export interface UnlinkSubuserResponse {
+  success: boolean;
+  message: string;
 }
 
 const getMessageFromPayload = (payload: unknown, fallback: string): string => {
@@ -58,29 +72,42 @@ const normalizeAuthToken = (token: string | null | undefined): string => {
   return rawToken.replace(/^Bearer\s+/i, "").trim();
 };
 
+const getAuthHeaders = (): Record<string, string> => {
+  const token = normalizeAuthToken(localStorage.getItem("token"));
+  if (!token) {
+    return {};
+  }
+
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+};
+
 export const AuthService = {
   login: async (email: string, password: string) => {
     try {
       const endpoint = URI + "/sign-in";
       const response = await axios.post(endpoint, { email, password });
-      console.log(response.data);
       return response.data;
-    } catch (error) {
+    } catch {
       return null;
     }
   },
+
   logout: () => {
     // API call to logout
   },
+
   register: async (payload: RegisterSchema) => {
     try {
       const endpoint = URI + "/sign-up";
       const response = await axios.post(endpoint, payload);
       return response.data;
-    } catch (error) {
+    } catch {
       return null;
     }
   },
+
   registerSubuser: async (payload: RegisterSubuserSchema) => {
     try {
       const endpoint = URI + "/sign-up-subuser";
@@ -91,18 +118,67 @@ export const AuthService = {
       return null;
     }
   },
+
   getSubUsersByUser: async () => {
     try {
       const endpoint = URI + "/subusers";
-      const token = normalizeAuthToken(localStorage.getItem("token"));
       const response = await axios.get(endpoint, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: getAuthHeaders(),
       });
       return response.data;
     } catch (error) {
       console.error("Error getting subusers by user:", error);
+      return null;
+    }
+  },
+
+  unlinkSubuser: async (subuserId: string): Promise<UnlinkSubuserResponse> => {
+    if (!subuserId.trim()) {
+      return {
+        success: false,
+        message: "ID de subperfil inválido",
+      };
+    }
+
+    try {
+      const endpoint = `${URI}/subusers/unlink`;
+      const response = await axios.post(
+        endpoint,
+        {
+          subuserId,
+        },
+        {
+          headers: getAuthHeaders(),
+        },
+      );
+
+      return {
+        success: true,
+        message: response.data?.message || "Subperfil desvinculado correctamente",
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: getMessageFromPayload(
+          axios.isAxiosError(error) ? error.response?.data : undefined,
+          "No se pudo desvincular el subperfil",
+        ),
+      };
+    }
+  },
+
+  updateUser: async (payload: UpdateUserSchema) => {
+    try {
+      const endpoint = `${URI}/update/${payload.userId}`;
+      const response = await axios.put(endpoint, payload, {
+        headers: getAuthHeaders(),
+      });
+      const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+      const updatedUser = { ...currentUser, ...response.data.data };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      return response.data;
+    } catch (error) {
+      console.error("Error updating user:", error);
       return null;
     }
   },
@@ -167,9 +243,9 @@ export const AuthService = {
         success: true,
         message: response.data?.message || "Código verificado correctamente",
         status: response.status,
-          token: response.data?.token,
-        };
-    } catch (error) {
+        token: response.data?.token,
+      };
+    } catch {
       return {
         success: false,
         message: "Código inválido o expirado",
@@ -250,7 +326,8 @@ export const AuthService = {
   ): Promise<ChangePasswordResponse> => {
     try {
       const endpoint = URI + "/password/change";
-      const authToken = token || localStorage.getItem("token");
+      const authToken = normalizeAuthToken(token || localStorage.getItem("token"));
+
       if (!authToken) {
         return {
           success: false,
@@ -266,30 +343,23 @@ export const AuthService = {
         ...(currentPassword ? { currentPassword } : {}),
       };
 
-      const response = await axios.post(
-        endpoint,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-          },
-          validateStatus: (status) =>
-            (status >= 200 && status < 300) ||
-            status === 400 ||
-            status === 401 ||
-            status === 404 ||
-            status === 409 ||
-            status === 422,
+      const response = await axios.post(endpoint, payload, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
         },
-      );
+        validateStatus: (status) =>
+          (status >= 200 && status < 300) ||
+          status === 400 ||
+          status === 401 ||
+          status === 404 ||
+          status === 409 ||
+          status === 422,
+      });
 
       if (response.status < 200 || response.status >= 300) {
         return {
           success: false,
-          message: getMessageFromPayload(
-            response.data,
-            "Error al cambiar la contraseña",
-          ),
+          message: getMessageFromPayload(response.data, "Error al cambiar la contraseña"),
           status: response.status,
         };
       }
