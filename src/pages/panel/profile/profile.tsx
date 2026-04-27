@@ -21,7 +21,6 @@ import LocalStorageService from "../../../services/localstorage";
 import useConvertCountry from "../../../hooks/useConvertCountry";
 import UpdateModal from "@/components/modal/updateUserInfoModal";
 import { AuthService } from "@/services/auth";
-import { UserD } from "@/components/modal/updateUserInfoModal";
 
 interface UpdateUserPayload {
   username?: string;
@@ -29,11 +28,22 @@ interface UpdateUserPayload {
   lastName?: string;
 }
 
+interface ProfileUserData {
+  username: string;
+  name: string;
+  lastName: string;
+  email: string;
+  userId: string;
+  onboardingData: {
+    country: string;
+    address: string;
+  };
+}
+
 const ProfilePage = () => {
   const navigate = useNavigate();
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [userD, setUserData] = useState<UserD>({ username: "...", name: "...", lastName: "...", email: "..." });
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -48,20 +58,37 @@ const ProfilePage = () => {
   const [showModal, setShowModal] = useState(false);
 
   // Get user data from localStorage
-  const userFromStorage = LocalStorageService.getItem("user");
-  const userData = {
-    username: userFromStorage.username || "jesuspineda18",
-    name: userFromStorage.name || "jesus",
-    lastName: userFromStorage.lastName || "pineda gambin",
-    email: userFromStorage.email || "jesuspineda18@outlook.es",
-    userId: userFromStorage.id || "AB12CD",
-    onboardingData: {
-      country: userFromStorage.onboardingData?.country || "Colombia",
-      address:
-        userFromStorage.onboardingData?.address || "Calle 123 #45-67, Bogotá",
-    },
-  };
+  const [userData, setUserData] = useState<ProfileUserData>(() => {
+    const userFromStorage = LocalStorageService.getItem("user");
+    return {
+      username: userFromStorage.username || "jesuspineda18",
+      name: userFromStorage.name || "jesus",
+      lastName: userFromStorage.lastName || "pineda gambin",
+      email: userFromStorage.email || "jesuspineda18@outlook.es",
+      userId: userFromStorage.id || "AB12CD",
+      onboardingData: {
+        country: userFromStorage.onboardingData?.country || "Colombia",
+        address:
+          userFromStorage.onboardingData?.address || "Calle 123 #45-67, Bogotá",
+      },
+    };
+  });
   const countryName = useConvertCountry(userData.onboardingData.country);
+
+  const handleSave = async (updatedData: UpdateUserPayload) => {
+    await AuthService.updateUser({
+      userId: userData.userId,
+      email: userData.email,
+      username: updatedData.username ?? userData.username,
+      name: updatedData.name ?? userData.name,
+      lastName: updatedData.lastName ?? userData.lastName,
+    });
+
+    setUserData((prev) => ({
+      ...prev,
+      ...updatedData,
+    }));
+  };
 
   const handleCopyId = async () => {
     try {
@@ -92,11 +119,6 @@ const ProfilePage = () => {
     }));
     setPasswordError("");
   };
-
-const handleSave = async (data: UpdateUserPayload) => {
-  await AuthService.updateUser(data);
-  setUserData(prev => ({ ...prev, ...data }));
-};
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
