@@ -27,17 +27,28 @@ export default function EmailLogin() {
     try {
       const response = await AuthService.login(email, password);
       if (response && response.data) {
+        // Fusiona con el localStorage existente para no perder onboardingCompleted
+        // si el backend aún no lo persiste correctamente
+        const existingUser = JSON.parse(localStorage.getItem("user") || "{}");
+        const serverUser = response.data.user;
+        const userToStore = {
+          ...serverUser,
+          onboardingCompleted:
+            serverUser.onboardingCompleted || existingUser.onboardingCompleted || false,
+        };
+
         localStorage.setItem("token", response.data.token);
-        localStorage.setItem("user", JSON.stringify(response.data.user));
+        localStorage.setItem("user", JSON.stringify(userToStore));
         localStorage.setItem("isAuth", "true");
-        dispatch(setAuth({ isAuth: "true", user: response.data.user }));
-        if (response.data.user.onboardingCompleted) {
+        dispatch(setAuth({ isAuth: "true", user: userToStore }));
+
+        if (userToStore.onboardingCompleted) {
           navigate("/panel/home");
         } else {
           navigate("/onboarding");
         }
       } else {
-        setError("Invalid email or password");
+        setError("Credenciales incorrectas");
       }
     } catch {
       setError("Invalid email or password");

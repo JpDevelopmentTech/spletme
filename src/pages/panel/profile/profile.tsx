@@ -35,11 +35,12 @@ const ProfilePage = () => {
   const [userData, setUserData] = useState(() => {
     const u = LocalStorageService.getItem("user");
     return {
-      username: u.username || "jesuspineda18",
-      name: u.name || "Jesus",
-      lastName: u.lastName || "Pineda",
-      email: u.email || "jesuspineda18@outlook.es",
-      userId: u.id || "AB12CD",
+      username: u.username || "",
+      name: u.name || "",
+      lastName: u.lastName || "",
+      email: u.email || "",
+      // Soporta tanto id como _id (MongoDB)
+      userId: u.id || u._id || "",
     };
   });
 
@@ -70,8 +71,20 @@ const ProfilePage = () => {
       name: updatedData.name ?? userData.name,
       lastName: updatedData.lastName ?? userData.lastName,
     });
-    if (!response) throw new Error("No se pudo actualizar el perfil");
+
+    if (!response) {
+      throw new Error("No se pudo actualizar el perfil. Verifica tu conexión e intenta de nuevo.");
+    }
+
+    // Actualiza el estado local con los nuevos datos
     setUserData((prev) => ({ ...prev, ...updatedData }));
+
+    // Sincroniza el localStorage para que los cambios persistan al recargar
+    const stored = localStorage.getItem("user");
+    if (stored) {
+      const user = JSON.parse(stored);
+      localStorage.setItem("user", JSON.stringify({ ...user, ...updatedData }));
+    }
   };
 
   return (

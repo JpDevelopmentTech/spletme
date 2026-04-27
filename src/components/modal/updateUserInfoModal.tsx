@@ -33,6 +33,7 @@ const UpdateModal = ({ user, onClose, onSave }: UpdateModalProps) => {
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Partial<UpdateUserPayload>>({});
+  const [saveError, setSaveError] = useState("");
  
   const validate = (): boolean => {
     const newErrors: Partial<UpdateUserPayload> = {};
@@ -49,11 +50,12 @@ const UpdateModal = ({ user, onClose, onSave }: UpdateModalProps) => {
   const handleSubmit = async () => {
     if (!validate()) return;
     setLoading(true);
+    setSaveError("");
     try {
       await onSave(form);
       onClose();
     } catch (e) {
-      console.error(e);
+      setSaveError(e instanceof Error ? e.message : "No se pudo guardar. Intenta de nuevo.");
     } finally {
       setLoading(false);
     }
@@ -165,6 +167,13 @@ const UpdateModal = ({ user, onClose, onSave }: UpdateModalProps) => {
           ))}
         </div>
  
+        {/* Error banner */}
+        {saveError && (
+          <div className="mx-6 mb-2 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-600">
+            {saveError}
+          </div>
+        )}
+
         {/* Footer */}
         <div className="flex gap-3 px-6 py-5 border-t border-gray-100 dark:border-gray-700">
           <button

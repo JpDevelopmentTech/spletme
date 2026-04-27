@@ -172,7 +172,9 @@ export const AuthService = {
   updateUser: async (payload: UpdateUserSchema) => {
     try {
       const endpoint = `${URI}/update/${payload.userId}`;
-      const response = await axios.put(endpoint, payload, {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { userId: _id, email: _email, ...body } = payload;
+      const response = await axios.put(endpoint, body, {
         headers: getAuthHeaders(),
       });
       const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
