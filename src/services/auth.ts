@@ -21,6 +21,8 @@ export interface UpdateUserSchema {
   lastName: string;
 }
 
+export type updateSubuserSchema = UpdateUserSchema;
+
 export interface PasswordRecoveryResponse {
   success: boolean;
   message: string;
@@ -359,7 +361,10 @@ export const AuthService = {
       if (response.status < 200 || response.status >= 300) {
         return {
           success: false,
-          message: getMessageFromPayload(response.data, "Error al cambiar la contraseña"),
+          message: getMessageFromPayload(
+            response.data,
+            "Error al cambiar la contraseña",
+          ),
           status: response.status,
         };
       }

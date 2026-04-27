@@ -10,11 +10,20 @@ import {
   Lock,
   UserPlus,
   LucideLanguages,
+  Pencil,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import RegisterSubuserModal from "../../../components/modal/RegisterSubuserModal";
 import SubprofileManagementModal from "../../../components/modal/SubprofileManagementModal";
 import LocalStorageService from "../../../services/localstorage";
+import UpdateModal from "@/components/modal/updateUserInfoModal";
+import { AuthService } from "@/services/auth";
+
+interface EditUserPayload {
+  username?: string;
+  name?: string;
+  lastName?: string;
+}
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -24,16 +33,19 @@ const ProfilePage = () => {
   const [showSubprofileManagementModal, setShowSubprofileManagementModal] =
     useState(false);
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const availableLanguages = ["Español", "English", "Português", "Français"];
 
-  const userFromStorage = LocalStorageService.getItem("user");
-  const userData = {
-    username: userFromStorage.username || "jesuspineda18",
-    name: userFromStorage.name || "jesus",
-    lastName: userFromStorage.lastName || "pineda gambin",
-    email: userFromStorage.email || "jesuspineda18@outlook.es",
-    userId: userFromStorage.id || "AB12CD",
-  };
+  const [userData, setUserData] = useState(() => {
+    const userFromStorage = LocalStorageService.getItem("user");
+    return {
+      username: userFromStorage.username || "jesuspineda18",
+      name: userFromStorage.name || "jesus",
+      lastName: userFromStorage.lastName || "pineda gambin",
+      email: userFromStorage.email || "jesuspineda18@outlook.es",
+      userId: userFromStorage.id || "AB12CD",
+    };
+  });
 
   const handleCopyId = async () => {
     try {
@@ -54,6 +66,25 @@ const ProfilePage = () => {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleSaveProfile = async (updatedData: EditUserPayload) => {
+    const response = await AuthService.updateUser({
+      userId: userData.userId,
+      email: userData.email,
+      username: updatedData.username ?? userData.username,
+      name: updatedData.name ?? userData.name,
+      lastName: updatedData.lastName ?? userData.lastName,
+    });
+
+    if (!response) {
+      throw new Error("No se pudo actualizar el perfil");
+    }
+
+    setUserData((prev) => ({
+      ...prev,
+      ...updatedData,
+    }));
   };
 
   return (
@@ -152,7 +183,9 @@ const ProfilePage = () => {
             <h1 className="mt-4 text-2xl font-bold text-gray-900 dark:text-white">
               {userData.name} {userData.lastName}
             </h1>
-            <p className="text-gray-500 dark:text-gray-400">@{userData.username}</p>
+            <p className="text-gray-500 dark:text-gray-400">
+              @{userData.username}
+            </p>
           </div>
 
           <div className="space-y-6">
@@ -213,7 +246,6 @@ const ProfilePage = () => {
                 </p>
               </div>
             </div>
-
             <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
               <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
                 <Mail className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
@@ -242,6 +274,14 @@ const ProfilePage = () => {
               </div>
             </div>
 
+            <button
+              onClick={() => setShowEditModal(true)}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-white bg-purple-600 hover:bg-purple-700 active:scale-95 transition-all"
+            >
+              <Pencil className="w-4 h-4" />
+              Editar perfil
+            </button>
+
             <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -258,7 +298,6 @@ const ProfilePage = () => {
                 </motion.button>
               </div>
             </div>
-
             <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -284,6 +323,16 @@ const ProfilePage = () => {
         onClose={() => setShowSubprofileManagementModal(false)}
         onOpenCreateSubprofile={() => setShowSubuserModal(true)}
       />
+
+      <AnimatePresence>
+        {showEditModal && (
+          <UpdateModal
+            user={userData}
+            onClose={() => setShowEditModal(false)}
+            onSave={handleSaveProfile}
+          />
+        )}
+      </AnimatePresence>
 
       <RegisterSubuserModal
         isOpen={showSubuserModal}
