@@ -189,6 +189,31 @@ class WalletService {
     }
   }
 
+  async createDeposit(data: { amount: number; currency: string; country: string }) {
+    try {
+      const response = await axios.post(`${this.URI}/create-deposit`, data, {
+        headers: this.headers,
+      });
+      return response.data;
+    } catch (error: unknown) {
+      console.error("Error creating deposit:", error);
+      return { error: true, message: "Error creating deposit" };
+    }
+  }
+
+  async getTransactions(pageNumber = 1, pageSize = 25) {
+    try {
+      const response = await axios.get(`${this.URI}/get-transactions`, {
+        headers: this.headers,
+        params: { pageNumber, pageSize },
+      });
+      return response.data;
+    } catch (error: unknown) {
+      console.error("Error getting transactions:", error);
+      return { error: true, message: "Error getting transactions" };
+    }
+  }
+
   /**
    * Envía fondos a otro usuario
    */

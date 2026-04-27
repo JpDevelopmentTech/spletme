@@ -2,7 +2,7 @@ import { ApexOptions } from "apexcharts";
 import "./home.css";
 import ReactApexChart from "react-apexcharts";
 import { Link } from "react-router-dom";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import PlatformsCard from "../../../components/platformsCard/platformsCard";
 import DashboardTour from "../../../components/tour/DashboardTour";
 import {
@@ -15,10 +15,7 @@ import {
   History,
   PiggyBank,
   ChevronRight,
-  Search,
-  Upload,
 } from "lucide-react";
-import UseSongs from "../../../hooks/useSongs";
 import UseFilterSongsData from "@/hooks/useFilterSongsData";
 import { useSplitPayments } from "@/hooks/useSplitPayments";
 import { useWallet } from "@/hooks/useWallet";
@@ -26,6 +23,7 @@ import CreateWalletModal from "@/components/wallet/CreateWalletModal";
 import WithdrawalModal from "@/components/wallet/WithdrawalModal";
 import TransferFundsModal from "@/components/wallet/TransferFundsModal";
 import WalletService from "@/services/wallet";
+import SongService from "@/services/songs";
 import { useAuth0 } from "@auth0/auth0-react";
 export default function Home() {
   const [selectedTimeframe, setSelectedTimeframe] = useState("7d");
@@ -33,8 +31,14 @@ export default function Home() {
   const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const { totalAmount } = useSplitPayments();
-  const { songs } = UseSongs(1, 10);
   const { summary } = UseFilterSongsData();
+  const [topSongs, setTopSongs] = useState<any[]>([]);
+
+  useEffect(() => {
+    SongService.getTopByStreams().then((res) => {
+      if (res?.data) setTopSongs(res.data);
+    });
+  }, []);
   const { wallet, loading: walletLoading, hasWallet, createWallet, refreshWallet } = useWallet();
   const { user } = useAuth0();
 
@@ -62,14 +66,14 @@ export default function Home() {
     () => [
       {
         name: "Streams",
-        type: "bar",
+        type: "area",
         data: monthWeights.map((w) =>
           Math.round(((summary.totalStreams || 0) * w) / weightsSum)
         ),
       },
       {
         name: "Revenue",
-        type: "line",
+        type: "area",
         data: monthWeights.map((w) =>
           Number(
             (((summary.totalNetIncome || 0) * w) / weightsSum).toFixed(2)
@@ -85,19 +89,21 @@ export default function Home() {
       toolbar: { show: false },
       background: "transparent",
     },
-    plotOptions: {
-      bar: {
-        borderRadius: 6,
-        borderRadiusApplication: "end",
-        columnWidth: "60%",
-      },
-    },
     stroke: {
-      width: [0, 2],
+      width: [2, 2],
       curve: "smooth",
     },
+    fill: {
+      type: "gradient",
+      gradient: {
+        shadeIntensity: 1,
+        opacityFrom: 0.35,
+        opacityTo: 0.02,
+        stops: [0, 90, 100],
+      },
+    },
     markers: {
-      size: [0, 4],
+      size: [0, 0],
     },
     dataLabels: { enabled: false },
     colors: ["#111827", "#22C55E"],
@@ -189,34 +195,22 @@ export default function Home() {
           >
             <div className="flex flex-col gap-1">
               <h1 className="text-2xl font-bold text-gray-900">
-                Welcome back, {user?.name}
+                Bienvenido de vuelta, {user?.name}
               </h1>
               <p className="text-sm text-gray-500">
-                Here's what's happening with your music
+                Aqui lo que ha pasado con tu musica los ultimos dias
               </p>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <button className="flex items-center gap-2 px-3.5 py-2.5 bg-white border border-gray-200 rounded-[10px] text-gray-400 text-[13px] hover:border-gray-300 transition-colors">
-                <Search className="w-4 h-4" />
-                <span>Search...</span>
-              </button>
-              <Link
-                to="/panel/music"
-                className="flex items-center gap-2 px-4 py-2.5 bg-orange-500 text-white rounded-[10px] text-[13px] font-semibold hover:bg-orange-600 transition-colors"
-              >
-                <Upload className="w-4 h-4" />
-                Upload Song
-              </Link>
             </div>
           </div>
 
           {/* Stats Row */}
           <div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+            className="grid grid-cols-12 gap-4"
             data-tour="stats-cards"
           >
+
             {/* Total Streams */}
-            <div className="bg-white rounded-xl p-5 border border-gray-200">
+            <div className="col-span-4 bg-white rounded-xl p-5 border border-gray-200">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-medium text-gray-500">Total Streams</span>
                 <Play className="w-4 h-4 text-gray-400" />
@@ -229,8 +223,9 @@ export default function Home() {
               </span>
             </div>
 
+
             {/* Total Revenue */}
-            <div className="bg-white rounded-xl p-5 border border-gray-200">
+            <div className="bg-white col-span-4 rounded-xl p-5 border border-gray-200">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-medium text-gray-500">Total Revenue</span>
                 <DollarSign className="w-4 h-4 text-green-500" />
@@ -244,7 +239,7 @@ export default function Home() {
             </div>
 
             {/* Total Songs */}
-            <div className="bg-white rounded-xl p-5 border border-gray-200">
+            <div className="bg-white col-span-4 rounded-xl p-5 border border-gray-200">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-medium text-gray-500">Total Songs</span>
                 <Music className="w-4 h-4 text-gray-400" />
@@ -256,35 +251,8 @@ export default function Home() {
                 &uarr; 15.3%
               </span>
             </div>
-
-            {/* Net Balance */}
-            <div className="bg-white rounded-xl p-5 border border-gray-200">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-medium text-gray-500">Net Balance</span>
-                <PiggyBank className="w-4 h-4 text-gray-400" />
-              </div>
-              <p className="text-[28px] font-bold text-gray-900 leading-tight">
-                {formatCurrency(netBalance)}
-              </p>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-xs font-medium text-green-500">
-                  +{formatCurrency(summary.totalNetIncome)}
-                </span>
-                <span className="text-xs font-medium text-red-500">
-                  &ndash;{formatCurrency(totalAmount)}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Main Row: Chart + Wallet */}
-          <div className="flex flex-col xl:flex-row gap-4">
-            {/* Performance Chart */}
-            <div
-              className="flex-1 bg-white rounded-xl p-6 border border-gray-200"
-              data-tour="analytics-chart"
-            >
-              <div className="flex flex-col gap-5">
+            <div className="col-span-8 row-span-2 flex-1 bg-white rounded-xl p-6 border border-gray-200" data-tour="analytics-chart">
+              <div className="flex flex-col gap-5 ">
                 {/* Chart Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                   <div className="flex flex-col gap-0.5">
@@ -295,11 +263,10 @@ export default function Home() {
                     {timeframeOptions.map((option) => (
                       <button
                         key={option.value}
-                        className={`px-3.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                          selectedTimeframe === option.value
-                            ? "bg-white text-gray-900 shadow-sm"
-                            : "text-gray-500 hover:text-gray-700"
-                        }`}
+                        className={`px-3.5 py-1.5 rounded-md text-xs font-medium transition-colors ${selectedTimeframe === option.value
+                          ? "bg-white text-gray-900 shadow-sm"
+                          : "text-gray-500 hover:text-gray-700"
+                          }`}
                         onClick={() => setSelectedTimeframe(option.value)}
                       >
                         {option.label}
@@ -321,11 +288,11 @@ export default function Home() {
                 </div>
 
                 {/* Chart */}
-                <div className="h-[180px]">
+                <div className="h-[280px]">
                   <ReactApexChart
                     options={options}
                     series={series}
-                    type="line"
+                    type="area"
                     height="100%"
                     width="100%"
                   />
@@ -333,9 +300,30 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Wallet */}
+            {/* Net Balance */}
+            <div className="bg-white rounded-xl p-5 border border-gray-200 col-span-2">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-medium text-gray-500">Net Balance</span>
+                <PiggyBank className="w-4 h-4 text-gray-400" />
+              </div>
+              <p className="text-[28px] font-bold text-gray-900 leading-tight">
+                {formatCurrency(netBalance)}
+              </p>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-xs font-medium text-green-500">
+                  +{formatCurrency(summary.totalNetIncome)}
+                </span>
+                <span className="text-xs font-medium text-red-500">
+                  &ndash;{formatCurrency(totalAmount)}
+                </span>
+              </div>
+            </div>
+
+
+            <PlatformsCard />
+
             <div
-              className="w-full xl:w-[360px] bg-white rounded-xl p-6 border border-gray-200 flex flex-col gap-5"
+              className="col-span-2 bg-white rounded-xl p-6 border border-gray-200 flex flex-col gap-5"
               data-tour="balance-section"
             >
               {walletLoading ? (
@@ -424,21 +412,9 @@ export default function Home() {
                 </>
               )}
             </div>
-          </div>
 
-          {/* Bottom Row: Platforms + Top Songs */}
-          <div className="flex flex-col xl:flex-row gap-4">
-            {/* Platforms */}
             <div
-              className="w-full xl:w-[360px]"
-              data-tour="platforms-section"
-            >
-              <PlatformsCard />
-            </div>
-
-            {/* Top Songs */}
-            <div
-              className="flex-1 bg-white rounded-xl p-6 border border-gray-200"
+              className="flex-1 bg-white rounded-xl p-6 border border-gray-200 col-span-10"
               data-tour="top-songs"
             >
               <div className="flex flex-col gap-4">
@@ -454,7 +430,7 @@ export default function Home() {
                 </div>
 
                 {/* Songs Table */}
-                {songs.length > 0 ? (
+                {topSongs.length > 0 ? (
                   <div className="flex flex-col">
                     {/* Table Header */}
                     <div className="flex items-center py-2.5 border-b border-gray-100">
@@ -473,11 +449,26 @@ export default function Home() {
                     </div>
 
                     {/* Table Rows */}
-                    {songs.slice(0, 4).map((song, index) => (
+                    {topSongs.map((song, index) => (
                       <div
                         key={song._id}
-                        className="flex items-center py-3 border-b border-gray-100 last:border-b-0"
+                        className="flex items-center py-3 border-b border-gray-100 last:border-b-0 gap-3"
                       >
+                        {/* Cover */}
+                        <div className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
+                          {song.spotifyData?.album?.images?.[0]?.url ? (
+                            <img
+                              src={song.spotifyData.album.images[0].url}
+                              alt={song.trackTitle}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Music className="w-4 h-4 text-gray-400" />
+                            </div>
+                          )}
+                        </div>
+
                         <div className="flex-1 flex flex-col gap-0.5 min-w-0">
                           <span className="text-[13px] font-semibold text-gray-900 truncate">
                             {song.trackTitle || `Song ${index + 1}`}
@@ -498,11 +489,10 @@ export default function Home() {
                         </div>
                         <div className="w-[80px]">
                           <span
-                            className={`inline-block px-2 py-0.5 text-[10px] font-semibold rounded-full ${
-                              index === 0
-                                ? "bg-amber-100 text-amber-700"
-                                : "bg-gray-100 text-gray-500"
-                            }`}
+                            className={`inline-block px-2 py-0.5 text-[10px] font-semibold rounded-full ${index === 0
+                              ? "bg-amber-100 text-amber-700"
+                              : "bg-gray-100 text-gray-500"
+                              }`}
                           >
                             {index === 0 ? "Trending" : "Stable"}
                           </span>
@@ -530,6 +520,25 @@ export default function Home() {
                 )}
               </div>
             </div>
+
+
+
+
+          </div>
+
+
+          {/* Bottom Row: Platforms + Top Songs */}
+          <div className="flex flex-col xl:flex-row gap-4">
+            {/* Platforms */}
+            <div
+              className="w-full xl:w-[360px]"
+              data-tour="platforms-section"
+            >
+
+            </div>
+
+            {/* Top Songs */}
+        
           </div>
         </div>
       </div>

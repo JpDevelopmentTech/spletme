@@ -151,6 +151,19 @@ class SongService {
     }
   }
 
+  async getTopByStreams() {
+    try {
+      const endpoint = this.URI + "/top-by-streams";
+      const response = await axios.get(endpoint, {
+        headers: { Authorization: `Bearer ${this.token}` },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error getting top songs by streams:", error);
+      return null;
+    }
+  }
+
   async getStadisticsByPlatformAll() {
     try {
       const endpoint = this.URI + "/getStadisticsByPlatformAll";

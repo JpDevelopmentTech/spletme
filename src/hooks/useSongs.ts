@@ -29,6 +29,11 @@ interface Song {
   totalNetIncome: number;
   totalStreams: number;
   trackTitle: string;
+  spotifyData?: {
+    album?: {
+      images?: { url: string; width: number; height: number }[];
+    };
+  };
 }
 
 

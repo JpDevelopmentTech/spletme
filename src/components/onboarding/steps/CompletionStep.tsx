@@ -1,193 +1,103 @@
-import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { TrendingUp, DollarSign, Music, ArrowRight, PartyPopper } from "lucide-react";
+
+const FEATURES = [
+  {
+    Icon: TrendingUp,
+    title: "Analytics",
+    description: "Monitorea tus ingresos",
+  },
+  {
+    Icon: DollarSign,
+    title: "Regalías",
+    description: "Gestiona tus ganancias",
+  },
+  {
+    Icon: Music,
+    title: "Catálogo",
+    description: "Sincroniza tu música",
+  },
+];
 
 const CompletionStep = () => {
-  const checkmarkVariants = {
-    initial: { pathLength: 0, opacity: 0 },
-    animate: {
-      pathLength: 1,
-      opacity: 1,
-      transition: {
-        pathLength: { duration: 0.8, ease: "easeInOut" },
-        opacity: { duration: 0.3 }
-      }
-    }
-  };
-
   return (
-    <div className="text-center space-y-8 relative overflow-hidden">
-      
-
-      {/* Success Icon */}
-      <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ 
-          type: "spring", 
-          stiffness: 200, 
-          damping: 10,
-          delay: 0.2 
+    <div className="flex flex-col items-center gap-6 text-center">
+      {/* Check circle */}
+      <div
+        className="flex items-center justify-center text-white font-bold"
+        style={{
+          width: 88,
+          height: 88,
+          borderRadius: 44,
+          backgroundColor: "#22C55E",
+          fontSize: 40,
+          lineHeight: 1,
         }}
-        className="relative"
       >
-        <div className="inline-flex items-center justify-center w-32 h-32 bg-gradient-to-r from-gray-400 to-gray-600 rounded-full shadow-2xl">
-          <motion.svg
-            width="60"
-            height="60"
-            viewBox="0 0 24 24"
-            fill="none"
-            className="text-white"
-            initial="initial"
-            animate="animate"
-          >
-            <motion.path
-              d="M20 6L9 17L4 12"
-              stroke="currentColor"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              variants={checkmarkVariants}
-            />
-          </motion.svg>
-        </div>
-      </motion.div>
+        ✓
+      </div>
 
-      {/* Success Message */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.8 }}
-        className="space-y-4"
-      >
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+      {/* Title */}
+      <div className="flex flex-col gap-2">
+        <h2 className="text-2xl font-bold text-[#111827]">
           ¡Cuenta verificada exitosamente!
         </h2>
-        <p className="text-lg text-gray-600 dark:text-gray-400 max-w-md mx-auto">
-          Tu perfil ha sido configurado correctamente. Ya puedes comenzar a gestionar 
-          tus regalías musicales.
+        <p className="text-sm text-[#6B7280] max-w-md mx-auto">
+          Tu perfil está configurado. Ya puedes gestionar tus regalías musicales.
         </p>
-      </motion.div>
+      </div>
 
-      {/* Features Summary */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.2 }}
-        className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto"
-      >
-        {[
-          {
-            icon: "📊",
-            title: "Analytics",
-            description: "Monitorea tus ingresos en tiempo real"
-          },
-          {
-            icon: "💰",
-            title: "Regalías",
-            description: "Gestiona y divide tus ganancias"
-          },
-          {
-            icon: "🎵",
-            title: "Catálogo",
-            description: "Sincroniza tu música automáticamente"
-          }
-        ].map((feature, index) => (
-          <motion.div
-            key={feature.title}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.4 + index * 0.1 }}
-            className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700"
+      {/* Feature cards */}
+      <div className="flex gap-3.5 w-full">
+        {FEATURES.map(({ Icon, title, description }) => (
+          <div
+            key={title}
+            className="flex-1 flex flex-col items-center gap-2"
+            style={{
+              backgroundColor: "#F9FAFB",
+              borderRadius: 12,
+              border: "1px solid #E5E7EB",
+              padding: 20,
+            }}
           >
-            <div className="text-2xl mb-2">{feature.icon}</div>
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
-              {feature.title}
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {feature.description}
-            </p>
-          </motion.div>
+            <Icon size={28} color="#F97316" />
+            <span className="text-sm font-semibold text-[#111827]">{title}</span>
+            <span className="text-xs text-[#6B7280]">{description}</span>
+          </div>
         ))}
-      </motion.div>
+      </div>
 
-      {/* Welcome Message */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.8 }}
-        className="bg-gray-50 dark:bg-gray-800/60 rounded-xl p-6 border border-gray-200 dark:border-gray-700"
+      {/* Welcome banner */}
+      <div
+        className="flex items-start gap-3 w-full text-left"
+        style={{
+          backgroundColor: "#FFF7ED",
+          border: "1px solid #FED7AA",
+          borderRadius: 12,
+          padding: 16,
+        }}
       >
-        <div className="flex items-center justify-center space-x-3 mb-4">
-          <div className="text-2xl">🎉</div>
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-            ¡Bienvenido a SplitMe!
-          </h3>
-        </div>
-        <p className="text-gray-700 dark:text-gray-300 mb-4">
-          Estás listo para comenzar. Tu cuenta está completamente configurada y 
-          sincronizada con tu distribuidor musical.
+        <PartyPopper size={24} color="#F97316" className="flex-shrink-0 mt-0.5" />
+        <p className="text-sm text-[#9A3412]">
+          ¡Bienvenido a SplitMe! Tu cuenta está lista para comenzar.
         </p>
-        <div className="flex items-center justify-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
-          <div className="flex items-center space-x-1">
-            <span className="w-2 h-2 bg-gray-500 rounded-full"></span>
-            <span>Perfil completo</span>
-          </div>
-          <div className="flex items-center space-x-1">
-            <span className="w-2 h-2 bg-gray-500 rounded-full"></span>
-            <span>Distribuidor conectado</span>
-          </div>
-          <div className="flex items-center space-x-1">
-            <span className="w-2 h-2 bg-gray-500 rounded-full"></span>
-            <span>WhatsApp verificado</span>
-          </div>
-        </div>
-      </motion.div>
+      </div>
 
-      {/* Call to Action */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 2.2 }}
-        className="pt-6"
+      {/* CTA */}
+      <Link
+        to="/panel/home"
+        className="flex items-center justify-center gap-2 w-full text-white font-bold text-base transition-opacity hover:opacity-90"
+        style={{
+          height: 52,
+          borderRadius: 12,
+          backgroundColor: "#F97316",
+        }}
       >
-        <Link
-          to="/panel/home"
-          className="inline-flex items-center justify-center w-full py-4 px-8 rounded-xl font-semibold text-lg text-white bg-gradient-to-r from-gray-500 to-gray-700 hover:from-gray-600 hover:to-gray-800 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
-        >
-          <div className="flex items-center space-x-3">
-            <span>Ir al Dashboard</span>
-            <motion.div
-              animate={{ x: [0, 5, 0] }}
-              transition={{ repeat: Infinity, duration: 1.5 }}
-            >
-              🚀
-            </motion.div>
-          </div>
-        </Link>
-      </motion.div>
-
-      {/* Additional Help */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 2.6 }}
-        className="text-center"
-      >
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-          ¿Necesitas ayuda para comenzar?
-        </p>
-        <div className="flex items-center justify-center space-x-4">
-          <button className="text-sm text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors duration-200">
-            Ver tutorial
-          </button>
-          <span className="text-gray-300 dark:text-gray-600">•</span>
-          <button className="text-sm text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors duration-200">
-            Contactar soporte
-          </button>
-        </div>
-      </motion.div>
+        Ir al Dashboard
+        <ArrowRight size={18} />
+      </Link>
     </div>
   );
 };
 
-export default CompletionStep; 
+export default CompletionStep;

@@ -5,7 +5,6 @@ import {
   Users,
   Handshake,
   BarChart2,
-  CreditCard,
   Menu,
   X,
   LogOut,
@@ -32,7 +31,6 @@ const navItems = [
   { to: "/panel/collaborators", label: "Collaborators", icon: Users },
   { to: "/panel/labels", label: "Labels", icon: Tag },
   { to: "/panel/balance", label: "Analytics", icon: BarChart2 },
-  { to: "/panel/pagos", label: "Payments", icon: CreditCard },
   { to: "/panel/wallet", label: "Wallet", icon: Wallet },
 ];
 

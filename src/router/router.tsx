@@ -16,6 +16,7 @@ import EmailLogin from "../pages/auth/email-login";
 import Register from "../pages/auth/register";
 import PasswordRecoveryRequest from "../pages/auth/password-recoveryRequest";
 import Balance from "../pages/panel/balance/balance";
+import WalletPage from "../pages/panel/wallet/wallet";
 import Profile from "../pages/panel/profile/profile";
 import AcceptCollaboration from "../pages/collabotarion/acceptCollaboration";
 import AcceptLabelCollaboration from "../pages/collabotarion/acceptLabelCollaboration";
@@ -103,16 +104,16 @@ const routes = [
         element: <Collaborator />
       },
       {
-        path: "pagos",
-        element: <Payments />
-      },
-      {
         path: "balance",
         element: <Balance />
       },
       {
         path: "profile",
         element: <Profile />
+      },
+      {
+        path: "wallet",
+        element: <WalletPage />
       },
       {
         path: "labels",
