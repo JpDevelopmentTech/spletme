@@ -1,9 +1,14 @@
-import { motion } from "framer-motion";
-import { Mail, Lock, User, ArrowLeft, UserCircle } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { Mail, Lock, Eye, EyeOff, User, AtSign } from "lucide-react";
 import { AuthService } from "../../services/auth";
 import { OnboardingService } from "../../services/onboarding";
+
+const FEATURES = [
+  "Track streams across all platforms",
+  "Split royalties with collaborators",
+  "Manage payment wallets & withdrawals",
+];
 
 export default function Register() {
   const navigate = useNavigate();
@@ -15,25 +20,30 @@ export default function Register() {
     password: "",
     passwordConfirmation: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  const set = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    setErrorMessage("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage("");
     setSuccessMessage("");
-    setIsSubmitting(true);
 
+    if (formData.password !== formData.passwordConfirmation) {
+      setErrorMessage("Las contraseñas no coinciden.");
+      return;
+    }
+
+    setIsSubmitting(true);
     const response = await AuthService.register(formData);
+
     if (!response) {
       setErrorMessage("No se pudo crear la cuenta. Intenta nuevamente.");
       setIsSubmitting(false);
@@ -43,204 +53,317 @@ export default function Register() {
     try {
       await OnboardingService.requestAccountVerificationCode(formData.email);
     } catch {
-      // El backend ya envía el código al registrarse; ignoramos fallos del reenvío explícito.
+      // backend sends code on register; ignore explicit resend failure
     }
 
-    setSuccessMessage("Cuenta creada. Te enviamos un código de verificación a tu correo.");
+    setSuccessMessage("Cuenta creada. Te enviamos un código de verificación.");
     setIsSubmitting(false);
+    setTimeout(() => navigate("/auth/email-login"), 1200);
+  };
 
-    setTimeout(() => {
-      navigate('/auth/email-login');
-    }, 1200);
+  const inputBase: React.CSSProperties = {
+    width: "100%",
+    height: 46,
+    borderRadius: 10,
+    border: "1px solid #E5E7EB",
+    backgroundColor: "#FFFFFF",
+    paddingLeft: 40,
+    paddingRight: 14,
+    fontSize: 14,
+    color: "#111827",
+    outline: "none",
   };
 
   return (
-    <section className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="bg-white rounded-2xl p-8 shadow-xl border border-gray-100"
-        >
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => navigate("/")}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-6"
+    <div className="flex min-h-screen">
+      {/* Left Panel */}
+      <div
+        className="hidden lg:flex flex-col justify-center gap-9 flex-shrink-0"
+        style={{ width: 500, backgroundColor: "#0F172A", padding: "60px 50px" }}
+      >
+        {/* Logo */}
+        <div className="flex items-center gap-3">
+          <div
+            className="flex items-center justify-center text-white font-bold text-xl flex-shrink-0"
+            style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: "#F97316" }}
           >
-            <ArrowLeft className="w-5 h-5" />
-            Back to Login
-          </motion.button>
+            S
+          </div>
+          <span className="text-white font-bold text-xl">SplitMe</span>
+        </div>
 
-          <h1 className="text-3xl font-bold text-gray-800 mb-6">Create Account</h1>
+        {/* Heading */}
+        <div className="flex flex-col gap-4">
+          <h1 className="text-white font-bold" style={{ fontSize: 42, lineHeight: 1.2 }}>
+            Manage your
+            <br />
+            music royalties.
+          </h1>
+          <p className="text-[#94A3B8] text-sm" style={{ lineHeight: 1.6 }}>
+            Track streams, split payments, and manage collaborators all in one place.
+          </p>
+        </div>
 
+        {/* Orange accent */}
+        <div style={{ width: 48, height: 3, borderRadius: 2, backgroundColor: "#F97316" }} />
+
+        {/* Features */}
+        <div className="flex flex-col gap-3.5">
+          {FEATURES.map((feat) => (
+            <div key={feat} className="flex items-center gap-2.5">
+              <div
+                className="flex-shrink-0 rounded-full"
+                style={{ width: 8, height: 8, backgroundColor: "#F97316" }}
+              />
+              <span className="text-[#CBD5E1] text-sm">{feat}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Right Panel */}
+      <div
+        className="flex-1 flex items-center justify-center p-6 overflow-y-auto"
+        style={{ backgroundColor: "#F7F8FA" }}
+      >
+        {/* Form Card */}
+        <div
+          className="w-full flex flex-col gap-5 my-6"
+          style={{
+            maxWidth: 420,
+            backgroundColor: "#FFFFFF",
+            borderRadius: 16,
+            border: "1px solid #E5E7EB",
+            padding: 40,
+          }}
+        >
+          {/* Card logo */}
+          <div
+            className="flex items-center justify-center text-white font-bold text-[22px] self-start"
+            style={{ width: 44, height: 44, borderRadius: 11, backgroundColor: "#F97316" }}
+          >
+            S
+          </div>
+
+          {/* Heading */}
+          <div className="flex flex-col gap-1">
+            <h2 className="text-[26px] font-bold text-[#111827]">Create your account</h2>
+            <p className="text-sm text-[#6B7280]">
+              Join SplitMe and start managing your royalties
+            </p>
+          </div>
+
+          {/* Alerts */}
           {errorMessage && (
-            <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div
+              className="text-sm text-red-700"
+              style={{
+                backgroundColor: "#FEF2F2",
+                border: "1px solid #FECACA",
+                borderRadius: 10,
+                padding: "10px 14px",
+              }}
+            >
               {errorMessage}
             </div>
           )}
-
           {successMessage && (
-            <div className="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+            <div
+              className="text-sm text-green-700"
+              style={{
+                backgroundColor: "#F0FDF4",
+                border: "1px solid #BBF7D0",
+                borderRadius: 10,
+                padding: "10px 14px",
+              }}
+            >
               {successMessage}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
-                Username
-              </label>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            {/* Username */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-[#374151]">Username</label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <UserCircle className="h-5 w-5 text-gray-400" />
-                </div>
+                <AtSign
+                  size={16}
+                  color="#9CA3AF"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                />
                 <input
                   type="text"
-                  id="username"
                   name="username"
                   value={formData.username}
-                  onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  onChange={(e) => set("username", e.target.value)}
                   placeholder="Choose a username"
                   required
+                  style={inputBase}
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                  First Name
-                </label>
+            {/* First + Last name */}
+            <div className="flex gap-3">
+              <div className="flex-1 flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-[#374151]">First Name</label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User className="h-5 w-5 text-gray-400" />
-                  </div>
+                  <User
+                    size={16}
+                    color="#9CA3AF"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                  />
                   <input
                     type="text"
-                    id="name"
                     name="name"
                     value={formData.name}
-                    onChange={handleChange}
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    onChange={(e) => set("name", e.target.value)}
                     placeholder="First name"
                     required
+                    style={inputBase}
                   />
                 </div>
               </div>
-
-              <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
-                  Last Name
-                </label>
+              <div className="flex-1 flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-[#374151]">Last Name</label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User className="h-5 w-5 text-gray-400" />
-                  </div>
+                  <User
+                    size={16}
+                    color="#9CA3AF"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                  />
                   <input
                     type="text"
-                    id="lastName"
                     name="lastName"
                     value={formData.lastName}
-                    onChange={handleChange}
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    onChange={(e) => set("lastName", e.target.value)}
                     placeholder="Last name"
                     required
+                    style={inputBase}
                   />
                 </div>
               </div>
             </div>
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
-              </label>
+            {/* Email */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-[#374151]">Email Address</label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
-                </div>
+                <Mail
+                  size={16}
+                  color="#9CA3AF"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                />
                 <input
                   type="email"
-                  id="email"
                   name="email"
                   value={formData.email}
-                  onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  onChange={(e) => set("email", e.target.value)}
                   placeholder="Enter your email"
                   required
+                  style={inputBase}
                 />
               </div>
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
+            {/* Password */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-[#374151]">Password</label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
-                </div>
+                <Lock
+                  size={16}
+                  color="#9CA3AF"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                />
                 <input
-                  type="password"
-                  id="password"
+                  type={showPassword ? "text" : "password"}
                   name="password"
                   value={formData.password}
-                  onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  onChange={(e) => set("password", e.target.value)}
                   placeholder="Create a password"
                   required
+                  style={{ ...inputBase, paddingRight: 40 }}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#6B7280] transition-colors"
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
               </div>
             </div>
 
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                Confirm Password
-              </label>
+            {/* Confirm password */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-[#374151]">Confirm Password</label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
-                </div>
+                <Lock
+                  size={16}
+                  color="#9CA3AF"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                />
                 <input
-                  type="password"
-                  id="passwordConfirmation"
+                  type={showConfirm ? "text" : "password"}
                   name="passwordConfirmation"
                   value={formData.passwordConfirmation}
-                  onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  onChange={(e) => set("passwordConfirmation", e.target.value)}
                   placeholder="Confirm your password"
                   required
+                  style={{ ...inputBase, paddingRight: 40 }}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#6B7280] transition-colors"
+                >
+                  {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
               </div>
             </div>
 
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold py-3 px-6 rounded-xl 
-                       hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed
-                       shadow-lg hover:shadow-xl flex items-center justify-center gap-3"
-              >
-                {isSubmitting ? "Creating account..." : "Create Account"}
-              </motion.button>
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full text-white font-semibold text-[15px] transition-opacity hover:opacity-90 disabled:opacity-60"
+              style={{ height: 46, borderRadius: 10, backgroundColor: "#F97316" }}
+            >
+              {isSubmitting ? "Creating account..." : "Create Account"}
+            </button>
 
-            <p className="text-center text-sm text-gray-600">
-              By creating an account, you agree to our{" "}
-              <a href="#" className="text-blue-600 hover:text-blue-500">
+            {/* Terms */}
+            <p className="text-xs text-center text-[#9CA3AF]">
+              By creating an account you agree to our{" "}
+              <a href="#" className="text-[#F97316] hover:opacity-80">
                 Terms of Service
               </a>{" "}
               and{" "}
-              <a href="#" className="text-blue-600 hover:text-blue-500">
+              <a href="#" className="text-[#F97316] hover:opacity-80">
                 Privacy Policy
               </a>
             </p>
           </form>
-        </motion.div>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px bg-[#E5E7EB]" />
+            <span className="text-xs text-[#9CA3AF]">or</span>
+            <div className="flex-1 h-px bg-[#E5E7EB]" />
+          </div>
+
+          {/* Sign in link */}
+          <div className="flex items-center justify-center gap-1">
+            <span className="text-sm text-[#6B7280]">Already have an account?</span>
+            <Link
+              to="/auth/email-login"
+              className="text-sm font-semibold text-[#F97316] hover:opacity-80 transition-opacity"
+            >
+              Sign in
+            </Link>
+          </div>
+        </div>
       </div>
-    </section>
+    </div>
   );
-} 
+}
