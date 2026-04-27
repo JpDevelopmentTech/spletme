@@ -149,7 +149,7 @@ const ChangePasswordPage = () => {
               <Lock className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Cambiar Contraseña
+              {canUseRecoveryFlow ? "Restablecer Contraseña" : "Cambiar Contraseña"}
             </h1>
           </div>
 
@@ -182,26 +182,28 @@ const ChangePasswordPage = () => {
           >
 
 
-            <div className="relative">
-              <input
-                type={showCurrentPassword ? "text" : "password"}
-                name="currentPassword"
-                value={passwordData.currentPassword}
-                onChange={handlePasswordChange}
-                placeholder="Contraseña actual"
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                required={!canUseRecoveryFlow}
-                disabled={isSubmitting}
-              />
-              <button
-                type="button"
-                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                disabled={isSubmitting}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              >
-                {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
+            {!canUseRecoveryFlow && (
+              <div className="relative">
+                <input
+                  type={showCurrentPassword ? "text" : "password"}
+                  name="currentPassword"
+                  value={passwordData.currentPassword}
+                  onChange={handlePasswordChange}
+                  placeholder="Contraseña actual"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  required
+                  disabled={isSubmitting}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  disabled={isSubmitting}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+            )}
 
             <div className="relative">
               <input
@@ -274,7 +276,11 @@ const ChangePasswordPage = () => {
               disabled={isSubmitting || !canSubmit}
               className="w-full py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-lg hover:from-indigo-600 hover:to-indigo-700 transition-all duration-200 font-medium disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? "Guardando..." : "Cambiar Contraseña"}
+              {isSubmitting
+                ? "Guardando..."
+                : canUseRecoveryFlow
+                  ? "Restablecer Contraseña"
+                  : "Cambiar Contraseña"}
             </motion.button>
           </motion.form>
         </div>
