@@ -15,6 +15,7 @@ import {
 import { useAuth0 } from "@auth0/auth0-react";
 import { useState, useEffect } from "react";
 import LocalStorageService from "../../services/localstorage";
+import { AuthService } from "@/services/auth";
 
 interface UserData {
   username: string;
@@ -35,7 +36,7 @@ const navItems = [
 ];
 
 export default function Sidebar() {
-  const { user, logout } = useAuth0();
+  const { user } = useAuth0();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [userData, setUserData] = useState<UserData | null>(null);
 
@@ -52,8 +53,8 @@ export default function Sidebar() {
     }
   }, []);
 
-  const handleLogout = () => {
-    logout({ logoutParams: { returnTo: window.location.origin } });
+  const handleLogout = async () => {
+    await AuthService.logout();
   };
 
   const displayName = userData?.name || user?.name || "User";

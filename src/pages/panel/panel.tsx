@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import Sidebar from "../../components/sidebar/sidebar";
-import { useAuth0 } from "@auth0/auth0-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   User,
@@ -11,9 +10,9 @@ import {
   Users
 } from "lucide-react";
 import SelectUser from "../../components/selectUser/selectUser";
+import { AuthService } from "@/services/auth";
 
 export default function Panel() {
-  const { logout } = useAuth0();
   const [showMenu, setShowMenu] = useState(false);
   const [openSelectUser, setOpenSelectUser] = useState(false);
   const navigate = useNavigate();
@@ -122,11 +121,9 @@ export default function Panel() {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => logout({
-                    logoutParams: {
-                      returnTo: window.location.origin,
-                    }
-                  })}
+                  onClick={async () => {
+                    await AuthService.logout();
+                  }}
                   className="w-full flex items-center justify-center gap-3 p-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-lg hover:shadow-red-500/20"
                 >
                   <LogOut className="h-5 w-5" />

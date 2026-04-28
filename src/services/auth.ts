@@ -96,10 +96,7 @@ export const AuthService = {
     }
   },
 
-  logout: () => {
-    // API call to logout
-  },
-
+  
   register: async (payload: RegisterSchema) => {
     try {
       const endpoint = URI + "/sign-up";
@@ -120,7 +117,7 @@ export const AuthService = {
       return null;
     }
   },
-
+  
   getSubUsersByUser: async () => {
     try {
       const endpoint = URI + "/subusers";
@@ -133,7 +130,7 @@ export const AuthService = {
       return null;
     }
   },
-
+  
   unlinkSubuser: async (subuserId: string): Promise<UnlinkSubuserResponse> => {
     if (!subuserId.trim()) {
       return {
@@ -141,7 +138,7 @@ export const AuthService = {
         message: "ID de subperfil inválido",
       };
     }
-
+    
     try {
       const endpoint = `${URI}/subusers/unlink`;
       const response = await axios.post(
@@ -168,7 +165,7 @@ export const AuthService = {
       };
     }
   },
-
+  
   updateUser: async (payload: UpdateUserSchema) => {
     try {
       const endpoint = `${URI}/update/${payload.userId}`;
@@ -212,8 +209,8 @@ export const AuthService = {
       return {
         success: true,
         message:
-          response.data?.message ||
-          "If the email exists, the recovery code was sent",
+        response.data?.message ||
+        "If the email exists, the recovery code was sent",
         status: response.status,
       };
     } catch (error) {
@@ -235,7 +232,7 @@ export const AuthService = {
       };
     }
   },
-
+  
   sentcodeForPasswordRecovery: async (
     email: string,
     code: string,
@@ -257,7 +254,7 @@ export const AuthService = {
       };
     }
   },
-
+  
   resetPasswordByCode: async (
     email: string,
     code: string,
@@ -282,9 +279,9 @@ export const AuthService = {
             status === 404 ||
             status === 409 ||
             status === 422,
-        },
+          },
       );
-
+      
       if (response.status < 200 || response.status >= 300) {
         return {
           success: false,
@@ -295,7 +292,7 @@ export const AuthService = {
           status: response.status,
         };
       }
-
+      
       return {
         success: true,
         message:
@@ -321,7 +318,7 @@ export const AuthService = {
       };
     }
   },
-
+  
   changePassword: async (
     newPassword: string,
     newPasswordConfirmation: string,
@@ -331,7 +328,7 @@ export const AuthService = {
     try {
       const endpoint = URI + "/password/change";
       const authToken = normalizeAuthToken(token || localStorage.getItem("token"));
-
+      
       if (!authToken) {
         return {
           success: false,
@@ -353,13 +350,13 @@ export const AuthService = {
         },
         validateStatus: (status) =>
           (status >= 200 && status < 300) ||
-          status === 400 ||
-          status === 401 ||
-          status === 404 ||
-          status === 409 ||
-          status === 422,
+        status === 400 ||
+        status === 401 ||
+        status === 404 ||
+        status === 409 ||
+        status === 422,
       });
-
+      
       if (response.status < 200 || response.status >= 300) {
         return {
           success: false,
@@ -370,7 +367,7 @@ export const AuthService = {
           status: response.status,
         };
       }
-
+      
       return {
         success: true,
         message: response.data?.message || "Contraseña cambiada correctamente",
@@ -393,6 +390,21 @@ export const AuthService = {
         message: "Error al cambiar la contraseña",
         status: 500,
       };
+    }
+  },
+  logout: async () => {
+  try {
+    await axios.post(`${URI}/logout`, {}, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+  } finally {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("isAuth");
+    localStorage.removeItem("dashboard-tour-completed");
+      window.location.href = "/auth/email-login";
     }
   },
 };
