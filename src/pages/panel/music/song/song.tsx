@@ -99,6 +99,34 @@ export default function Song() {
 
   if (loading) return <Loading />;
 
+  const currentUser = LocalStorageService.getItem("user");
+  const ownerData = song?.ownerId;
+
+  const currentUserIdentifiers = [
+    currentUser?.id,
+    currentUser?._id,
+    currentUser?.userId,
+    currentUser?.email,
+  ]
+    .filter(Boolean)
+    .map((value) => String(value));
+
+  const ownerIdentifiers = [
+    typeof ownerData === "string" || typeof ownerData === "number"
+      ? ownerData
+      : null,
+    ownerData?.id,
+    ownerData?._id,
+    ownerData?.userId,
+    ownerData?.email,
+  ]
+    .filter(Boolean)
+    .map((value) => String(value));
+
+  const isCurrentUserOwner = currentUserIdentifiers.some((identifier) =>
+    ownerIdentifiers.includes(identifier)
+  );
+
   const ownerAmount = getOwnerTotalOwed();
   const totalToPay = Math.max(0, (song?.totalNetIncome || 0) - ownerAmount);
 
@@ -188,7 +216,9 @@ export default function Song() {
             </div>
 
             {/* Stat Cards */}
-            <div className="grid grid-cols-3 gap-4">
+            <div
+              className={`grid ${isCurrentUserOwner ? "grid-cols-3" : "grid-cols-2"} gap-4`}
+            >
               {/* Streams */}
               <div className="bg-blue-50 rounded-xl p-4 space-y-2">
                 <div className="flex items-center gap-2">
@@ -223,25 +253,26 @@ export default function Song() {
                 </p>
               </div>
 
-              {/* My Percentage */}
-              <div className="bg-purple-50 rounded-xl p-4 space-y-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <Award className="w-4 h-4 text-purple-600" />
+              {isCurrentUserOwner && (
+                <div className="bg-purple-50 rounded-xl p-4 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <Award className="w-4 h-4 text-purple-600" />
+                    </div>
+                    <span className="text-xs text-gray-500 font-medium">
+                      Owner Split
+                    </span>
                   </div>
-                  <span className="text-xs text-gray-500 font-medium">
-                    Mi porcentaje
-                  </span>
+                  <div className="flex items-baseline gap-1.5">
+                    <p className="text-xl font-bold text-purple-600">
+                      ${getUserDisplayAmount()}
+                    </p>
+                    <span className="text-xs text-gray-400">
+                      {getUserDisplayPercentage()}%
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-baseline gap-1.5">
-                  <p className="text-xl font-bold text-purple-600">
-                    ${getUserDisplayAmount()}
-                  </p>
-                  <span className="text-xs text-gray-400">
-                    {getUserDisplayPercentage()}%
-                  </span>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
