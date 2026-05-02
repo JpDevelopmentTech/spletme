@@ -91,6 +91,21 @@ class SongService {
     }
   }
 
+  async getSongByIsrc(isrc: string) {
+    try {
+      const endpoint = this.URI + "/by-isrc/" + encodeURIComponent(isrc);
+      const response = await axios.get(endpoint, {
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error getting song by ISRC:", error);
+      return null;
+    }
+  }
+
   async getSongsByFilter(country: string, platform: string, startDate: string, endDate: string) {
     try {
       const endpoint = this.URI + "/by-params?country=" + country + "&platform=" + platform + "&startDate=" + startDate + "&endDate=" + endDate;

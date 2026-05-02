@@ -321,7 +321,7 @@ export default function Song() {
 
         {/* Specific Data */}
         <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-          <EspecificData />
+          <EspecificData song={song} />
         </div>
 
         {/* History of Splits */}
