@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   DollarSign,
   Music,
@@ -7,6 +7,7 @@ import {
   BarChart3,
   Award,
   ArrowLeft,
+  Tags,
 } from "lucide-react";
 import AddCollaborator from "../../collaborators/components/addCollaborator";
 import Behavior from "../../dealers/components/behavior";
@@ -24,6 +25,9 @@ import AlertComponent from "../../../../components/alert/alert";
 import LocalStorageService from "../../../../services/localstorage";
 import PaymentHistory from "../../../../components/PaymentHistory/PaymentHistory";
 import useCurrentCollaborator from "../../../../hooks/useCurrentCollaborator";
+import { useSplits } from "../../../../hooks/useSplits";
+import { useLabels } from "../../../../hooks/useLabels";
+import type { Split } from "../../../../services/splits";
 
 export default function Song() {
   const { id } = useParams();
@@ -42,6 +46,9 @@ export default function Song() {
   const [alertMessage, setAlertMessage] = useState("");
   const [alertType, setAlertType] = useState("");
   const [paymentHistoryRefresh, setPaymentHistoryRefresh] = useState(0);
+  const [historicalSplits, setHistoricalSplits] = useState<Split[]>([]);
+  const { getSplitsBySong, loading: splitHistoryLoading } = useSplits();
+  const { customLabels } = useLabels();
 
   const getUserDisplayPercentage = () => {
     const collaboratorPercentage = getCurrentUserPercentage();
@@ -97,7 +104,100 @@ export default function Song() {
     }, 5000);
   };
 
+  useEffect(() => {
+    const loadSplitHistory = async () => {
+      const songId = song?._id || song?.id || id;
+      if (!songId) {
+        setHistoricalSplits([]);
+        return;
+      }
+
+      const splits = await getSplitsBySong(songId);
+
+      const inactiveSplits = splits
+        .filter((split) => {
+          const status = (split as { status?: string }).status;
+          const isStatusActive =
+            typeof status === "string" && status.toLowerCase() === "active";
+
+          return !split.isActive && !isStatusActive;
+        })
+        .sort((a, b) => {
+          const aDate = new Date(a.updatedAt || a.createdAt || 0).getTime();
+          const bDate = new Date(b.updatedAt || b.createdAt || 0).getTime();
+          return bDate - aDate;
+        });
+
+      setHistoricalSplits(inactiveSplits);
+    };
+
+    loadSplitHistory();
+  }, [song?._id, song?.id, id, getSplitsBySong]);
+
   if (loading) return <Loading />;
+
+  const getLabelName = (value: unknown): string | null => {
+    if (typeof value === "string" && value.trim()) {
+      return value.trim();
+    }
+
+    if (value && typeof value === "object") {
+      const labelObject = value as Record<string, unknown>;
+      const candidate =
+        labelObject.name ??
+        labelObject.label ??
+        labelObject.artisticLabel ??
+        labelObject.title;
+
+      if (typeof candidate === "string" && candidate.trim()) {
+        return candidate.trim();
+      }
+    }
+
+    return null;
+  };
+
+  const labelSources = [
+    song?.artisticLabel,
+    song?.label,
+    song?.labels,
+    song?.customLabels,
+    song?.labelNames,
+    song?.otherLabels,
+  ];
+
+  const labelsWhereSongAppears = Array.from(
+    new Set(
+      labelSources.flatMap((source) => {
+        if (Array.isArray(source)) {
+          return source
+            .map((item) => getLabelName(item))
+            .filter((label): label is string => Boolean(label));
+        }
+
+        const singleLabel = getLabelName(source);
+        return singleLabel ? [singleLabel] : [];
+      })
+    )
+  );
+  const normalizeLabel = (label: string) => label.trim().toLowerCase();
+
+  const normalizedSongLabels = new Set(
+    labelsWhereSongAppears.map((label) => normalizeLabel(label))
+  );
+
+  const customLabelsWhereSongAppears = customLabels
+    .filter((customLabel) =>
+      customLabel.artisticLabels?.some((artisticLabel) =>
+        normalizedSongLabels.has(normalizeLabel(artisticLabel))
+      )
+    )
+    .map((customLabel) => customLabel.name);
+
+  const allSongLabels = Array.from(
+    new Set([...labelsWhereSongAppears, ...customLabelsWhereSongAppears])
+  );
+  const hasMultipleLabels = allSongLabels.length > 1;
 
   const ownerAmount = getOwnerTotalOwed();
   const totalToPay = Math.max(0, (song?.totalNetIncome || 0) - ownerAmount);
@@ -181,6 +281,15 @@ export default function Song() {
                   <Users className="w-4 h-4" />
                   {song?.artistName || "—"}
                 </p>
+                {hasMultipleLabels && (
+                  <div
+                    className="inline-flex items-center gap-1.5 rounded-full py-1 text-xs font-medium text-orange-700"
+                    title={`Esta canción pertenece a varios labels: ${allSongLabels.join(", ")}`}
+                  >
+                    <Tags className="h-3.5 w-3.5" />
+                    <span>Pertenece a varios labels</span>
+                  </div>
+                )}
               </div>
               <span className="flex-shrink-0 bg-[#F97316] text-white text-xs font-semibold px-3 py-1.5 rounded-full">
                 ISRC: {song?.isrc || "—"}
@@ -326,7 +435,10 @@ export default function Song() {
 
         {/* History of Splits */}
         <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-          <Historyofsplits />
+          <Historyofsplits
+            splits={historicalSplits}
+            loading={splitHistoryLoading}
+          />
         </div>
 
         {/* Extraordinary Costs */}

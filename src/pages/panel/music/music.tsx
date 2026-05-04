@@ -8,12 +8,14 @@ import {
   Search,
   Plus,
   Crown,
+  Tags,
 } from "lucide-react";
 import UseSongs from "../../../hooks/useSongs";
 import useAlbums from "../../../hooks/useAlbums";
 import useDebounce from "../../../hooks/useDebounce";
 import Loading from "../../../components/loading/loading";
 import AlbumOwnerSplitModal from "./album/components/AlbumOwnerSplitModal";
+import { useLabels } from "../../../hooks/useLabels";
 
 export default function Music() {
   const [mode, setMode] = useState<"songs" | "albums">("songs");
@@ -47,6 +49,7 @@ export default function Music() {
     getAlbumByUPC,
     refreshAlbums,
   } = useAlbums(page, limit);
+  const { customLabels } = useLabels();
 
   const handleFileSelect = async (file: File) => {
     const formData = new FormData();
@@ -121,6 +124,69 @@ export default function Music() {
 
   const loading = mode === "songs" ? (songsLoading || isSearching) : albumsLoading;
   const currentData = mode === "songs" ? filteredSongs : filteredAlbums;
+
+  const getLabelName = (value: unknown): string | null => {
+    if (typeof value === "string" && value.trim()) {
+      return value.trim();
+    }
+
+    if (value && typeof value === "object") {
+      const labelObject = value as Record<string, unknown>;
+      const candidate =
+        labelObject.name ??
+        labelObject.label ??
+        labelObject.artisticLabel ??
+        labelObject.title;
+
+      if (typeof candidate === "string" && candidate.trim()) {
+        return candidate.trim();
+      }
+    }
+
+    return null;
+  };
+
+  const normalizeLabel = (label: string) => label.trim().toLowerCase();
+
+  const getAllSongLabels = (song: any) => {
+    const labelSources = [
+      song?.artisticLabel,
+      song?.label,
+      song?.labels,
+      song?.customLabels,
+      song?.labelNames,
+      song?.otherLabels,
+    ];
+
+    const directLabels = Array.from(
+      new Set(
+        labelSources.flatMap((source) => {
+          if (Array.isArray(source)) {
+            return source
+              .map((item) => getLabelName(item))
+              .filter((label): label is string => Boolean(label));
+          }
+
+          const singleLabel = getLabelName(source);
+          return singleLabel ? [singleLabel] : [];
+        })
+      )
+    );
+
+    const normalizedDirectLabels = new Set(
+      directLabels.map((label) => normalizeLabel(label))
+    );
+
+    const customLabelsWhereSongAppears = customLabels
+      .filter((customLabel) =>
+        customLabel.artisticLabels?.some((artisticLabel) =>
+          normalizedDirectLabels.has(normalizeLabel(artisticLabel))
+        )
+      )
+      .map((customLabel) => customLabel.name);
+
+    return Array.from(new Set([...directLabels, ...customLabelsWhereSongAppears]));
+  };
 
   if (loading) return <Loading />;
 
@@ -320,7 +386,11 @@ export default function Music() {
                     </thead>
                     <tbody>
                       {mode === "songs"
-                        ? filteredSongs.map((song: any) => (
+                        ? filteredSongs.map((song: any) => {
+                            const allSongLabels = getAllSongLabels(song);
+                            const hasMultipleLabels = allSongLabels.length > 1;
+
+                            return (
                             <tr
                               key={song._id}
                               className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
@@ -391,7 +461,20 @@ export default function Music() {
                                 </div>
                               </td>
                               <td className="px-6 py-3 text-[13px] text-gray-900">
-                                {song?.artisticLabel || "Unknown"}
+                                <div className="flex items-center gap-2">
+                                  <span className="truncate max-w-[170px]">
+                                    {song?.artisticLabel || "Unknown"}
+                                  </span>
+                                  {hasMultipleLabels && (
+                                    <span
+                                      className="inline-flex items-center gap-1 rounded-full border border-orange-200 bg-orange-50 px-2 py-0.5 text-[10px] font-semibold text-orange-700 whitespace-nowrap"
+                                      title={`Esta canción pertenece a varios labels: ${allSongLabels.join(", ")}`}
+                                    >
+                                      <Tags className="h-3 w-3" />
+                                      <span>presente en multiples labels</span>
+                                    </span>
+                                  )}
+                                </div>
                               </td>
                               <td className="px-6 py-3">
                                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-green-50 text-green-700">
@@ -400,7 +483,8 @@ export default function Music() {
                                 </span>
                               </td>
                             </tr>
-                          ))
+                            );
+                          })
                         : filteredAlbums.map((album: any) => (
                             <tr
                               key={album.upc}
