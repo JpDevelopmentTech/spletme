@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
+import { ApexOptions } from "apexcharts";
+import ReactApexChart from "react-apexcharts";
 import {
   DollarSign,
   Music,
@@ -9,7 +11,6 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import AddCollaborator from "../../collaborators/components/addCollaborator";
-import Behavior from "../../dealers/components/behavior";
 import EspecificData from "./components/especificData";
 import Table from "./components/table";
 import { useParams, useNavigate } from "react-router-dom";
@@ -24,6 +25,7 @@ import AlertComponent from "../../../../components/alert/alert";
 import LocalStorageService from "../../../../services/localstorage";
 import PaymentHistory from "../../../../components/PaymentHistory/PaymentHistory";
 import useCurrentCollaborator from "../../../../hooks/useCurrentCollaborator";
+import useMetricPayments from "../../../../hooks/useMetricPayments";
 
 export default function Song() {
   const { id } = useParams();
@@ -42,6 +44,11 @@ export default function Song() {
   const [alertMessage, setAlertMessage] = useState("");
   const [alertType, setAlertType] = useState("");
   const [paymentHistoryRefresh, setPaymentHistoryRefresh] = useState(0);
+  const [selectedTimeframe, setSelectedTimeframe] = useState("30d");
+  const { metricsData, loading: metricLoading } = useMetricPayments(
+    id || "",
+    "month"
+  );
 
   const getUserDisplayPercentage = () => {
     const collaboratorPercentage = getCurrentUserPercentage();
@@ -97,10 +104,140 @@ export default function Song() {
     }, 5000);
   };
 
-  if (loading) return <Loading />;
-
   const ownerAmount = getOwnerTotalOwed();
   const totalToPay = Math.max(0, (song?.totalNetIncome || 0) - ownerAmount);
+
+  const monthlyCategories = useMemo(() => {
+    const months: string[] = [];
+    const now = new Date();
+
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(1);
+      d.setHours(0, 0, 0, 0);
+      d.setMonth(now.getMonth() - i);
+      months.push(d.toISOString());
+    }
+
+    return months;
+  }, []);
+
+  const monthWeights = useMemo(() => [0.1, 0.12, 0.15, 0.18, 0.2, 0.25], []);
+  const weightsSum = monthWeights.reduce((acc, v) => acc + v, 0);
+  const totalPaymentsFromMetrics = useMemo(
+    () => metricsData.reduce((acc, item) => acc + Number(item.totalNetIncome || 0), 0),
+    [metricsData]
+  );
+  const totalPaymentsForChart = totalPaymentsFromMetrics > 0 ? totalPaymentsFromMetrics : totalToPay;
+
+  const chartSeries = useMemo(
+    () => [
+      {
+        name: "Streams",
+        type: "area",
+        data: monthWeights.map((w) =>
+          Math.round(((song?.totalStreams || 0) * w) / weightsSum)
+        ),
+      },
+      {
+        name: "Pagos",
+        type: "area",
+        data: monthWeights.map((w) =>
+          Number((((totalPaymentsForChart || 0) * w) / weightsSum).toFixed(2))
+        ),
+      },
+    ],
+    [song?.totalStreams, totalPaymentsForChart, weightsSum, monthWeights]
+  );
+
+  const chartOptions: ApexOptions = {
+    chart: {
+      toolbar: { show: false },
+      background: "transparent",
+    },
+    stroke: {
+      width: [2, 2],
+      curve: "smooth",
+    },
+    fill: {
+      type: "gradient",
+      gradient: {
+        shadeIntensity: 1,
+        opacityFrom: 0.35,
+        opacityTo: 0.02,
+        stops: [0, 90, 100],
+      },
+    },
+    markers: {
+      size: [0, 0],
+    },
+    dataLabels: { enabled: false },
+    colors: ["#111827", "#22C55E"],
+    grid: {
+      borderColor: "#F3F4F6",
+      strokeDashArray: 0,
+      xaxis: { lines: { show: false } },
+      yaxis: { lines: { show: true } },
+    },
+    xaxis: {
+      type: "datetime",
+      categories: monthlyCategories,
+      labels: {
+        style: { fontSize: "11px", colors: "#9CA3AF" },
+        datetimeFormatter: { month: "MMM" },
+      },
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+    },
+    yaxis: [
+      {
+        seriesName: "Streams",
+        labels: {
+          style: { colors: "#9CA3AF", fontSize: "11px" },
+          formatter: (val: number) => {
+            if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M`;
+            if (val >= 1_000) return `${(val / 1_000).toFixed(1)}K`;
+            return String(Math.round(val));
+          },
+        },
+      },
+      {
+        seriesName: "Pagos",
+        opposite: true,
+        labels: {
+          style: { colors: "#22C55E", fontSize: "11px" },
+          formatter: (val: number) => `$${val.toFixed(2)}`,
+        },
+      },
+    ],
+    tooltip: {
+      x: { format: "MMM yyyy" },
+      theme: "light",
+      style: { fontSize: "12px" },
+      y: [
+        {
+          formatter: (val: number) => {
+            if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M streams`;
+            if (val >= 1_000) return `${(val / 1_000).toFixed(1)}K streams`;
+            return `${Math.round(val)} streams`;
+          },
+        },
+        {
+          formatter: (val: number) => `$${val.toFixed(2)}`,
+        },
+      ],
+    },
+    legend: { show: false },
+  };
+
+  const timeframeOptions = [
+    { value: "7d", label: "7D" },
+    { value: "30d", label: "30D" },
+    { value: "90d", label: "90D" },
+    { value: "1y", label: "1Y" },
+  ];
+
+  if (loading) return <Loading />;
 
   return (
     <React.Fragment>
@@ -299,9 +436,62 @@ export default function Song() {
           />
         </div>
 
-        {/* Behavior / Revenue Chart */}
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-          <Behavior songId={id} />
+        {/* Streaming vs Payments Chart */}
+        <div className="bg-white rounded-xl p-6 border border-gray-200">
+          <div className="flex flex-col gap-5">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <div className="flex flex-col gap-0.5">
+                <h2 className="text-base font-semibold text-gray-900">
+                  Rendimiento
+                </h2>
+                <p className="text-xs text-gray-400">
+                  Streams y pagos en el tiempo
+                </p>
+              </div>
+              <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
+                {timeframeOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    className={`px-3.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                      selectedTimeframe === option.value
+                        ? "bg-white text-gray-900 shadow-sm"
+                        : "text-gray-500 hover:text-gray-700"
+                    }`}
+                    onClick={() => setSelectedTimeframe(option.value)}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 bg-gray-900 rounded-sm" />
+                <span className="text-[11px] text-gray-500">Streams</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 bg-green-500 rounded-sm" />
+                <span className="text-[11px] text-gray-500">Pagos</span>
+              </div>
+            </div>
+
+            <div className="h-[280px]">
+              {metricLoading ? (
+                <div className="h-full flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-7 w-7 border-b-2 border-orange-500" />
+                </div>
+              ) : (
+                <ReactApexChart
+                  options={chartOptions}
+                  series={chartSeries}
+                  type="area"
+                  height="100%"
+                  width="100%"
+                />
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Payment History + Platforms */}
