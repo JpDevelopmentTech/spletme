@@ -522,17 +522,6 @@ const Historyofsplits = () => {
               </tbody>
             </table>
           </div>
-          <div className="flex flex-col items-center border p-6 rounded-2xl justify-center">
-            <span className="font-semibold">Descargar</span>
-            <span className="text-center mt-3 text-sm text-septenary">Has seleccionado 3 fechas</span>
-            <div className="mt-12 flex flex-col items-center">
-                <span className="text-sm">Escoje el formato</span>
-                <div className="flex justify-center mt-3">
-                    <Button onClick={() => {}} type="quinary">PDF</Button>
-                    <Button onClick={() => {}} type="quinary">Excel</Button>
-                </div>
-            </div>
-          </div>
         </div>
       )}
     </div>
