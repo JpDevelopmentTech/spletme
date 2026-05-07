@@ -210,7 +210,7 @@ export default function Home() {
             {/* Total Streams */}
             <div className="col-span-4 bg-white rounded-xl p-5 border border-gray-200">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-medium text-gray-500">Total Streams</span>
+                <span className="text-xs font-medium text-gray-500">Streams Totales</span>
                 <Play className="w-4 h-4 text-gray-400" />
               </div>
               <p className="text-[28px] font-bold text-gray-900 leading-tight">
