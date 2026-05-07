@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { ApexOptions } from "apexcharts";
 import ReactApexChart from "react-apexcharts";
 import {
@@ -9,7 +9,6 @@ import {
   BarChart3,
   Award,
   ArrowLeft,
-  Tags,
 } from "lucide-react";
 import AddCollaborator from "../../collaborators/components/addCollaborator";
 import EspecificData from "./components/especificData";
@@ -22,11 +21,18 @@ import useSong from "../../../../hooks/useSong";
 import Loading from "../../../../components/loading/loading";
 import StripeConnectLoginModal from "../../../../components/modal/StripeConnectLoginModal";
 import StripePaymentModal from "../../../../components/modal/StripePaymentModal";
-import AlertComponent from "../../../../components/alert/alert";
 import LocalStorageService from "../../../../services/localstorage";
 import PaymentHistory from "../../../../components/PaymentHistory/PaymentHistory";
 import useCurrentCollaborator from "../../../../hooks/useCurrentCollaborator";
+import { validatePayAllPayment } from "../../../../services/songs";
+import ValidationToastQueue, {
+  ValidationToastItem,
+  ValidationToastType,
+} from "../../../../components/alert/ValidationToastQueue";
 import useMetricPayments from "../../../../hooks/useMetricPayments";
+import Behavior from "../../dealers/components/behavior";
+import { useSplits } from "../../../../hooks/useSplits";
+import type { Split } from "../../../../services/splits";
 
 export default function Song() {
   const { id } = useParams();
@@ -42,14 +48,28 @@ export default function Song() {
     useCurrentCollaborator({ collaborators: song?.collaborators || [] });
   const [showStripeLoginModal, setShowStripeLoginModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [alertMessage, setAlertMessage] = useState("");
-  const [alertType, setAlertType] = useState("");
+  const [toasts, setToasts] = useState<ValidationToastItem[]>([]);
   const [paymentHistoryRefresh, setPaymentHistoryRefresh] = useState(0);
-  const [selectedTimeframe, setSelectedTimeframe] = useState("30d");
-  const { metricsData, loading: metricLoading } = useMetricPayments(
-    id || "",
-    "month"
-  );
+  const { metricsData } = useMetricPayments(id || "", "month");
+  const { getSplitsBySong, loading: splitHistoryLoading } = useSplits();
+  const [historicalSplits, setHistoricalSplits] = useState<Split[]>([]);
+
+  useEffect(() => {
+    if (id) {
+      getSplitsBySong(id).then(setHistoricalSplits);
+    }
+  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const addToast = (type: ValidationToastType, message: string) => {
+    setToasts((prev) => [
+      ...prev,
+      { id: Date.now() + Math.floor(Math.random() * 1000), type, message },
+    ]);
+  };
+
+  const dequeueToast = (id: number) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  };
 
   const getUserDisplayPercentage = () => {
     const collaboratorPercentage = getCurrentUserPercentage();
@@ -75,34 +95,41 @@ export default function Song() {
   };
 
   const handlePayAllClick = () => {
-    if (isStripeConnected()) {
-      setShowPaymentModal(true);
-    } else {
-      setShowStripeLoginModal(true);
+    const validation = validatePayAllPayment({
+      song,
+      isStripeConnected: isStripeConnected(),
+    });
+    const blockingIssues = validation.issues.filter(
+      (issue) => issue.code !== "all-valid",
+    );
+
+    if (blockingIssues.length > 0 || !validation.canProceed) {
+      blockingIssues.forEach((issue) => {
+        addToast(issue.severity, issue.message);
+      });
+      return;
     }
+
+    addToast(
+      "success",
+      "Validación completada. Puedes continuar con el pago a todos los colaboradores.",
+    );
+    setShowPaymentModal(true);
   };
 
   const handleStripeLoginSuccess = () => {
-    setAlertMessage(
-      "¡Inicio de sesión exitoso! Te has conectado correctamente con Stripe Connect."
+    addToast(
+      "success",
+      "¡Inicio de sesión exitoso! Te has conectado correctamente con Stripe Connect.",
     );
-    setAlertType("success");
-    setTimeout(() => {
-      setAlertMessage("");
-      setAlertType("");
-    }, 5000);
   };
 
   const handlePaymentSuccess = () => {
     setPaymentHistoryRefresh((prev) => prev + 1);
-    setAlertMessage(
-      "¡Pago procesado exitosamente! Los colaboradores recibirán su parte correspondiente."
+    addToast(
+      "success",
+      "¡Pago procesado exitosamente! Los colaboradores recibirán su parte correspondiente.",
     );
-    setAlertType("success");
-    setTimeout(() => {
-      setAlertMessage("");
-      setAlertType("");
-    }, 5000);
   };
 
   const ownerAmount = getOwnerTotalOwed();
@@ -231,13 +258,6 @@ export default function Song() {
     legend: { show: false },
   };
 
-  const timeframeOptions = [
-    { value: "7d", label: "7D" },
-    { value: "30d", label: "30D" },
-    { value: "90d", label: "90D" },
-    { value: "1y", label: "1Y" },
-  ];
-
   if (loading) return <Loading />;
 
   return (
@@ -251,12 +271,12 @@ export default function Song() {
         isOpen={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}
         songTitle={song?.trackTitle}
+        songId={song?._id || song?.id}
         totalAmount={song?.totalNetIncome || 0}
         collaborators={song?.collaborators || []}
         onPaymentSuccess={handlePaymentSuccess}
       />
-      <AlertComponent message={alertMessage} type={alertType} />
-
+      <ValidationToastQueue toasts={toasts} onDequeue={dequeueToast} autoHideMs={9000} />
       <div className="min-h-screen bg-[#F7F8FA] px-10 py-8 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -288,148 +308,139 @@ export default function Song() {
               Música
             </span>
             <span className="text-gray-300">/</span>
-            <span className="text-gray-900 font-600">Detalle de Canción</span>
+            <span className="text-gray-900 font-semibold">Detalle de Canción</span>
           </div>
         </div>
-
-        {/* Hero Card */}
-        <div className="bg-white border border-gray-200 rounded-xl p-6 flex gap-6">
-          {/* Album Art */}
-          <div className="w-48 h-48 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 flex items-center justify-center">
-            {song?.spotifyData?.album?.images?.length > 0 ? (
-              <img
-                src={song.spotifyData.album.images[0].url}
-                alt={`${song.trackTitle} cover`}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <Music className="w-12 h-12 text-gray-300" />
-            )}
-          </div>
-
-          {/* Song Info */}
-          <div className="flex-1 flex flex-col gap-5">
-            {/* Title row */}
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-1.5">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  {song?.trackTitle || "—"}
-                </h2>
-                <p className="flex items-center gap-2 text-gray-500 text-sm">
-                  <Users className="w-4 h-4" />
-                  {song?.artistName || "—"}
-                </p>
-                {hasMultipleLabels && (
-                  <div
-                    className="inline-flex items-center gap-1.5 rounded-full py-1 text-xs font-medium text-orange-700"
-                    title={`Esta canción pertenece a varios labels: ${allSongLabels.join(", ")}`}
-                  >
-                    <Tags className="h-3.5 w-3.5" />
-                    <span>Pertenece a varios labels</span>
-                  </div>
-                )}
-              </div>
-              <span className="flex-shrink-0 bg-[#F97316] text-white text-xs font-semibold px-3 py-1.5 rounded-full">
-                ISRC: {song?.isrc || "—"}
-              </span>
+        <div className="grid grid-cols-4 gap-4">
+          {/* Hero Card */}
+          <div className="bg-white border border-gray-200 rounded-xl p-6 flex gap-6 col-span-3">
+            {/* Album Art */}
+            <div className="w-48 h-48 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 flex items-center justify-center">
+              {song?.spotifyData?.album?.images?.length > 0 ? (
+                <img
+                  src={song.spotifyData.album.images[0].url}
+                  alt={`${song.trackTitle} cover`}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <Music className="w-12 h-12 text-gray-300" />
+              )}
             </div>
 
-            {/* Stat Cards */}
-            <div className="grid grid-cols-3 gap-4">
-              {/* Streams */}
-              <div className="bg-blue-50 rounded-xl p-4 space-y-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <BarChart3 className="w-4 h-4 text-blue-600" />
-                  </div>
-                  <span className="text-xs text-gray-500 font-medium">
-                    Total Streams
-                  </span>
-                </div>
-                <p className="text-xl font-bold text-gray-900">
-                  {song?.totalStreams?.toLocaleString() || "0"}
-                </p>
-              </div>
-
-              {/* Net Income */}
-              <div className="bg-green-50 rounded-xl p-4 space-y-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                    <DollarSign className="w-4 h-4 text-green-600" />
-                  </div>
-                  <span className="text-xs text-gray-500 font-medium">
-                    Net Income
-                  </span>
-                </div>
-                <p className="text-xl font-bold text-green-600">
-                  $
-                  {song?.totalNetIncome?.toLocaleString("en-US", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  }) || "0.00"}
-                </p>
-              </div>
-
-              {/* My Percentage */}
-              <div className="bg-purple-50 rounded-xl p-4 space-y-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <Award className="w-4 h-4 text-purple-600" />
-                  </div>
-                  <span className="text-xs text-gray-500 font-medium">
-                    Mi porcentaje
-                  </span>
-                </div>
-                <div className="flex items-baseline gap-1.5">
-                  <p className="text-xl font-bold text-purple-600">
-                    ${getUserDisplayAmount()}
+            {/* Song Info */}
+            <div className="flex-1 flex flex-col gap-5">
+              {/* Title row */}
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-1.5">
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    {song?.trackTitle || "—"}
+                  </h2>
+                  <p className="flex items-center gap-2 text-gray-500 text-sm">
+                    <Users className="w-4 h-4" />
+                    {song?.artistName || "—"}
                   </p>
-                  <span className="text-xs text-gray-400">
-                    {getUserDisplayPercentage()}%
-                  </span>
+                </div>
+                <span className="flex-shrink-0 bg-[#F97316] text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+                  ISRC: {song?.isrc || "—"}
+                </span>
+              </div>
+
+              {/* Stat Cards */}
+              <div className="grid grid-cols-3 gap-2">
+                {/* Streams */}
+                <div className="bg-blue-50 rounded-xl p-4 space-y-2 ">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <BarChart3 className="w-4 h-4 text-blue-600" />
+                    </div>
+                    <span className="text-xs text-gray-500 font-medium">
+                      Total Streams
+                    </span>
+                  </div>
+                  <p className="text-xl font-bold text-gray-900">
+                    {song?.totalStreams?.toLocaleString() || "0"}
+                  </p>
+                </div>
+
+                {/* Net Income */}
+                <div className="bg-green-50 rounded-xl p-4 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                      <DollarSign className="w-4 h-4 text-green-600" />
+                    </div>
+                    <span className="text-xs text-gray-500 font-medium">
+                      Net Income
+                    </span>
+                  </div>
+                  <p className="text-xl font-bold text-green-600">
+                    $
+                    {song?.totalNetIncome?.toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }) || "0.00"}
+                  </p>
+                </div>
+
+                {/* My Percentage */}
+                <div className="bg-purple-50 rounded-xl p-4 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <Award className="w-4 h-4 text-purple-600" />
+                    </div>
+                    <span className="text-xs text-gray-500 font-medium">
+                      Mi porcentaje
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-1.5">
+                    <p className="text-xl font-bold text-purple-600">
+                      ${getUserDisplayAmount()}
+                    </p>
+                    <span className="text-xs text-gray-400">
+                      {getUserDisplayPercentage()}%
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Payment Banner */}
-        {(
-          
-          <div className="bg-[#F97316] rounded-xl px-7 py-5 flex items-center justify-between">
-         
-          <div className="space-y-1">
-            <div className="flex items-center gap-2.5">
-              <Calendar className="w-5 h-5 text-white" />
-              <span className="text-white font-semibold text-base">
-                Próxima liquidación estimada
-              </span>
+          {/* Payment Banner */}
+          {
+            <div className="bg-[#F97316] rounded-xl px-7 py-5 col-span-1 ">
+              <div className="space-y-2 mb-7">
+                <div className="flex items-center gap-2.5">
+                  <Calendar className="w-5 h-5 lg:w-7 lg:h-7 text-white" />
+                  <span className="text-white font-semibold text-base lg:text-xl">
+                    Próxima liquidación
+                  </span>
+                </div>
+                <p className="text-orange-100 text-sm lg:text-lg pl-7">
+                  10 Julio 2024
+                </p>
+              </div>
+
+              <div className="flex items-center gap-5">
+                <div className="">
+                  <p className="text-orange-100 text-xs lg:text-lg font-medium">
+                    Total a pagar
+                  </p>
+                  <p className="text-white text-2xl font-bold">
+                    ${totalToPay.toFixed(2)}
+                  </p>
+                </div>
+                <button
+                  onClick={handlePayAllClick}
+                  className="flex items-center gap-2 bg-white text-[#F97316] font-bold text-sm px-6 py-3 rounded-lg hover:bg-orange-50 transition-colors"
+                >
+                  <DollarSign className="w-4 h-4" />
+                  Pagar a todos
+                </button>
+              </div>
             </div>
-            <p className="text-orange-100 text-sm pl-7">10 Julio 2024</p>
-          </div>
-
-          <div className="flex items-center gap-5">
-            <div className="text-right">
-              <p className="text-orange-100 text-xs font-medium">
-                Total a pagar
-              </p>
-              <p className="text-white text-2xl font-bold">
-                ${totalToPay.toFixed(2)}
-              </p>
-            </div>
-            <button
-              onClick={handlePayAllClick}
-              className="flex items-center gap-2 bg-white text-[#F97316] font-bold text-sm px-6 py-3 rounded-lg hover:bg-orange-50 transition-colors"
-            >
-              <DollarSign className="w-4 h-4" />
-              Pagar a todos
-            </button>
-          </div>
+          }
         </div>
-        )}
-
         {/* Collaborators Card */}
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div className="bg-white border border-gray-100 rounded-xl overflow-hidden">
           <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
             <div className="flex items-center gap-2.5">
               <Users className="w-5 h-5 text-gray-900" />
@@ -445,83 +456,20 @@ export default function Song() {
             song={song}
           />
         </div>
-
-        {/* Streaming vs Payments Chart */}
-        <div className="bg-white rounded-xl p-6 border border-gray-200">
-          <div className="flex flex-col gap-5">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-              <div className="flex flex-col gap-0.5">
-                <h2 className="text-base font-semibold text-gray-900">
-                  Rendimiento
-                </h2>
-                <p className="text-xs text-gray-400">
-                  Streams y pagos en el tiempo
-                </p>
-              </div>
-              <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
-                {timeframeOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    className={`px-3.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                      selectedTimeframe === option.value
-                        ? "bg-white text-gray-900 shadow-sm"
-                        : "text-gray-500 hover:text-gray-700"
-                    }`}
-                    onClick={() => setSelectedTimeframe(option.value)}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 bg-gray-900 rounded-sm" />
-                <span className="text-[11px] text-gray-500">Streams</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 bg-green-500 rounded-sm" />
-                <span className="text-[11px] text-gray-500">Pagos</span>
-              </div>
-            </div>
-
-            <div className="h-[280px]">
-              {metricLoading ? (
-                <div className="h-full flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-7 w-7 border-b-2 border-orange-500" />
-                </div>
-              ) : (
-                <ReactApexChart
-                  options={chartOptions}
-                  series={chartSeries}
-                  type="area"
-                  height="100%"
-                  width="100%"
-                />
-              )}
-            </div>
-          </div>
+        {/* Behavior / Revenue Chart */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+          <Behavior songId={id} compact />
+          {/*Platforms */}
+          <Platforms reproductions={song?.reproductions} />
         </div>
-
         {/* Payment History + Platforms */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-            <PaymentHistory
-              title="Historial de Pagos Realizados"
-              maxHeight="400px"
-              refreshTrigger={paymentHistoryRefresh}
-            />
-          </div>
 
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-            <Platforms reproductions={song?.reproductions} />
-          </div>
-        </div>
-
-        {/* Specific Data */}
         <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-          <EspecificData song={song} />
+          <PaymentHistory
+            title="Historial de Pagos Realizados"
+            maxHeight="400px"
+            refreshTrigger={paymentHistoryRefresh}
+          />
         </div>
 
         {/* History of Splits */}
@@ -531,10 +479,13 @@ export default function Song() {
             loading={splitHistoryLoading}
           />
         </div>
-
         {/* Extraordinary Costs */}
         <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
           <Extraordinarycosts />
+        </div>
+        {/* Specific Data */}
+        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+          <EspecificData />
         </div>
       </div>
     </React.Fragment>

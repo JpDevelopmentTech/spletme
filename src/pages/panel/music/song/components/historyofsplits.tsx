@@ -32,7 +32,7 @@ const Historyofsplits = ({ splits, loading = false }: HistoryOfSplitsProps) => {
 
   const filteredSplits = useMemo(() => {
     return splits.filter((split) => {
-      const status = (split as { status?: string }).status;
+      const status = (split as Split & { status?: string }).status;
       const isStatusActive =
         typeof status === "string" && status.toLowerCase() === "active";
       return !split.isActive && !isStatusActive;
@@ -40,7 +40,7 @@ const Historyofsplits = ({ splits, loading = false }: HistoryOfSplitsProps) => {
   }, [splits]);
 
   return (
-    <div className="col-span-12 p-6 rounded-2xl shadow-lg">
+    <div className="col-span-12 p-6 rounded-xl border border-gray-200 bg-white">
       <div className="flex justify-between items-center w-full">
         <Title title="Historial de splits" />
         <Button onClick={() => setViewData(!viewData)} type="primary">
@@ -89,7 +89,7 @@ const Historyofsplits = ({ splits, loading = false }: HistoryOfSplitsProps) => {
                         {collaboratorName}
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                        <span className="bg-orange-100 text-orange-700 text-xs font-medium px-2.5 py-0.5 rounded-full">
                           {percentage}%
                         </span>
                       </td>

@@ -1,24 +1,14 @@
-import { ApexOptions } from "apexcharts";
+import { useMemo, useState } from "react";
 import ReactApexChart from "react-apexcharts";
-import { motion } from "framer-motion";
-import { 
-  Music, 
-  BarChart3, 
-  TrendingUp, 
-  Edit3, 
-  Youtube, 
-  Music2, 
-  Smartphone, 
-  Disc3, 
-  ShoppingCart,
-  MoreHorizontal,
-  Eye,
-  Users,
-  Globe,
-  Facebook,
-  Radio,
-  LucideIcon
-} from "lucide-react";
+import { ApexOptions } from "apexcharts";
+import { BarChart2, PieChart, BarChartHorizontal } from "lucide-react";
+import spotifyLogo from "@/assets/images/logo/spotify.svg";
+import youtubeLogo from "@/assets/images/logo/youtube.svg";
+import metaLogo from "@/assets/images/logo/meta.svg";
+import amazonLogo from "@/assets/images/logo/amazon.svg";
+import appleMusicLogo from "@/assets/images/logo/apple-music.svg";
+import deezerLogo from "@/assets/images/logo/deezer.svg";
+import tiktokLogo from "@/assets/images/logo/tiktok.svg";
 
 interface ReproductionData {
   totalStreams: number;
@@ -31,320 +21,302 @@ interface PlatformsProps {
   reproductions?: ReproductionData[];
 }
 
+interface PlatformDataItem {
+  name: string;
+  percentage: number;
+  color: string;
+  letter: string;
+  logo?: string;
+  streams: number;
+  income: number;
+  releases: number;
+}
+
+type ChartView = "bar" | "donut" | "horizontal";
+
+const platformConfig: Record<string, { color: string; letter: string; logo?: string }> = {
+  Spotify: { color: "#22C55E", letter: "S", logo: spotifyLogo },
+  "Apple Music": { color: "#111827", letter: "A", logo: appleMusicLogo },
+  "YouTube Official Content": { color: "#EF4444", letter: "Y", logo: youtubeLogo },
+  "YouTube UGC": { color: "#EF4444", letter: "Y", logo: youtubeLogo },
+  Deezer: { color: "#6B7280", letter: "D", logo: deezerLogo },
+  "Amazon Premium": { color: "#00C7F2", letter: "A", logo: amazonLogo },
+  "Amazon Ad-Supported": { color: "#00A8E1", letter: "A", logo: amazonLogo },
+  "Facebook / Instagram": { color: "#E4405F", letter: "F", logo: metaLogo },
+  iMusica: { color: "#FF6B35", letter: "I" },
+  Yandex: { color: "#FFCC00", letter: "Y" },
+  "iTunes Match": { color: "#FA243C", letter: "I" },
+  Audiomack: { color: "#FFA500", letter: "A" },
+  TikTok: { color: "#000000", letter: "T", logo: tiktokLogo },
+  Otros: { color: "#6366F1", letter: "O" },
+};
+
+const chartButtons: { view: ChartView; icon: JSX.Element; label: string }[] = [
+  { view: "bar", icon: <BarChart2 className="w-3.5 h-3.5" />, label: "Barras" },
+  { view: "donut", icon: <PieChart className="w-3.5 h-3.5" />, label: "Dona" },
+  { view: "horizontal", icon: <BarChartHorizontal className="w-3.5 h-3.5" />, label: "Horizontal" },
+];
+
 const Platforms = ({ reproductions = [] }: PlatformsProps) => {
-  // Mapeo de colores e iconos por plataforma
-  const platformConfig: Record<string, { color: string; icon: LucideIcon }> = {
-    "Spotify": { color: "#1DB954", icon: Music2 },
-    "Apple Music": { color: "#FA243C", icon: Smartphone },
-    "YouTube Official Content": { color: "#FF0000", icon: Youtube },
-    "YouTube UGC": { color: "#FF0000", icon: Youtube },
-    "Deezer": { color: "#FF0092", icon: Disc3 },
-    "Amazon Premium": { color: "#00C7F2", icon: ShoppingCart },
-    "Amazon Ad-Supported": { color: "#00A8E1", icon: ShoppingCart },
-    "Facebook / Instagram": { color: "#E4405F", icon: Facebook },
-    "iMusica": { color: "#FF6B35", icon: Music },
-    "Yandex": { color: "#FFCC00", icon: Radio },
-    "iTunes Match": { color: "#FA243C", icon: Smartphone },
-    "Audiomack": { color: "#FFA500", icon: Music },
-  };
+  const [chartView, setChartView] = useState<ChartView>("donut");
 
-  // Calcular el total de streams
-  const totalStreams = reproductions.reduce((sum, item) => sum + item.totalStreams, 0);
-  const totalIncome = reproductions.reduce((sum, item) => sum + item.totalIncome, 0);
+  const platformData = useMemo<PlatformDataItem[]>(() => {
+    const totalStreams = reproductions.reduce((sum, item) => sum + (item.totalStreams || 0), 0);
 
-  // Calcular porcentajes y preparar datos
-  const platformData = reproductions
-    .map(item => {
-      const percentage = totalStreams > 0 ? Math.round((item.totalStreams / totalStreams) * 100) : 0;
-      const config = platformConfig[item.platform] || { color: "#666666", icon: MoreHorizontal };
-      
-      return {
-        name: item.platform,
-        percentage,
-        color: config.color,
-        icon: config.icon,
-        streams: item.totalStreams,
-        income: item.totalIncome,
-        releases: item.releasesCount
+    const mapped = reproductions
+      .map((item) => {
+        const name = item.platform || "Otros";
+        const percentage = totalStreams > 0 ? Math.round((item.totalStreams / totalStreams) * 100) : 0;
+        const config = platformConfig[name] || platformConfig.Otros;
+
+        return {
+          name,
+          percentage,
+          color: config.color,
+          letter: config.letter,
+          logo: config.logo,
+          streams: item.totalStreams,
+          income: item.totalIncome,
+          releases: item.releasesCount,
+        };
+      })
+      .sort((a, b) => b.streams - a.streams);
+
+    const platformsWithData = mapped.filter((p) => p.percentage > 0);
+    const platformsWithZero = mapped.filter((p) => p.percentage === 0);
+    const groupedData = [...platformsWithData];
+
+    if (platformsWithZero.length > 0) {
+      const othersConfig = platformConfig.Otros;
+      const othersData: PlatformDataItem = {
+        name: "Otros",
+        percentage: 0,
+        color: othersConfig.color,
+        letter: othersConfig.letter,
+        logo: othersConfig.logo,
+        streams: platformsWithZero.reduce((sum, p) => sum + p.streams, 0),
+        income: platformsWithZero.reduce((sum, p) => sum + p.income, 0),
+        releases: platformsWithZero.reduce((sum, p) => sum + p.releases, 0),
       };
-    })
-    .sort((a, b) => b.streams - a.streams); // Ordenar por streams descendente
 
-  // Series para el gráfico (top 6 plataformas)
-  const series2 = platformData.slice(0, 6).map(item => item.percentage);
-
-  const options2: ApexOptions = {
-    chart: {
-      height: 200,
-      type: "radialBar",
-      background: 'transparent',
-      dropShadow: {
-        enabled: true,
-        color: '#000',
-        top: 18,
-        left: 7,
-        blur: 10,
-        opacity: 0.1
+      if (totalStreams > 0) {
+        othersData.percentage = Math.round((othersData.streams / totalStreams) * 100);
       }
-    },
-    plotOptions: {
-      radialBar: {
-        offsetY: 0,
-        startAngle: 0,
-        endAngle: 360,
-        hollow: {
-          margin: 5,
-          size: "40%",
-          background: "transparent",
-          image: undefined,
-        },
-        dataLabels: {
-          name: {
-            show: false,
-          },
-          value: {
-            show: false,
-          },
-        },
-        track: {
-          background: 'rgba(148, 163, 184, 0.1)',
-          strokeWidth: '97%',
-          margin: 5,
-          dropShadow: {
-            enabled: true,
-            top: 2,
-            left: 0,
-            blur: 4,
-            opacity: 0.15
-          }
-        }
+
+      if (othersData.streams > 0 || platformsWithZero.length > 0) {
+        groupedData.push(othersData);
+      }
+    }
+
+    return groupedData;
+  }, [reproductions]);
+
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+    return num.toLocaleString();
+  };
+
+  const visibleData = platformData.slice(0, 5);
+
+  const barOptions: ApexOptions = useMemo(
+    () => ({
+      chart: { toolbar: { show: false }, background: "transparent" },
+      plotOptions: { bar: { borderRadius: 5, columnWidth: "55%", borderRadiusApplication: "end" } },
+      dataLabels: { enabled: false },
+      colors: visibleData.map((p) => p.color),
+      xaxis: {
+        categories: visibleData.map((p) => p.name.split(" ")[0]),
+        labels: { style: { fontSize: "10px", colors: "#9CA3AF" } },
+        axisBorder: { show: false },
+        axisTicks: { show: false },
       },
-    },
-    colors: platformData.slice(0, 6).map(item => item.color),
-    labels: platformData.slice(0, 6).map(item => item.name),
-    legend: {
-      show: false,
-    },
-    responsive: [
-      {
-        breakpoint: 480,
-        options: {
-          chart: {
-            height: 150,
+      yaxis: {
+        labels: {
+          style: { colors: "#9CA3AF", fontSize: "10px" },
+          formatter: (val: number) => {
+            if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M`;
+            if (val >= 1_000) return `${(val / 1_000).toFixed(1)}K`;
+            return String(Math.round(val));
           },
         },
       },
-    ],
-  };
+      grid: {
+        borderColor: "#F3F4F6",
+        yaxis: { lines: { show: true } },
+        xaxis: { lines: { show: false } },
+      },
+      legend: { show: false },
+      tooltip: {
+        theme: "light",
+        y: { formatter: (val: number) => `${formatNumber(val)} streams` },
+      },
+    }),
+    [visibleData],
+  );
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
-  };
+  const barSeries = useMemo(
+    () => [{ name: "Streams", data: visibleData.map((p) => p.streams) }],
+    [visibleData],
+  );
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20, scale: 0.95 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: {
-        type: "spring",
-        stiffness: 100,
-        damping: 15
-      }
-    }
-  };
+  const donutOptions: ApexOptions = useMemo(
+    () => ({
+      chart: { toolbar: { show: false }, background: "transparent" },
+      labels: visibleData.map((p) => p.name),
+      colors: visibleData.map((p) => p.color),
+      dataLabels: { enabled: false },
+      plotOptions: { pie: { donut: { size: "62%" } } },
+      legend: {
+        position: "bottom",
+        fontSize: "10px",
+        labels: { colors: "#6B7280" },
+        markers: { size: 5 },
+        itemMargin: { horizontal: 6, vertical: 2 },
+      },
+      tooltip: {
+        theme: "light",
+        y: { formatter: (val: number) => `${formatNumber(val)} streams` },
+      },
+    }),
+    [visibleData],
+  );
+
+  const donutSeries = useMemo(() => visibleData.map((p) => p.streams), [visibleData]);
+
+  const horizontalOptions: ApexOptions = useMemo(
+    () => ({
+      chart: { toolbar: { show: false }, background: "transparent" },
+      plotOptions: {
+        bar: { horizontal: true, borderRadius: 4, barHeight: "55%", borderRadiusApplication: "end" },
+      },
+      dataLabels: { enabled: false },
+      colors: visibleData.map((p) => p.color),
+      xaxis: {
+        labels: {
+          style: { fontSize: "10px", colors: "#9CA3AF" },
+          formatter: (val: string) => {
+            const num = Number(val);
+            if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`;
+            if (num >= 1_000) return `${(num / 1_000).toFixed(1)}K`;
+            return String(Math.round(num));
+          },
+        },
+        axisBorder: { show: false },
+        axisTicks: { show: false },
+      },
+      yaxis: {
+        labels: {
+          style: { colors: "#6B7280", fontSize: "10px" },
+          formatter: (val: number) => String(val),
+        },
+      },
+      grid: {
+        borderColor: "#F3F4F6",
+        xaxis: { lines: { show: true } },
+        yaxis: { lines: { show: false } },
+      },
+      legend: { show: false },
+      tooltip: {
+        theme: "light",
+        y: { formatter: (val: number) => `${formatNumber(val)} streams` },
+      },
+    }),
+    [visibleData],
+  );
+
+  const horizontalSeries = useMemo(
+    () => [{ name: "Streams", data: visibleData.map((p) => ({ x: p.name.split(" ")[0], y: p.streams })) }],
+    [visibleData],
+  );
 
   return (
-    <motion.div 
-      className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 overflow-hidden"
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
-    >
-      <div className="p-6 lg:p-8">
-        {/* Header Section */}
-        <motion.div
-          variants={itemVariants}
-          className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4"
-        >
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg">
-                <Globe className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Platforms</h2>
-                <p className="text-gray-600 dark:text-gray-300">Performance across streaming platforms</p>
-              </div>
-            </div>
-          </div>
-          
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white text-sm font-semibold rounded-xl hover:from-purple-600 hover:to-blue-600 transition-all duration-200 shadow-lg hover:shadow-xl"
-          >
-            <Edit3 className="w-4 h-4" />
-            Edit Platforms
-          </motion.button>
-        </motion.div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Chart Section */}
-          <motion.div
-            variants={itemVariants}
-            className="space-y-6"
-          >
-            {/* Chart */}
-            <div className="bg-gradient-to-br from-gray-50/80 to-blue-50/80 dark:from-gray-700/80 dark:to-blue-900/20 rounded-2xl p-6 border border-gray-200/50">
-              <div className="text-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Distribution Overview</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300">Streams across platforms</p>
-              </div>
-              
-              <div className="flex justify-center">
-                <ReactApexChart
-                  options={options2}
-                  type="radialBar"
-                  series={series2}
-                />
-              </div>
-            </div>
-
-            {/* View Toggle Buttons */}
-            <div className="flex items-center justify-center gap-3 bg-gray-100/80 dark:bg-gray-700/80 rounded-2xl p-2">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="p-3 rounded-xl bg-white dark:bg-gray-600 shadow-md text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-500 transition-colors"
-              >
-                <BarChart3 className="w-5 h-5" />
-              </motion.button>
-              
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="p-3 rounded-xl bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
-              >
-                <TrendingUp className="w-5 h-5" />
-              </motion.button>
-              
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="p-3 rounded-xl bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
-              >
-                <Eye className="w-5 h-5" />
-              </motion.button>
-            </div>
-          </motion.div>
-
-          {/* Platform List Section */}
-          <motion.div
-            variants={itemVariants}
-            className="space-y-4"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Platform Performance</h3>
-              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                <Users className="w-4 h-4" />
-                <span>Total: {totalStreams.toLocaleString()} streams</span>
-              </div>
-            </div>
-
-            {/* Platform Items */}
-            <div className="space-y-3">
-              {platformData.map((platform, index) => (
-                <motion.div
-                  key={platform.name}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 * index }}
-                  whileHover={{ x: 8, scale: 1.02 }}
-                  className="group relative bg-gray-50/80 dark:bg-gray-700/80 hover:bg-gray-100/80 dark:hover:bg-gray-600/80 rounded-2xl p-4 transition-all duration-200 border border-gray-200/50 hover:border-gray-300/50"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div 
-                        className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg"
-                        style={{ backgroundColor: platform.color }}
-                      >
-                        <platform.icon className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900 dark:text-white">{platform.name}</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          {platform.streams.toLocaleString()} streams • ${platform.income.toFixed(2)}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="text-right">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: platform.color }}></div>
-                        <span className="text-lg font-bold text-gray-900 dark:text-white">{platform.percentage}%</span>
-                      </div>
-                      <div className="w-20 h-2 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${platform.percentage}%` }}
-                          transition={{ delay: 0.2 + index * 0.1, duration: 0.8 }}
-                          className="h-full rounded-full"
-                          style={{ backgroundColor: platform.color }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* Total Stats */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8 }}
-              className="mt-8 bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-2xl p-6 border border-purple-200/50"
-            >
-              <div className="text-center">
-                <div className="flex items-center justify-center gap-2 mb-3">
-                  <Music className="w-6 h-6 text-purple-600" />
-                  <span className="text-sm font-medium text-purple-700 dark:text-purple-300">Total Performance</span>
-                </div>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                  {totalStreams.toLocaleString()}
-                </p>
-                <p className="text-sm text-gray-600 dark:text-gray-300">Total Streams</p>
-                
-                <div className="flex items-center justify-center gap-4 mt-4">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-green-600">
-                      ${totalIncome.toFixed(2)}
-                    </p>
-                    <p className="text-xs text-gray-600 dark:text-gray-300">Total Income</p>
-                  </div>
-                  <span className="text-gray-400">|</span>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-blue-600">
-                      {reproductions.length}
-                    </p>
-                    <p className="text-xs text-gray-600 dark:text-gray-300">Platforms</p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
+    <div className="bg-white rounded-xl p-6 border border-gray-200 h-full min-h-[420px]">
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-semibold text-gray-900">Platforms</h2>
         </div>
+        <div className="flex items-center justify-center bg-gray-100 rounded-lg p-0.5">
+          {chartButtons.map(({ view, icon, label }) => (
+            <button
+              key={view}
+              title={label}
+              onClick={() => setChartView(view)}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                chartView === view ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              {icon}
+            </button>
+          ))}
+        </div>
+
+        {platformData.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8 gap-2">
+            <p className="text-sm text-gray-400">No platform data yet</p>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+              <div className="order-2">
+                <div className="flex flex-col border border-gray-100 rounded-lg px-3">
+                  {visibleData.map((platform, index) => (
+                    <div
+                      key={platform.name}
+                      className={`flex items-center justify-between py-2.5 ${
+                        index < visibleData.length - 1 ? "border-b border-gray-100" : ""
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-7 h-7 rounded-lg flex items-center justify-center overflow-hidden"
+                          style={{ backgroundColor: platform.logo ? "#F3F4F6" : platform.color }}
+                        >
+                          {platform.logo ? (
+                            <img src={platform.logo} alt={platform.name} className="w-full h-full object-contain" />
+                          ) : (
+                            <span className="text-xs font-bold text-white">{platform.letter}</span>
+                          )}
+                        </div>
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-[12px] font-semibold text-gray-900">{platform.name}</span>
+                          <span className="text-[11px] text-gray-400">{formatNumber(platform.streams)} streams</span>
+                        </div>
+                      </div>
+                      <span className="text-[12px] font-semibold text-gray-900">{platform.percentage}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="order-1 lg:border-r lg:border-gray-100 lg:pr-6">
+                {chartView === "bar" && (
+                  <div className="h-[200px] lg:h-[230px]">
+                    <ReactApexChart options={barOptions} series={barSeries} type="bar" height="100%" width="100%" />
+                  </div>
+                )}
+                {chartView === "donut" && (
+                  <div className="h-[220px] lg:h-[250px]">
+                    <ReactApexChart options={donutOptions} series={donutSeries} type="donut" height="100%" width="100%" />
+                  </div>
+                )}
+                {chartView === "horizontal" && (
+                  <div className="h-[200px] lg:h-[230px]">
+                    <ReactApexChart
+                      options={horizontalOptions}
+                      series={horizontalSeries}
+                      type="bar"
+                      height="100%"
+                      width="100%"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        )}
       </div>
-    </motion.div>
+    </div>
   );
 };
 

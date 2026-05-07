@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { DollarSign, Calendar, FileText, User, AlertCircle, Loader2, Clock, CheckCircle } from 'lucide-react';
 import { usePayments } from '../../hooks/usePayments';
@@ -19,6 +20,7 @@ const PaymentHistory = ({
   refreshTrigger 
 }: PaymentHistoryProps) => {
   const { payments, loading, error, loadPayments, getTotalAmount } = usePayments();
+  const [viewData, setViewData] = useState(true);
 
   useEffect(() => {
     loadPayments(collaboratorId);
@@ -96,11 +98,19 @@ const PaymentHistory = ({
               </p>
             </div>
           </div>
+          <button
+            type="button"
+            onClick={() => setViewData(!viewData)}
+            className="font-medium rounded-lg text-sm px-5 py-2.5 focus:ring-4 text-white bg-primary hover:bg-primary/60 focus:ring-primary/30"
+          >
+            {viewData ? "Ver menos" : "Ver mas"}
+          </button>
         </div>
       )}
 
-      <div style={{ maxHeight }} className="overflow-y-auto">
-        {payments.length === 0 ? (
+      {viewData && (
+        <div style={{ maxHeight }} className="overflow-y-auto overflow-x-auto">
+          {payments.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-gray-500">
             <DollarSign className="w-12 h-12 mb-4 text-gray-300" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -165,10 +175,11 @@ const PaymentHistory = ({
               </motion.div>
             ))}
           </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
-      {payments.length > 0 && showTitle && (
+      {payments.length > 0 && showTitle && viewData && (
         <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-xl">
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-600">
