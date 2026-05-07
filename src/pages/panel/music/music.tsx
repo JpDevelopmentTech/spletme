@@ -11,10 +11,12 @@ import {
   Info,
   X,
   ArrowRight,
+  Tags,
 } from "lucide-react";
 import UseSongs from "../../../hooks/useSongs";
 import useAlbums from "../../../hooks/useAlbums";
 import useDebounce from "../../../hooks/useDebounce";
+import { useLabels } from "../../../hooks/useLabels";
 import Loading from "../../../components/loading/loading";
 import AlbumOwnerSplitModal from "./album/components/AlbumOwnerSplitModal";
 import SongService from "../../../services/songs";
