@@ -703,16 +703,18 @@ export default function Music() {
                                     )}
                                   </div>
                                 </td>
-                                <td className="px-6 py-3 text-[13px] text-gray-900">
-                                  <div className="flex items-center gap-2">
-                                    <span className="truncate max-w-[170px]">{song?.artisticLabel || "Unknown"}</span>
+                                <td className="px-6 py-3">
+                                  <div className="flex flex-col gap-0.5">
+                                    <span className="text-[13px] text-gray-900 truncate max-w-[160px]">
+                                      {song?.artisticLabel || "Unknown"}
+                                    </span>
                                     {hasMultipleLabels && (
                                       <span
-                                        className="inline-flex items-center gap-1 rounded-full border border-orange-200 bg-orange-50 px-2 py-0.5 text-[10px] font-semibold text-orange-700 whitespace-nowrap"
-                                        title={`Esta canción pertenece a varios labels: ${allSongLabels.join(", ")}`}
+                                        className="inline-flex items-center gap-1 text-[11px] text-orange-500 font-medium"
+                                        title={allSongLabels.join(", ")}
                                       >
-                                        <Tags className="h-3 w-3" />
-                                        <span>presente en multiples labels</span>
+                                        <Tags className="h-3 w-3 flex-shrink-0" />
+                                        En {allSongLabels.length} labels
                                       </span>
                                     )}
                                   </div>
