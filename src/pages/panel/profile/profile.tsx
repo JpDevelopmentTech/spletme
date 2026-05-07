@@ -10,6 +10,9 @@ import {
   AtSign,
   Pencil,
   Hash,
+  MapPin,
+  Earth,
+  AudioWaveform,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import RegisterSubuserModal from "../../../components/modal/RegisterSubuserModal";
@@ -17,6 +20,7 @@ import SubprofileManagementModal from "../../../components/modal/SubprofileManag
 import LocalStorageService from "../../../services/localstorage";
 import UpdateModal from "@/components/modal/updateUserInfoModal";
 import { AuthService } from "@/services/auth";
+import useConvertCountry from "@/hooks/useConvertCountry";
 
 interface EditUserPayload {
   username?: string;
@@ -41,9 +45,17 @@ const ProfilePage = () => {
       email: u.email || "",
       // Soporta tanto id como _id (MongoDB)
       userId: u.id || u._id || "",
+      onboardingData: {
+        country: u.onboardingData?.country || null,
+        address: u.onboardingData?.address || null,
+        profession: u.onboardingData?.profession || null,
+
+      },
     };
   });
 
+  const convertCountry = useConvertCountry(userData.onboardingData?.country || null);
+console.log("User data loaded from localStorage:", userData.onboardingData);
   const handleCopyId = async () => {
     try {
       await navigator.clipboard.writeText(userData.userId);
@@ -70,6 +82,7 @@ const ProfilePage = () => {
       username: updatedData.username ?? userData.username,
       name: updatedData.name ?? userData.name,
       lastName: updatedData.lastName ?? userData.lastName,
+       // Para evitar que el backend marque el onboarding como incompleto si el usuario ya lo había completado anteriormente
     });
 
     if (!response) {
@@ -154,6 +167,26 @@ const ProfilePage = () => {
                 <p className="text-sm truncate" style={{ color: "#94A3B8" }}>
                   @{userData.username}
                 </p>
+                  <div className="flex gap-3 mt-1">
+                    {userData.onboardingData?.profession && (
+                      <p className="text-sm flex items-center gap-1" style={{ color: "#94A3B8" }}>
+                        <AudioWaveform size={14} color="#94A3B8" className="" />
+                        {userData.onboardingData.profession}
+                      </p>
+                    )}
+                    {userData.onboardingData?.country && (
+                      <p className="text-sm flex items-center gap-1" style={{ color: "#94A3B8" }}>
+                        <Earth size={14} color="#94A3B8" className="" />
+                        {convertCountry}
+                      </p>
+                    )}
+                    {userData.onboardingData?.country && (
+                      <p className="text-sm flex items-center gap-1" style={{ color: "#94A3B8" }}>
+                        <MapPin size={14} color="#94A3B8" className="" />
+                        {userData.onboardingData.address}
+                      </p>
+                    )}
+                  </div>
               </div>
 
               {/* Edit button */}
