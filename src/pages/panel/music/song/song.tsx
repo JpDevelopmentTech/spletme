@@ -405,39 +405,47 @@ export default function Song() {
           </div>
 
           {/* Payment Banner */}
-          {
-            <div className="bg-[#F97316] rounded-xl px-7 py-5 col-span-1 ">
-              <div className="space-y-2 mb-7">
-                <div className="flex items-center gap-2.5">
-                  <Calendar className="w-5 h-5 lg:w-7 lg:h-7 text-white" />
-                  <span className="text-white font-semibold text-base lg:text-xl">
-                    Próxima liquidación
-                  </span>
+          <div className="bg-[#F97316] rounded-xl p-6 col-span-1 flex flex-col justify-between relative overflow-hidden">
+            {/* Decoración de fondo */}
+            <div className="absolute -top-8 -right-8 w-36 h-36 rounded-full bg-white/10 pointer-events-none" />
+            <div className="absolute -bottom-10 -left-6 w-28 h-28 rounded-full bg-white/10 pointer-events-none" />
+
+            {/* Próxima liquidación */}
+            <div className="relative z-10">
+              <div className="flex items-center gap-2.5 mb-3">
+                <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Calendar className="w-4 h-4 text-white" />
                 </div>
-                <p className="text-orange-100 text-sm lg:text-lg pl-7">
-                  10 Julio 2024
+                <span className="text-white/80 text-xs font-semibold uppercase tracking-wider">
+                  Próxima liquidación
+                </span>
+              </div>
+              <p className="text-white text-base font-semibold pl-10">
+                10 Julio 2024
+              </p>
+            </div>
+
+            <div className="relative z-10 my-5 border-t border-white/20" />
+
+            {/* Total + botón */}
+            <div className="relative z-10 space-y-4">
+              <div>
+                <p className="text-white/70 text-[11px] font-semibold uppercase tracking-wider mb-1">
+                  Total a pagar
+                </p>
+                <p className="text-white text-3xl font-bold tracking-tight">
+                  ${totalToPay.toFixed(2)}
                 </p>
               </div>
-
-              <div className="flex items-center gap-5">
-                <div className="">
-                  <p className="text-orange-100 text-xs lg:text-lg font-medium">
-                    Total a pagar
-                  </p>
-                  <p className="text-white text-2xl font-bold">
-                    ${totalToPay.toFixed(2)}
-                  </p>
-                </div>
-                <button
-                  onClick={handlePayAllClick}
-                  className="flex items-center gap-2 bg-white text-[#F97316] font-bold text-sm px-6 py-3 rounded-lg hover:bg-orange-50 transition-colors"
-                >
-                  <DollarSign className="w-4 h-4" />
-                  Pagar a todos
-                </button>
-              </div>
+              <button
+                onClick={handlePayAllClick}
+                className="w-full flex items-center justify-center gap-2 bg-white text-[#F97316] font-bold text-sm px-4 py-3 rounded-xl hover:bg-orange-50 active:scale-[0.98] transition-all"
+              >
+                <DollarSign className="w-4 h-4" />
+                Pagar a todos
+              </button>
             </div>
-          }
+          </div>
         </div>
         {/* Collaborators Card */}
         <div className="bg-white border border-gray-100 rounded-xl overflow-hidden">
