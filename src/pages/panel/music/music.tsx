@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import UploadModal from "./components/UploadModal";
 import {
   Music as MusicIcon,
@@ -8,16 +8,19 @@ import {
   Search,
   Plus,
   Crown,
-  Tags,
+  Info,
+  X,
+  ArrowRight,
 } from "lucide-react";
 import UseSongs from "../../../hooks/useSongs";
 import useAlbums from "../../../hooks/useAlbums";
 import useDebounce from "../../../hooks/useDebounce";
 import Loading from "../../../components/loading/loading";
 import AlbumOwnerSplitModal from "./album/components/AlbumOwnerSplitModal";
-import { useLabels } from "../../../hooks/useLabels";
+import SongService from "../../../services/songs";
 
 export default function Music() {
+  const navigate = useNavigate();
   const [mode, setMode] = useState<"songs" | "albums">("songs");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -27,6 +30,11 @@ export default function Music() {
   const [isAlbumSearching, setIsAlbumSearching] = useState(false);
   const [isOwnerSplitModalOpen, setIsOwnerSplitModalOpen] = useState(false);
   const [selectedAlbum, setSelectedAlbum] = useState<any | null>(null);
+  const [isSongDetailsOpen, setIsSongDetailsOpen] = useState(false);
+  const [selectedSong, setSelectedSong] = useState<any | null>(null);
+  const [selectedSongDetails, setSelectedSongDetails] = useState<any | null>(null);
+  const [isSongDetailsLoading, setIsSongDetailsLoading] = useState(false);
+  const [songDetailsError, setSongDetailsError] = useState("");
 
   // Debounce search query to avoid excessive API calls
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
@@ -62,6 +70,35 @@ export default function Music() {
   const handleOpenOwnerSplitModal = (album: any) => {
     setSelectedAlbum(album);
     setIsOwnerSplitModalOpen(true);
+  };
+
+  const handleOpenSongDetails = async (song: any) => {
+    setSelectedSong(song);
+    setIsSongDetailsOpen(true);
+    setSelectedSongDetails(null);
+    setSongDetailsError("");
+
+    if (!song?.isrc) {
+      setSongDetailsError("La canción no tiene ISRC.");
+      return;
+    }
+
+    setIsSongDetailsLoading(true);
+    const response = await SongService.getSongByIsrc(song.isrc);
+    setIsSongDetailsLoading(false);
+    const details = response?.data ?? response;
+    if (!details) {
+      setSongDetailsError("No se pudo obtener el detalle de la canción por ISRC.");
+      return;
+    }
+    setSelectedSongDetails(details);
+  };
+
+  const handleCloseSongDetails = () => {
+    setIsSongDetailsOpen(false);
+    setSelectedSong(null);
+    setSelectedSongDetails(null);
+    setSongDetailsError("");
   };
 
   // Helpers to detect codes
@@ -124,6 +161,97 @@ export default function Music() {
 
   const loading = mode === "songs" ? (songsLoading || isSearching) : albumsLoading;
   const currentData = mode === "songs" ? filteredSongs : filteredAlbums;
+  const songDetailsSource = selectedSongDetails || selectedSong || {};
+
+  const getSongField = (...keys: string[]) =>
+    keys.map((key) => songDetailsSource?.[key]).find((value) => value !== undefined && value !== null && value !== "");
+
+  const getReleaseDate = () => {
+    const rawDate =
+      getSongField("releaseDate", "release_date", "releasedAt", "release") ||
+      songDetailsSource?.releases?.[0]?.releaseDate ||
+      songDetailsSource?.releases?.[0]?.release_date ||
+      songDetailsSource?.spotifyData?.album?.release_date;
+
+    if (!rawDate) return "N/A";
+    const parsedDate = new Date(rawDate);
+    return Number.isNaN(parsedDate.getTime()) ? String(rawDate) : parsedDate.toLocaleDateString();
+  };
+
+  const getDuration = () => {
+    const rawDuration =
+      getSongField("duration", "durationMs", "duration_ms") ||
+      songDetailsSource?.spotifyData?.duration_ms;
+    if (rawDuration === undefined || rawDuration === null || rawDuration === "") return "N/A";
+
+    const durationNumber = Number(rawDuration);
+    if (Number.isNaN(durationNumber)) return String(rawDuration);
+
+    const totalSeconds = durationNumber > 10000 ? Math.round(durationNumber / 1000) : Math.round(durationNumber);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${String(seconds).padStart(2, "0")}`;
+  };
+
+  const getSplitsCount = () => {
+    const collaboratorsCount = songDetailsSource?.collaborators?.length || 0;
+    const splitConditionsCount = songDetailsSource?.split?.conditions?.length || 0;
+    return Math.max(collaboratorsCount, splitConditionsCount);
+  };
+
+  const getAssignedSplitsCount = () => {
+    const collaborators = songDetailsSource?.collaborators;
+    if (Array.isArray(collaborators) && collaborators.length > 0) {
+      return collaborators.filter((collaborator: any) =>
+        collaborator?.split?.conditions?.some((condition: any) => {
+          const rawValue = condition?.percentage ?? condition?.value;
+          const numericValue = Number(rawValue);
+          return Number.isFinite(numericValue) && numericValue > 0;
+        })
+      ).length;
+    }
+
+    const splitConditions = songDetailsSource?.split?.conditions;
+    if (Array.isArray(splitConditions) && splitConditions.length > 0) {
+      return splitConditions.filter((condition: any) => {
+        const rawValue = condition?.percentage ?? condition?.value;
+        const numericValue = Number(rawValue);
+        return Number.isFinite(numericValue) && numericValue > 0;
+      }).length;
+    }
+
+    return 0;
+  };
+
+  const getUnassignedSplitsCount = () => {
+    const totalSplits = getSplitsCount();
+    const assignedSplits = getAssignedSplitsCount();
+    return Math.max(totalSplits - assignedSplits, 0);
+  };
+
+  const getReleasesCount = () => {
+    if (Array.isArray(songDetailsSource?.releases)) return songDetailsSource.releases.length;
+    const releasesCountField = getSongField("releasesCount", "totalReleases");
+    const releasesCount = Number(releasesCountField);
+    return Number.isFinite(releasesCount) ? releasesCount : 0;
+  };
+
+  const getStreamsLabel = () => {
+    const rawStreams = getSongField("totalStreams", "streams");
+    const parsedStreams = Number(rawStreams);
+    if (Number.isFinite(parsedStreams)) return parsedStreams.toLocaleString();
+    return rawStreams || "0";
+  };
+
+  const getEarningsLabel = () => {
+    const rawEarnings = getSongField("totalNetIncome", "netIncome", "earning", "earnings");
+    const parsedEarnings = Number(rawEarnings);
+    const amount = Number.isFinite(parsedEarnings) ? parsedEarnings : 0;
+    return amount.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
 
   const getLabelName = (value: unknown): string | null => {
     if (typeof value === "string" && value.trim()) {
@@ -370,6 +498,7 @@ export default function Music() {
                             <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Collaborators</th>
                             <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Label</th>
                             <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th className="px-6 py-3.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
                           </>
                         ) : (
                           <>
@@ -482,6 +611,15 @@ export default function Music() {
                                   Active
                                 </span>
                               </td>
+                              <td className="px-6 py-3 text-center">
+                                <button
+                                  onClick={() => handleOpenSongDetails(song)}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-[11px] font-semibold transition-colors"
+                                >
+                                  <Info size={12} />
+                                  Details
+                                </button>
+                              </td>
                             </tr>
                             );
                           })
@@ -592,6 +730,161 @@ export default function Music() {
           </>
         )}
       </div>
+
+      {isSongDetailsOpen && selectedSong && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center px-4">
+          <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
+              <h3 className="text-base font-bold text-gray-900">Song Details</h3>
+              <button
+                onClick={handleCloseSongDetails}
+                className="p-1 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
+                  {selectedSongDetails?.spotifyData?.album?.images?.[0]?.url ||
+                  selectedSong?.spotifyData?.album?.images?.[0]?.url ? (
+                    <img
+                      src={
+                        selectedSongDetails?.spotifyData?.album?.images?.[0]?.url ||
+                        selectedSong?.spotifyData?.album?.images?.[0]?.url ||
+                        ""
+                      }
+                      alt={selectedSongDetails?.trackTitle || selectedSong?.trackTitle || "Song cover"}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <MusicIcon size={24} className="text-gray-400" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-lg font-bold text-gray-900 truncate">
+                    {getSongField("trackTitle", "title") || "Sin título"}
+                  </p>
+                  <p className="text-sm text-gray-500 truncate">
+                    {getSongField("artistName", "artist") || "Artista desconocido"}
+                  </p>
+                </div>
+              </div>
+
+              {isSongDetailsLoading ? (
+                <div className="text-sm text-gray-500">Loading details...</div>
+              ) : (
+                <div className="space-y-2.5">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+                      <p className="text-[11px] text-gray-500 uppercase tracking-wide">
+                        ISRC
+                      </p>
+                      <p className="text-sm font-semibold text-gray-900 font-mono truncate">
+                        {getSongField("isrc") || "N/A"}
+                      </p>
+                    </div>
+                    <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+                      <p className="text-[11px] text-gray-500 uppercase tracking-wide">
+                        UPC / EAN
+                      </p>
+                      <p className="text-sm font-semibold text-gray-900 font-mono truncate">
+                        {getSongField("upc", "ean") ||
+                          songDetailsSource?.releases?.[0]?.upc ||
+                          "N/A"}
+                      </p>
+                    </div>
+                    <div className="rounded-lg border border-green-200 bg-green-50 px-3 py-2">
+                      <p className="text-[11px] text-green-700 uppercase tracking-wide">
+                        Splits asignados
+                      </p>
+                      <p className="text-lg font-bold text-green-700">
+                        {getAssignedSplitsCount()}
+                      </p>
+                    </div>
+                    <div className="rounded-lg border border-orange-200 bg-orange-50 px-3 py-2">
+                      <p className="text-[11px] text-orange-700 uppercase tracking-wide">
+                        Splits no asignados
+                      </p>
+                      <p className="text-lg font-bold text-orange-700">
+                        {getUnassignedSplitsCount()}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="pt-1">
+                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">
+                      Información de la canción
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="rounded-lg border border-gray-200 bg-white px-3 py-2">
+                        <p className="text-[11px] text-gray-500 uppercase tracking-wide">
+                          Release date
+                        </p>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {getReleaseDate()}
+                        </p>
+                      </div>
+                      <div className="rounded-lg border border-gray-200 bg-white px-3 py-2">
+                        <p className="text-[11px] text-gray-500 uppercase tracking-wide">
+                          Releases
+                        </p>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {getReleasesCount()}
+                        </p>
+                      </div>
+                      <div className="rounded-lg border border-gray-200 bg-white px-3 py-2">
+                        <p className="text-[11px] text-gray-500 uppercase tracking-wide">
+                          Streams
+                        </p>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {getStreamsLabel()}
+                        </p>
+                      </div>
+                      <div className="rounded-lg border border-gray-200 bg-white px-3 py-2">
+                        <p className="text-[11px] text-gray-500 uppercase tracking-wide">
+                          Ganancia
+                        </p>
+                        <p className="text-sm font-semibold text-gray-900">
+                          ${getEarningsLabel()}
+                        </p>
+                      </div>
+                      <div className="rounded-lg border border-gray-200 bg-white px-3 py-2">
+                        <p className="text-[11px] text-gray-500 uppercase tracking-wide">
+                          Sello
+                        </p>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {getSongField("artisticLabel", "label") || "N/A"}
+                        </p>
+                      </div>
+                      <div className="rounded-lg border border-gray-200 bg-white px-3 py-2">
+                        <p className="text-[11px] text-gray-500 uppercase tracking-wide">
+                          Duración
+                        </p>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {getDuration()}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  {!!songDetailsError && (
+                    <p className="text-xs text-red-600">{songDetailsError}</p>
+                  )}
+                </div>
+              )}
+
+              <button
+                onClick={() => navigate(`/panel/song/${selectedSong._id}`)}
+                className="w-full mt-2 inline-flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors"
+              >
+                Ver información completa
+                <ArrowRight size={16} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <UploadModal
         isOpen={isModalOpen}
