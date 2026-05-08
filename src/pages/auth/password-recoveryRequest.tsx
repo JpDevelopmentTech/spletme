@@ -118,24 +118,27 @@ export default function PasswordRecoveryRequest() {
 
     setIsVerifyingCode(true);
     setCodeError("");
+    try {
+      const verificationResponse = await AuthService.sentcodeForPasswordRecovery(
+        sentEmail,
+        fullCode
+      );
 
-    const verificationResponse = await AuthService.sentcodeForPasswordRecovery(
-      sentEmail,
-      fullCode
-    );
+      if (!verificationResponse.success) {
+        setCodeError(verificationResponse.message || "Código inválido o expirado");
+        return;
+      }
 
-    if (!verificationResponse.success) {
-      setCodeError(verificationResponse.message || "Código inválido o expirado");
+      const verifiedCode = verificationResponse.token?.trim() || fullCode;
+      PasswordRecoverySessionHelper.save(sentEmail, verifiedCode);
+      navigate("/auth/password-recovery/reset", {
+        state: { email: sentEmail, token: verifiedCode },
+      });
+    } catch {
+      setCodeError("Código inválido o expirado");
+    } finally {
       setIsVerifyingCode(false);
-      return;
     }
-
-    const verifiedCode = verificationResponse.token?.trim() || fullCode;
-    PasswordRecoverySessionHelper.save(sentEmail, verifiedCode);
-    navigate("/panel/change-password", {
-      state: { email: sentEmail, token: verifiedCode },
-    });
-    setIsVerifyingCode(false);
   }
 
   return (

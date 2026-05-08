@@ -1,28 +1,46 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Eye, EyeOff, Lock } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { AuthService } from "@/services/auth";
-import LocalStorageService from "@/services/localstorage";
+import { PasswordRecoverySessionHelper } from "@/helpers/passwordRecoverySession";
 
-const ChangePasswordPage = () => {
+type PasswordRecoveryLocationState = {
+  email?: string;
+  token?: string;
+};
+
+const PasswordRecoveryReset = () => {
   const navigate = useNavigate();
-  const userFromStorage = LocalStorageService.getItem("user");
-  const authToken = (localStorage.getItem("token") || "").trim();
-  const userEmail = (userFromStorage.email || "").toString().trim().toLowerCase();
+  const location = useLocation();
+  const locationState =
+    (location.state as PasswordRecoveryLocationState | null) ?? null;
+  const stateRecoveryEmail = locationState?.email?.trim().toLowerCase() || "";
+  const stateRecoveryToken = locationState?.token?.trim() || "";
+  const persistedRecoverySession = useMemo(
+    () => PasswordRecoverySessionHelper.get(),
+    []
+  );
+  const recoveryEmail =
+    stateRecoveryEmail || persistedRecoverySession?.email || "";
+  const recoveryToken =
+    stateRecoveryToken || persistedRecoverySession?.verificationCode || "";
 
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordData, setPasswordData] = useState({
-    email: userEmail,
-    currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
   const [passwordError, setPasswordError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+
+  useEffect(() => {
+    if (stateRecoveryEmail && stateRecoveryToken) {
+      PasswordRecoverySessionHelper.save(stateRecoveryEmail, stateRecoveryToken);
+    }
+  }, [stateRecoveryEmail, stateRecoveryToken]);
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -36,7 +54,6 @@ const ChangePasswordPage = () => {
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const normalizedEmail = passwordData.email.trim().toLowerCase();
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       setPasswordError("Las contraseñas nuevas no coinciden");
@@ -48,44 +65,33 @@ const ChangePasswordPage = () => {
       return;
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
-      setPasswordError("Ingresa un correo electrónico válido");
-      return;
-    }
-
-    if (!authToken) {
-      setPasswordError("No se encontró token de autenticación");
-      return;
-    }
-
-    if (!passwordData.currentPassword.trim()) {
-      setPasswordError("Ingresa tu contraseña actual");
+    if (!recoveryEmail || !recoveryToken) {
+      setPasswordError("No hay una sesión válida para restablecer la contraseña");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const response = await AuthService.changePassword(
+      const response = await AuthService.resetPasswordByCode(
+        recoveryEmail,
+        recoveryToken,
         passwordData.newPassword,
-        passwordData.confirmPassword,
-        passwordData.currentPassword,
-        authToken
+        passwordData.confirmPassword
       );
 
       if (!response.success) {
-        setPasswordError(response.message || "Error al cambiar la contraseña");
+        setPasswordError(response.message || "Error al restablecer la contraseña");
+        if ([400, 401, 404, 422].includes(response.status)) {
+          PasswordRecoverySessionHelper.clear();
+        }
         return;
       }
 
-      setPasswordData({
-        email: normalizedEmail,
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
+      PasswordRecoverySessionHelper.clear();
       setSuccessMessage(response.message || "Contraseña actualizada correctamente");
+      navigate("/auth/email-login", { replace: true });
     } catch {
-      setPasswordError("Error al cambiar la contraseña");
+      setPasswordError("Error al restablecer la contraseña");
     } finally {
       setIsSubmitting(false);
     }
@@ -99,7 +105,7 @@ const ChangePasswordPage = () => {
         className="max-w-2xl mx-auto"
       >
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate("/auth/password-recovery")}
           className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white mb-8"
         >
           <ArrowLeft className="h-5 w-5" />
@@ -112,36 +118,30 @@ const ChangePasswordPage = () => {
               <Lock className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Cambiar Contraseña
+              Restablecer Contraseña
             </h1>
           </div>
 
-          <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
-            Se actualizará la contraseña de tu cuenta actual.
-          </p>
-
-          <motion.form onSubmit={handlePasswordSubmit} className="space-y-4">
-            <div className="relative">
-              <input
-                type={showCurrentPassword ? "text" : "password"}
-                name="currentPassword"
-                value={passwordData.currentPassword}
-                onChange={handlePasswordChange}
-                placeholder="Contraseña actual"
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                required
-                disabled={isSubmitting}
-              />
+          {recoveryEmail ? (
+            <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
+              Correo verificado: <span className="font-semibold">{recoveryEmail}</span>
+            </p>
+          ) : (
+            <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-900/20">
+              <p className="text-sm text-amber-800 dark:text-amber-200">
+                No se encontró una sesión válida para restablecer la contraseña.
+              </p>
               <button
                 type="button"
-                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                disabled={isSubmitting}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                onClick={() => navigate("/auth/password-recovery")}
+                className="mt-3 text-sm font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
               >
-                {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                Ir a verificar código
               </button>
             </div>
+          )}
 
+          <motion.form onSubmit={handlePasswordSubmit} className="space-y-4">
             <div className="relative">
               <input
                 type={showNewPassword ? "text" : "password"}
@@ -210,10 +210,10 @@ const ChangePasswordPage = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !recoveryEmail || !recoveryToken}
               className="w-full py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-lg hover:from-indigo-600 hover:to-indigo-700 transition-all duration-200 font-medium disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? "Guardando..." : "Cambiar Contraseña"}
+              {isSubmitting ? "Guardando..." : "Restablecer Contraseña"}
             </motion.button>
           </motion.form>
         </div>
@@ -222,4 +222,4 @@ const ChangePasswordPage = () => {
   );
 };
 
-export default ChangePasswordPage;
+export default PasswordRecoveryReset;

@@ -41,7 +41,7 @@ export default function EmailLogin() {
         dispatch(setAuth({ isAuth: "true", user: userToStore }));
 
         if (userToStore.onboardingCompleted) {
-          navigate("/panel/home");
+          navigate("/panel/home", window.location.reload());
         } else {
           navigate("/onboarding");
         }
