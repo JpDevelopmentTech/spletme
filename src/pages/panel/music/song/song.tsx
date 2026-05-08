@@ -157,16 +157,10 @@ export default function Song() {
   ]
     .filter(Boolean)
     .map((value) => String(value));
-  const ownerEmails = [
-    song?.ownerId?.email,
-    song?.owner?.email,
-  ]
+  const ownerEmails = [song?.ownerId?.email, song?.owner?.email]
     .filter(Boolean)
     .map((value) => normalizeIdentity(value));
-  const ownerUsernames = [
-    song?.ownerId?.username,
-    song?.owner?.username,
-  ]
+  const ownerUsernames = [song?.ownerId?.username, song?.owner?.username]
     .filter(Boolean)
     .map((value) => normalizeIdentity(value));
   const hasOwnerIdentity = ownerEmails.length > 0 || ownerUsernames.length > 0;
@@ -178,9 +172,10 @@ export default function Song() {
     ownerIds.length > 0 &&
     currentUserIds.some((currentId) => ownerIds.includes(currentId));
   const isSubuserSession = Boolean(currentUser?.parentUserId);
-  const isOwnerUser = emailMatchesOwner || usernameMatchesOwner || (
-    !isSubuserSession && !hasOwnerIdentity && idMatchesOwner
-  );
+  const isOwnerUser =
+    emailMatchesOwner ||
+    usernameMatchesOwner ||
+    (!isSubuserSession && !hasOwnerIdentity && idMatchesOwner);
 
   const monthlyCategories = useMemo(() => {
     const months: string[] = [];
@@ -200,10 +195,15 @@ export default function Song() {
   const monthWeights = useMemo(() => [0.1, 0.12, 0.15, 0.18, 0.2, 0.25], []);
   const weightsSum = monthWeights.reduce((acc, v) => acc + v, 0);
   const totalPaymentsFromMetrics = useMemo(
-    () => metricsData.reduce((acc, item) => acc + Number(item.totalNetIncome || 0), 0),
-    [metricsData]
+    () =>
+      metricsData.reduce(
+        (acc, item) => acc + Number(item.totalNetIncome || 0),
+        0,
+      ),
+    [metricsData],
   );
-  const totalPaymentsForChart = totalPaymentsFromMetrics > 0 ? totalPaymentsFromMetrics : totalToPay;
+  const totalPaymentsForChart =
+    totalPaymentsFromMetrics > 0 ? totalPaymentsFromMetrics : totalToPay;
 
   const chartSeries = useMemo(
     () => [
@@ -211,18 +211,18 @@ export default function Song() {
         name: "Streams",
         type: "area",
         data: monthWeights.map((w) =>
-          Math.round(((song?.totalStreams || 0) * w) / weightsSum)
+          Math.round(((song?.totalStreams || 0) * w) / weightsSum),
         ),
       },
       {
         name: "Pagos",
         type: "area",
         data: monthWeights.map((w) =>
-          Number((((totalPaymentsForChart || 0) * w) / weightsSum).toFixed(2))
+          Number((((totalPaymentsForChart || 0) * w) / weightsSum).toFixed(2)),
         ),
       },
     ],
-    [song?.totalStreams, totalPaymentsForChart, weightsSum, monthWeights]
+    [song?.totalStreams, totalPaymentsForChart, weightsSum, monthWeights],
   );
 
   const chartOptions: ApexOptions = {
@@ -292,7 +292,8 @@ export default function Song() {
       y: [
         {
           formatter: (val: number) => {
-            if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M streams`;
+            if (val >= 1_000_000)
+              return `${(val / 1_000_000).toFixed(1)}M streams`;
             if (val >= 1_000) return `${(val / 1_000).toFixed(1)}K streams`;
             return `${Math.round(val)} streams`;
           },
@@ -323,7 +324,11 @@ export default function Song() {
         collaborators={song?.collaborators || []}
         onPaymentSuccess={handlePaymentSuccess}
       />
-      <ValidationToastQueue toasts={toasts} onDequeue={dequeueToast} autoHideMs={9000} />
+      <ValidationToastQueue
+        toasts={toasts}
+        onDequeue={dequeueToast}
+        autoHideMs={9000}
+      />
       <div className="min-h-screen bg-[#F7F8FA] px-10 py-8 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -355,7 +360,9 @@ export default function Song() {
               Música
             </span>
             <span className="text-gray-300">/</span>
-            <span className="text-gray-900 font-semibold">Detalle de Canción</span>
+            <span className="text-gray-900 font-semibold">
+              Detalle de Canción
+            </span>
           </div>
         </div>
         <div className="grid grid-cols-4 gap-4">
@@ -397,7 +404,9 @@ export default function Song() {
               </div>
 
               {/* Stat Cards */}
-              <div className={`grid gap-2 ${isOwnerUser ? "grid-cols-3" : "grid-cols-2"}`}>
+              <div
+                className={`grid gap-2 ${isOwnerUser ? "grid-cols-3" : "grid-cols-2"}`}
+              >
                 {/* Streams */}
                 <div className="bg-blue-50 rounded-xl p-4 space-y-2 ">
                   <div className="flex items-center gap-2">
@@ -536,21 +545,22 @@ export default function Song() {
           />
         </div>
 
-        {/* History of Splits */}
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-          <Historyofsplits
-            splits={historicalSplits}
-            loading={splitHistoryLoading}
-          />
-        </div>
-        {/* Extraordinary Costs */}
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-          <Extraordinarycosts />
+        <div className="grid grid-cols-4 gap-4">
+          {/* History of Splits */}
+          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden col-span-1 lg:col-span-2">
+            <Historyofsplits
+              splits={historicalSplits}
+              loading={splitHistoryLoading}
+            />
+          </div>
+          {/* Extraordinary Costs */}
+          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden col-span-1 lg:col-span-2">
+            <Extraordinarycosts />
+          </div>
         </div>
         {/* Specific Data */}
         <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-          <EspecificData 
-          song={song} />
+          <EspecificData song={song} />
         </div>
       </div>
     </React.Fragment>
