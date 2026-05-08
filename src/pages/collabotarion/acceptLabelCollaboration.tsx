@@ -125,6 +125,7 @@ const AcceptLabelCollaboration = () => {
                     songsAdded: response.data.results.summary.added,
                     alreadyCollaborator: response.data.results.summary.alreadyExists,
                 });
+                navigate('/auth/email-login', { replace: true });
             }
         } catch (error) {
             console.error('Error al aceptar invitación:', error);
@@ -367,6 +368,7 @@ const AcceptLabelCollaboration = () => {
                             <>
                                 <Check className="w-5 h-5" />
                                 <span>Aceptar Invitación</span>
+                                
                             </>
                         )}
                     </button>
