@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState } from "react";
 import { ApexOptions } from "apexcharts";
 import ReactApexChart from "react-apexcharts";
 import {
@@ -31,8 +31,6 @@ import ValidationToastQueue, {
 } from "../../../../components/alert/ValidationToastQueue";
 import useMetricPayments from "../../../../hooks/useMetricPayments";
 import Behavior from "../../dealers/components/behavior";
-import { useSplits } from "../../../../hooks/useSplits";
-import type { Split } from "../../../../services/splits";
 
 export default function Song() {
   const { id } = useParams();
@@ -51,14 +49,6 @@ export default function Song() {
   const [toasts, setToasts] = useState<ValidationToastItem[]>([]);
   const [paymentHistoryRefresh, setPaymentHistoryRefresh] = useState(0);
   const { metricsData } = useMetricPayments(id || "", "month");
-  const { getSplitsBySong, loading: splitHistoryLoading } = useSplits();
-  const [historicalSplits, setHistoricalSplits] = useState<Split[]>([]);
-
-  useEffect(() => {
-    if (id) {
-      getSplitsBySong(id).then(setHistoricalSplits);
-    }
-  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const addToast = (type: ValidationToastType, message: string) => {
     setToasts((prev) => [
@@ -548,10 +538,7 @@ export default function Song() {
         <div className="grid grid-cols-4 gap-4">
           {/* History of Splits */}
           <div className="bg-white border border-gray-200 rounded-xl overflow-hidden col-span-1 lg:col-span-2">
-            <Historyofsplits
-              splits={historicalSplits}
-              loading={splitHistoryLoading}
-            />
+            <Historyofsplits songId={id} />
           </div>
           {/* Extraordinary Costs */}
           <div className="bg-white border border-gray-200 rounded-xl overflow-hidden col-span-1 lg:col-span-2">

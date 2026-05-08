@@ -102,6 +102,11 @@ interface SplitsResponse {
           totalPercentage: number;
           averagePercentage: number;
         };
+      }
+    | {
+        songId: string;
+        history: Split[];
+        total: number;
       };
 }
 
@@ -249,9 +254,30 @@ async createOwnerSplit(data: CreateSplitOwnerRequest): Promise<Split> {
       }
 
       const result: SplitsResponse = await response.json();
-      return result.data as Split[];
+      return this.normalizeSplitArray(result.data);
     } catch (error) {
       console.error("Error fetching splits by song:", error);
+      throw error;
+    }
+  }
+
+  async getSongSplitHistory(songId: string): Promise<Split[]> {
+    try {
+      const response = await fetch(`${this.baseURL}/song/${songId}/history`, {
+        headers: {
+          Authorization: `Bearer ${this.getAuthToken()}`,
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Error fetching split history by song");
+      }
+
+      const result: SplitsResponse = await response.json();
+      return this.normalizeSplitArray(result.data);
+    } catch (error) {
+      console.error("Error fetching split history by song:", error);
       throw error;
     }
   }
@@ -513,6 +539,32 @@ async createOwnerSplit(data: CreateSplitOwnerRequest): Promise<Split> {
    */
   private getAuthToken(): string {
     return localStorage.getItem("token") || "";
+  }
+
+  private normalizeSplitArray(data: SplitsResponse["data"]): Split[] {
+    if (Array.isArray(data)) {
+      return data as Split[];
+    }
+
+    if (
+      data &&
+      typeof data === "object" &&
+      "history" in data &&
+      Array.isArray((data as { history?: unknown }).history)
+    ) {
+      return (data as { history: Split[] }).history;
+    }
+
+    if (
+      data &&
+      typeof data === "object" &&
+      "splits" in data &&
+      Array.isArray((data as { splits?: unknown }).splits)
+    ) {
+      return (data as { splits: Split[] }).splits;
+    }
+
+    return [];
   }
 }
 

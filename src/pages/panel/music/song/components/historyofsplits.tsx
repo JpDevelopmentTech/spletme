@@ -1,12 +1,27 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Title from "../../../../../components/title/title";
 import Button from "../../../../../components/atoms/button";
 import type { Split } from "../../../../../services/splits";
+import { useSplits } from "../../../../../hooks/useSplits";
 
 interface HistoryOfSplitsProps {
-  splits: Split[];
-  loading?: boolean;
+  songId?: string;
 }
+
+type SplitHistoryCondition = {
+  percentage?: number;
+  countriesType?: string;
+  platformsType?: string;
+  type?: string;
+};
+
+type SplitHistoryItem = Split & {
+  collaboratorId?: {
+    name?: string;
+    email?: string;
+  };
+  conditions?: SplitHistoryCondition[];
+};
 
 const formatDate = (dateValue?: string) => {
   if (!dateValue) return "—";
@@ -27,17 +42,57 @@ const formatTime = (dateValue?: string) => {
 
 const getSplitDate = (split: Split) => split.updatedAt || split.createdAt;
 
-const Historyofsplits = ({ splits, loading = false }: HistoryOfSplitsProps) => {
+const Historyofsplits = ({ songId }: HistoryOfSplitsProps) => {
   const [viewData, setViewData] = useState(true);
+  const [selectedSplitKey, setSelectedSplitKey] = useState<string | null>(null);
+  const [historySplits, setHistorySplits] = useState<Split[]>([]);
+  const { getSongSplitHistory, loading } = useSplits();
 
-  const filteredSplits = useMemo(() => {
-    return splits.filter((split) => {
-      const status = (split as Split & { status?: string }).status;
-      const isStatusActive =
-        typeof status === "string" && status.toLowerCase() === "active";
-      return !split.isActive && !isStatusActive;
+  useEffect(() => {
+    if (!songId) {
+      setHistorySplits([]);
+      return;
+    }
+
+    getSongSplitHistory(songId).then(setHistorySplits);
+  }, [songId, getSongSplitHistory]);
+
+  const allSplits = useMemo(() => {
+    const safeSplits = Array.isArray(historySplits) ? historySplits : [];
+
+    return [...safeSplits].sort((a, b) => {
+      const aDate = getSplitDate(a);
+      const bDate = getSplitDate(b);
+      const aTime = aDate ? new Date(aDate).getTime() : 0;
+      const bTime = bDate ? new Date(bDate).getTime() : 0;
+      return bTime - aTime;
     });
-  }, [splits]);
+  }, [historySplits]);
+
+  const selectedSplit = useMemo(() => {
+    if (!selectedSplitKey) return null;
+    return (
+      allSplits.find(
+        (split, index) =>
+          (split.id || `split-history-${index}`) === selectedSplitKey,
+      ) || null
+    );
+  }, [allSplits, selectedSplitKey]);
+
+  const selectedSplitData = selectedSplit as SplitHistoryItem | null;
+  const selectedCondition: SplitHistoryCondition | null =
+    selectedSplitData?.generalCondition ||
+    selectedSplitData?.conditions?.[0] ||
+    selectedSplitData?.splitConditions?.[0] ||
+    null;
+  const collaboratorName =
+    selectedSplitData?.collaborator?.name ||
+    selectedSplitData?.collaboratorId?.name ||
+    "Owner";
+  const collaboratorEmail =
+    selectedSplitData?.collaborator?.email ||
+    selectedSplitData?.collaboratorId?.email ||
+    "—";
 
   return (
     <div className="col-span-12 p-6 rounded-xl border border-gray-200 bg-white">
@@ -49,57 +104,141 @@ const Historyofsplits = ({ splits, loading = false }: HistoryOfSplitsProps) => {
       </div>
 
       {viewData && (
-        <div className="mt-4 overflow-x-auto">
+        <div className="mt-4">
           {loading ? (
             <div className="py-10 text-center text-sm text-gray-500">
               Cargando historial de splits...
             </div>
-          ) : filteredSplits.length === 0 ? (
+          ) : allSplits.length === 0 ? (
             <div className="py-10 text-center text-sm text-gray-500">
               No hay historial de splits para mostrar.
             </div>
           ) : (
-            <table className="w-full text-sm text-left text-gray-600">
-              <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3">Fecha</th>
-                  <th className="px-4 py-3 text-center">Hora</th>
-                  <th className="px-4 py-3 text-center">Colaborador</th>
-                  <th className="px-4 py-3 text-center">Porcentaje</th>
-                  <th className="px-4 py-3 text-center">Editado por</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredSplits.map((split, index) => {
+            <>
+              <div className="space-y-2">
+                {allSplits.map((split, index) => {
+                  const splitKey = split.id || `split-history-${index}`;
                   const splitDate = getSplitDate(split);
-                  const percentage = split.generalCondition?.percentage ?? 0;
-                  const collaboratorName = split.collaborator?.name || "Owner";
-                  const editedBy = split.owner?.name || "Sistema";
 
                   return (
-                    <tr
-                      key={split.id || `split-history-${index}`}
-                      className="border-b hover:bg-gray-50"
+                    <button
+                      key={splitKey}
+                      type="button"
+                      onClick={() => setSelectedSplitKey(splitKey)}
+                      className="w-full flex items-center justify-between px-4 py-3 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                     >
-                      <td className="px-4 py-3">{formatDate(splitDate)}</td>
-                      <td className="px-4 py-3 text-center">
-                        {formatTime(splitDate)}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        {collaboratorName}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className="bg-orange-100 text-orange-700 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                          {percentage}%
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-center">{editedBy}</td>
-                    </tr>
+                      <span className="font-medium text-gray-700">
+                        {formatDate(splitDate)}
+                      </span>
+                      <span className="text-xs text-orange-500 font-semibold">
+                        Ver detalle
+                      </span>
+                    </button>
                   );
                 })}
-              </tbody>
-            </table>
+              </div>
+            </>
           )}
+        </div>
+      )}
+
+      {selectedSplitData && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center px-4"
+          onClick={() => setSelectedSplitKey(null)}
+        >
+          <div
+            className="w-full max-w-[460px] bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200/60 dark:border-white/10 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-start justify-between px-6 pt-5 pb-4 border-b border-gray-100 dark:border-white/10">
+              <div>
+                <p className="text-[11px] font-medium tracking-widest text-gray-400 uppercase mb-1">
+                  Detalle del split
+                </p>
+                <p className="text-lg font-medium text-gray-900 dark:text-white">
+                  {collaboratorName}
+                </p>
+                <p className="text-[13px] text-gray-400 mt-0.5">
+                  {collaboratorEmail}
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedSplitKey(null)}
+                className="w-7 h-7 rounded-full border border-gray-200 dark:border-white/10 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                aria-label="Cerrar"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Métricas destacadas */}
+            <div className="px-6 pt-4 grid grid-cols-2 gap-2">
+              <div className="bg-gray-50 dark:bg-white/5 rounded-xl px-4 py-3">
+                <p className="text-[11px] font-medium tracking-wider text-gray-400 uppercase mb-1">
+                  Porcentaje
+                </p>
+                <p className="text-2xl font-medium text-gray-900 dark:text-white">
+                  {selectedCondition?.percentage ?? 0}%
+                </p>
+              </div>
+              <div className="bg-gray-50 dark:bg-white/5 rounded-xl px-4 py-3">
+                <p className="text-[11px] font-medium tracking-wider text-gray-400 uppercase mb-1">
+                  Tipo
+                </p>
+                <p className="text-2xl font-medium text-gray-900 dark:text-white capitalize">
+                  {selectedCondition?.type || "General"}
+                </p>
+              </div>
+            </div>
+
+            {/* Filas de datos */}
+            <div className="px-6 py-4 flex flex-col divide-y divide-gray-100 dark:divide-white/10 text-[13px]">
+              {[
+                {
+                  label: "Países",
+                  value: selectedCondition?.countriesType || "—",
+                },
+                {
+                  label: "Plataformas",
+                  value: selectedCondition?.platformsType || "—",
+                },
+                {
+                  label: "Creado",
+                  value: `${formatDate(selectedSplitData.createdAt)} ${formatTime(selectedSplitData.createdAt)}`,
+                },
+                {
+                  label: "Actualizado",
+                  value: `${formatDate(selectedSplitData.updatedAt)} ${formatTime(selectedSplitData.updatedAt)}`,
+                },
+                {
+                  label: "Fecha visible",
+                  value: `${formatDate(getSplitDate(selectedSplitData))} ${formatTime(getSplitDate(selectedSplitData))}`,
+                },
+              ].map(({ label, value }) => (
+                <div
+                  key={label}
+                  className="flex items-center justify-between py-2.5"
+                >
+                  <span className="text-gray-400">{label}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {value}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 pb-5">
+              <button
+                onClick={() => setSelectedSplitKey(null)}
+                className="w-full py-2.5 rounded-xl border border-gray-200 dark:border-white/10 text-[14px] font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

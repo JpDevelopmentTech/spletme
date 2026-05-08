@@ -62,6 +62,22 @@ export const useSplits = () => {
     }
   }, []);
 
+  const getSongSplitHistory = useCallback(async (songId: string): Promise<Split[]> => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const result = await splitsService.getSongSplitHistory(songId);
+      return result;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Error fetching split history";
+      setError(errorMessage);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   // Obtener split por ID
   const getSplitById = useCallback(async (splitId: string): Promise<Split | null> => {
     setLoading(true);
@@ -202,6 +218,7 @@ export const useSplits = () => {
     createSplit,
     createMultipleSplits,
     getSplitsBySong,
+    getSongSplitHistory,
     getSplitById,
     updateSplit,
     deleteSplit,
