@@ -686,7 +686,7 @@ export default function Music() {
                             return (
                               <tr key={song._id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                                 <td className="px-6 py-3">
-                                  <Link to={`/panel/song/${song._id}`} className="flex items-center gap-3 group">
+                                  <Link to={`/panel/song/${song._id}`} className="flex items-center gap-3 group min-w-0">
                                     <div className="flex-shrink-0 w-9 h-9">
                                       {song?.spotifyData?.album?.images?.[0]?.url ? (
                                         <img src={song.spotifyData.album.images[0].url} alt={song.trackTitle} className="w-9 h-9 rounded-lg object-cover" />
@@ -696,8 +696,13 @@ export default function Music() {
                                         </div>
                                       )}
                                     </div>
-                                    <div className="min-w-0">
-                                      <p className="text-[13px] font-semibold text-gray-900 group-hover:text-orange-500 transition-colors truncate">{song.trackTitle}</p>
+                                    <div className="min-w-0 max-w-[260px]">
+                                      <p
+                                        className="text-[13px] font-semibold text-gray-900 group-hover:text-orange-500 transition-colors truncate"
+                                        title={song.trackTitle}
+                                      >
+                                        {song.trackTitle}
+                                      </p>
                                       <p className="text-[11px] text-gray-400 truncate">{song?.artistName || "Unknown Artist"}</p>
                                     </div>
                                   </Link>
