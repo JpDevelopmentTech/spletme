@@ -102,7 +102,7 @@ const AcceptLabelCollaboration = () => {
                 
             } catch (error) {
                 console.error('Error procesando token:', error);
-                setError('Token de invitación inválido');
+                setError('Debes tener la sesión iniciada en Splitme para poder aceptar esta invitación. Por favor, inicia sesión e intenta nuevamente.');
             }
         } else {
             console.log('No token found in URL');
@@ -214,10 +214,10 @@ const AcceptLabelCollaboration = () => {
                     <h1 className="text-2xl font-bold text-gray-900 mb-4">Error en la Invitación</h1>
                     <p className="text-gray-600 mb-6">{error}</p>
                     <button
-                        onClick={() => navigate('/panel/home')}
+                        onClick={() => window.location.reload()} 
                         className="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
                     >
-                        Volver al Panel
+                        Volver a la invitacion
                     </button>
                 </div>
             </div>
