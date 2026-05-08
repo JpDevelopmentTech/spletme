@@ -493,7 +493,8 @@ export default function Song() {
         </div>
         {/* Specific Data */}
         <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-          <EspecificData />
+          <EspecificData 
+          song={song} />
         </div>
       </div>
     </React.Fragment>

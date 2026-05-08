@@ -53,6 +53,7 @@ export default function Music() {
     songs,
     uploadSongs,
     loading: songsLoading,
+    pagination: songsPagination,
     getSongs,
     searchSongs,
     searchSongsByCode,
@@ -63,6 +64,7 @@ export default function Music() {
   const {
     albums,
     loading: albumsLoading,
+    pagination: albumsPagination,
     getAlbumByUPC,
     refreshAlbums,
   } = useAlbums(0, 1000);
@@ -246,13 +248,35 @@ export default function Music() {
   }, [mode, limit, debouncedSearchQuery, sortBy, splitFilter, artistFilter, isrcFilter, upcFilter, groupAlbumsByTrackCount]);
 
   const loading = mode === "songs" ? (songsLoading || isSearching) : albumsLoading;
-  const currentData = mode === "songs" ? filteredSongs : filteredAlbums;
-  const totalPages = Math.max(1, Math.ceil(currentData.length / limit));
-  const safePage = Math.min(page, totalPages);
+  const songFiltersApplied = Boolean(
+    debouncedSearchQuery.trim() || artistFilter.trim() || isrcFilter.trim() || splitFilter !== "all",
+  );
+  const albumFiltersApplied = Boolean(
+    debouncedSearchQuery.trim() || artistFilter.trim() || upcFilter.trim() || splitFilter !== "all" || albumSearchResult,
+  );
+  const paginatedSongs = filteredSongs;
+  const paginatedAlbums = filteredAlbums;
+  const currentData = mode === "songs" ? paginatedSongs : paginatedAlbums;
+  const currentPageItems = mode === "songs" ? paginatedSongs.length : paginatedAlbums.length;
+  const knownTotalItems =
+    mode === "songs"
+      ? (songFiltersApplied ? filteredSongs.length : songsPagination?.total)
+      : (albumFiltersApplied ? filteredAlbums.length : albumsPagination?.total);
+  const knownTotalPages = knownTotalItems !== null && knownTotalItems !== undefined
+    ? Math.max(1, Math.ceil(knownTotalItems / limit))
+    : null;
+  const safePage = knownTotalPages ? Math.min(page, knownTotalPages) : page;
   const pageStart = (safePage - 1) * limit;
-  const pageEnd = pageStart + limit;
-  const paginatedSongs = filteredSongs.slice(pageStart, pageEnd);
-  const paginatedAlbums = filteredAlbums.slice(pageStart, pageEnd);
+  const pageEnd = pageStart + currentPageItems;
+  const hasMoreFromApi = mode === "songs" ? songsPagination?.hasMore : albumsPagination?.hasMore;
+  const hasMoreFallback = mode === "songs"
+    ? (!songFiltersApplied && currentPageItems > 0)
+    : (!albumFiltersApplied && currentPageItems > 0);
+  const canGoNext = knownTotalPages
+    ? safePage < knownTotalPages
+    : (hasMoreFromApi ?? hasMoreFallback);
+  const totalItemsForDisplay =
+    knownTotalItems ?? Math.max(pageStart + currentPageItems, currentData.length);
 
   const groupedAlbums = useMemo(() => {
     if (!groupAlbumsByTrackCount || mode !== "albums") return [];
@@ -430,7 +454,8 @@ export default function Music() {
     groupAlbumsByTrackCount,
   ].filter(Boolean).length;
 
-  if (loading) return <Loading />;
+  const showInitialLoading = loading && currentData.length === 0;
+  if (showInitialLoading) return <Loading />;
 
   return (
     <div className="min-h-screen">
@@ -845,7 +870,7 @@ export default function Music() {
                 {/* Pagination */}
                 <div className="flex items-center justify-between px-6 py-3.5 border-t border-gray-200">
                   <span className="text-[13px] text-gray-500">
-                    Showing {currentData.length === 0 ? 0 : pageStart + 1}–{Math.min(pageEnd, currentData.length)} of {currentData.length} {mode}
+                    Showing {totalItemsForDisplay === 0 ? 0 : pageStart + 1}–{Math.min(pageEnd, totalItemsForDisplay)} of {totalItemsForDisplay} {mode}
                   </span>
                   <div className="flex items-center gap-2">
                     <span className="text-[13px] text-gray-500">Show:</span>
@@ -864,7 +889,7 @@ export default function Music() {
                   </div>
                   <div className="flex items-center gap-1.5">
                     <button
-                      onClick={() => setPage(Math.max(1, safePage - 1))}
+                      onClick={() => setPage((prev) => Math.max(1, prev - 1))}
                       disabled={safePage <= 1}
                       className="px-3 py-1.5 text-[13px] font-medium text-gray-500 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
@@ -874,8 +899,13 @@ export default function Music() {
                       {safePage}
                     </button>
                     <button
-                      onClick={() => setPage(Math.min(totalPages, safePage + 1))}
-                      disabled={safePage >= totalPages}
+                      onClick={() =>
+                        setPage((prev) => {
+                          if (!canGoNext) return prev;
+                          return knownTotalPages ? Math.min(knownTotalPages, prev + 1) : prev + 1;
+                        })
+                      }
+                      disabled={!canGoNext}
                       className="px-3 py-1.5 text-[13px] font-medium text-gray-500 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
                       Next
