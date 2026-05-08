@@ -48,6 +48,12 @@ export interface ChangePasswordResponse {
   status: number;
 }
 
+export interface PlatformTourResponse {
+  success: boolean;
+  message: string;
+  status: number;
+}
+
 export interface UnlinkSubuserResponse {
   success: boolean;
   message: string;
@@ -388,6 +394,62 @@ export const AuthService = {
       return {
         success: false,
         message: "Error al cambiar la contraseña",
+        status: 500,
+      };
+    }
+  },
+
+  completeDashboardTour: async (
+    completed: boolean,
+  ): Promise<PlatformTourResponse> => {
+    try {
+      const endpoint = `${URI}/dashboard-tour/complete`;
+      const response = await axios.post(
+        endpoint,
+        { completed },
+        {
+          headers: getAuthHeaders(),
+          validateStatus: (status) =>
+            (status >= 200 && status < 300) ||
+            status === 400 ||
+            status === 401 ||
+            status === 404 ||
+            status === 409 ||
+            status === 422,
+        },
+      );
+
+      if (response.status < 200 || response.status >= 300) {
+        return {
+          success: false,
+          message: getMessageFromPayload(
+            response.data,
+            "Error al actualizar el tour de la plataforma",
+          ),
+          status: response.status,
+        };
+      }
+
+      return {
+        success: true,
+        message: response.data?.message || "Tour de la plataforma actualizado",
+        status: response.status,
+      };
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        return {
+          success: false,
+          message: getMessageFromPayload(
+            error.response?.data,
+            "Error al actualizar el tour de la plataforma",
+          ),
+          status: error.response?.status || 500,
+        };
+      }
+
+      return {
+        success: false,
+        message: "Error al actualizar el tour de la plataforma",
         status: 500,
       };
     }

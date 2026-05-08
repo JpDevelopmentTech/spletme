@@ -39,6 +39,17 @@ export default function Home() {
       if (res?.data) setTopSongs(res.data);
     });
   }, []);
+
+  useEffect(() => {
+    const autoReloadKey = "panel-home-auto-reloaded";
+    if (sessionStorage.getItem(autoReloadKey) === "true") {
+      return;
+    }
+
+    sessionStorage.setItem(autoReloadKey, "true");
+    window.location.reload();
+  }, []);
+
   const { wallet, loading: walletLoading, hasWallet, createWallet, refreshWallet } = useWallet();
   const { user } = useAuth0();
 

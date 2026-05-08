@@ -1,5 +1,7 @@
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { TrendingUp, DollarSign, Music, ArrowRight, PartyPopper } from "lucide-react";
+import { setAuth } from "@/store/states/authSlice";
 
 const FEATURES = [
   { Icon: TrendingUp, title: "Analytics", description: "Monitorea tus ingresos" },
@@ -9,6 +11,7 @@ const FEATURES = [
 
 const CompletionStep = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleGoToDashboard = () => {
     // Garantiza la marca antes de navegar, independiente del backend
@@ -17,6 +20,7 @@ const CompletionStep = () => {
       const user = JSON.parse(userStr);
       user.onboardingCompleted = true;
       localStorage.setItem("user", JSON.stringify(user));
+      dispatch(setAuth({ isAuth: "true", user }));
     }
     navigate("/panel/home");
   };

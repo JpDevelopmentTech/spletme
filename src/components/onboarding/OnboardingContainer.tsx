@@ -2,16 +2,19 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useDispatch } from "react-redux";
 import ProfessionStep from "./steps/ProfessionStep";
 import AccountDetailsStep from "./steps/AccountDetailsStep";
 import VerificationStep from "./steps/VerificationStep";
 import CompletionStep from "./steps/CompletionStep";
 import { OnboardingService, OnboardingData } from "../../services/onboarding";
+import { setAuth } from "@/store/states/authSlice";
 
 const TOTAL_STEPS = 4;
 
 const OnboardingContainer = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [currentStep, setCurrentStep] = useState(1);
   const [verificationEmail, setVerificationEmail] = useState("");
   const [onboardingError, setOnboardingError] = useState("");
@@ -24,14 +27,20 @@ const OnboardingContainer = () => {
     if (userStr) {
       const user = JSON.parse(userStr);
       const email = typeof user.email === "string" ? user.email.trim().toLowerCase() : "";
-      const storedStep = user.onboardingData?.currentStep || 1;
+      const storedStep = Number(user.onboardingData?.currentStep || 1);
 
       if (email) {
         setVerificationEmail(email);
       }
 
-      if (user.onboardingCompleted) {
-        navigate("/panel/home");
+      if (user.onboardingCompleted || storedStep >= TOTAL_STEPS) {
+        const completedUser = {
+          ...user,
+          onboardingCompleted: true,
+        };
+        localStorage.setItem("user", JSON.stringify(completedUser));
+        dispatch(setAuth({ isAuth: "true", user: completedUser }));
+        navigate("/panel/home", { replace: true });
         return;
       }
 
