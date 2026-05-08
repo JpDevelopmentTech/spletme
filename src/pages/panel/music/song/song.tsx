@@ -134,6 +134,53 @@ export default function Song() {
 
   const ownerAmount = getOwnerTotalOwed();
   const totalToPay = Math.max(0, (song?.totalNetIncome || 0) - ownerAmount);
+  const currentUser = LocalStorageService.getItem("user");
+  const normalizeIdentity = (value: unknown) =>
+    String(value || "")
+      .trim()
+      .toLowerCase();
+  const currentUserIds = [
+    currentUser?.id,
+    currentUser?._id,
+    currentUser?.userId,
+  ]
+    .filter(Boolean)
+    .map((value) => String(value));
+  const currentUserEmail = normalizeIdentity(currentUser?.email);
+  const currentUserUsername = normalizeIdentity(currentUser?.username);
+  const ownerIds = [
+    typeof song?.ownerId === "string" ? song?.ownerId : undefined,
+    song?.ownerId?._id,
+    song?.ownerId?.id,
+    song?.owner?._id,
+    song?.owner?.id,
+  ]
+    .filter(Boolean)
+    .map((value) => String(value));
+  const ownerEmails = [
+    song?.ownerId?.email,
+    song?.owner?.email,
+  ]
+    .filter(Boolean)
+    .map((value) => normalizeIdentity(value));
+  const ownerUsernames = [
+    song?.ownerId?.username,
+    song?.owner?.username,
+  ]
+    .filter(Boolean)
+    .map((value) => normalizeIdentity(value));
+  const hasOwnerIdentity = ownerEmails.length > 0 || ownerUsernames.length > 0;
+  const emailMatchesOwner =
+    currentUserEmail !== "" && ownerEmails.includes(currentUserEmail);
+  const usernameMatchesOwner =
+    currentUserUsername !== "" && ownerUsernames.includes(currentUserUsername);
+  const idMatchesOwner =
+    ownerIds.length > 0 &&
+    currentUserIds.some((currentId) => ownerIds.includes(currentId));
+  const isSubuserSession = Boolean(currentUser?.parentUserId);
+  const isOwnerUser = emailMatchesOwner || usernameMatchesOwner || (
+    !isSubuserSession && !hasOwnerIdentity && idMatchesOwner
+  );
 
   const monthlyCategories = useMemo(() => {
     const months: string[] = [];
@@ -313,7 +360,11 @@ export default function Song() {
         </div>
         <div className="grid grid-cols-4 gap-4">
           {/* Hero Card */}
-          <div className="bg-white border border-gray-200 rounded-xl p-6 flex gap-6 col-span-3">
+          <div
+            className={`bg-white border border-gray-200 rounded-xl p-6 flex gap-6 ${
+              isOwnerUser ? "col-span-3" : "col-span-4"
+            }`}
+          >
             {/* Album Art */}
             <div className="w-48 h-48 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 flex items-center justify-center">
               {song?.spotifyData?.album?.images?.length > 0 ? (
@@ -346,7 +397,7 @@ export default function Song() {
               </div>
 
               {/* Stat Cards */}
-              <div className="grid grid-cols-3 gap-2">
+              <div className={`grid gap-2 ${isOwnerUser ? "grid-cols-3" : "grid-cols-2"}`}>
                 {/* Streams */}
                 <div className="bg-blue-50 rounded-xl p-4 space-y-2 ">
                   <div className="flex items-center gap-2">
@@ -382,70 +433,74 @@ export default function Song() {
                 </div>
 
                 {/* My Percentage */}
-                <div className="bg-purple-50 rounded-xl p-4 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <Award className="w-4 h-4 text-purple-600" />
+                {isOwnerUser && (
+                  <div className="bg-purple-50 rounded-xl p-4 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <Award className="w-4 h-4 text-purple-600" />
+                      </div>
+                      <span className="text-xs text-gray-500 font-medium">
+                        Mi porcentaje
+                      </span>
                     </div>
-                    <span className="text-xs text-gray-500 font-medium">
-                      Mi porcentaje
-                    </span>
+                    <div className="flex items-baseline gap-1.5">
+                      <p className="text-xl font-bold text-purple-600">
+                        ${getUserDisplayAmount()}
+                      </p>
+                      <span className="text-xs text-gray-400">
+                        {getUserDisplayPercentage()}%
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-baseline gap-1.5">
-                    <p className="text-xl font-bold text-purple-600">
-                      ${getUserDisplayAmount()}
-                    </p>
-                    <span className="text-xs text-gray-400">
-                      {getUserDisplayPercentage()}%
-                    </span>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
 
           {/* Payment Banner */}
-          <div className="bg-[#F97316] rounded-xl p-6 col-span-1 flex flex-col justify-between relative overflow-hidden">
-            {/* Decoración de fondo */}
-            <div className="absolute -top-8 -right-8 w-36 h-36 rounded-full bg-white/10 pointer-events-none" />
-            <div className="absolute -bottom-10 -left-6 w-28 h-28 rounded-full bg-white/10 pointer-events-none" />
+          {isOwnerUser && (
+            <div className="bg-[#F97316] rounded-xl p-6 col-span-1 flex flex-col justify-between relative overflow-hidden">
+              {/* Decoración de fondo */}
+              <div className="absolute -top-8 -right-8 w-36 h-36 rounded-full bg-white/10 pointer-events-none" />
+              <div className="absolute -bottom-10 -left-6 w-28 h-28 rounded-full bg-white/10 pointer-events-none" />
 
-            {/* Próxima liquidación */}
-            <div className="relative z-10">
-              <div className="flex items-center gap-2.5 mb-3">
-                <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Calendar className="w-4 h-4 text-white" />
+              {/* Próxima liquidación */}
+              <div className="relative z-10">
+                <div className="flex items-center gap-2.5 mb-3">
+                  <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Calendar className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="text-white/80 text-xs font-semibold uppercase tracking-wider">
+                    Próxima liquidación
+                  </span>
                 </div>
-                <span className="text-white/80 text-xs font-semibold uppercase tracking-wider">
-                  Próxima liquidación
-                </span>
-              </div>
-              <p className="text-white text-base font-semibold pl-10">
-                10 Julio 2024
-              </p>
-            </div>
-
-            <div className="relative z-10 my-5 border-t border-white/20" />
-
-            {/* Total + botón */}
-            <div className="relative z-10 space-y-4">
-              <div>
-                <p className="text-white/70 text-[11px] font-semibold uppercase tracking-wider mb-1">
-                  Total a pagar
-                </p>
-                <p className="text-white text-3xl font-bold tracking-tight">
-                  ${totalToPay.toFixed(2)}
+                <p className="text-white text-base font-semibold pl-10">
+                  10 Julio 2024
                 </p>
               </div>
-              <button
-                onClick={handlePayAllClick}
-                className="w-full flex items-center justify-center gap-2 bg-white text-[#F97316] font-bold text-sm px-4 py-3 rounded-xl hover:bg-orange-50 active:scale-[0.98] transition-all"
-              >
-                <DollarSign className="w-4 h-4" />
-                Pagar a todos
-              </button>
+
+              <div className="relative z-10 my-5 border-t border-white/20" />
+
+              {/* Total + botón */}
+              <div className="relative z-10 space-y-4">
+                <div>
+                  <p className="text-white/70 text-[11px] font-semibold uppercase tracking-wider mb-1">
+                    Total a pagar
+                  </p>
+                  <p className="text-white text-3xl font-bold tracking-tight">
+                    ${totalToPay.toFixed(2)}
+                  </p>
+                </div>
+                <button
+                  onClick={handlePayAllClick}
+                  className="w-full flex items-center justify-center gap-2 bg-white text-[#F97316] font-bold text-sm px-4 py-3 rounded-xl hover:bg-orange-50 active:scale-[0.98] transition-all"
+                >
+                  <DollarSign className="w-4 h-4" />
+                  Pagar a todos
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
         {/* Collaborators Card */}
         <div className="bg-white border border-gray-100 rounded-xl overflow-hidden">
@@ -462,6 +517,7 @@ export default function Song() {
             collaborators={getCollaboratorsInfo()}
             songId={song?._id || song?.id}
             song={song}
+            isOwner={isOwnerUser}
           />
         </div>
         {/* Behavior / Revenue Chart */}

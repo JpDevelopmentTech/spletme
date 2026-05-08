@@ -47,6 +47,7 @@ interface TableProps {
   collaborators: UserType[];
   songId?: string;
   song?: Song;
+  isOwner?: boolean;
 }
 
 const AVATAR_COLORS = [
@@ -67,7 +68,7 @@ function getInitials(name: string) {
     .toUpperCase();
 }
 
-export default function Table({ collaborators, songId, song }: TableProps) {
+export default function Table({ collaborators, songId, song, isOwner = false }: TableProps) {
   const [isSplitsModalOpen, setIsSplitsModalOpen] = useState(false);
   const [isPaymentHistoryModalOpen, setIsPaymentHistoryModalOpen] =
     useState(false);
@@ -191,13 +192,15 @@ export default function Table({ collaborators, songId, song }: TableProps) {
 
       {/* Actions bar */}
       <div className="flex items-center gap-2 px-6 py-4 border-b border-gray-100">
-        <button
-          onClick={() => setIsOwnerSplitModalOpen(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F97316] hover:bg-orange-600 text-white text-xs font-semibold rounded-lg transition-colors"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          Owner Split
-        </button>
+        {isOwner && (
+          <button
+            onClick={() => setIsOwnerSplitModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F97316] hover:bg-orange-600 text-white text-xs font-semibold rounded-lg transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Owner Split
+          </button>
+        )}
         <button
           onClick={() => setIsSplitsModalOpen(true)}
           className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-semibold rounded-lg transition-colors"
