@@ -23,9 +23,10 @@ import { AuthService } from "@/services/auth";
 import useConvertCountry from "@/hooks/useConvertCountry";
 
 interface EditUserPayload {
-  username?: string;
-  name?: string;
-  lastName?: string;
+  country?: string | null;
+  profession?: string | null;
+  otherProfession?: string | null;
+  address?: string | null;
 }
 
 const ProfilePage = () => {
@@ -43,7 +44,6 @@ const ProfilePage = () => {
       name: u.name || "",
       lastName: u.lastName || "",
       email: u.email || "",
-      // Soporta tanto id como _id (MongoDB)
       userId: u.id || u._id || "",
       onboardingData: {
         country: u.onboardingData?.country || null,
@@ -55,7 +55,6 @@ const ProfilePage = () => {
   });
 
   const convertCountry = useConvertCountry(userData.onboardingData?.country || null);
-console.log("User data loaded from localStorage:", userData.onboardingData);
   const handleCopyId = async () => {
     try {
       await navigator.clipboard.writeText(userData.userId);
@@ -76,27 +75,33 @@ console.log("User data loaded from localStorage:", userData.onboardingData);
   };
 
   const handleSaveProfile = async (updatedData: EditUserPayload) => {
-    const response = await AuthService.updateUser({
-      userId: userData.userId,
-      email: userData.email,
-      username: updatedData.username ?? userData.username,
-      name: updatedData.name ?? userData.name,
-      lastName: updatedData.lastName ?? userData.lastName,
-       // Para evitar que el backend marque el onboarding como incompleto si el usuario ya lo había completado anteriormente
-    });
+    const response = await AuthService.updateProfileInfo(updatedData);
 
     if (!response) {
       throw new Error("No se pudo actualizar el perfil. Verifica tu conexión e intenta de nuevo.");
     }
 
-    // Actualiza el estado local con los nuevos datos
-    setUserData((prev) => ({ ...prev, ...updatedData }));
+    setUserData((prev) => ({
+      ...prev,
+      onboardingData: {
+        ...prev.onboardingData,
+        ...updatedData,
+      },
+    }));
 
-    // Sincroniza el localStorage para que los cambios persistan al recargar
     const stored = localStorage.getItem("user");
     if (stored) {
       const user = JSON.parse(stored);
-      localStorage.setItem("user", JSON.stringify({ ...user, ...updatedData }));
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          ...user,
+          onboardingData: {
+            ...(user.onboardingData || {}),
+            ...updatedData,
+          },
+        })
+      );
     }
   };
 

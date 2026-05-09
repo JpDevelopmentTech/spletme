@@ -21,6 +21,12 @@ export interface UpdateUserSchema {
   lastName: string;
 }
 
+export interface UpdateProfileInfoSchema {
+  country?: string | null;
+  profession?: string | null;
+  address?: string | null;
+}
+
 export type updateSubuserSchema = UpdateUserSchema;
 
 export interface PasswordRecoveryResponse {
@@ -186,6 +192,39 @@ export const AuthService = {
       return response.data;
     } catch (error) {
       console.error("Error updating user:", error);
+      return null;
+    }
+  },
+
+  updateProfileInfo: async (payload: UpdateProfileInfoSchema) => {
+    try {
+      const endpoint = `${URI}/profile-info`;
+      const response = await axios.put(endpoint, payload, {
+        headers: getAuthHeaders(),
+      });
+
+      const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+      const updatedPayload =
+        response.data?.data?.user ||
+        response.data?.data ||
+        response.data?.user ||
+        {};
+      const updatedUser = {
+        ...currentUser,
+        ...updatedPayload,
+        onboardingData: {
+          ...(currentUser.onboardingData || {}),
+          ...(updatedPayload.onboardingData || {}),
+          country: payload.country ?? currentUser.onboardingData?.country ?? null,
+          profession: payload.profession ?? currentUser.onboardingData?.profession ?? null,
+          address: payload.address ?? currentUser.onboardingData?.address ?? null,
+        },
+      };
+
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      return response.data;
+    } catch (error) {
+      console.error("Error updating profile info:", error);
       return null;
     }
   },
