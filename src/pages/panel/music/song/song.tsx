@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from "react";
 import { ApexOptions } from "apexcharts";
-import ReactApexChart from "react-apexcharts";
 import {
   DollarSign,
   Music,
@@ -29,7 +28,6 @@ import ValidationToastQueue, {
   ValidationToastItem,
   ValidationToastType,
 } from "../../../../components/alert/ValidationToastQueue";
-import useMetricPayments from "../../../../hooks/useMetricPayments";
 import Behavior from "../../dealers/components/behavior";
 
 export default function Song() {
@@ -48,7 +46,6 @@ export default function Song() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [toasts, setToasts] = useState<ValidationToastItem[]>([]);
   const [paymentHistoryRefresh, setPaymentHistoryRefresh] = useState(0);
-  const { metricsData } = useMetricPayments(id || "", "month");
 
   const addToast = (type: ValidationToastType, message: string) => {
     setToasts((prev) => [
@@ -167,134 +164,7 @@ export default function Song() {
     usernameMatchesOwner ||
     (!isSubuserSession && !hasOwnerIdentity && idMatchesOwner);
 
-  const monthlyCategories = useMemo(() => {
-    const months: string[] = [];
-    const now = new Date();
 
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now);
-      d.setDate(1);
-      d.setHours(0, 0, 0, 0);
-      d.setMonth(now.getMonth() - i);
-      months.push(d.toISOString());
-    }
-
-    return months;
-  }, []);
-
-  const monthWeights = useMemo(() => [0.1, 0.12, 0.15, 0.18, 0.2, 0.25], []);
-  const weightsSum = monthWeights.reduce((acc, v) => acc + v, 0);
-  const totalPaymentsFromMetrics = useMemo(
-    () =>
-      metricsData.reduce(
-        (acc, item) => acc + Number(item.totalNetIncome || 0),
-        0,
-      ),
-    [metricsData],
-  );
-  const totalPaymentsForChart =
-    totalPaymentsFromMetrics > 0 ? totalPaymentsFromMetrics : totalToPay;
-
-  const chartSeries = useMemo(
-    () => [
-      {
-        name: "Streams",
-        type: "area",
-        data: monthWeights.map((w) =>
-          Math.round(((song?.totalStreams || 0) * w) / weightsSum),
-        ),
-      },
-      {
-        name: "Pagos",
-        type: "area",
-        data: monthWeights.map((w) =>
-          Number((((totalPaymentsForChart || 0) * w) / weightsSum).toFixed(2)),
-        ),
-      },
-    ],
-    [song?.totalStreams, totalPaymentsForChart, weightsSum, monthWeights],
-  );
-
-  const chartOptions: ApexOptions = {
-    chart: {
-      toolbar: { show: false },
-      background: "transparent",
-    },
-    stroke: {
-      width: [2, 2],
-      curve: "smooth",
-    },
-    fill: {
-      type: "gradient",
-      gradient: {
-        shadeIntensity: 1,
-        opacityFrom: 0.35,
-        opacityTo: 0.02,
-        stops: [0, 90, 100],
-      },
-    },
-    markers: {
-      size: [0, 0],
-    },
-    dataLabels: { enabled: false },
-    colors: ["#111827", "#22C55E"],
-    grid: {
-      borderColor: "#F3F4F6",
-      strokeDashArray: 0,
-      xaxis: { lines: { show: false } },
-      yaxis: { lines: { show: true } },
-    },
-    xaxis: {
-      type: "datetime",
-      categories: monthlyCategories,
-      labels: {
-        style: { fontSize: "11px", colors: "#9CA3AF" },
-        datetimeFormatter: { month: "MMM" },
-      },
-      axisBorder: { show: false },
-      axisTicks: { show: false },
-    },
-    yaxis: [
-      {
-        seriesName: "Streams",
-        labels: {
-          style: { colors: "#9CA3AF", fontSize: "11px" },
-          formatter: (val: number) => {
-            if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M`;
-            if (val >= 1_000) return `${(val / 1_000).toFixed(1)}K`;
-            return String(Math.round(val));
-          },
-        },
-      },
-      {
-        seriesName: "Pagos",
-        opposite: true,
-        labels: {
-          style: { colors: "#22C55E", fontSize: "11px" },
-          formatter: (val: number) => `$${val.toFixed(2)}`,
-        },
-      },
-    ],
-    tooltip: {
-      x: { format: "MMM yyyy" },
-      theme: "light",
-      style: { fontSize: "12px" },
-      y: [
-        {
-          formatter: (val: number) => {
-            if (val >= 1_000_000)
-              return `${(val / 1_000_000).toFixed(1)}M streams`;
-            if (val >= 1_000) return `${(val / 1_000).toFixed(1)}K streams`;
-            return `${Math.round(val)} streams`;
-          },
-        },
-        {
-          formatter: (val: number) => `$${val.toFixed(2)}`,
-        },
-      ],
-    },
-    legend: { show: false },
-  };
 
   if (loading) return <Loading />;
 
