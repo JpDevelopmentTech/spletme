@@ -11,11 +11,13 @@ import {
   Wallet,
   Settings,
   Tag,
+  ChevronDown,
 } from "lucide-react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useState, useEffect } from "react";
 import LocalStorageService from "../../services/localstorage";
 import { AuthService } from "@/services/auth";
+import SwitchSubuserModal from "../modal/SwitchSubuserModal";
 
 interface UserData {
   username: string;
@@ -39,6 +41,7 @@ export default function Sidebar() {
   const { user } = useAuth0();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [userData, setUserData] = useState<UserData | null>(null);
+  const [showSwitchUserModal, setShowSwitchUserModal] = useState(false);
 
   useEffect(() => {
     const userFromStorage = LocalStorageService.getItem("user");
@@ -89,7 +92,9 @@ export default function Sidebar() {
       {/* Sidebar */}
       <div
         className={`fixed left-0 top-0 h-full z-30 w-[260px] flex flex-col transition-transform duration-300 ${
-          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          isMobileMenuOpen
+            ? "translate-x-0"
+            : "-translate-x-full lg:translate-x-0"
         }`}
         style={{ backgroundColor: "#0F172A", borderRight: "1px solid #1E293B" }}
       >
@@ -100,7 +105,12 @@ export default function Sidebar() {
         >
           <div
             className="flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
-            style={{ width: 36, height: 36, borderRadius: 9, backgroundColor: "#F97316" }}
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 9,
+              backgroundColor: "#F97316",
+            }}
           >
             S
           </div>
@@ -128,7 +138,9 @@ export default function Sidebar() {
                 }`
               }
               style={({ isActive }) => ({
-                backgroundColor: isActive ? "rgba(249,115,22,0.12)" : "transparent",
+                backgroundColor: isActive
+                  ? "rgba(249,115,22,0.12)"
+                  : "transparent",
                 color: isActive ? "#F97316" : "#94A3B8",
               })}
               onMouseEnter={(e) => {
@@ -168,7 +180,9 @@ export default function Sidebar() {
               }`
             }
             style={({ isActive }) => ({
-              backgroundColor: isActive ? "rgba(249,115,22,0.12)" : "transparent",
+              backgroundColor: isActive
+                ? "rgba(249,115,22,0.12)"
+                : "transparent",
               color: isActive ? "#F97316" : "#94A3B8",
             })}
             onMouseEnter={(e) => {
@@ -198,6 +212,37 @@ export default function Sidebar() {
           </NavLink>
         </nav>
 
+        {/* Account card - clickable */}
+        <button
+          onClick={() => setShowSwitchUserModal(true)}
+          className="flex gap-3 p-3 rounded-xl mx-3 mb-3 w-[calc(100%-24px)] transition-all hover:bg-opacity-80 group"
+          style={{
+            backgroundColor: "#1E293B",
+          }}
+        >
+          <div
+            className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+            style={{ backgroundColor: "#F97316" }}
+          >
+            <span className="text-xs font-semibold text-white">{initials}</span>
+          </div>
+          <div className="flex flex-col  gap-0.5 min-w-0">
+            <span
+              className="text-[13px] font-semibold"
+              style={{ color: "#F1F5F9" }}
+            >
+              {displayName}
+            </span>
+            <span className="text-[11px] truncate" style={{ color: "#64748B" }}>
+              {displayEmail}
+            </span>
+          </div>
+          <ChevronDown
+            className="w-4 h-4 flex-shrink-0 transition-transform group-hover:translate-y-0.5"
+            style={{ color: "#94A3B8" }}
+          />
+        </button>
+
         {/* Bottom section */}
         <div className="flex flex-col gap-2 p-3 flex-shrink-0">
           <button
@@ -205,43 +250,27 @@ export default function Sidebar() {
             className="flex items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-sm font-medium transition-colors"
             style={{ color: "#94A3B8" }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor = "rgba(239,68,68,0.1)";
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+                "rgba(239,68,68,0.1)";
               (e.currentTarget as HTMLButtonElement).style.color = "#F87171";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent";
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+                "transparent";
               (e.currentTarget as HTMLButtonElement).style.color = "#94A3B8";
             }}
           >
             <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
             <span>Cerrar sesión</span>
           </button>
-
-          {/* Account card */}
-          <div
-            className="flex items-center gap-3 p-3 rounded-xl"
-            style={{ backgroundColor: "#1E293B" }}
-          >
-            <div
-              className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
-              style={{ backgroundColor: "#F97316" }}
-            >
-              <span className="text-xs font-semibold text-white">{initials}</span>
-            </div>
-            <div className="flex flex-col gap-0.5 min-w-0">
-              <span
-                className="text-[13px] font-semibold truncate"
-                style={{ color: "#F1F5F9" }}
-              >
-                {displayName}
-              </span>
-              <span className="text-[11px] truncate" style={{ color: "#64748B" }}>
-                {displayEmail}
-              </span>
-            </div>
-          </div>
         </div>
       </div>
+      {/* Switch Subuser Modal */}
+      <SwitchSubuserModal
+        isOpen={showSwitchUserModal}
+        onClose={() => setShowSwitchUserModal(false)}
+        currentUserId={userData?.userId || ""}
+      />
     </>
   );
 }

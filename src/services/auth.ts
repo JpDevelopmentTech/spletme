@@ -7,8 +7,6 @@ export interface RegisterSubuserSchema {
   parentUserId: string;
   username: string;
   email: string;
-  password: string;
-  passwordConfirmation: string;
   name: string;
   lastName: string;
 }
@@ -63,6 +61,17 @@ export interface PlatformTourResponse {
 export interface UnlinkSubuserResponse {
   success: boolean;
   message: string;
+}
+
+export interface SwitchAccountResponse {
+  success: boolean;
+  message: string;
+  status: number;
+  data?: {
+    user?: Record<string, unknown>;
+    token?: string;
+    [key: string]: unknown;
+  };
 }
 
 const getMessageFromPayload = (payload: unknown, fallback: string): string => {
@@ -141,6 +150,90 @@ export const AuthService = {
       console.error("Error getting subusers by user:", error);
       return null;
     }
+  },
+
+  getlistOfSubusers: async () => {
+    try {
+      const endpoint = URI + "/list-subusers";
+      const response = await axios.get(endpoint, {
+        headers: getAuthHeaders(),
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error getting list of subusers:", error);
+      return null;
+    }
+  },
+
+  switchAccount: async (
+    targetUserId: string,
+  ): Promise<SwitchAccountResponse> => {
+    if (!targetUserId.trim()) {
+      return {
+        success: false,
+        message: "ID de usuario inválido",
+        status: 400,
+      };
+    }
+
+    try {
+      const endpoint = `${URI}/switch-account`;
+      const response = await axios.post(
+        endpoint,
+        { targetUserId },
+        {
+          headers: getAuthHeaders(),
+          validateStatus: (status) =>
+            (status >= 200 && status < 300) ||
+            status === 400 ||
+            status === 401 ||
+            status === 404 ||
+            status === 409 ||
+            status === 422,
+        },
+      );
+
+      if (response.status < 200 || response.status >= 300) {
+        return {
+          success: false,
+          message: getMessageFromPayload(
+            response.data,
+            "No se pudo cambiar de cuenta",
+          ),
+          status: response.status,
+        };
+      }
+
+      return {
+        success: true,
+        message: response.data?.message || "Account switched successfully",
+        status: response.status,
+        data: response.data?.data || response.data,
+      };
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        return {
+          success: false,
+          message: getMessageFromPayload(
+            error.response?.data,
+            "No se pudo cambiar de cuenta",
+          ),
+          status: error.response?.status || 500,
+        };
+      }
+
+      return {
+        success: false,
+        message: "No se pudo cambiar de cuenta",
+        status: 500,
+      };
+    }
+  },
+
+  switchSubuser: async (
+    subuserId: string,
+  ): Promise<SwitchAccountResponse> => {
+    return AuthService.switchAccount(subuserId);
   },
   
   unlinkSubuser: async (subuserId: string): Promise<UnlinkSubuserResponse> => {

@@ -49,7 +49,7 @@ const ProfilePage = () => {
         country: u.onboardingData?.country || null,
         address: u.onboardingData?.address || null,
         profession: u.onboardingData?.profession || null,
-
+        otherProfession: u.onboardingData?.otherProfession || null,
       },
     };
   });

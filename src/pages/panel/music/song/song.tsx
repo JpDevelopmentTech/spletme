@@ -1,5 +1,4 @@
-import React, { useMemo, useState } from "react";
-import { ApexOptions } from "apexcharts";
+import React, {  useState } from "react";
 import {
   DollarSign,
   Music,
