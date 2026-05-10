@@ -234,7 +234,8 @@ export default function AlbumOwnerSplitModal({
         return;
       }
 
-      // Inicializar el progreso
+      let localFailed = 0;
+
       setProgress({
         total: album.tracks.length,
         completed: 0,
@@ -242,11 +243,6 @@ export default function AlbumOwnerSplitModal({
         current: '',
         errors: [],
       });
-
-      console.log('=== CREATING BULK OWNER SPLITS FOR ALBUM ===');
-      console.log('Album:', album.albumTitle);
-      console.log('Total tracks:', album.tracks.length);
-      console.log('Conditions:', conditions);
 
       // Crear splits para cada canción del álbum
       for (let i = 0; i < album.tracks.length; i++) {
@@ -269,11 +265,7 @@ export default function AlbumOwnerSplitModal({
             ...prev,
             completed: prev.completed + 1,
           } : null);
-
-          console.log(`✓ Split created for: ${track.trackTitle}`);
         } catch (error: any) {
-          console.error(`✗ Failed to create split for: ${track.trackTitle}`, error);
-
           let errorMessage = 'Error desconocido';
           if (error.response?.data?.message) {
             errorMessage = error.response.data.message;
@@ -281,6 +273,7 @@ export default function AlbumOwnerSplitModal({
             errorMessage = error.message;
           }
 
+          localFailed++;
           setProgress(prev => prev ? {
             ...prev,
             failed: prev.failed + 1,
@@ -292,17 +285,11 @@ export default function AlbumOwnerSplitModal({
         }
       }
 
-      console.log('=== BULK CREATION COMPLETED ===');
       setShowResults(true);
 
-      // Auto-close modal after 3 seconds if all successful
-      if (progress && progress.failed === 0) {
+      if (localFailed === 0) {
         setAutoCloseCountdown(3);
-      } else {
-        // If there were failures, just call onSplitsCreated but keep modal open
-        if (onSplitsCreated) {
-          onSplitsCreated();
-        }
+        if (onSplitsCreated) onSplitsCreated();
       }
 
     } catch (error: any) {
