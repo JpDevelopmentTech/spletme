@@ -81,6 +81,24 @@ class AlbumService {
   }
 
   /**
+   * Get monthly streams + revenue metrics for an album
+   */
+  async getAlbumMonthlyMetrics(
+    upc: string,
+    months: number = 12
+  ): Promise<{ month: string; streams: number; revenue: number }[]> {
+    try {
+      if (!upc) return [];
+      const endpoint = `${this.URI}/albums/${encodeURIComponent(upc)}/monthly-metrics?months=${months}`;
+      const response = await axios.get(endpoint, { headers: this.getHeaders() });
+      return Array.isArray(response.data?.data) ? response.data.data : [];
+    } catch (error) {
+      console.error("Error getting album monthly metrics:", error);
+      return [];
+    }
+  }
+
+  /**
    * Get all albums (utility method for backward compatibility)
    * @returns Promise<Album[] | null>
    */

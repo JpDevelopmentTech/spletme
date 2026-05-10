@@ -6,6 +6,9 @@ export interface AlbumTrack {
   totalGrossIncome: number;
   totalNetIncome: number;
   releases?: any[]; // Optional, only included in detailed album view
+  split?: { conditions?: any[] } | null;
+  ownerId?: { split?: { conditions?: any[] } | null } | null;
+  collaborators?: { _id?: string; name?: string; image?: string }[];
 }
 
 export interface Album {

@@ -97,9 +97,6 @@ export default function AlbumOwnerSplitModal({
       }, 1000);
       return () => clearTimeout(timer);
     } else if (autoCloseCountdown === 0) {
-      if (onSplitsCreated) {
-        onSplitsCreated();
-      }
       closeWithReset();
     }
   }, [autoCloseCountdown]);
@@ -289,7 +286,6 @@ export default function AlbumOwnerSplitModal({
 
       if (localFailed === 0) {
         setAutoCloseCountdown(3);
-        if (onSplitsCreated) onSplitsCreated();
       }
 
     } catch (error: any) {
@@ -302,10 +298,12 @@ export default function AlbumOwnerSplitModal({
   };
 
   const closeWithReset = () => {
+    const shouldRefresh = progress !== null;
     setProgress(null);
     setShowResults(false);
     setAutoCloseCountdown(null);
     onClose();
+    if (shouldRefresh && onSplitsCreated) onSplitsCreated();
   };
 
   // Custom styles for react-select

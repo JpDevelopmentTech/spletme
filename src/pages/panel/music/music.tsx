@@ -65,7 +65,7 @@ export default function Music() {
     loading: albumsLoading,
     getAlbumByUPC,
     refreshAlbums,
-  } = useAlbums(page, limit);
+  } = useAlbums(0, 1000);
   const { customLabels } = useLabels();
 
   const handleFileSelect = async (file: File) => {
