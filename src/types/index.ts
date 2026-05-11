@@ -54,3 +54,13 @@ export type {
 } from "./collaborator.types";
 
 export type { TopSong } from "./song.types";
+
+export type {
+  MusicMode,
+  SortBy,
+  SplitFilter,
+  SongItem,
+  AlbumItem,
+  SongCollaborator,
+  SplitData,
+} from "./music.types";

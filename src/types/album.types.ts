@@ -10,6 +10,9 @@ export interface AlbumTrack {
   releases?: unknown[];
   split?: { conditions?: SplitCondition[] } | null;
   ownerId?: { split?: { conditions?: SplitCondition[] } | null } | null;
+  spotifyData?: {
+    album?: { images?: Array<{ url: string; width?: number; height?: number }> };
+  };
   collaborators?: { _id?: string; name?: string; image?: string }[];
 }
 
