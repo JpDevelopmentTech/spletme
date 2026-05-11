@@ -1,323 +1,177 @@
-import { useState } from "react";
-import ReactApexChart from "react-apexcharts";
-import { ApexOptions } from "apexcharts";
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import ReactApexChart from 'react-apexcharts';
+import { ApexOptions } from 'apexcharts';
 import {
-  Download,
-  SlidersHorizontal,
-  Search,
-  Check,
-  X,
-  MoreHorizontal,
-  TrendingUp,
-  Music,
-  DollarSign,
-  BarChart2,
-} from "lucide-react";
+  Plus, Upload, Search, TrendingUp, Music,
+  DollarSign, BarChart2, MoreHorizontal, ArrowRight,
+} from 'lucide-react';
+import type { Distributor, DistributorKpi } from '../../../types/distributor.types';
+import { distributorsService } from '../../../services/distributorsService';
+import CreateDistributorModal from '../../../components/ui/CreateDistributorModal';
+import UploadSongsModal from '../../../components/ui/UploadSongsModal';
 
-interface Collaborator {
-  initials: string;
-  bg: string;
-  color: string;
-}
-
-interface Dealer {
-  id: string;
-  initials: string;
-  avatarBg: string;
-  avatarColor: string;
-  name: string;
-  website: string;
-  songs: number;
-  performance: number;
-  collaborators: Collaborator[];
-  isOwner: boolean;
-  isInvited: boolean;
-  lastIncome: number;
-}
-
-interface PerformanceBar {
-  name: string;
-  percentage: number;
-  color: string;
-}
-
-const dealers: Dealer[] = [
-  {
-    id: "1",
-    initials: "SP",
-    avatarBg: "#DBEAFE",
-    avatarColor: "#1E40AF",
-    name: "Spotify Distribution",
-    website: "spotify.com",
-    songs: 42,
-    performance: 18.4,
-    collaborators: [
-      { initials: "A", bg: "#FED7AA", color: "#9A3412" },
-      { initials: "B", bg: "#D1FAE5", color: "#065F46" },
-      { initials: "C", bg: "#EDE9FE", color: "#5B21B6" },
-    ],
-    isOwner: true,
-    isInvited: false,
-    lastIncome: 8420,
-  },
-  {
-    id: "2",
-    initials: "AM",
-    avatarBg: "#FEE2E2",
-    avatarColor: "#991B1B",
-    name: "Apple Music Distribution",
-    website: "apple.com",
-    songs: 38,
-    performance: 15.1,
-    collaborators: [
-      { initials: "A", bg: "#FED7AA", color: "#9A3412" },
-      { initials: "B", bg: "#D1FAE5", color: "#065F46" },
-    ],
-    isOwner: true,
-    isInvited: true,
-    lastIncome: 6180,
-  },
-  {
-    id: "3",
-    initials: "TT",
-    avatarBg: "#FEF3C7",
-    avatarColor: "#92400E",
-    name: "TikTok for Artists",
-    website: "tiktok.com",
-    songs: 25,
-    performance: 9.8,
-    collaborators: [{ initials: "D", bg: "#FCE7F3", color: "#9D174D" }],
-    isOwner: false,
-    isInvited: true,
-    lastIncome: 4920,
-  },
-  {
-    id: "4",
-    initials: "YT",
-    avatarBg: "#FEE2E2",
-    avatarColor: "#991B1B",
-    name: "YouTube Music",
-    website: "youtube.com",
-    songs: 31,
-    performance: 7.2,
-    collaborators: [
-      { initials: "A", bg: "#FED7AA", color: "#9A3412" },
-      { initials: "E", bg: "#DBEAFE", color: "#1E40AF" },
-      { initials: "F", bg: "#D1FAE5", color: "#065F46" },
-      { initials: "G", bg: "#EDE9FE", color: "#5B21B6" },
-    ],
-    isOwner: true,
-    isInvited: false,
-    lastIncome: 3240,
-  },
-  {
-    id: "5",
-    initials: "AZ",
-    avatarBg: "#D1FAE5",
-    avatarColor: "#065F46",
-    name: "Amazon Music",
-    website: "amazon.com",
-    songs: 19,
-    performance: 5.1,
-    collaborators: [
-      { initials: "B", bg: "#D1FAE5", color: "#065F46" },
-      { initials: "C", bg: "#EDE9FE", color: "#5B21B6" },
-    ],
-    isOwner: false,
-    isInvited: true,
-    lastIncome: 1560,
-  },
-  {
-    id: "6",
-    initials: "DZ",
-    avatarBg: "#F3F4F6",
-    avatarColor: "#374151",
-    name: "Deezer",
-    website: "deezer.com",
-    songs: 14,
-    performance: 3.4,
-    collaborators: [{ initials: "A", bg: "#FED7AA", color: "#9A3412" }],
-    isOwner: true,
-    isInvited: true,
-    lastIncome: 500,
-  },
+const AVATAR_PALETTES = [
+  { bg: '#DBEAFE', color: '#1E40AF' },
+  { bg: '#FEE2E2', color: '#991B1B' },
+  { bg: '#FEF3C7', color: '#92400E' },
+  { bg: '#D1FAE5', color: '#065F46' },
+  { bg: '#EDE9FE', color: '#5B21B6' },
+  { bg: '#FCE7F3', color: '#9D174D' },
 ];
 
-const performanceBars: PerformanceBar[] = [
-  { name: "Spotify Distribution", percentage: 18.4, color: "#2563EB" },
-  { name: "Apple Music Distribution", percentage: 15.1, color: "#EF4444" },
-  { name: "TikTok for Artists", percentage: 9.8, color: "#F59E0B" },
-  { name: "YouTube Music", percentage: 7.2, color: "#EF4444" },
-  { name: "Amazon Music", percentage: 5.1, color: "#22C55E" },
-  { name: "Deezer", percentage: 3.4, color: "#9CA3AF" },
-];
+function palette(index: number) {
+  return AVATAR_PALETTES[index % AVATAR_PALETTES.length];
+}
 
-const chartSeries = [
-  {
-    name: "Spotify",
-    data: [8420, 9200, 7800, 9800, 9400, 8800],
-  },
-  {
-    name: "Apple",
-    data: [6180, 7400, 5900, 8100, 7600, 7200],
-  },
-  {
-    name: "TikTok",
-    data: [4920, 5400, 3900, 6200, 5800, 5200],
-  },
-];
+function fmt(n: number, currency = 'USD') {
+  const s = currency === 'EUR' ? '€' : '$';
+  if (n >= 1_000_000) return `${s}${(n / 1_000_000).toFixed(2)}M`;
+  if (n >= 1_000) return `${s}${(n / 1_000).toFixed(1)}K`;
+  return `${s}${n.toFixed(2)}`;
+}
 
-const chartOptions: ApexOptions = {
-  chart: {
-    type: "bar",
-    toolbar: { show: false },
-    background: "transparent",
-  },
-  plotOptions: {
-    bar: {
-      horizontal: false,
-      columnWidth: "65%",
-      borderRadius: 4,
-      borderRadiusApplication: "end",
-    },
-  },
-  dataLabels: { enabled: false },
-  colors: ["#2563EB", "#EF4444", "#F59E0B"],
-  stroke: { show: false },
-  xaxis: {
-    categories: ["Ene", "Feb", "Mar", "Abr", "May", "Jun"],
-    labels: { style: { fontSize: "11px", colors: "#9CA3AF" } },
-    axisBorder: { show: false },
-    axisTicks: { show: false },
-  },
-  yaxis: {
-    labels: {
-      style: { colors: "#9CA3AF", fontSize: "11px" },
-      formatter: (val: number) => {
-        if (val >= 1000) return `$${(val / 1000).toFixed(0)}K`;
-        return `$${val}`;
-      },
-    },
-  },
-  grid: {
-    borderColor: "#F3F4F6",
-    yaxis: { lines: { show: true } },
-    xaxis: { lines: { show: false } },
-  },
-  legend: {
-    position: "top",
-    horizontalAlign: "right",
-    fontSize: "11px",
-    labels: { colors: "#6B7280" },
-    markers: { size: 6 },
-    itemMargin: { horizontal: 10 },
-  },
-  tooltip: {
-    theme: "light",
-    y: { formatter: (val: number) => `$${val.toLocaleString("en-US")}` },
-  },
-  fill: { opacity: 1 },
-};
-
-const formatCurrency = (value: number) =>
-  `$${value.toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-
-const totalSongs = dealers.reduce((sum, d) => sum + d.songs, 0);
-const totalIncome = dealers.reduce((sum, d) => sum + d.lastIncome, 0);
-const avgPerformance =
-  dealers.reduce((sum, d) => sum + d.performance, 0) / dealers.length;
-const maxPerformance = Math.max(...performanceBars.map((p) => p.percentage));
+function fmtStreams(n: number) {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K`;
+  return String(n);
+}
 
 export default function Dealers() {
-  const [search, setSearch] = useState("");
+  const navigate = useNavigate();
+  const [distributors, setDistributors] = useState<Distributor[]>([]);
+  const [kpis, setKpis] = useState<DistributorKpi[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [showCreate, setShowCreate] = useState(false);
+  const [uploadTarget, setUploadTarget] = useState<Distributor | null>(null);
 
-  const filtered = dealers.filter(
-    (d) =>
-      d.name.toLowerCase().includes(search.toLowerCase()) ||
-      d.website.toLowerCase().includes(search.toLowerCase())
+  async function load() {
+    setLoading(true);
+    try {
+      const [list, kpiList] = await Promise.all([
+        distributorsService.getAll(),
+        distributorsService.getKpis(),
+      ]);
+      setDistributors(list);
+      setKpis(kpiList);
+    } catch {
+      setDistributors([]);
+      setKpis([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { load(); }, []);
+
+  const filtered = distributors.filter((d) =>
+    d.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  const totalIncome = kpis.reduce((s, k) => s + k.totalNetIncome, 0);
+  const totalStreams = kpis.reduce((s, k) => s + k.totalStreams, 0);
+  const totalSongs = kpis.reduce((s, k) => s + k.songsCount, 0);
+
+  // KPI comparison bar chart
+  const kpiChartOptions: ApexOptions = {
+    chart: { type: 'bar', toolbar: { show: false }, background: 'transparent' },
+    plotOptions: { bar: { horizontal: true, barHeight: '60%', borderRadius: 4, borderRadiusApplication: 'end' } },
+    dataLabels: { enabled: false },
+    colors: ['#F97316'],
+    xaxis: {
+      labels: {
+        style: { colors: '#9CA3AF', fontSize: '11px' },
+        formatter: (v: string) => {
+          const n = Number(v);
+          return n >= 1000 ? `$${(n / 1000).toFixed(0)}K` : `$${n}`;
+        },
+      },
+      axisBorder: { show: false }, axisTicks: { show: false },
+    },
+    yaxis: { labels: { style: { colors: '#9CA3AF', fontSize: '11px' } } },
+    grid: { borderColor: '#F3F4F6', xaxis: { lines: { show: true } }, yaxis: { lines: { show: false } } },
+    tooltip: { theme: 'light', y: { formatter: (v: number) => fmt(v) } },
+  };
 
   return (
     <div className="min-h-screen bg-[#F7F8FA]">
+      {showCreate && (
+        <CreateDistributorModal
+          onClose={() => setShowCreate(false)}
+          onConfirm={async (payload) => {
+            await distributorsService.create(payload);
+            await load();
+          }}
+        />
+      )}
+
+      {uploadTarget && (
+        <UploadSongsModal
+          distributorName={uploadTarget.name}
+          onClose={() => setUploadTarget(null)}
+          onConfirm={async (file, quarter, year) => {
+            await distributorsService.uploadSongs(uploadTarget._id, file, quarter, year);
+            setUploadTarget(null);
+            await load();
+          }}
+        />
+      )}
+
       <div className="px-6 lg:px-10 py-8 flex flex-col gap-6">
         {/* Header */}
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex flex-col gap-1">
             <h1 className="text-2xl font-bold text-[#111827]">Distribuidores</h1>
-            <p className="text-sm text-[#6B7280]">
-              Gestiona y analiza el rendimiento de tus distribuidores
-            </p>
+            <p className="text-sm text-[#6B7280]">Gestiona y analiza el rendimiento de tus distribuidores</p>
             <div className="w-10 h-0.5 rounded-full bg-[#F97316] mt-1" />
           </div>
-          <div className="flex items-center gap-2">
-            <button className="flex items-center gap-1.5 px-4 h-9 bg-white border border-gray-200 text-[#6B7280] text-[12px] font-medium rounded-lg hover:bg-gray-50 transition-colors">
-              <Download className="w-3.5 h-3.5" />
-              Descargar
-            </button>
-            <button className="flex items-center gap-1.5 px-4 h-9 bg-white border border-gray-200 text-[#6B7280] text-[12px] font-medium rounded-lg hover:bg-gray-50 transition-colors">
-              <SlidersHorizontal className="w-3.5 h-3.5" />
-              Filtrar
-            </button>
-          </div>
+          <button
+            onClick={() => setShowCreate(true)}
+            className="flex items-center gap-2 px-4 h-9 bg-[#F97316] text-white text-sm font-semibold rounded-lg hover:bg-orange-600 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Nuevo distribuidor
+          </button>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-[#6B7280]">Total Distribuidores</span>
-              <div className="w-7 h-7 bg-orange-50 rounded-md flex items-center justify-center">
-                <TrendingUp className="w-3.5 h-3.5 text-[#F97316]" />
+        {/* Global stats */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { label: 'Total Distribuidores', value: String(distributors.length), sub: `${kpis.reduce((s, k) => s + k.uploadCount, 0)} cargas totales`, icon: TrendingUp, iconBg: 'bg-orange-50', iconColor: 'text-[#F97316]', valueColor: 'text-[#111827]' },
+            { label: 'Canciones Totales', value: String(totalSongs), sub: 'En todos los distribuidores', icon: Music, iconBg: 'bg-blue-50', iconColor: 'text-blue-600', valueColor: 'text-[#111827]' },
+            { label: 'Ingresos Totales', value: fmt(totalIncome), sub: 'Suma de ingresos netos', icon: DollarSign, iconBg: 'bg-green-50', iconColor: 'text-green-600', valueColor: 'text-green-500' },
+            { label: 'Streams Totales', value: fmtStreams(totalStreams), sub: 'Reproducciones acumuladas', icon: BarChart2, iconBg: 'bg-purple-50', iconColor: 'text-purple-600', valueColor: 'text-[#111827]' },
+          ].map(({ label, value, sub, icon: Icon, iconBg, iconColor, valueColor }) => (
+            <div key={label} className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-[#6B7280]">{label}</span>
+                <div className={`w-7 h-7 ${iconBg} rounded-md flex items-center justify-center`}>
+                  <Icon className={`w-3.5 h-3.5 ${iconColor}`} />
+                </div>
               </div>
+              <p className={`text-[26px] font-bold leading-none ${valueColor}`}>{value}</p>
+              <span className="text-[11px] font-medium text-[#9CA3AF]">{sub}</span>
             </div>
-            <p className="text-[26px] font-bold text-[#111827] leading-none">{dealers.length}</p>
-            <span className="text-[11px] font-medium text-green-500">+2 este mes</span>
-          </div>
-
-          <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-[#6B7280]">Canciones Activas</span>
-              <div className="w-7 h-7 bg-blue-50 rounded-md flex items-center justify-center">
-                <Music className="w-3.5 h-3.5 text-blue-600" />
-              </div>
-            </div>
-            <p className="text-[26px] font-bold text-[#111827] leading-none">{totalSongs}</p>
-            <span className="text-[11px] font-medium text-[#9CA3AF]">En todos los distribuidores</span>
-          </div>
-
-          <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-[#6B7280]">Ingresos Totales</span>
-              <div className="w-7 h-7 bg-green-50 rounded-md flex items-center justify-center">
-                <DollarSign className="w-3.5 h-3.5 text-green-600" />
-              </div>
-            </div>
-            <p className="text-[26px] font-bold text-green-500 leading-none">
-              ${(totalIncome / 1000).toFixed(1)}K
-            </p>
-            <span className="text-[11px] font-medium text-[#9CA3AF]">Último periodo</span>
-          </div>
-
-          <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-[#6B7280]">Rendimiento Promedio</span>
-              <div className="w-7 h-7 bg-purple-50 rounded-md flex items-center justify-center">
-                <BarChart2 className="w-3.5 h-3.5 text-purple-600" />
-              </div>
-            </div>
-            <p className="text-[26px] font-bold text-[#111827] leading-none">
-              {avgPerformance.toFixed(1)}%
-            </p>
-            <span className="text-[11px] font-medium text-green-500">↑ 3.2% vs mes anterior</span>
-          </div>
+          ))}
         </div>
 
-        {/* Table */}
+        {/* KPI comparison chart */}
+        {kpis.length > 0 && (
+          <div className="bg-white border border-gray-200 rounded-xl p-6">
+            <h2 className="text-sm font-semibold text-[#111827]">KPIs Comparativos</h2>
+            <p className="text-xs text-[#6B7280] mt-0.5 mb-4">Ingresos netos por distribuidor</p>
+            <ReactApexChart
+              options={{ ...kpiChartOptions, xaxis: { ...kpiChartOptions.xaxis, categories: kpis.map((k) => k.name) } }}
+              series={[{ name: 'Ingresos Netos', data: kpis.map((k) => k.totalNetIncome) }]}
+              type="bar"
+              height={Math.max(120, kpis.length * 44)}
+            />
+          </div>
+        )}
+
+        {/* Distributors table */}
         <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-          {/* Toolbar */}
           <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-gray-100">
             <div className="flex items-center gap-2.5">
               <span className="text-sm font-semibold text-[#111827]">Listado de Distribuidores</span>
@@ -337,247 +191,117 @@ export default function Dealers() {
             </div>
           </div>
 
-          {/* Table */}
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-[#FAFAFA] border-b border-gray-100">
-                  <th className="w-10 px-4 py-3">
-                    <input
-                      type="checkbox"
-                      className="w-4 h-4 rounded border-gray-300 accent-[#F97316]"
-                    />
-                  </th>
-                  <th className="text-left px-4 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">
-                    Distribuidor
-                  </th>
-                  <th className="text-center px-4 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider w-[120px]">
-                    Canciones
-                  </th>
-                  <th className="text-center px-4 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider w-[130px]">
-                    Rendimiento
-                  </th>
-                  <th className="text-center px-4 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider w-[160px]">
-                    Colaboradores
-                  </th>
-                  <th className="text-center px-4 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider w-[100px]">
-                    Propietario
-                  </th>
-                  <th className="text-center px-4 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider w-[90px]">
-                    Invitado
-                  </th>
-                  <th className="text-center px-4 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider w-[130px]">
-                    Últ. Ingreso
-                  </th>
-                  <th className="w-[50px]" />
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((dealer) => (
-                  <tr
-                    key={dealer.id}
-                    className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors"
+            {loading ? (
+              <div className="flex items-center justify-center h-40 text-sm text-[#9CA3AF]">
+                Cargando distribuidores...
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-40 gap-3">
+                <p className="text-sm text-[#9CA3AF]">
+                  {distributors.length === 0 ? 'Aún no tienes distribuidores' : 'Sin resultados'}
+                </p>
+                {distributors.length === 0 && (
+                  <button
+                    onClick={() => setShowCreate(true)}
+                    className="flex items-center gap-1.5 text-sm text-[#F97316] font-medium hover:underline"
                   >
-                    <td className="px-4 py-4 w-10">
-                      <input
-                        type="checkbox"
-                        className="w-4 h-4 rounded border-gray-300 accent-[#F97316]"
-                      />
-                    </td>
-
-                    {/* Name */}
-                    <td className="px-4 py-4">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
-                          style={{ backgroundColor: dealer.avatarBg }}
-                        >
-                          <span
-                            className="text-[12px] font-bold"
-                            style={{ color: dealer.avatarColor }}
-                          >
-                            {dealer.initials}
-                          </span>
-                        </div>
-                        <div className="flex flex-col gap-0.5">
-                          <span className="text-[13px] font-semibold text-[#111827]">
-                            {dealer.name}
-                          </span>
-                          <span className="text-[11px] text-[#9CA3AF]">{dealer.website}</span>
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* Songs */}
-                    <td className="px-4 py-4 text-center">
-                      <span className="inline-flex items-center px-2.5 py-1 bg-blue-50 text-blue-700 text-[11px] font-bold rounded-full">
-                        {dealer.songs}
-                      </span>
-                    </td>
-
-                    {/* Performance */}
-                    <td className="px-4 py-4 text-center">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-1 text-[11px] font-bold rounded-full ${
-                          dealer.performance >= 10
-                            ? "bg-green-50 text-green-700"
-                            : dealer.performance >= 6
-                            ? "bg-amber-50 text-amber-700"
-                            : "bg-gray-100 text-gray-500"
-                        }`}
-                      >
-                        {dealer.performance}%
-                      </span>
-                    </td>
-
-                    {/* Collaborators */}
-                    <td className="px-4 py-4">
-                      <div className="flex items-center justify-center">
-                        <div className="flex -space-x-2">
-                          {dealer.collaborators.slice(0, 4).map((c, idx) => (
-                            <div
-                              key={idx}
-                              className="w-7 h-7 rounded-full border-2 border-white flex items-center justify-center flex-shrink-0"
-                              style={{ backgroundColor: c.bg }}
-                            >
-                              <span
-                                className="text-[10px] font-bold"
-                                style={{ color: c.color }}
-                              >
-                                {c.initials}
-                              </span>
-                            </div>
-                          ))}
-                          {dealer.collaborators.length > 4 && (
-                            <div className="w-7 h-7 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center">
-                              <span className="text-[9px] font-semibold text-gray-500">
-                                +{dealer.collaborators.length - 4}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* Owner */}
-                    <td className="px-4 py-4 text-center">
-                      <div className="flex items-center justify-center">
-                        <div
-                          className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                            dealer.isOwner ? "bg-green-50" : "bg-red-50"
-                          }`}
-                        >
-                          {dealer.isOwner ? (
-                            <Check className="w-3.5 h-3.5 text-green-600" />
-                          ) : (
-                            <X className="w-3.5 h-3.5 text-red-500" />
-                          )}
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* Invited */}
-                    <td className="px-4 py-4 text-center">
-                      <div className="flex items-center justify-center">
-                        <div
-                          className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                            dealer.isInvited ? "bg-green-50" : "bg-red-50"
-                          }`}
-                        >
-                          {dealer.isInvited ? (
-                            <Check className="w-3.5 h-3.5 text-green-600" />
-                          ) : (
-                            <X className="w-3.5 h-3.5 text-red-500" />
-                          )}
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* Last Income */}
-                    <td className="px-4 py-4 text-center">
-                      <span className="text-[13px] font-semibold text-green-500">
-                        {formatCurrency(dealer.lastIncome)}
-                      </span>
-                    </td>
-
-                    <td className="px-3 py-4 text-center">
-                      <button className="text-[#9CA3AF] hover:text-[#6B7280] transition-colors">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </button>
-                    </td>
+                    <Plus className="w-3.5 h-3.5" /> Crear primer distribuidor
+                  </button>
+                )}
+              </div>
+            ) : (
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-[#FAFAFA] border-b border-gray-100">
+                    <th className="text-left px-4 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">Distribuidor</th>
+                    <th className="text-center px-4 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">Moneda</th>
+                    <th className="text-center px-4 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">Canciones</th>
+                    <th className="text-center px-4 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">Streams</th>
+                    <th className="text-center px-4 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">Ingresos</th>
+                    <th className="text-center px-4 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">Cargas</th>
+                    <th className="w-[80px]" />
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Bottom charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Bar chart — Ingresos */}
-          <div className="bg-white border border-gray-200 rounded-xl p-6 flex flex-col gap-4">
-            <div>
-              <h2 className="text-sm font-semibold text-[#111827]">
-                Ingresos por Distribuidor
-              </h2>
-              <p className="text-xs text-[#6B7280] mt-0.5">
-                Comparativa de ingresos netos enero–junio
-              </p>
-            </div>
-            <ReactApexChart
-              options={chartOptions}
-              series={chartSeries}
-              type="bar"
-              height={280}
-            />
-          </div>
-
-          {/* Progress bars — Rendimiento */}
-          <div className="bg-white border border-gray-200 rounded-xl p-6 flex flex-col gap-5">
-            <div>
-              <h2 className="text-sm font-semibold text-[#111827]">
-                Rendimiento por Distribuidor
-              </h2>
-              <p className="text-xs text-[#6B7280] mt-0.5">
-                Porcentaje de rendimiento acumulado por plataforma
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-4 flex-1">
-              {performanceBars.map((bar) => (
-                <div key={bar.name} className="flex flex-col gap-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[12px] font-semibold text-[#111827] truncate max-w-[220px]">
-                      {bar.name}
-                    </span>
-                    <span
-                      className="text-[12px] font-bold ml-2 flex-shrink-0"
-                      style={{ color: bar.color }}
-                    >
-                      {bar.percentage}%
-                    </span>
-                  </div>
-                  <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all duration-500"
-                      style={{
-                        width: `${(bar.percentage / maxPerformance) * 100}%`,
-                        backgroundColor: bar.color,
-                      }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-              <span className="text-xs text-[#6B7280]">
-                Rendimiento total acumulado
-              </span>
-              <span className="text-xs font-bold text-[#111827]">
-                {avgPerformance.toFixed(1)}% promedio
-              </span>
-            </div>
+                </thead>
+                <tbody>
+                  {filtered.map((d, i) => {
+                    const kpi = kpis.find((k) => k.distributorId === d._id);
+                    const pal = palette(i);
+                    const initials = d.name.slice(0, 2).toUpperCase();
+                    return (
+                      <tr
+                        key={d._id}
+                        className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors cursor-pointer"
+                        onClick={() => navigate(`/panel/dealers/${d._id}`)}
+                      >
+                        <td className="px-4 py-4">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+                              style={{ backgroundColor: pal.bg }}
+                            >
+                              <span className="text-[12px] font-bold" style={{ color: pal.color }}>
+                                {initials}
+                              </span>
+                            </div>
+                            <span className="text-[13px] font-semibold text-[#111827]">{d.name}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-4 text-center">
+                          <span className={`px-2 py-0.5 text-[11px] font-bold rounded-full ${
+                            d.currency === 'USD' ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'
+                          }`}>
+                            {d.currency}
+                          </span>
+                        </td>
+                        <td className="px-4 py-4 text-center">
+                          <span className="text-[13px] font-medium text-[#111827]">
+                            {kpi?.songsCount ?? 0}
+                          </span>
+                        </td>
+                        <td className="px-4 py-4 text-center text-[12px] text-[#6B7280]">
+                          {fmtStreams(kpi?.totalStreams ?? 0)}
+                        </td>
+                        <td className="px-4 py-4 text-center">
+                          <span className="text-[13px] font-semibold text-green-500">
+                            {fmt(kpi?.totalNetIncome ?? 0, d.currency)}
+                          </span>
+                        </td>
+                        <td className="px-4 py-4 text-center">
+                          <span className="inline-flex items-center px-2.5 py-1 bg-orange-50 text-[#F97316] text-[11px] font-bold rounded-full">
+                            {kpi?.uploadCount ?? 0}
+                          </span>
+                        </td>
+                        <td className="px-3 py-4">
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setUploadTarget(d); }}
+                              className="p-1.5 rounded-md hover:bg-orange-50 text-[#9CA3AF] hover:text-[#F97316] transition-colors"
+                              title="Subir canciones"
+                            >
+                              <Upload className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); navigate(`/panel/dealers/${d._id}`); }}
+                              className="p-1.5 rounded-md hover:bg-gray-100 text-[#9CA3AF] hover:text-[#111827] transition-colors"
+                              title="Ver detalle"
+                            >
+                              <ArrowRight className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={(e) => e.stopPropagation()}
+                              className="p-1.5 rounded-md hover:bg-gray-100 text-[#9CA3AF] hover:text-[#6B7280] transition-colors"
+                            >
+                              <MoreHorizontal className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
       </div>

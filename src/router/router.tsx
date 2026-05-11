@@ -26,6 +26,7 @@ import LabelDetail from "../pages/panel/labels/labelDetail";
 import CustomLabelDetail from "../pages/panel/labels/customLabelDetail";
 import ChangePasswordPage from "@/pages/panel/profile/change-password";
 import Analytics from "../pages/panel/analytics/analytics";
+import DistributorDetail from "../pages/panel/dealers/DistributorDetail";
 
 const routes = [
   {
@@ -104,6 +105,10 @@ const routes = [
       {
         path: "dealers",
         element: <Dealers />,
+      },
+      {
+        path: "dealers/:id",
+        element: <DistributorDetail />,
       },
       {
         path: "collaborators/:id",
