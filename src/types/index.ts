@@ -52,3 +52,5 @@ export type {
   Collaborator,
   CollaboratorPayment,
 } from "./collaborator.types";
+
+export type { TopSong } from "./song.types";

@@ -1,14 +1,5 @@
 import type { CollaboratorStatus, CollaboratorPayment } from "@/types";
-
-/** Formatea un número como moneda con 2 decimales: $1,234.56 */
-export const formatCurrency = (value: number) =>
-  `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
-/** Formatea un número de forma compacta: $1.2K */
-export const formatCompactCurrency = (value: number) => {
-  if (value >= 1000) return `$${(value / 1000).toFixed(1)}K`;
-  return `$${value.toFixed(0)}`;
-};
+export { formatCurrency, formatCompactCurrency } from "@/utils/format.utils";
 
 interface BadgeStyle {
   bg: string;
