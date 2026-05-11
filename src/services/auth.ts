@@ -1,78 +1,24 @@
 import axios from "axios";
-import type { RegisterSchema } from "../models/user";
+import type {
+  RegisterSchema,
+  RegisterSubuserSchema,
+  UpdateUserSchema,
+  UpdateProfileInfoSchema,
+} from "../types";
+import type {
+  PasswordRecoveryResponse,
+  CodeVerificationResponse,
+  ResetPasswordResponse,
+  ChangePasswordResponse,
+  PlatformTourResponse,
+  UnlinkSubuserResponse,
+  SwitchAccountResponse,
+} from "../types";
+
+export type { UpdateUserSchema, UpdateProfileInfoSchema, RegisterSubuserSchema };
+export type { SwitchAccountResponse, UnlinkSubuserResponse };
 
 const URI = import.meta.env.VITE_URL_API + "/api/v1/users";
-
-export interface RegisterSubuserSchema {
-  parentUserId: string;
-  username: string;
-  email: string;
-  name: string;
-  lastName: string;
-}
-
-export interface UpdateUserSchema {
-  userId: string;
-  username: string;
-  email: string;
-  name: string;
-  lastName: string;
-}
-
-export interface UpdateProfileInfoSchema {
-  country?: string | null;
-  profession?: string | null;
-  address?: string | null;
-}
-
-export type updateSubuserSchema = UpdateUserSchema;
-
-export interface PasswordRecoveryResponse {
-  success: boolean;
-  message: string;
-  status: number;
-}
-
-export interface CodeVerificationResponse {
-  success: boolean;
-  message: string;
-  status: number;
-  token?: string;
-}
-
-export interface ResetPasswordResponse {
-  success: boolean;
-  message: string;
-  status: number;
-}
-
-export interface ChangePasswordResponse {
-  success: boolean;
-  message: string;
-  status: number;
-}
-
-export interface PlatformTourResponse {
-  success: boolean;
-  message: string;
-  status: number;
-}
-
-export interface UnlinkSubuserResponse {
-  success: boolean;
-  message: string;
-}
-
-export interface SwitchAccountResponse {
-  success: boolean;
-  message: string;
-  status: number;
-  data?: {
-    user?: Record<string, unknown>;
-    token?: string;
-    [key: string]: unknown;
-  };
-}
 
 const getMessageFromPayload = (payload: unknown, fallback: string): string => {
   if (
