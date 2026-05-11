@@ -13,12 +13,24 @@ import {
   ChevronUp,
   ChevronDown,
   Search,
+  Users,
+  Check,
+  Minus,
 } from "lucide-react";
 import { useAlbums } from "../../../../hooks/useAlbums";
 import Loading from "../../../../components/loading/loading";
 import type { Album, AlbumTrack } from "../../../../models/album";
 import AlbumOwnerSplitModal from "./components/AlbumOwnerSplitModal";
 import { useMemo } from "react";
+import ReactApexChart from "react-apexcharts";
+import { ApexOptions } from "apexcharts";
+import AlbumService from "../../../../services/albums";
+
+interface MonthlyMetric {
+  month: string;
+  streams: number;
+  revenue: number;
+}
 
 type SortField = "title" | "streams" | "revenue";
 type SortDir = "asc" | "desc";
@@ -35,6 +47,8 @@ export default function AlbumDetail() {
   const [search, setSearch] = useState("");
   const [sortField, setSortField] = useState<SortField>("streams");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [monthlyMetrics, setMonthlyMetrics] = useState<MonthlyMetric[]>([]);
+  const [metricsLoading, setMetricsLoading] = useState(false);
 
   const loadAlbum = useCallback(async () => {
     if (!upc) return;
@@ -57,6 +71,14 @@ export default function AlbumDetail() {
   useEffect(() => {
     if (upc) loadAlbum();
   }, [upc, loadAlbum]);
+
+  useEffect(() => {
+    if (!upc) return;
+    setMetricsLoading(true);
+    AlbumService.getAlbumMonthlyMetrics(upc, 12)
+      .then((data) => setMonthlyMetrics(data))
+      .finally(() => setMetricsLoading(false));
+  }, [upc]);
 
   const formatCurrency = (amount: number) =>
     `$${amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -101,6 +123,116 @@ export default function AlbumDetail() {
 
     return filtered;
   }, [album, search, sortField, sortDir]);
+
+  const hasOwnerSplit = (track: AlbumTrack) => {
+    const conditions = track?.ownerId?.split?.conditions;
+    if (Array.isArray(conditions)) return conditions.length > 0;
+    return Boolean(track?.ownerId?.split);
+  };
+
+  const hasCollaboratorSplit = (track: AlbumTrack) => {
+    const conditions = track?.split?.conditions;
+    if (Array.isArray(conditions)) return conditions.length > 0;
+    return Boolean(track?.split);
+  };
+
+  const collaboratorsCount = (track: AlbumTrack) =>
+    Array.isArray(track?.collaborators) ? track.collaborators.length : 0;
+
+  const chartCategories = useMemo(
+    () =>
+      monthlyMetrics.map((m) => {
+        const [year, month] = m.month.split("-");
+        return new Date(Number(year), Number(month) - 1, 1).toISOString();
+      }),
+    [monthlyMetrics]
+  );
+
+  const chartSeries = useMemo(
+    () => [
+      {
+        name: "Streams",
+        type: "area",
+        data: monthlyMetrics.map((m) => m.streams),
+      },
+      {
+        name: "Ingresos",
+        type: "area",
+        data: monthlyMetrics.map((m) => m.revenue),
+      },
+    ],
+    [monthlyMetrics]
+  );
+
+  const chartOptions: ApexOptions = {
+    chart: { toolbar: { show: false }, background: "transparent" },
+    stroke: { width: [2, 2], curve: "smooth" },
+    fill: {
+      type: "gradient",
+      gradient: {
+        shadeIntensity: 1,
+        opacityFrom: 0.35,
+        opacityTo: 0.02,
+        stops: [0, 90, 100],
+      },
+    },
+    markers: { size: [0, 0] },
+    dataLabels: { enabled: false },
+    colors: ["#111827", "#22C55E"],
+    grid: {
+      borderColor: "#F3F4F6",
+      strokeDashArray: 0,
+      xaxis: { lines: { show: false } },
+      yaxis: { lines: { show: true } },
+    },
+    xaxis: {
+      type: "datetime",
+      categories: chartCategories,
+      labels: {
+        style: { fontSize: "11px", colors: "#9CA3AF" },
+        datetimeFormatter: { month: "MMM" },
+      },
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+    },
+    yaxis: [
+      {
+        seriesName: "Streams",
+        labels: {
+          style: { colors: "#9CA3AF", fontSize: "11px" },
+          formatter: (val: number) => {
+            if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M`;
+            if (val >= 1_000) return `${(val / 1_000).toFixed(1)}K`;
+            return String(Math.round(val));
+          },
+        },
+      },
+      {
+        seriesName: "Ingresos",
+        opposite: true,
+        labels: {
+          style: { colors: "#22C55E", fontSize: "11px" },
+          formatter: (val: number) => `$${val.toFixed(2)}`,
+        },
+      },
+    ],
+    tooltip: {
+      x: { format: "MMM yyyy" },
+      theme: "light",
+      style: { fontSize: "12px" },
+      y: [
+        {
+          formatter: (val: number) => {
+            if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M streams`;
+            if (val >= 1_000) return `${(val / 1_000).toFixed(1)}K streams`;
+            return `${Math.round(val)} streams`;
+          },
+        },
+        { formatter: (val: number) => `$${val.toFixed(2)}` },
+      ],
+    },
+    legend: { show: false },
+  };
 
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) return <ArrowUpDown className="w-3.5 h-3.5 text-gray-300" />;
@@ -254,6 +386,46 @@ export default function AlbumDetail() {
         </div>
       </div>
 
+      {/* Performance Chart */}
+      <div className="bg-white border border-gray-200 rounded-xl p-6 flex flex-col gap-5">
+        <div className="flex items-start sm:items-center justify-between flex-col sm:flex-row gap-2">
+          <div className="flex flex-col gap-0.5">
+            <h2 className="text-base font-semibold text-gray-900">Rendimiento del álbum</h2>
+            <p className="text-xs text-gray-400">Streams e ingresos por mes</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 bg-gray-900 rounded-sm" />
+              <span className="text-[11px] text-gray-500">Streams</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 bg-green-500 rounded-sm" />
+              <span className="text-[11px] text-gray-500">Ingresos</span>
+            </div>
+          </div>
+        </div>
+
+        {metricsLoading ? (
+          <div className="h-[280px] flex items-center justify-center text-sm text-gray-400">
+            Cargando métricas...
+          </div>
+        ) : monthlyMetrics.length === 0 ? (
+          <div className="h-[280px] flex items-center justify-center text-sm text-gray-400">
+            Aún no hay datos mensuales para este álbum.
+          </div>
+        ) : (
+          <div className="h-[280px]">
+            <ReactApexChart
+              options={chartOptions}
+              series={chartSeries}
+              type="area"
+              height="100%"
+              width="100%"
+            />
+          </div>
+        )}
+      </div>
+
       {/* Tracks Table */}
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
 
@@ -294,7 +466,7 @@ export default function AlbumDetail() {
                     <SortIcon field="title" />
                   </button>
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden sm:table-cell">
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden lg:table-cell">
                   ISRC
                 </th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
@@ -314,6 +486,12 @@ export default function AlbumDetail() {
                     Ingresos
                     <SortIcon field="revenue" />
                   </button>
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden md:table-cell">
+                  Splits
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  Colaboradores
                 </th>
               </tr>
             </thead>
@@ -342,7 +520,7 @@ export default function AlbumDetail() {
                   </td>
 
                   {/* ISRC */}
-                  <td className="px-4 py-4 hidden sm:table-cell">
+                  <td className="px-4 py-4 hidden lg:table-cell">
                     <span className="text-xs font-mono text-gray-500">
                       {track.isrc || "—"}
                     </span>
@@ -360,6 +538,90 @@ export default function AlbumDetail() {
                     <span className="text-sm font-semibold text-green-600">
                       {formatCurrency(track.totalNetIncome || 0)}
                     </span>
+                  </td>
+
+                  {/* Splits */}
+                  <td className="px-4 py-4 hidden md:table-cell">
+                    <div className="flex items-center gap-1.5">
+                      <span
+                        title={hasOwnerSplit(track) ? "Owner split creado" : "Sin owner split"}
+                        className={`inline-flex items-center gap-1 px-2 py-1 text-[11px] font-semibold rounded-full ${
+                          hasOwnerSplit(track)
+                            ? "bg-orange-50 text-[#F97316]"
+                            : "bg-gray-100 text-gray-400"
+                        }`}
+                      >
+                        {hasOwnerSplit(track) ? (
+                          <Check className="w-3 h-3" />
+                        ) : (
+                          <Minus className="w-3 h-3" />
+                        )}
+                        Owner
+                      </span>
+                      <span
+                        title={
+                          hasCollaboratorSplit(track)
+                            ? "Split de colaborador creado"
+                            : "Sin split de colaborador"
+                        }
+                        className={`inline-flex items-center gap-1 px-2 py-1 text-[11px] font-semibold rounded-full ${
+                          hasCollaboratorSplit(track)
+                            ? "bg-green-50 text-green-700"
+                            : "bg-gray-100 text-gray-400"
+                        }`}
+                      >
+                        {hasCollaboratorSplit(track) ? (
+                          <Check className="w-3 h-3" />
+                        ) : (
+                          <Minus className="w-3 h-3" />
+                        )}
+                        Collab
+                      </span>
+                    </div>
+                  </td>
+
+                  {/* Colaboradores */}
+                  <td className="px-4 py-4">
+                    {collaboratorsCount(track) > 0 ? (
+                      <div className="flex items-center gap-2">
+                        <div className="flex -space-x-2">
+                          {track.collaborators!
+                            .slice(0, 3)
+                            .map((collaborator, idx) =>
+                              collaborator?.image ? (
+                                <img
+                                  key={collaborator._id || idx}
+                                  src={collaborator.image}
+                                  alt={collaborator.name || ""}
+                                  className="w-7 h-7 rounded-full border-2 border-white object-cover"
+                                />
+                              ) : (
+                                <div
+                                  key={collaborator._id || idx}
+                                  className="w-7 h-7 rounded-full border-2 border-white bg-orange-100 flex items-center justify-center"
+                                >
+                                  <Users className="w-3 h-3 text-[#F97316]" />
+                                </div>
+                              )
+                            )}
+                          {collaboratorsCount(track) > 3 && (
+                            <div className="w-7 h-7 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center">
+                              <span className="text-[10px] font-semibold text-gray-500">
+                                +{collaboratorsCount(track) - 3}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-xs font-semibold text-gray-700">
+                          {collaboratorsCount(track)}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-xs text-gray-400">
+                        <Users className="w-3.5 h-3.5" />
+                        Ninguno
+                      </span>
+                    )}
                   </td>
                 </tr>
               ))}

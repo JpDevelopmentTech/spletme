@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, UserPlus, Mail, Lock, User, AlertCircle, Check, Loader2, UserCircle, Eye, EyeOff } from 'lucide-react';
+import { X, UserPlus, Mail, User, AlertCircle, Check, Loader2, UserCircle} from 'lucide-react';
 import { AuthService, RegisterSubuserSchema } from '@/services/auth';
 
 interface RegisterSubuserModalProps {
@@ -15,16 +15,12 @@ const RegisterSubuserModal = ({ isOpen, onClose, parentUserId, onSubuserCreated 
     parentUserId,
     username: '',
     email: '',
-    password: '',
-    passwordConfirmation: '',
     name: '',
     lastName: ''
   });
   
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,18 +54,6 @@ const RegisterSubuserModal = ({ isOpen, onClose, parentUserId, onSubuserCreated 
 
     if (!formData.lastName.trim()) {
       newErrors.lastName = 'El apellido es requerido';
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'La contraseña es requerida';
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'La contraseña debe tener al menos 8 caracteres';
-    }
-
-    if (!formData.passwordConfirmation) {
-      newErrors.passwordConfirmation = 'Debes confirmar la contraseña';
-    } else if (formData.password !== formData.passwordConfirmation) {
-      newErrors.passwordConfirmation = 'Las contraseñas no coinciden';
     }
 
     setErrors(newErrors);
@@ -112,8 +96,6 @@ const RegisterSubuserModal = ({ isOpen, onClose, parentUserId, onSubuserCreated 
         parentUserId,
         username: '',
         email: '',
-        password: '',
-        passwordConfirmation: '',
         name: '',
         lastName: ''
       });
@@ -267,66 +249,6 @@ const RegisterSubuserModal = ({ isOpen, onClose, parentUserId, onSubuserCreated 
                     placeholder="juan@example.com"
                   />
                   {errors.email && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email}</p>}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    <Lock className="w-4 h-4 inline mr-2" />
-                    Contraseña *
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      disabled={loading}
-                      className={`w-full px-4 py-3 pr-10 rounded-xl border-2 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50 ${
-                        errors.password
-                          ? 'border-red-300 bg-red-50 dark:border-red-600 dark:bg-red-900/20'
-                          : 'border-gray-200 dark:border-gray-600'
-                      } dark:bg-gray-700 dark:text-white`}
-                      placeholder="••••••••"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
-                    >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  </div>
-                  {errors.password && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.password}</p>}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    <Lock className="w-4 h-4 inline mr-2" />
-                    Confirmar Contraseña *
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPasswordConfirmation ? "text" : "password"}
-                      name="passwordConfirmation"
-                      value={formData.passwordConfirmation}
-                      onChange={handleChange}
-                      disabled={loading}
-                      className={`w-full px-4 py-3 pr-10 rounded-xl border-2 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50 ${
-                        errors.passwordConfirmation
-                          ? 'border-red-300 bg-red-50 dark:border-red-600 dark:bg-red-900/20'
-                          : 'border-gray-200 dark:border-gray-600'
-                      } dark:bg-gray-700 dark:text-white`}
-                      placeholder="••••••••"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPasswordConfirmation(!showPasswordConfirmation)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
-                    >
-                      {showPasswordConfirmation ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  </div>
-                  {errors.passwordConfirmation && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.passwordConfirmation}</p>}
                 </div>
 
                 <div className="flex gap-3 pt-4">

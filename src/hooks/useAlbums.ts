@@ -23,13 +23,15 @@ interface UseAlbumsReturn {
 }
 
 export const useAlbums = (page: number, limit: number): UseAlbumsReturn => {
+  const currentSkip = Math.max(0, (page - 1) * limit);
+
   const {
     autoLoad = true,
     initialSkip = 0,
     initialLimit = limit
   } = {
     autoLoad: true,
-    initialSkip: page,
+    initialSkip: currentSkip,
     initialLimit: limit
   };
 
@@ -116,9 +118,9 @@ export const useAlbums = (page: number, limit: number): UseAlbumsReturn => {
   // Auto-load albums on mount
   useEffect(() => {
     if (autoLoad) {
-      getAlbums(page, limit);
+      getAlbums(currentSkip, limit);
     }
-  }, [autoLoad, getAlbums, page, limit]);
+  }, [autoLoad, getAlbums, currentSkip, limit]);
 
   return {
     // State

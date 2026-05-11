@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import songs from "../services/songs";
 
 const UseFilterSongsData = () => {
@@ -12,14 +12,14 @@ const UseFilterSongsData = () => {
         totalNetIncome: 0,
         totalStreams: 0
     });
-    const getDataSongs = async () => {
+    const getDataSongs = useCallback(async () => {
         const response = await songs.getSongsByFilter(country, platform, startDate, endDate);
         setSummary(response.data.summary);
-    }
+    }, [country, platform, startDate, endDate]);
 
     useEffect(() => {
         getDataSongs();
-    }, [country, platform, startDate, endDate]);
+    }, [getDataSongs]);
     return {
         getDataSongs,
         country,

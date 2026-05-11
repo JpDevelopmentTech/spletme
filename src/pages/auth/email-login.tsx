@@ -6,14 +6,15 @@ import { AuthService } from "../../services/auth";
 import { setAuth } from "../../store/states/authSlice";
 
 const FEATURES = [
-  "Track streams across all platforms",
-  "Split royalties with collaborators",
-  "Manage payment wallets & withdrawals",
+  "Rastrea streams en todas las plataformas",
+  "Divide regalías con colaboradores",
+  "Gestiona billeteras y retiros de pagos",
 ];
 
 export default function EmailLogin() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const TOUR_STORAGE_KEY = "dashboard-tour-completed";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -27,20 +28,44 @@ export default function EmailLogin() {
     try {
       const response = await AuthService.login(email, password);
       if (response && response.data) {
+        const serverUser = response.data.user;
+        const serverStep = Number(serverUser?.onboardingData?.currentStep || 0);
+        const onboardingCompleted =
+          Boolean(serverUser.onboardingCompleted) || serverStep >= 4;
+        const dashboardTourCompleted =
+          typeof serverUser?.dashboardTourCompleted === "boolean"
+            ? serverUser.dashboardTourCompleted
+            : typeof serverUser?.platformTourCompleted === "boolean"
+              ? serverUser.platformTourCompleted
+              : typeof serverUser?.tourCompleted === "boolean"
+                ? serverUser.tourCompleted
+                : false;
+        const userToStore = {
+          ...serverUser,
+          onboardingCompleted,
+          dashboardTourCompleted,
+        };
+
         localStorage.setItem("token", response.data.token);
-        localStorage.setItem("user", JSON.stringify(response.data.user));
+        localStorage.setItem("user", JSON.stringify(userToStore));
         localStorage.setItem("isAuth", "true");
-        dispatch(setAuth({ isAuth: "true", user: response.data.user }));
-        if (response.data.user.onboardingCompleted) {
-          navigate("/panel/home");
+        if (dashboardTourCompleted) {
+          localStorage.setItem(TOUR_STORAGE_KEY, "true");
         } else {
-          navigate("/onboarding");
+          localStorage.removeItem(TOUR_STORAGE_KEY);
+        }
+        dispatch(setAuth({ isAuth: "true", user: userToStore }));
+
+        if (userToStore.onboardingCompleted) {
+          navigate("/panel/home", { replace: true });
+        } else {
+          navigate("/onboarding", { replace: true });
         }
       } else {
-        setError("Invalid email or password");
+        setError("Credenciales incorrectas");
       }
     } catch {
-      setError("Invalid email or password");
+      setError("Credenciales incorrectas");
     } finally {
       setLoading(false);
     }
@@ -61,14 +86,10 @@ export default function EmailLogin() {
 
   return (
     <div className="flex min-h-screen">
-      {/* Left Panel */}
+      {/* Panel izquierdo */}
       <div
         className="hidden lg:flex flex-col justify-center gap-9 flex-shrink-0"
-        style={{
-          width: 500,
-          backgroundColor: "#0F172A",
-          padding: "60px 50px",
-        }}
+        style={{ width: 500, backgroundColor: "#0F172A", padding: "60px 50px" }}
       >
         {/* Logo */}
         <div className="flex items-center gap-3">
@@ -81,36 +102,22 @@ export default function EmailLogin() {
           <span className="text-white font-bold text-xl">SplitMe</span>
         </div>
 
-        {/* Heading */}
+        {/* Encabezado */}
         <div className="flex flex-col gap-4">
-          <h1
-            className="text-white font-bold"
-            style={{ fontSize: 42, lineHeight: 1.2 }}
-          >
-            Manage your
+          <h1 className="text-white font-bold" style={{ fontSize: 42, lineHeight: 1.2 }}>
+            Gestiona tus
             <br />
-            music royalties.
+            regalías musicales.
           </h1>
-          <p
-            className="text-[#94A3B8] text-sm"
-            style={{ lineHeight: 1.6 }}
-          >
-            Track streams, split payments, and manage collaborators all in one
-            place.
+          <p className="text-[#94A3B8] text-sm" style={{ lineHeight: 1.6 }}>
+            Rastrea streams, divide pagos y gestiona colaboradores en un solo lugar.
           </p>
         </div>
 
-        {/* Orange accent */}
-        <div
-          style={{
-            width: 48,
-            height: 3,
-            borderRadius: 2,
-            backgroundColor: "#F97316",
-          }}
-        />
+        {/* Acento naranja */}
+        <div style={{ width: 48, height: 3, borderRadius: 2, backgroundColor: "#F97316" }} />
 
-        {/* Features */}
+        {/* Características */}
         <div className="flex flex-col gap-3.5">
           {FEATURES.map((feat) => (
             <div key={feat} className="flex items-center gap-2.5">
@@ -124,12 +131,12 @@ export default function EmailLogin() {
         </div>
       </div>
 
-      {/* Right Panel */}
+      {/* Panel derecho */}
       <div
         className="flex-1 flex items-center justify-center p-6"
         style={{ backgroundColor: "#F7F8FA" }}
       >
-        {/* Form Card */}
+        {/* Tarjeta del formulario */}
         <div
           className="w-full flex flex-col gap-5"
           style={{
@@ -140,7 +147,7 @@ export default function EmailLogin() {
             padding: 40,
           }}
         >
-          {/* Card logo */}
+          {/* Logo de la tarjeta */}
           <div
             className="flex items-center justify-center text-white font-bold text-[22px] self-start"
             style={{ width: 44, height: 44, borderRadius: 11, backgroundColor: "#F97316" }}
@@ -148,19 +155,19 @@ export default function EmailLogin() {
             S
           </div>
 
-          {/* Heading */}
+          {/* Encabezado */}
           <div className="flex flex-col gap-1">
-            <h2 className="text-[26px] font-bold text-[#111827]">Welcome back</h2>
+            <h2 className="text-[26px] font-bold text-[#111827]">Bienvenido de nuevo</h2>
             <p className="text-sm text-[#6B7280]">
-              Sign in to your account to continue
+              Inicia sesión para continuar
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {/* Email */}
+            {/* Correo */}
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium text-[#374151]">
-                Email Address
+                Correo electrónico
               </label>
               <div className="relative">
                 <Mail
@@ -172,17 +179,17 @@ export default function EmailLogin() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
+                  placeholder="Ingresa tu correo"
                   required
                   style={inputBase}
                 />
               </div>
             </div>
 
-            {/* Password */}
+            {/* Contraseña */}
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium text-[#374151]">
-                Password
+                Contraseña
               </label>
               <div className="relative">
                 <Lock
@@ -194,7 +201,7 @@ export default function EmailLogin() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
+                  placeholder="Ingresa tu contraseña"
                   required
                   style={{ ...inputBase, paddingRight: 40 }}
                 />
@@ -208,7 +215,7 @@ export default function EmailLogin() {
               </div>
             </div>
 
-            {/* Options row */}
+            {/* Opciones */}
             <div className="flex items-center justify-between">
               <label className="flex items-center gap-2 cursor-pointer">
                 <div
@@ -221,14 +228,14 @@ export default function EmailLogin() {
                     backgroundColor: "#FFFFFF",
                   }}
                 />
-                <span className="text-sm text-[#6B7280]">Remember me</span>
+                <span className="text-sm text-[#6B7280]">Recuérdame</span>
               </label>
               <button
                 type="button"
                 onClick={() => navigate("/auth/password-recovery")}
                 className="text-sm font-medium text-[#F97316] hover:opacity-80 transition-opacity"
               >
-                Forgot password?
+                ¿Olvidaste tu contraseña?
               </button>
             </div>
 
@@ -237,32 +244,32 @@ export default function EmailLogin() {
               <p className="text-sm text-red-500 text-center">{error}</p>
             )}
 
-            {/* Sign In button */}
+            {/* Botón iniciar sesión */}
             <button
               type="submit"
               disabled={loading}
               className="w-full text-white font-semibold text-[15px] transition-opacity hover:opacity-90 disabled:opacity-60"
               style={{ height: 46, borderRadius: 10, backgroundColor: "#F97316" }}
             >
-              {loading ? "Signing in..." : "Sign In"}
+              {loading ? "Iniciando sesión..." : "Iniciar sesión"}
             </button>
           </form>
 
-          {/* Divider */}
+          {/* Divisor */}
           <div className="flex items-center gap-3">
             <div className="flex-1 h-px bg-[#E5E7EB]" />
-            <span className="text-xs text-[#9CA3AF]">or</span>
+            <span className="text-xs text-[#9CA3AF]">o</span>
             <div className="flex-1 h-px bg-[#E5E7EB]" />
           </div>
 
-          {/* Sign up */}
+          {/* Registro */}
           <div className="flex items-center justify-center gap-1">
-            <span className="text-sm text-[#6B7280]">Don't have an account?</span>
+            <span className="text-sm text-[#6B7280]">¿No tienes cuenta?</span>
             <Link
               to="/auth/register"
               className="text-sm font-semibold text-[#F97316] hover:opacity-80 transition-opacity"
             >
-              Sign up
+              Regístrate
             </Link>
           </div>
         </div>

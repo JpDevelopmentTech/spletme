@@ -16,6 +16,11 @@ import { User as UserType } from "../../../../../models/user";
 import WalletService from "@/services/wallet";
 import { useWallet } from "@/hooks/useWallet";
 import { Link } from "react-router-dom";
+import LocalStorageService from "@/services/localstorage";
+import ValidationToastQueue, {
+  ValidationToastItem,
+  ValidationToastType,
+} from "../../../../../components/alert/ValidationToastQueue";
 
 interface Song {
   id?: string;
@@ -47,6 +52,7 @@ interface TableProps {
   collaborators: UserType[];
   songId?: string;
   song?: Song;
+  isOwner?: boolean;
 }
 
 const AVATAR_COLORS = [
@@ -67,7 +73,7 @@ function getInitials(name: string) {
     .toUpperCase();
 }
 
-export default function Table({ collaborators, songId, song }: TableProps) {
+export default function Table({ collaborators, songId, song, isOwner = false }: TableProps) {
   const [isSplitsModalOpen, setIsSplitsModalOpen] = useState(false);
   const [isPaymentHistoryModalOpen, setIsPaymentHistoryModalOpen] =
     useState(false);
@@ -84,8 +90,45 @@ export default function Table({ collaborators, songId, song }: TableProps) {
     amount: number;
     songId: string;
   } | null>(null);
+  const [toasts, setToasts] = useState<ValidationToastItem[]>([]);
 
   const { wallet, hasWallet } = useWallet();
+  const currentUser = LocalStorageService.getItem("user");
+  const rawUserType = String(
+    currentUser?.role ||
+      currentUser?.type ||
+      currentUser?.userType ||
+      currentUser?.accountType ||
+      ""
+  ).toLowerCase();
+  const isLabelUser = rawUserType.includes("label");
+  const hasOwnerSplit = Boolean(
+    ((song as any)?.ownerId?.split?.conditions ?? []).length > 0 ||
+      ((song as any)?.owner?.split?.conditions ?? []).length > 0 ||
+      ((song as any)?.ownerSplit?.conditions ?? []).length > 0
+  );
+
+  const addToast = (type: ValidationToastType, message: string) => {
+    setToasts((prev) => [
+      ...prev,
+      { id: Date.now() + Math.floor(Math.random() * 1000), type, message },
+    ]);
+  };
+
+  const dequeueToast = (id: number) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  };
+
+  const handleOpenSplitsModal = () => {
+    if (isLabelUser && !hasOwnerSplit) {
+      addToast(
+        "error",
+        "Error al crear split: el owner de la cancion a un no crea su split"
+      );
+      return;
+    }
+    setIsSplitsModalOpen(true);
+  };
 
   const openPaymentHistoryModal = (splitId: string) => {
     setCurrentSplitId(splitId);
@@ -140,6 +183,7 @@ export default function Table({ collaborators, songId, song }: TableProps) {
 
   return (
     <>
+      <ValidationToastQueue toasts={toasts} onDequeue={dequeueToast} autoHideMs={9000} />
       {/* Modals */}
       <SplitsModal
         collaborators={collaborators}
@@ -191,15 +235,17 @@ export default function Table({ collaborators, songId, song }: TableProps) {
 
       {/* Actions bar */}
       <div className="flex items-center gap-2 px-6 py-4 border-b border-gray-100">
+        {isOwner && (
+          <button
+            onClick={() => setIsOwnerSplitModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F97316] hover:bg-orange-600 text-white text-xs font-semibold rounded-lg transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Owner Split
+          </button>
+        )}
         <button
-          onClick={() => setIsOwnerSplitModalOpen(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F97316] hover:bg-orange-600 text-white text-xs font-semibold rounded-lg transition-colors"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          Owner Split
-        </button>
-        <button
-          onClick={() => setIsSplitsModalOpen(true)}
+          onClick={handleOpenSplitsModal}
           className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-semibold rounded-lg transition-colors"
         >
           <Music className="w-3.5 h-3.5" />
@@ -383,7 +429,7 @@ export default function Table({ collaborators, songId, song }: TableProps) {
             Agrega colaboradores para gestionar splits y pagos de esta canción.
           </p>
           <button
-            onClick={() => setIsSplitsModalOpen(true)}
+            onClick={handleOpenSplitsModal}
             className="flex items-center gap-2 px-4 py-2 bg-[#F97316] hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition-colors"
           >
             <Plus className="w-4 h-4" />

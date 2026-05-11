@@ -37,10 +37,19 @@ interface Song {
 }
 
 
+interface SongsPagination {
+    total: number | null;
+    page: number;
+    limit: number;
+    totalPages: number | null;
+    hasMore: boolean | null;
+}
+
 
 const UseSongs = ( page :number, limit :number ) => {
     const [songs, setSongs] = useState<Song[]>([]);
     const [loading, setLoading] = useState(false);
+    const [pagination, setPagination] = useState<SongsPagination | null>(null);
     const [searchResults, setSearchResults] = useState<Song[]>([]);
     const [isSearching, setIsSearching] = useState(false);
 
@@ -48,9 +57,45 @@ const UseSongs = ( page :number, limit :number ) => {
         setLoading(true);
         try {
             const response = await SongService.getSongs(page, limit);
-            setSongs(response.data);
+            const data = Array.isArray(response?.data) ? response.data : [];
+            setSongs(data);
+
+            const rawPagination = response?.pagination ?? response?.meta?.pagination ?? null;
+
+            const resolvedPage = Number(rawPagination?.page ?? response?.page ?? page);
+            const resolvedLimit = Number(rawPagination?.limit ?? response?.limit ?? limit);
+
+            const rawTotal =
+                rawPagination?.total ??
+                response?.total ??
+                response?.totalCount ??
+                response?.totalItems ??
+                response?.count;
+            const numericTotal = Number(rawTotal);
+            const resolvedTotal = Number.isFinite(numericTotal) ? numericTotal : null;
+
+            const rawTotalPages = rawPagination?.totalPages ?? response?.totalPages;
+            const numericTotalPages = Number(rawTotalPages);
+            const resolvedTotalPages = Number.isFinite(numericTotalPages)
+                ? numericTotalPages
+                : (resolvedTotal !== null ? Math.max(1, Math.ceil(resolvedTotal / resolvedLimit)) : null);
+
+            const rawHasMore = rawPagination?.hasMore ?? response?.hasMore;
+            const resolvedHasMore = typeof rawHasMore === "boolean"
+                ? rawHasMore
+                : (resolvedTotalPages !== null ? resolvedPage < resolvedTotalPages : null);
+
+            setPagination({
+                total: resolvedTotal,
+                limit: resolvedLimit,
+                page: resolvedPage,
+                totalPages: resolvedTotalPages,
+                hasMore: resolvedHasMore,
+            });
         } catch (error) {
             console.error(error);
+            setSongs([]);
+            setPagination(null);
         } finally {
             setLoading(false);
         }
@@ -66,7 +111,7 @@ const UseSongs = ( page :number, limit :number ) => {
         setIsSearching(true);
         try {
             const response = await SongService.searchSongs(query, 1, limit);
-            setSearchResults(response.data);
+            setSearchResults(Array.isArray(response?.data) ? response.data : []);
         } catch (error) {
             console.error(error);
             setSearchResults([]);
@@ -113,11 +158,12 @@ const UseSongs = ( page :number, limit :number ) => {
 
     useEffect(() => {
         getSongs();
-    }, [page, limit]);
+    }, [getSongs]);
     
     return {
         songs,
         loading,
+        pagination,
         getSongs,
         uploadSongs,
         searchSongs,

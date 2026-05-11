@@ -243,7 +243,7 @@ const PlatformsCard = () => {
           <h2 className="text-base font-semibold text-gray-900">Platforms</h2>
           
         </div>
-        <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
+        <div className="flex items-center justify-center bg-gray-100 rounded-lg p-0.5">
             {chartButtons.map(({ view, icon, label }) => (
               <button
                 key={view}
@@ -256,7 +256,6 @@ const PlatformsCard = () => {
                 }`}
               >
                 {icon}
-                <span className="hidden sm:inline">{label}</span>
               </button>
             ))}
           </div>

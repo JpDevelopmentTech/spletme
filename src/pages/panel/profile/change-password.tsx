@@ -1,58 +1,34 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Eye, EyeOff, Lock } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { AuthService } from "@/services/auth";
-import { PasswordRecoverySessionHelper } from "@/helpers/passwordRecoverySession";
 import LocalStorageService from "@/services/localstorage";
-
-type ChangePasswordLocationState = {
-  email?: string;
-  token?: string;
-};
 
 const ChangePasswordPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const locationState = (location.state as ChangePasswordLocationState | null) ?? null;
-  const stateRecoveryEmail = locationState?.email?.trim().toLowerCase() || "";
-  const stateRecoveryToken = locationState?.token?.trim() || "";
-  const persistedRecoverySession = useMemo(
-    () => PasswordRecoverySessionHelper.get(),
-    []
-  );
-  const recoveryEmail = stateRecoveryEmail || persistedRecoverySession?.email || "";
-  const recoveryToken = stateRecoveryToken || persistedRecoverySession?.verificationCode || "";
   const userFromStorage = LocalStorageService.getItem("user");
   const authToken = (localStorage.getItem("token") || "").trim();
   const userEmail = (userFromStorage.email || "").toString().trim().toLowerCase();
-  const canUseRecoveryFlow = Boolean(recoveryEmail && recoveryToken);
-  const canUseUserFlow = Boolean(authToken);
-  const canSubmit = canUseRecoveryFlow || canUseUserFlow;
+
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordData, setPasswordData] = useState({
-    email: recoveryEmail || userEmail,
+    email: userEmail,
     currentPassword: "",
     newPassword: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
   const [passwordError, setPasswordError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
 
-  useEffect(() => {
-    if (stateRecoveryEmail && stateRecoveryToken) {
-      PasswordRecoverySessionHelper.save(stateRecoveryEmail, stateRecoveryToken);
-    }
-  }, [stateRecoveryEmail, stateRecoveryToken]);
-
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setPasswordData(prev => ({
+    setPasswordData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
     setPasswordError("");
     setSuccessMessage("");
@@ -77,48 +53,35 @@ const ChangePasswordPage = () => {
       return;
     }
 
-    if (!canSubmit) {
-      setPasswordError("No hay una sesión válida para cambiar la contraseña");
+    if (!authToken) {
+      setPasswordError("No se encontró token de autenticación");
       return;
     }
 
-    if (!canUseRecoveryFlow && !passwordData.currentPassword.trim()) {
+    if (!passwordData.currentPassword.trim()) {
       setPasswordError("Ingresa tu contraseña actual");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const response = canUseRecoveryFlow
-        ? await AuthService.resetPasswordByCode(
-            normalizedEmail,
-            recoveryToken,
-            passwordData.newPassword,
-            passwordData.confirmPassword
-          )
-        : await AuthService.changePassword(
-            passwordData.newPassword,
-            passwordData.confirmPassword,
-            passwordData.currentPassword,
-            authToken,
-          );
+      const response = await AuthService.changePassword(
+        passwordData.newPassword,
+        passwordData.confirmPassword,
+        passwordData.currentPassword,
+        authToken
+      );
 
       if (!response.success) {
         setPasswordError(response.message || "Error al cambiar la contraseña");
-        if (canUseRecoveryFlow && [400, 401, 404, 422].includes(response.status)) {
-          PasswordRecoverySessionHelper.clear();
-        }
         return;
       }
 
-      if (canUseRecoveryFlow) {
-        PasswordRecoverySessionHelper.clear();
-      }
       setPasswordData({
         email: normalizedEmail,
         currentPassword: "",
         newPassword: "",
-        confirmPassword: ""
+        confirmPassword: "",
       });
       setSuccessMessage(response.message || "Contraseña actualizada correctamente");
     } catch {
@@ -153,35 +116,11 @@ const ChangePasswordPage = () => {
             </h1>
           </div>
 
-          {!canSubmit ? (
-            <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-900/20">
-              <p className="text-sm text-amber-800 dark:text-amber-200">
-                No se encontró una sesión válida para cambiar la contraseña.
-              </p>
-              <button
-                type="button"
-                onClick={() => navigate("/auth/password-recovery")}
-                className="mt-3 text-sm font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
-              >
-                Ir a verificar código
-              </button>
-            </div>
-          ) : canUseRecoveryFlow ? (
-            <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
-              Correo verificado: <span className="font-semibold">{recoveryEmail}</span>
-            </p>
-          ) : (
-            <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
-              Se actualizará la contraseña de tu cuenta actual.
-            </p>
-          )}
+          <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
+            Se actualizará la contraseña de tu cuenta actual.
+          </p>
 
-          <motion.form
-            onSubmit={handlePasswordSubmit}
-            className="space-y-4"
-          >
-
-
+          <motion.form onSubmit={handlePasswordSubmit} className="space-y-4">
             <div className="relative">
               <input
                 type={showCurrentPassword ? "text" : "password"}
@@ -190,7 +129,7 @@ const ChangePasswordPage = () => {
                 onChange={handlePasswordChange}
                 placeholder="Contraseña actual"
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                required={!canUseRecoveryFlow}
+                required
                 disabled={isSubmitting}
               />
               <button
@@ -271,7 +210,7 @@ const ChangePasswordPage = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               type="submit"
-              disabled={isSubmitting || !canSubmit}
+              disabled={isSubmitting}
               className="w-full py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-lg hover:from-indigo-600 hover:to-indigo-700 transition-all duration-200 font-medium disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "Guardando..." : "Cambiar Contraseña"}

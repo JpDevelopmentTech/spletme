@@ -14,6 +14,7 @@ import Onboarding from "../pages/auth/onboarding";
 import EmailLogin from "../pages/auth/email-login";
 import Register from "../pages/auth/register";
 import PasswordRecoveryRequest from "../pages/auth/password-recoveryRequest";
+import PasswordRecoveryReset from "../pages/auth/password-recovery-reset";
 import Balance from "../pages/panel/balance/balance";
 import WalletPage from "../pages/panel/wallet/wallet";
 import Profile from "../pages/panel/profile/profile";
@@ -41,6 +42,10 @@ const routes = [
   {
     path: "/auth/password-recovery",
     element: <PasswordRecoveryRequest />
+  },
+  {
+    path: "/auth/password-recovery/reset",
+    element: <PasswordRecoveryReset />
   },
   {
     path: "/onboarding",

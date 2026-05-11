@@ -4,6 +4,7 @@ import SongService from '../services/songs';
 interface MetricPaymentsItem {
   name: string;
   totalNetIncome: number;
+  totalStreams?: number;
 }
 
 type MetricPaymentsData = MetricPaymentsItem[];

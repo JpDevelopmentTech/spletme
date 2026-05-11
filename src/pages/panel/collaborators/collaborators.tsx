@@ -1,137 +1,116 @@
 import { useState } from "react";
-import collaborator1 from "../../../assets/images/collaborator1.webp";
-import collaborator2 from "../../../assets/images/collaborator2.jpg";
-import collaborator3 from "../../../assets/images/collaborator3.jpg";
-import collaborator4 from "../../../assets/images/collaborator4.webp";
-import collaborator5 from "../../../assets/images/collaborator5.jpeg";
-import collaborator6 from "../../../assets/images/collaborator6.jpeg";
+import { Plus } from "lucide-react";
+import { CollaboratorsStatsGrid } from "@/components/collaborators/CollaboratorsStatsGrid";
+import { CollaboratorsTable } from "@/components/collaborators/CollaboratorsTable";
+import { FeaturedCollaboratorCard } from "@/components/collaborators/FeaturedCollaboratorCard";
+import { RecentPaymentsSection } from "@/components/collaborators/RecentPaymentsSection";
+import type { Collaborator, CollaboratorPayment } from "@/types";
 
-import ImgCollaborator from "./components/imgCollaborator";
-import AddCollaborator from "./components/addCollaborator";
-import ImgTop from "./components/imgTop";
-import Table from "./components/table";
-import MoneyInMoneyOut from "./components/moneyInMoneyOut";
+// TODO: reemplazar con datos reales del hook useCollaborators cuando esté integrado
+const MOCK_COLLABORATORS: Collaborator[] = [
+  {
+    id: "1", name: "Lucia Reyes", email: "lucia.reyes@email.com",
+    initials: "LR", avatarBg: "#FED7AA", avatarText: "#9A3412",
+    songs: 12, splitPercentage: 30, paid: 3180, status: "active",
+    role: "Productor principal",
+    recentSongs: [
+      { title: "Solar Drift", streams: "612K streams", percentage: 30 },
+      { title: "Velvet Horizon", streams: "480K streams", percentage: 30 },
+      { title: "Echo Chambers", streams: "352K streams", percentage: 30 },
+    ],
+  },
+  {
+    id: "2", name: "Diego Marín", email: "diego.marin@email.com",
+    initials: "DM", avatarBg: "#DBEAFE", avatarText: "#1E40AF",
+    songs: 8, splitPercentage: 25, paid: 2140.5, status: "active",
+  },
+  {
+    id: "3", name: "Ana Velasco", email: "ana.velasco@email.com",
+    initials: "AV", avatarBg: "#FCE7F3", avatarText: "#9D174D",
+    songs: 15, splitPercentage: 40, paid: 1820.3, status: "pending",
+  },
+  {
+    id: "4", name: "Mateo Salas", email: "mateo.salas@email.com",
+    initials: "MS", avatarBg: "#D1FAE5", avatarText: "#065F46",
+    songs: 5, splitPercentage: 15, paid: 895.4, status: "active",
+  },
+  {
+    id: "5", name: "Sofia Castro", email: "sofia.castro@email.com",
+    initials: "SC", avatarBg: "#EDE9FE", avatarText: "#5B21B6",
+    songs: 7, splitPercentage: 20, paid: 1240.8, status: "no_wallet",
+  },
+  {
+    id: "6", name: "Javier Torres", email: "javier.torres@email.com",
+    initials: "JT", avatarBg: "#FEF3C7", avatarText: "#92400E",
+    songs: 3, splitPercentage: 10, paid: 420.1, status: "active",
+  },
+];
+
+// TODO: reemplazar con datos reales del hook usePayments cuando esté integrado
+const MOCK_PAYMENTS: CollaboratorPayment[] = [
+  {
+    id: "p1", collaboratorName: "Lucia Reyes", initials: "LR",
+    avatarBg: "#FED7AA", avatarText: "#9A3412",
+    songTitle: "Solar Drift", isrc: "USRC17608123",
+    relativeDate: "Hace 2 horas", date: "10 may 2026", amount: 3180, status: "completed",
+  },
+  {
+    id: "p2", collaboratorName: "Diego Marín", initials: "DM",
+    avatarBg: "#DBEAFE", avatarText: "#1E40AF",
+    songTitle: "Velvet Horizon", isrc: "USRC17608124",
+    relativeDate: "Ayer", date: "9 may 2026", amount: 2140.5, status: "completed",
+  },
+  {
+    id: "p3", collaboratorName: "Ana Velasco", initials: "AV",
+    avatarBg: "#FCE7F3", avatarText: "#9D174D",
+    songTitle: "Echo Chambers", isrc: "USRC17608125",
+    relativeDate: "Hace 3 días", date: "7 may 2026", amount: 1820.3, status: "processing",
+  },
+  {
+    id: "p4", collaboratorName: "Mateo Salas", initials: "MS",
+    avatarBg: "#D1FAE5", avatarText: "#065F46",
+    songTitle: "Quiet Skylines", isrc: "USRC17608126",
+    relativeDate: "Hace 5 días", date: "5 may 2026", amount: 895.4, status: "completed",
+  },
+];
 
 export default function Collaborators() {
-  const [collaboratorActive, setCollaboratorActive] = useState(0);
-  const collaborators = [
-    {
-      img: collaborator1,
-    },
-    {
-      img: collaborator2,
-    },
-    {
-      img: collaborator3,
-    },
-    {
-      img: collaborator4,
-    },
-    {
-      img: collaborator5,
-    },
-    {
-      img: collaborator6,
-    },
-  ];
+  const [featuredId, setFeaturedId] = useState(MOCK_COLLABORATORS[0].id);
+  const featured = MOCK_COLLABORATORS.find((c) => c.id === featuredId) ?? MOCK_COLLABORATORS[0];
 
   return (
-    <div className="flex flex-col w-full animate-fade-left">
-      <div className="flex items-center justify-between gap-6">
-        <div className="flex items-center gap-6">
-          <div className="flex flex-col">
-            <span className="text-title font-bold">Colaboradores</span>
-            <span className="text-subtitle">Organiza tus colaboradores</span>
+    <div className="min-h-screen bg-[#F7F8FA]">
+      <div className="px-6 lg:px-10 py-8 flex flex-col gap-6">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-2xl font-bold text-[#111827]">Colaboradores</h1>
+            <p className="text-sm text-[#6B7280]">Organiza y gestiona a las personas que comparten tus regalías</p>
+            <div className="w-10 h-0.5 rounded-full bg-[#F97316] mt-1" />
           </div>
-          <MoneyInMoneyOut />
+          <button className="flex items-center gap-2 px-4 h-10 bg-[#F97316] hover:bg-orange-600 text-white text-[13px] font-semibold rounded-lg transition-colors">
+            <Plus className="w-4 h-4" />
+            Agregar Colaborador
+          </button>
         </div>
-      </div>
 
-      <div className="grid grid-cols-12 gap-6 w-full mt-6">
-        <div className="flex overflow-x-auto col-span-9 gap-3 w-full items-center">
-          <button
-            className="bg-senary rounded-full p-1"
-            onClick={() => setCollaboratorActive(collaboratorActive - 1)}
-          >
-            <svg
-              className="w-6 h-6 text-gray-800 dark:text-white"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="m15 19-7-7 7-7"
-              />
-            </svg>
-          </button>
-          {collaborators.map((collaborator, index) => (
-            <ImgCollaborator
-              key={index}
-              changeActive={() => setCollaboratorActive(index)}
-              img={collaborator.img}
-              active={collaboratorActive}
-              index={index}
-            />
-          ))}
-          <button
-            className="bg-senary rounded-full p-1"
-            onClick={() => setCollaboratorActive(collaboratorActive + 1)}
-          >
-            <svg
-              className="w-6 h-6 text-gray-800 dark:text-white"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="m9 5 7 7-7 7"
-              />
-            </svg>
-          </button>
+        <CollaboratorsStatsGrid
+          totalCollaborators={24}
+          totalSent="$8,420.00"
+          totalReceived="$3,180.00"
+          activeSplits={58}
+          pendingPayments={12}
+        />
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          <CollaboratorsTable
+            collaborators={MOCK_COLLABORATORS}
+            featuredId={featuredId}
+            onSelectCollaborator={setFeaturedId}
+          />
+          <FeaturedCollaboratorCard collaborator={featured} />
         </div>
-        <AddCollaborator />
-        <div className="col-span-3 flex flex-col items-center">
-          <img
-            src={collaborators[collaboratorActive]?.img}
-            alt=""
-            className="w-full h-36 object-cover rounded-lg z-20"
-            id="activeImg"
-          />
-          <img
-            src={
-              collaborators[collaboratorActive + 1]?.img === undefined
-                ? collaborators[0]?.img
-                : collaborators[collaboratorActive + 1]?.img
-            }
-            alt=""
-            className="w-[90%] h-36 object-cover rounded-lg -mt-28 z-10"
-          />
-          <img
-            src={
-              collaborators[collaboratorActive + 2]?.img === undefined
-                ? collaborators[1]?.img
-                : collaborators[collaboratorActive + 2]?.img
-            }
-            alt=""
-            className="w-[80%] h-36 object-cover rounded-lg -mt-28"
-          />
-        </div>
-        <ImgTop activeImg={collaborators[collaboratorActive]?.img} />
-        <Table />
+
+        <RecentPaymentsSection payments={MOCK_PAYMENTS} />
       </div>
     </div>
   );

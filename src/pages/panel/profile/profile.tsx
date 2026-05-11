@@ -1,347 +1,146 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Camera,
-  User,
-  Mail,
-  ArrowLeft,
-  Copy,
-  Check,
-  Lock,
-  UserPlus,
-  LucideLanguages,
-  Pencil,
-} from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import RegisterSubuserModal from "../../../components/modal/RegisterSubuserModal";
-import SubprofileManagementModal from "../../../components/modal/SubprofileManagementModal";
-import LocalStorageService from "../../../services/localstorage";
-import UpdateModal from "@/components/modal/updateUserInfoModal";
-import { AuthService } from "@/services/auth";
-
-interface EditUserPayload {
-  username?: string;
-  name?: string;
-  lastName?: string;
-}
+import LocalStorageService from "@/services/localstorage";
+import useConvertCountry from "@/hooks/useConvertCountry";
+import { useProfileEdit } from "@/hooks/useProfileEdit";
+import { useSubprofiles } from "@/hooks/useSubprofiles";
+import { useChangePassword } from "@/hooks/useChangePassword";
+import { ProfileHeroCard } from "@/components/profile/ProfileHeroCard";
+import { ProfileInfoCard } from "@/components/profile/ProfileInfoCard";
+import { SubprofilesCard } from "@/components/profile/SubprofilesCard";
+import { ChangePasswordCard } from "@/components/profile/ChangePasswordCard";
+import type { ActiveSection, ProfileUserData, EditProfileForm } from "@/types/profile.types";
+import type { RegisterSubuserSchema } from "@/types";
 
 const ProfilePage = () => {
-  const navigate = useNavigate();
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [showSubuserModal, setShowSubuserModal] = useState(false);
-  const [showSubprofileManagementModal, setShowSubprofileManagementModal] =
-    useState(false);
-  const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const availableLanguages = ["Español", "English", "Português", "Français"];
+  const [activeSection, setActiveSection] = useState<ActiveSection>(null);
 
-  const [userData, setUserData] = useState(() => {
-    const userFromStorage = LocalStorageService.getItem("user");
+  const [userData, setUserData] = useState<ProfileUserData>(() => {
+    const u = LocalStorageService.getItem("user");
     return {
-      username: userFromStorage.username || "jesuspineda18",
-      name: userFromStorage.name || "jesus",
-      lastName: userFromStorage.lastName || "pineda gambin",
-      email: userFromStorage.email || "jesuspineda18@outlook.es",
-      userId: userFromStorage.id || "AB12CD",
+      username: u.username ?? "",
+      name: u.name ?? "",
+      lastName: u.lastName ?? "",
+      email: u.email ?? "",
+      userId: u.id ?? u._id ?? "",
+      onboardingData: {
+        country: u.onboardingData?.country ?? null,
+        address: u.onboardingData?.address ?? null,
+        profession: u.onboardingData?.profession ?? null,
+        otherProfession: u.onboardingData?.otherProfession ?? null,
+      },
     };
   });
+
+  const convertCountry = useConvertCountry(userData.onboardingData.country);
+
+  const profileEdit = useProfileEdit(userData, (patch) => {
+    setUserData((prev) => ({
+      ...prev,
+      onboardingData: { ...prev.onboardingData, ...patch },
+    }));
+    setTimeout(() => setActiveSection(null), 1500);
+  });
+
+  const subprofiles = useSubprofiles(userData.userId);
+
+  const changePassword = useChangePassword(() => setActiveSection(null));
 
   const handleCopyId = async () => {
     try {
       await navigator.clipboard.writeText(userData.userId);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy text: ", err);
-    }
+    } catch { /* clipboard not available */ }
   };
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => setProfileImage(reader.result as string);
+    reader.readAsDataURL(file);
   };
 
-  const handleSaveProfile = async (updatedData: EditUserPayload) => {
-    const response = await AuthService.updateUser({
-      userId: userData.userId,
-      email: userData.email,
-      username: updatedData.username ?? userData.username,
-      name: updatedData.name ?? userData.name,
-      lastName: updatedData.lastName ?? userData.lastName,
-    });
-
-    if (!response) {
-      throw new Error("No se pudo actualizar el perfil");
-    }
-
-    setUserData((prev) => ({
-      ...prev,
-      ...updatedData,
-    }));
-  };
+  const toggleSection = (section: ActiveSection) =>
+    setActiveSection((prev) => (prev === section ? null : section));
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-2xl mx-auto"
-      >
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white mb-8"
-        >
-          <ArrowLeft className="h-5 w-5" />
-          <span>Volver</span>
-        </button>
-
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="relative flex justify-end"
-          >
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              type="button"
-              onClick={() => setShowLanguageDropdown((prev) => !prev)}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg"
-              aria-expanded={showLanguageDropdown}
-            >
-              <LucideLanguages
-                size={25}
-                className="text-indigo-600 dark:text-indigo-400"
-              />
-              <span className="font-semibold">Español</span>
-              <span
-                className={`text-xs transition-transform duration-200 ${
-                  showLanguageDropdown ? "rotate-180" : ""
-                }`}
-              >
-                ▼
-              </span>
-            </motion.button>
-
-            <AnimatePresence>
-              {showLanguageDropdown && (
-                <motion.div
-                  initial={{ opacity: 0, y: -8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  className="absolute top-12 right-0 w-48 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg z-20"
-                >
-                  {availableLanguages.map((language) => (
-                    <div
-                      key={language}
-                      className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 first:rounded-t-lg last:rounded-b-lg"
-                    >
-                      {language}
-                    </div>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-
-          <div className="flex flex-col items-center mb-8">
-            <div className="relative group">
-              <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
-                {profileImage ? (
-                  <img
-                    src={profileImage}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <User className="w-16 h-16 text-gray-400" />
-                  </div>
-                )}
-              </div>
-              <label
-                htmlFor="profile-image"
-                className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity duration-200"
-              >
-                <Camera className="w-8 h-8 text-white" />
-              </label>
-              <input
-                id="profile-image"
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="hidden"
-              />
-            </div>
-            <h1 className="mt-4 text-2xl font-bold text-gray-900 dark:text-white">
-              {userData.name} {userData.lastName}
-            </h1>
-            <p className="text-gray-500 dark:text-gray-400">
-              @{userData.username}
-            </p>
-          </div>
-
-          <div className="space-y-6">
-            <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-xl text-white">
-              <div className="p-3 bg-white/20 rounded-lg backdrop-blur-sm">
-                <User className="w-5 h-5" />
-              </div>
-              <div className="flex-grow">
-                <p className="text-sm text-white/80">ID de Usuario</p>
-                <div className="flex items-center gap-3">
-                  <p className="font-mono text-lg font-bold tracking-wider">
-                    {userData.userId}
-                  </p>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleCopyId}
-                    className="p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors duration-200"
-                  >
-                    <AnimatePresence mode="wait">
-                      {copied ? (
-                        <motion.div
-                          key="check"
-                          initial={{ scale: 0, rotate: -180 }}
-                          animate={{ scale: 1, rotate: 0 }}
-                          exit={{ scale: 0, rotate: 180 }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          <Check className="w-4 h-4" />
-                        </motion.div>
-                      ) : (
-                        <motion.div
-                          key="copy"
-                          initial={{ scale: 0, rotate: 180 }}
-                          animate={{ scale: 1, rotate: 0 }}
-                          exit={{ scale: 0, rotate: -180 }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          <Copy className="w-4 h-4" />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </motion.button>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-              <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
-                <User className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Nombre completo
-                </p>
-                <p className="text-gray-900 dark:text-white font-medium">
-                  {userData.name} {userData.lastName}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-              <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
-                <Mail className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Correo electrónico
-                </p>
-                <p className="text-gray-900 dark:text-white font-medium">
-                  {userData.email}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-              <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
-                <User className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Nombre de usuario
-                </p>
-                <p className="text-gray-900 dark:text-white font-medium">
-                  {userData.username}
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setShowEditModal(true)}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-white bg-purple-600 hover:bg-purple-700 active:scale-95 transition-all"
-            >
-              <Pencil className="w-4 h-4" />
-              Editar perfil
-            </button>
-
-            <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  Subperfiles
-                </h2>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setShowSubprofileManagementModal(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200"
-                >
-                  <UserPlus className="w-4 h-4" />
-                  <span>Gestionar subperfiles</span>
-                </motion.button>
-              </div>
-            </div>
-            <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  Cambiar Contraseña
-                </h2>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => navigate("/panel/change-password")}
-                  className="flex items-center gap-2 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors duration-200"
-                >
-                  <Lock className="w-4 h-4" />
-                  <span>Ir a cambiar contraseña</span>
-                </motion.button>
-              </div>
-            </div>
-          </div>
+    <div className="min-h-screen bg-[#F7F8FA] px-10 py-8">
+      <div style={{ maxWidth: 680 }}>
+        <div className="flex flex-col gap-1.5 mb-6">
+          <h1 className="text-2xl font-bold text-[#111827]">Mi Perfil</h1>
+          <div className="w-10 h-0.5 rounded-full bg-[#F97316]" />
         </div>
-      </motion.div>
 
-      <SubprofileManagementModal
-        isOpen={showSubprofileManagementModal}
-        onClose={() => setShowSubprofileManagementModal(false)}
-        onOpenCreateSubprofile={() => setShowSubuserModal(true)}
-      />
-
-      <AnimatePresence>
-        {showEditModal && (
-          <UpdateModal
-            user={userData}
-            onClose={() => setShowEditModal(false)}
-            onSave={handleSaveProfile}
+        <div className="flex flex-col gap-4">
+          <ProfileHeroCard
+            userData={userData}
+            convertCountry={convertCountry}
+            profileImage={profileImage}
+            isEditing={activeSection === "edit-profile"}
+            editForm={profileEdit.editForm}
+            editErrors={profileEdit.editErrors}
+            editLoading={profileEdit.editLoading}
+            editError={profileEdit.editError}
+            editSuccess={profileEdit.editSuccess}
+            onImageChange={handleImageChange}
+            onToggleEdit={() => toggleSection("edit-profile")}
+            onEditFormChange={(field: keyof EditProfileForm, value: string) =>
+              profileEdit.setEditForm((prev) => ({ ...prev, [field]: value }))
+            }
+            onSaveProfile={profileEdit.handleSaveProfile}
           />
-        )}
-      </AnimatePresence>
 
-      <RegisterSubuserModal
-        isOpen={showSubuserModal}
-        onClose={() => setShowSubuserModal(false)}
-        parentUserId={userData.userId}
-        onSubuserCreated={() => {
-          console.log("Subuser created successfully");
-        }}
-      />
+          <ProfileInfoCard
+            userData={userData}
+            copied={copied}
+            onCopyId={handleCopyId}
+          />
+
+          <SubprofilesCard
+            subprofiles={subprofiles.subprofiles}
+            subLoading={subprofiles.subLoading}
+            subError={subprofiles.subError}
+            unlinkingId={subprofiles.unlinkingId}
+            confirmingId={subprofiles.confirmingId}
+            unlinkSuccess={subprofiles.unlinkSuccess}
+            isCreating={activeSection === "create-subprofile"}
+            createForm={subprofiles.createForm}
+            createErrors={subprofiles.createErrors}
+            createLoading={subprofiles.createLoading}
+            createError={subprofiles.createError}
+            createSuccess={subprofiles.createSuccess}
+            onReload={() => void subprofiles.loadSubprofiles()}
+            onToggleCreate={() => toggleSection("create-subprofile")}
+            onCreateFormChange={(field: keyof RegisterSubuserSchema, value: string) =>
+              subprofiles.setCreateForm((prev) => ({ ...prev, [field]: value }))
+            }
+            onCreateSubmit={(e) => void subprofiles.handleCreateSubprofile(e, () => setActiveSection(null))}
+            onConfirmUnlink={subprofiles.setConfirmingId}
+            onCancelUnlink={() => subprofiles.setConfirmingId(null)}
+            onUnlink={(id) => void subprofiles.handleUnlink(id)}
+          />
+
+          <ChangePasswordCard
+            isOpen={activeSection === "change-password"}
+            pwdForm={changePassword.pwdForm}
+            pwdShow={changePassword.pwdShow}
+            pwdError={changePassword.pwdError}
+            pwdSuccess={changePassword.pwdSuccess}
+            pwdLoading={changePassword.pwdLoading}
+            onToggle={() => toggleSection("change-password")}
+            onFormChange={(field, value) =>
+              changePassword.setPwdForm((prev) => ({ ...prev, [field]: value }))
+            }
+            onToggleShow={(field) =>
+              changePassword.setPwdShow((prev) => ({ ...prev, [field]: !prev[field] }))
+            }
+            onSubmit={changePassword.handleChangePassword}
+          />
+        </div>
+      </div>
     </div>
   );
 };

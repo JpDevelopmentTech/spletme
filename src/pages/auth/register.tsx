@@ -5,9 +5,9 @@ import { AuthService } from "../../services/auth";
 import { OnboardingService } from "../../services/onboarding";
 
 const FEATURES = [
-  "Track streams across all platforms",
-  "Split royalties with collaborators",
-  "Manage payment wallets & withdrawals",
+  "Rastrea streams en todas las plataformas",
+  "Divide regalías con colaboradores",
+  "Gestiona billeteras y retiros de pagos",
 ];
 
 export default function Register() {
@@ -53,10 +53,10 @@ export default function Register() {
     try {
       await OnboardingService.requestAccountVerificationCode(formData.email);
     } catch {
-      // backend sends code on register; ignore explicit resend failure
+      // el backend envía el código al registrarse
     }
 
-    setSuccessMessage("Cuenta creada. Te enviamos un código de verificación.");
+    setSuccessMessage("¡Cuenta creada! Te enviamos un código de verificación.");
     setIsSubmitting(false);
     setTimeout(() => navigate("/auth/email-login"), 1200);
   };
@@ -76,7 +76,7 @@ export default function Register() {
 
   return (
     <div className="flex min-h-screen">
-      {/* Left Panel */}
+      {/* Panel izquierdo */}
       <div
         className="hidden lg:flex flex-col justify-center gap-9 flex-shrink-0"
         style={{ width: 500, backgroundColor: "#0F172A", padding: "60px 50px" }}
@@ -92,22 +92,22 @@ export default function Register() {
           <span className="text-white font-bold text-xl">SplitMe</span>
         </div>
 
-        {/* Heading */}
+        {/* Encabezado */}
         <div className="flex flex-col gap-4">
           <h1 className="text-white font-bold" style={{ fontSize: 42, lineHeight: 1.2 }}>
-            Manage your
+            Gestiona tus
             <br />
-            music royalties.
+            regalías musicales.
           </h1>
           <p className="text-[#94A3B8] text-sm" style={{ lineHeight: 1.6 }}>
-            Track streams, split payments, and manage collaborators all in one place.
+            Rastrea streams, divide pagos y gestiona colaboradores en un solo lugar.
           </p>
         </div>
 
-        {/* Orange accent */}
+        {/* Acento naranja */}
         <div style={{ width: 48, height: 3, borderRadius: 2, backgroundColor: "#F97316" }} />
 
-        {/* Features */}
+        {/* Características */}
         <div className="flex flex-col gap-3.5">
           {FEATURES.map((feat) => (
             <div key={feat} className="flex items-center gap-2.5">
@@ -121,12 +121,12 @@ export default function Register() {
         </div>
       </div>
 
-      {/* Right Panel */}
+      {/* Panel derecho */}
       <div
         className="flex-1 flex items-center justify-center p-6 overflow-y-auto"
         style={{ backgroundColor: "#F7F8FA" }}
       >
-        {/* Form Card */}
+        {/* Tarjeta del formulario */}
         <div
           className="w-full flex flex-col gap-5 my-6"
           style={{
@@ -137,7 +137,7 @@ export default function Register() {
             padding: 40,
           }}
         >
-          {/* Card logo */}
+          {/* Logo de la tarjeta */}
           <div
             className="flex items-center justify-center text-white font-bold text-[22px] self-start"
             style={{ width: 44, height: 44, borderRadius: 11, backgroundColor: "#F97316" }}
@@ -145,15 +145,15 @@ export default function Register() {
             S
           </div>
 
-          {/* Heading */}
+          {/* Encabezado */}
           <div className="flex flex-col gap-1">
-            <h2 className="text-[26px] font-bold text-[#111827]">Create your account</h2>
+            <h2 className="text-[26px] font-bold text-[#111827]">Crea tu cuenta</h2>
             <p className="text-sm text-[#6B7280]">
-              Join SplitMe and start managing your royalties
+              Únete a SplitMe y comienza a gestionar tus regalías
             </p>
           </div>
 
-          {/* Alerts */}
+          {/* Alertas */}
           {errorMessage && (
             <div
               className="text-sm text-red-700"
@@ -182,9 +182,9 @@ export default function Register() {
           )}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {/* Username */}
+            {/* Usuario */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-[#374151]">Username</label>
+              <label className="text-sm font-medium text-[#374151]">Nombre de usuario</label>
               <div className="relative">
                 <AtSign
                   size={16}
@@ -196,17 +196,17 @@ export default function Register() {
                   name="username"
                   value={formData.username}
                   onChange={(e) => set("username", e.target.value)}
-                  placeholder="Choose a username"
+                  placeholder="Elige un nombre de usuario"
                   required
                   style={inputBase}
                 />
               </div>
             </div>
 
-            {/* First + Last name */}
+            {/* Nombre + Apellido */}
             <div className="flex gap-3">
               <div className="flex-1 flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-[#374151]">First Name</label>
+                <label className="text-sm font-medium text-[#374151]">Nombre</label>
                 <div className="relative">
                   <User
                     size={16}
@@ -218,14 +218,14 @@ export default function Register() {
                     name="name"
                     value={formData.name}
                     onChange={(e) => set("name", e.target.value)}
-                    placeholder="First name"
+                    placeholder="Tu nombre"
                     required
                     style={inputBase}
                   />
                 </div>
               </div>
               <div className="flex-1 flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-[#374151]">Last Name</label>
+                <label className="text-sm font-medium text-[#374151]">Apellido</label>
                 <div className="relative">
                   <User
                     size={16}
@@ -237,7 +237,7 @@ export default function Register() {
                     name="lastName"
                     value={formData.lastName}
                     onChange={(e) => set("lastName", e.target.value)}
-                    placeholder="Last name"
+                    placeholder="Tu apellido"
                     required
                     style={inputBase}
                   />
@@ -245,9 +245,9 @@ export default function Register() {
               </div>
             </div>
 
-            {/* Email */}
+            {/* Correo */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-[#374151]">Email Address</label>
+              <label className="text-sm font-medium text-[#374151]">Correo electrónico</label>
               <div className="relative">
                 <Mail
                   size={16}
@@ -259,16 +259,16 @@ export default function Register() {
                   name="email"
                   value={formData.email}
                   onChange={(e) => set("email", e.target.value)}
-                  placeholder="Enter your email"
+                  placeholder="Ingresa tu correo"
                   required
                   style={inputBase}
                 />
               </div>
             </div>
 
-            {/* Password */}
+            {/* Contraseña */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-[#374151]">Password</label>
+              <label className="text-sm font-medium text-[#374151]">Contraseña</label>
               <div className="relative">
                 <Lock
                   size={16}
@@ -280,7 +280,7 @@ export default function Register() {
                   name="password"
                   value={formData.password}
                   onChange={(e) => set("password", e.target.value)}
-                  placeholder="Create a password"
+                  placeholder="Crea una contraseña"
                   required
                   style={{ ...inputBase, paddingRight: 40 }}
                 />
@@ -294,9 +294,9 @@ export default function Register() {
               </div>
             </div>
 
-            {/* Confirm password */}
+            {/* Confirmar contraseña */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-[#374151]">Confirm Password</label>
+              <label className="text-sm font-medium text-[#374151]">Confirmar contraseña</label>
               <div className="relative">
                 <Lock
                   size={16}
@@ -308,7 +308,7 @@ export default function Register() {
                   name="passwordConfirmation"
                   value={formData.passwordConfirmation}
                   onChange={(e) => set("passwordConfirmation", e.target.value)}
-                  placeholder="Confirm your password"
+                  placeholder="Confirma tu contraseña"
                   required
                   style={{ ...inputBase, paddingRight: 40 }}
                 />
@@ -322,44 +322,44 @@ export default function Register() {
               </div>
             </div>
 
-            {/* Submit */}
+            {/* Botón crear cuenta */}
             <button
               type="submit"
               disabled={isSubmitting}
               className="w-full text-white font-semibold text-[15px] transition-opacity hover:opacity-90 disabled:opacity-60"
               style={{ height: 46, borderRadius: 10, backgroundColor: "#F97316" }}
             >
-              {isSubmitting ? "Creating account..." : "Create Account"}
+              {isSubmitting ? "Creando cuenta..." : "Crear cuenta"}
             </button>
 
-            {/* Terms */}
+            {/* Términos */}
             <p className="text-xs text-center text-[#9CA3AF]">
-              By creating an account you agree to our{" "}
+              Al crear una cuenta aceptas nuestros{" "}
               <a href="#" className="text-[#F97316] hover:opacity-80">
-                Terms of Service
+                Términos de Servicio
               </a>{" "}
-              and{" "}
+              y la{" "}
               <a href="#" className="text-[#F97316] hover:opacity-80">
-                Privacy Policy
+                Política de Privacidad
               </a>
             </p>
           </form>
 
-          {/* Divider */}
+          {/* Divisor */}
           <div className="flex items-center gap-3">
             <div className="flex-1 h-px bg-[#E5E7EB]" />
-            <span className="text-xs text-[#9CA3AF]">or</span>
+            <span className="text-xs text-[#9CA3AF]">o</span>
             <div className="flex-1 h-px bg-[#E5E7EB]" />
           </div>
 
-          {/* Sign in link */}
+          {/* Iniciar sesión */}
           <div className="flex items-center justify-center gap-1">
-            <span className="text-sm text-[#6B7280]">Already have an account?</span>
+            <span className="text-sm text-[#6B7280]">¿Ya tienes cuenta?</span>
             <Link
               to="/auth/email-login"
               className="text-sm font-semibold text-[#F97316] hover:opacity-80 transition-opacity"
             >
-              Sign in
+              Inicia sesión
             </Link>
           </div>
         </div>

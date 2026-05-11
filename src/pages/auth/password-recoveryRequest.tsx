@@ -37,22 +37,26 @@ export default function PasswordRecoveryRequest() {
     setEmailError("");
     setIsSendingRequest(true);
 
-    const recoveryResponse = await AuthService.sentPasswordRecoveryRequest(
-      normalizedEmail
-    );
+    try {
+      const recoveryResponse = await AuthService.sentPasswordRecoveryRequest(
+        normalizedEmail
+      );
 
-    if (!recoveryResponse.success) {
-      setEmailError(recoveryResponse.message || "correo no encontrado");
+      if (!recoveryResponse.success) {
+        setEmailError(recoveryResponse.message || "correo no encontrado");
+        return;
+      }
+
+      PasswordRecoverySessionHelper.clear();
+      setSentEmail(normalizedEmail);
+      setIsEmailModalOpen(false);
+      setCodeDigits(Array(CODE_LENGTH).fill(""));
+      setCodeError("");
+    } catch {
+      setEmailError("No se pudo enviar el código");
+    } finally {
       setIsSendingRequest(false);
-      return;
     }
-
-    PasswordRecoverySessionHelper.clear();
-    setSentEmail(normalizedEmail);
-    setIsEmailModalOpen(false);
-    setCodeDigits(Array(CODE_LENGTH).fill(""));
-    setCodeError("");
-    setIsSendingRequest(false);
   };
 
   const handleDigitChange = (index: number, value: string) => {
@@ -114,22 +118,27 @@ export default function PasswordRecoveryRequest() {
 
     setIsVerifyingCode(true);
     setCodeError("");
+    try {
+      const verificationResponse = await AuthService.sentcodeForPasswordRecovery(
+        sentEmail,
+        fullCode
+      );
 
-    const verificationResponse = await AuthService.sentcodeForPasswordRecovery(
-      sentEmail,
-      fullCode
-    );
+      if (!verificationResponse.success) {
+        setCodeError(verificationResponse.message || "Código inválido o expirado");
+        return;
+      }
 
-    if (!verificationResponse.success) {
-      setCodeError(verificationResponse.message || "Código inválido o expirado");
+      const verifiedCode = verificationResponse.token?.trim() || fullCode;
+      PasswordRecoverySessionHelper.save(sentEmail, verifiedCode);
+      navigate("/auth/password-recovery/reset", {
+        state: { email: sentEmail, token: verifiedCode },
+      });
+    } catch {
+      setCodeError("Código inválido o expirado");
+    } finally {
       setIsVerifyingCode(false);
-      return;
     }
-
-    const verifiedCode = verificationResponse.token?.trim() || fullCode;
-    PasswordRecoverySessionHelper.save(sentEmail, verifiedCode);
-    navigate("/panel/profile/change-password", { state: { email: sentEmail, token: verifiedCode } });
-    setIsVerifyingCode(false);
   }
 
   return (
