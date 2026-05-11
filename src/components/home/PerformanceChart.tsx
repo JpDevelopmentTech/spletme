@@ -26,7 +26,7 @@ export function PerformanceChart({
 }: PerformanceChartProps) {
   return (
     <div
-      className="col-span-8 row-span-2 flex-1 bg-white rounded-xl p-6 border border-gray-200"
+      className="col-span-6 row-span-2 flex-1 bg-white rounded-xl p-6 border border-gray-200"
       data-tour="analytics-chart"
     >
       <div className="flex flex-col gap-5">

@@ -61,13 +61,6 @@ export default function Home() {
               totalAmount={totalAmount}
             />
 
-            <PerformanceChart
-              series={series}
-              options={chartOptions}
-              selectedTimeframe={selectedTimeframe}
-              onTimeframeChange={setSelectedTimeframe}
-            />
-
             <WalletSection
               walletLoading={walletLoading}
               hasWallet={hasWallet}
@@ -77,10 +70,19 @@ export default function Home() {
               onWithdrawal={() => setIsWithdrawalModalOpen(true)}
             />
 
+            <PerformanceChart
+              series={series}
+              options={chartOptions}
+              selectedTimeframe={selectedTimeframe}
+              onTimeframeChange={setSelectedTimeframe}
+            />
+
+
+
             <PlatformsCard />
 
             <div
-              className="flex-1 bg-white rounded-xl p-6 border border-gray-200 col-span-10"
+              className="flex-1 bg-white rounded-xl p-6 border border-gray-200 col-span-9"
               data-tour="top-songs"
             >
               <div className="flex flex-col gap-4">

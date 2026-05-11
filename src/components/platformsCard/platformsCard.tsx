@@ -236,7 +236,7 @@ const PlatformsCard = () => {
   }], [visibleData]);
 
   return (
-    <div className="col-span-2 row-span-3 bg-white rounded-xl p-6 border border-gray-200 h-full">
+    <div className="col-span-3 row-span-3 bg-white rounded-xl p-6 border border-gray-200 h-full">
       <div className="flex flex-col gap-4">
         {/* Header */}
         <div className="flex items-center justify-between">

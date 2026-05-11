@@ -22,7 +22,7 @@ export function DashboardStatsCards({
 }: DashboardStatsCardsProps) {
   return (
     <>
-      <div className="col-span-4 bg-white rounded-xl p-5 border border-gray-200">
+      <div className="col-span-3 bg-white rounded-xl p-5 border border-gray-200">
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs font-medium text-gray-500">Streams Totales</span>
           <Play className="w-4 h-4 text-gray-400" />
@@ -31,7 +31,7 @@ export function DashboardStatsCards({
         <span className="text-xs font-medium text-green-500 mt-1 inline-block">&uarr; 12.5%</span>
       </div>
 
-      <div className="bg-white col-span-4 rounded-xl p-5 border border-gray-200">
+      <div className="bg-white col-span-3 rounded-xl p-5 border border-gray-200">
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs font-medium text-gray-500">Ingresos Totales</span>
           <DollarSign className="w-4 h-4 text-green-500" />
@@ -40,7 +40,7 @@ export function DashboardStatsCards({
         <span className="text-xs font-medium text-green-500 mt-1 inline-block">&uarr; 8.2%</span>
       </div>
 
-      <div className="bg-white col-span-4 rounded-xl p-5 border border-gray-200">
+      <div className="bg-white col-span-3 rounded-xl p-5 border border-gray-200">
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs font-medium text-gray-500">Canciones</span>
           <Music className="w-4 h-4 text-gray-400" />
@@ -51,7 +51,7 @@ export function DashboardStatsCards({
         <span className="text-xs font-medium text-green-500 mt-1 inline-block">&uarr; 15.3%</span>
       </div>
 
-      <div className="bg-white rounded-xl p-5 border border-gray-200 col-span-2">
+      <div className="bg-white rounded-xl p-5 border border-gray-200 col-span-3">
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs font-medium text-gray-500">Balance Neto</span>
           <PiggyBank className="w-4 h-4 text-gray-400" />
