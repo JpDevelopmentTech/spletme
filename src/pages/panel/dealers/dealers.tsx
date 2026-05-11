@@ -6,7 +6,7 @@ import {
   Plus, Upload, Search, TrendingUp, Music,
   DollarSign, BarChart2, MoreHorizontal, ArrowRight,
 } from 'lucide-react';
-import type { Distributor, DistributorKpi } from '../../../types/distributor.types';
+import type { Distributor, DistributorKpi, Quarter } from '../../../types/distributor.types';
 import { distributorsService } from '../../../services/distributorsService';
 import CreateDistributorModal from '../../../components/ui/CreateDistributorModal';
 import UploadSongsModal from '../../../components/ui/UploadSongsModal';
@@ -44,7 +44,24 @@ export default function Dealers() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showCreate, setShowCreate] = useState(false);
-  const [uploadTarget, setUploadTarget] = useState<Distributor | null>(null);
+  const [uploadTarget, setUploadTarget] = useState<{
+    distributor: Distributor;
+    existingUploads: Array<{ quarter: Quarter; year: number }>;
+  } | null>(null);
+
+  async function openUploadModal(distributor: Distributor) {
+    try {
+      const ups = await distributorsService.getUploads(distributor._id);
+      setUploadTarget({
+        distributor,
+        existingUploads: ups
+          .filter((u) => u.status !== 'error')
+          .map((u) => ({ quarter: u.quarter, year: u.year })),
+      });
+    } catch {
+      setUploadTarget({ distributor, existingUploads: [] });
+    }
+  }
 
   async function load() {
     setLoading(true);
@@ -108,10 +125,11 @@ export default function Dealers() {
 
       {uploadTarget && (
         <UploadSongsModal
-          distributorName={uploadTarget.name}
+          distributorName={uploadTarget.distributor.name}
+          existingUploads={uploadTarget.existingUploads}
           onClose={() => setUploadTarget(null)}
           onConfirm={async (file, quarter, year) => {
-            await distributorsService.uploadSongs(uploadTarget._id, file, quarter, year);
+            await distributorsService.uploadSongs(uploadTarget.distributor._id, file, quarter, year);
             setUploadTarget(null);
             await load();
           }}
@@ -275,7 +293,7 @@ export default function Dealers() {
                         <td className="px-3 py-4">
                           <div className="flex items-center gap-1">
                             <button
-                              onClick={(e) => { e.stopPropagation(); setUploadTarget(d); }}
+                              onClick={(e) => { e.stopPropagation(); openUploadModal(d); }}
                               className="p-1.5 rounded-md hover:bg-orange-50 text-[#9CA3AF] hover:text-[#F97316] transition-colors"
                               title="Subir canciones"
                             >

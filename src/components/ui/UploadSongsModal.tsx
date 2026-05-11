@@ -4,6 +4,7 @@ import type { Quarter } from '../../types/distributor.types';
 
 interface Props {
   distributorName: string;
+  existingUploads?: Array<{ quarter: Quarter; year: number }>;
   onClose: () => void;
   onConfirm: (file: File, quarter: Quarter, year: number) => Promise<void>;
 }
@@ -19,13 +20,23 @@ const QUARTER_LABELS: Record<Quarter, string> = {
 const CURRENT_YEAR = new Date().getFullYear();
 const YEARS = Array.from({ length: 5 }, (_, i) => CURRENT_YEAR - i);
 
-export default function UploadSongsModal({ distributorName, onClose, onConfirm }: Props) {
+export default function UploadSongsModal({
+  distributorName,
+  existingUploads = [],
+  onClose,
+  onConfirm,
+}: Props) {
   const [quarter, setQuarter] = useState<Quarter>('Q1');
   const [year, setYear] = useState(CURRENT_YEAR);
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const isDuplicate = existingUploads.some((u) => u.quarter === quarter && u.year === year);
+  const usedQuartersForYear = existingUploads
+    .filter((u) => u.year === year)
+    .map((u) => u.quarter);
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0] ?? null;
@@ -40,13 +51,19 @@ export default function UploadSongsModal({ distributorName, onClose, onConfirm }
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!file) { setError('Selecciona un archivo antes de continuar'); return; }
+    if (isDuplicate) {
+      setError(`Ya existe una carga ${quarter} ${year} para este distribuidor`);
+      return;
+    }
     setLoading(true);
     setError('');
     try {
       await onConfirm(file, quarter, year);
       onClose();
-    } catch {
-      setError('Error al subir el archivo. Verifica el formato e intenta de nuevo.');
+    } catch (err) {
+      const apiMessage =
+        (err as { response?: { data?: { message?: string } } }).response?.data?.message;
+      setError(apiMessage || 'Error al subir el archivo. Verifica el formato e intenta de nuevo.');
     } finally {
       setLoading(false);
     }
@@ -76,21 +93,28 @@ export default function UploadSongsModal({ distributorName, onClose, onConfirm }
               Temporada (Quarter) *
             </label>
             <div className="grid grid-cols-2 gap-2">
-              {QUARTERS.map((q) => (
-                <button
-                  key={q}
-                  type="button"
-                  onClick={() => setQuarter(q)}
-                  className={`flex items-center gap-2 px-3 py-2.5 border rounded-lg text-xs font-medium transition-colors text-left ${
-                    quarter === q
-                      ? 'border-[#F97316] bg-orange-50 text-[#F97316]'
-                      : 'border-gray-200 text-[#6B7280] hover:border-gray-300'
-                  }`}
-                >
-                  <span className="text-sm font-bold w-7">{q}</span>
-                  <span className="text-[11px]">{QUARTER_LABELS[q].split('—')[1]?.trim()}</span>
-                </button>
-              ))}
+              {QUARTERS.map((q) => {
+                const isUsed = usedQuartersForYear.includes(q);
+                return (
+                  <button
+                    key={q}
+                    type="button"
+                    onClick={() => !isUsed && setQuarter(q)}
+                    disabled={isUsed}
+                    title={isUsed ? `Ya existe una carga ${q} ${year}` : undefined}
+                    className={`flex items-center gap-2 px-3 py-2.5 border rounded-lg text-xs font-medium transition-colors text-left ${
+                      isUsed
+                        ? 'border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed line-through'
+                        : quarter === q
+                        ? 'border-[#F97316] bg-orange-50 text-[#F97316]'
+                        : 'border-gray-200 text-[#6B7280] hover:border-gray-300'
+                    }`}
+                  >
+                    <span className="text-sm font-bold w-7">{q}</span>
+                    <span className="text-[11px]">{QUARTER_LABELS[q].split('—')[1]?.trim()}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -178,10 +202,10 @@ export default function UploadSongsModal({ distributorName, onClose, onConfirm }
             </button>
             <button
               type="submit"
-              disabled={loading || !file}
+              disabled={loading || !file || isDuplicate}
               className="flex-1 h-10 bg-[#F97316] rounded-lg text-sm font-semibold text-white hover:bg-orange-600 transition-colors disabled:opacity-60"
             >
-              {loading ? 'Subiendo...' : `Subir ${quarter} ${year}`}
+              {loading ? 'Subiendo...' : isDuplicate ? `${quarter} ${year} ya cargado` : `Subir ${quarter} ${year}`}
             </button>
           </div>
         </form>

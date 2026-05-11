@@ -110,6 +110,9 @@ export default function DistributorDetail() {
       {showUpload && (
         <UploadSongsModal
           distributorName={distributor.name}
+          existingUploads={uploads
+            .filter((u) => u.status !== 'error')
+            .map((u) => ({ quarter: u.quarter, year: u.year }))}
           onClose={() => setShowUpload(false)}
           onConfirm={handleUpload}
         />
