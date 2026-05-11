@@ -49,9 +49,15 @@ export default function DistributorDetail() {
 
   useEffect(() => { load(); }, [id]);
 
+  const [uploadResult, setUploadResult] = useState<{
+    songsProcessed: number;
+    rejected: Array<{ isrc: string; existingOwnerId: string }>;
+  } | null>(null);
+
   async function handleUpload(file: File, quarter: Quarter, year: number) {
     if (!id) return;
-    await distributorsService.uploadSongs(id, file, quarter, year);
+    const result = await distributorsService.uploadSongs(id, file, quarter, year);
+    setUploadResult({ songsProcessed: result.songsProcessed, rejected: result.rejected });
     await load();
   }
 
@@ -110,6 +116,57 @@ export default function DistributorDetail() {
       )}
 
       <div className="px-6 lg:px-10 py-8 flex flex-col gap-6">
+        {/* Upload result banner */}
+        {uploadResult && (
+          <div
+            className={`rounded-xl p-4 flex items-start gap-3 ${
+              uploadResult.rejected.length > 0
+                ? 'bg-yellow-50 border border-yellow-200'
+                : 'bg-green-50 border border-green-200'
+            }`}
+          >
+            <AlertCircle
+              className={`w-5 h-5 flex-shrink-0 ${
+                uploadResult.rejected.length > 0 ? 'text-yellow-600' : 'text-green-600'
+              }`}
+            />
+            <div className="flex-1 min-w-0">
+              <p
+                className={`text-sm font-semibold ${
+                  uploadResult.rejected.length > 0 ? 'text-yellow-800' : 'text-green-800'
+                }`}
+              >
+                {uploadResult.songsProcessed} canción{uploadResult.songsProcessed !== 1 ? 'es' : ''} procesada{uploadResult.songsProcessed !== 1 ? 's' : ''}
+                {uploadResult.rejected.length > 0 &&
+                  ` · ${uploadResult.rejected.length} rechazada${uploadResult.rejected.length !== 1 ? 's' : ''}`}
+              </p>
+              {uploadResult.rejected.length > 0 && (
+                <div className="mt-2">
+                  <p className="text-xs text-yellow-700 mb-1.5">
+                    Los siguientes ISRC ya pertenecen a otro usuario y fueron omitidos:
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {uploadResult.rejected.map((r) => (
+                      <span
+                        key={r.isrc}
+                        className="px-2 py-0.5 bg-yellow-100 text-yellow-800 text-[11px] font-mono rounded"
+                      >
+                        {r.isrc}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <button
+              onClick={() => setUploadResult(null)}
+              className="p-1 rounded hover:bg-black/5 transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 rotate-45 text-[#6B7280]" />
+            </button>
+          </div>
+        )}
+
         {/* Header */}
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">

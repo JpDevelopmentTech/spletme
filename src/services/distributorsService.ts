@@ -37,7 +37,12 @@ export const distributorsService = {
     file: File,
     quarter: string,
     year: number
-  ): Promise<{ uploadId: string; songsProcessed: number }> {
+  ): Promise<{
+    uploadId: string;
+    songsProcessed: number;
+    rejected: Array<{ isrc: string; existingOwnerId: string }>;
+    rejectedCount: number;
+  }> {
     const form = new FormData();
     form.append('csvFile', file);
     form.append('quarter', quarter);
