@@ -1,603 +1,260 @@
+import { apiClient } from "@/infrastructure/http/axiosClient";
 import axios from "axios";
-import type { RegisterSchema } from "../models/user";
+import type {
+  RegisterSchema,
+  RegisterSubuserSchema,
+  UpdateUserSchema,
+  UpdateProfileInfoSchema,
+} from "../types";
+import type {
+  PasswordRecoveryResponse,
+  CodeVerificationResponse,
+  ResetPasswordResponse,
+  ChangePasswordResponse,
+  PlatformTourResponse,
+  UnlinkSubuserResponse,
+  SwitchAccountResponse,
+} from "../types";
 
-const URI = import.meta.env.VITE_URL_API + "/api/v1/users";
+export type { UpdateUserSchema, UpdateProfileInfoSchema, RegisterSubuserSchema };
+export type { SwitchAccountResponse, UnlinkSubuserResponse };
 
-export interface RegisterSubuserSchema {
-  parentUserId: string;
-  username: string;
-  email: string;
-  name: string;
-  lastName: string;
-}
-
-export interface UpdateUserSchema {
-  userId: string;
-  username: string;
-  email: string;
-  name: string;
-  lastName: string;
-}
-
-export interface UpdateProfileInfoSchema {
-  country?: string | null;
-  profession?: string | null;
-  address?: string | null;
-}
-
-export type updateSubuserSchema = UpdateUserSchema;
-
-export interface PasswordRecoveryResponse {
-  success: boolean;
-  message: string;
-  status: number;
-}
-
-export interface CodeVerificationResponse {
-  success: boolean;
-  message: string;
-  status: number;
-  token?: string;
-}
-
-export interface ResetPasswordResponse {
-  success: boolean;
-  message: string;
-  status: number;
-}
-
-export interface ChangePasswordResponse {
-  success: boolean;
-  message: string;
-  status: number;
-}
-
-export interface PlatformTourResponse {
-  success: boolean;
-  message: string;
-  status: number;
-}
-
-export interface UnlinkSubuserResponse {
-  success: boolean;
-  message: string;
-}
-
-export interface SwitchAccountResponse {
-  success: boolean;
-  message: string;
-  status: number;
-  data?: {
-    user?: Record<string, unknown>;
-    token?: string;
-    [key: string]: unknown;
-  };
-}
+const BASE = "/users";
 
 const getMessageFromPayload = (payload: unknown, fallback: string): string => {
-  if (
-    payload &&
-    typeof payload === "object" &&
-    "message" in payload &&
-    typeof (payload as { message?: unknown }).message === "string"
-  ) {
+  if (payload && typeof payload === "object" && "message" in payload && typeof (payload as { message?: unknown }).message === "string") {
     return (payload as { message: string }).message;
   }
   return fallback;
 };
 
-const normalizeAuthToken = (token: string | null | undefined): string => {
-  const rawToken = (token || "").trim();
-  if (!rawToken) {
-    return "";
-  }
-
-  return rawToken.replace(/^Bearer\s+/i, "").trim();
-};
-
-const getAuthHeaders = (): Record<string, string> => {
-  const token = normalizeAuthToken(localStorage.getItem("token"));
-  if (!token) {
-    return {};
-  }
-
-  return {
-    Authorization: `Bearer ${token}`,
-  };
-};
-
 export const AuthService = {
+  /** Autentica al usuario con email y contraseña */
   login: async (email: string, password: string) => {
     try {
-      const endpoint = URI + "/sign-in";
-      const response = await axios.post(endpoint, { email, password });
+      const response = await apiClient.post(`${BASE}/sign-in`, { email, password });
       return response.data;
     } catch {
       return null;
     }
   },
 
-  
+  /** Registra un nuevo usuario */
   register: async (payload: RegisterSchema) => {
     try {
-      const endpoint = URI + "/sign-up";
-      const response = await axios.post(endpoint, payload);
+      const response = await apiClient.post(`${BASE}/sign-up`, payload);
       return response.data;
     } catch {
       return null;
     }
   },
 
+  /** Registra un subperfil asociado a un usuario principal */
   registerSubuser: async (payload: RegisterSubuserSchema) => {
     try {
-      const endpoint = URI + "/sign-up-subuser";
-      const response = await axios.post(endpoint, payload);
+      const response = await apiClient.post(`${BASE}/sign-up-subuser`, payload);
       return response.data;
-    } catch (error) {
-      console.error("Error registering subuser:", error);
+    } catch {
       return null;
     }
   },
-  
+
+  /** Obtiene los subperfiles del usuario autenticado */
   getSubUsersByUser: async () => {
     try {
-      const endpoint = URI + "/subusers";
-      const response = await axios.get(endpoint, {
-        headers: getAuthHeaders(),
-      });
+      const response = await apiClient.get(`${BASE}/subusers`);
       return response.data;
-    } catch (error) {
-      console.error("Error getting subusers by user:", error);
+    } catch {
       return null;
     }
   },
 
+  /** Obtiene la lista de subperfiles */
   getlistOfSubusers: async () => {
     try {
-      const endpoint = URI + "/list-subusers";
-      const response = await axios.get(endpoint, {
-        headers: getAuthHeaders(),
-      });
+      const response = await apiClient.get(`${BASE}/list-subusers`);
       return response.data;
-    } catch (error) {
-      console.error("Error getting list of subusers:", error);
+    } catch {
       return null;
     }
   },
 
-  switchAccount: async (
-    targetUserId: string,
-  ): Promise<SwitchAccountResponse> => {
-    if (!targetUserId.trim()) {
-      return {
-        success: false,
-        message: "ID de usuario inválido",
-        status: 400,
-      };
-    }
-
+  /** Cambia la cuenta activa al usuario especificado */
+  switchAccount: async (targetUserId: string): Promise<SwitchAccountResponse> => {
+    if (!targetUserId.trim()) return { success: false, message: "ID de usuario inválido", status: 400 };
     try {
-      const endpoint = `${URI}/switch-account`;
-      const response = await axios.post(
-        endpoint,
+      const response = await apiClient.post(
+        `${BASE}/switch-account`,
         { targetUserId },
-        {
-          headers: getAuthHeaders(),
-          validateStatus: (status) =>
-            (status >= 200 && status < 300) ||
-            status === 400 ||
-            status === 401 ||
-            status === 404 ||
-            status === 409 ||
-            status === 422,
-        },
+        { validateStatus: (s) => (s >= 200 && s < 300) || [400, 401, 404, 409, 422].includes(s) }
       );
-
       if (response.status < 200 || response.status >= 300) {
-        return {
-          success: false,
-          message: getMessageFromPayload(
-            response.data,
-            "No se pudo cambiar de cuenta",
-          ),
-          status: response.status,
-        };
+        return { success: false, message: getMessageFromPayload(response.data, "No se pudo cambiar de cuenta"), status: response.status };
       }
-
-      return {
-        success: true,
-        message: response.data?.message || "Account switched successfully",
-        status: response.status,
-        data: response.data?.data || response.data,
-      };
+      return { success: true, message: response.data?.message ?? "Account switched successfully", status: response.status, data: response.data?.data ?? response.data };
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        return {
-          success: false,
-          message: getMessageFromPayload(
-            error.response?.data,
-            "No se pudo cambiar de cuenta",
-          ),
-          status: error.response?.status || 500,
-        };
+        return { success: false, message: getMessageFromPayload(error.response?.data, "No se pudo cambiar de cuenta"), status: error.response?.status ?? 500 };
       }
-
-      return {
-        success: false,
-        message: "No se pudo cambiar de cuenta",
-        status: 500,
-      };
+      return { success: false, message: "No se pudo cambiar de cuenta", status: 500 };
     }
   },
 
-  switchSubuser: async (
-    subuserId: string,
-  ): Promise<SwitchAccountResponse> => {
+  /** Cambia la cuenta activa a un subperfil */
+  switchSubuser: async (subuserId: string): Promise<SwitchAccountResponse> => {
     return AuthService.switchAccount(subuserId);
   },
-  
-  unlinkSubuser: async (subuserId: string): Promise<UnlinkSubuserResponse> => {
-    if (!subuserId.trim()) {
-      return {
-        success: false,
-        message: "ID de subperfil inválido",
-      };
-    }
-    
-    try {
-      const endpoint = `${URI}/subusers/unlink`;
-      const response = await axios.post(
-        endpoint,
-        {
-          subuserId,
-        },
-        {
-          headers: getAuthHeaders(),
-        },
-      );
 
-      return {
-        success: true,
-        message: response.data?.message || "Subperfil desvinculado correctamente",
-      };
+  /** Desvincula un subperfil del usuario actual */
+  unlinkSubuser: async (subuserId: string): Promise<UnlinkSubuserResponse> => {
+    if (!subuserId.trim()) return { success: false, message: "ID de subperfil inválido" };
+    try {
+      const response = await apiClient.post(`${BASE}/subusers/unlink`, { subuserId });
+      return { success: true, message: response.data?.message ?? "Subperfil desvinculado correctamente" };
     } catch (error) {
-      return {
-        success: false,
-        message: getMessageFromPayload(
-          axios.isAxiosError(error) ? error.response?.data : undefined,
-          "No se pudo desvincular el subperfil",
-        ),
-      };
+      return { success: false, message: getMessageFromPayload(axios.isAxiosError(error) ? error.response?.data : undefined, "No se pudo desvincular el subperfil") };
     }
   },
-  
+
+  /** Actualiza los datos básicos del usuario */
   updateUser: async (payload: UpdateUserSchema) => {
     try {
-      const endpoint = `${URI}/update/${payload.userId}`;
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { userId: _id, email: _email, ...body } = payload;
-      const response = await axios.put(endpoint, body, {
-        headers: getAuthHeaders(),
-      });
-      const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-      const updatedUser = { ...currentUser, ...response.data.data };
-      localStorage.setItem("user", JSON.stringify(updatedUser));
+      const response = await apiClient.put(`${BASE}/update/${payload.userId}`, body);
+      const currentUser = JSON.parse(localStorage.getItem("user") ?? "{}");
+      localStorage.setItem("user", JSON.stringify({ ...currentUser, ...response.data.data }));
       return response.data;
-    } catch (error) {
-      console.error("Error updating user:", error);
+    } catch {
       return null;
     }
   },
 
+  /** Actualiza la información de perfil (país, profesión, dirección) */
   updateProfileInfo: async (payload: UpdateProfileInfoSchema) => {
     try {
-      const endpoint = `${URI}/profile-info`;
-      const response = await axios.put(endpoint, payload, {
-        headers: getAuthHeaders(),
-      });
-
-      const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-      const updatedPayload =
-        response.data?.data?.user ||
-        response.data?.data ||
-        response.data?.user ||
-        {};
+      const response = await apiClient.put(`${BASE}/profile-info`, payload);
+      const updatedPayload = response.data?.data?.user ?? response.data?.data ?? response.data?.user ?? {};
+      const currentUser = JSON.parse(localStorage.getItem("user") ?? "{}");
       const updatedUser = {
         ...currentUser,
         ...updatedPayload,
         onboardingData: {
-          ...(currentUser.onboardingData || {}),
-          ...(updatedPayload.onboardingData || {}),
+          ...(currentUser.onboardingData ?? {}),
+          ...(updatedPayload.onboardingData ?? {}),
           country: payload.country ?? currentUser.onboardingData?.country ?? null,
           profession: payload.profession ?? currentUser.onboardingData?.profession ?? null,
           address: payload.address ?? currentUser.onboardingData?.address ?? null,
         },
       };
-
       localStorage.setItem("user", JSON.stringify(updatedUser));
       return response.data;
-    } catch (error) {
-      console.error("Error updating profile info:", error);
+    } catch {
       return null;
     }
   },
 
-  sentPasswordRecoveryRequest: async (
-    email: string,
-  ): Promise<PasswordRecoveryResponse> => {
+  /** Envía el email de recuperación de contraseña */
+  sentPasswordRecoveryRequest: async (email: string): Promise<PasswordRecoveryResponse> => {
     try {
-      const endpoint = URI + "/password-recovery/request";
-      const response = await axios.post(
-        endpoint,
+      const response = await apiClient.post(
+        `${BASE}/password-recovery/request`,
         { email },
-        {
-          validateStatus: (status) =>
-            (status >= 200 && status < 300) || status === 404 || status === 409,
-        },
+        { validateStatus: (s) => (s >= 200 && s < 300) || [404, 409].includes(s) }
       );
-
       if (response.status === 404 || response.status === 409) {
-        return {
-          success: false,
-          message: "correo no encontrado",
-          status: response.status,
-        };
+        return { success: false, message: "correo no encontrado", status: response.status };
       }
-
-      return {
-        success: true,
-        message:
-        response.data?.message ||
-        "If the email exists, the recovery code was sent",
-        status: response.status,
-      };
+      return { success: true, message: response.data?.message ?? "If the email exists, the recovery code was sent", status: response.status };
     } catch (error) {
-      if (
-        axios.isAxiosError(error) &&
-        (error.response?.status === 404 || error.response?.status === 409)
-      ) {
-        return {
-          success: false,
-          message: "correo no encontrado",
-          status: error.response.status,
-        };
+      if (axios.isAxiosError(error) && [404, 409].includes(error.response?.status ?? 0)) {
+        return { success: false, message: "correo no encontrado", status: error.response!.status };
       }
-
-      return {
-        success: false,
-        message: "No se pudo enviar el código",
-        status: 500,
-      };
+      return { success: false, message: "No se pudo enviar el código", status: 500 };
     }
   },
-  
-  sentcodeForPasswordRecovery: async (
-    email: string,
-    code: string,
-  ): Promise<CodeVerificationResponse> => {
+
+  /** Verifica el código de recuperación de contraseña */
+  sentcodeForPasswordRecovery: async (email: string, code: string): Promise<CodeVerificationResponse> => {
     try {
-      const endpoint = URI + "/password-recovery/verify-code";
-      const response = await axios.post(endpoint, { email, code });
-      return {
-        success: true,
-        message: response.data?.message || "Código verificado correctamente",
-        status: response.status,
-        token: response.data?.token,
-      };
+      const response = await apiClient.post(`${BASE}/password-recovery/verify-code`, { email, code });
+      return { success: true, message: response.data?.message ?? "Código verificado correctamente", status: response.status, token: response.data?.token };
     } catch {
-      return {
-        success: false,
-        message: "Código inválido o expirado",
-        status: 400,
-      };
+      return { success: false, message: "Código inválido o expirado", status: 400 };
     }
   },
-  
-  resetPasswordByCode: async (
-    email: string,
-    code: string,
-    newPassword: string,
-    newPasswordConfirmation: string,
-  ): Promise<ResetPasswordResponse> => {
+
+  /** Restablece la contraseña con un código de recuperación */
+  resetPasswordByCode: async (email: string, code: string, newPassword: string, newPasswordConfirmation: string): Promise<ResetPasswordResponse> => {
     try {
-      const endpoint = URI + "/password-recovery/reset";
-      const response = await axios.post(
-        endpoint,
-        {
-          email,
-          code,
-          newPassword,
-          newPasswordConfirmation,
-        },
-        {
-          validateStatus: (status) =>
-            (status >= 200 && status < 300) ||
-            status === 400 ||
-            status === 401 ||
-            status === 404 ||
-            status === 409 ||
-            status === 422,
-          },
+      const response = await apiClient.post(
+        `${BASE}/password-recovery/reset`,
+        { email, code, newPassword, newPasswordConfirmation },
+        { validateStatus: (s) => (s >= 200 && s < 300) || [400, 401, 404, 409, 422].includes(s) }
       );
-      
       if (response.status < 200 || response.status >= 300) {
-        return {
-          success: false,
-          message: getMessageFromPayload(
-            response.data,
-            "Error al restablecer la contraseña",
-          ),
-          status: response.status,
-        };
+        return { success: false, message: getMessageFromPayload(response.data, "Error al restablecer la contraseña"), status: response.status };
       }
-      
-      return {
-        success: true,
-        message:
-          response.data?.message || "Contraseña restablecida correctamente",
-        status: response.status,
-      };
+      return { success: true, message: response.data?.message ?? "Contraseña restablecida correctamente", status: response.status };
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        return {
-          success: false,
-          message: getMessageFromPayload(
-            error.response?.data,
-            "Error al restablecer la contraseña",
-          ),
-          status: error.response?.status || 500,
-        };
+        return { success: false, message: getMessageFromPayload(error.response?.data, "Error al restablecer la contraseña"), status: error.response?.status ?? 500 };
       }
-
-      return {
-        success: false,
-        message: "Error al restablecer la contraseña",
-        status: 500,
-      };
-    }
-  },
-  
-  changePassword: async (
-    newPassword: string,
-    newPasswordConfirmation: string,
-    currentPassword?: string,
-    token?: string,
-  ): Promise<ChangePasswordResponse> => {
-    try {
-      const endpoint = URI + "/password/change";
-      const authToken = normalizeAuthToken(token || localStorage.getItem("token"));
-      
-      if (!authToken) {
-        return {
-          success: false,
-          message: "No se encontró token de autenticación",
-          status: 401,
-        };
-      }
-
-      const payload = {
-        newPassword,
-        newPasswordConfirmation,
-        token: authToken,
-        ...(currentPassword ? { currentPassword } : {}),
-      };
-
-      const response = await axios.post(endpoint, payload, {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
-        validateStatus: (status) =>
-          (status >= 200 && status < 300) ||
-        status === 400 ||
-        status === 401 ||
-        status === 404 ||
-        status === 409 ||
-        status === 422,
-      });
-      
-      if (response.status < 200 || response.status >= 300) {
-        return {
-          success: false,
-          message: getMessageFromPayload(
-            response.data,
-            "Error al cambiar la contraseña",
-          ),
-          status: response.status,
-        };
-      }
-      
-      return {
-        success: true,
-        message: response.data?.message || "Contraseña cambiada correctamente",
-        status: response.status,
-      };
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        return {
-          success: false,
-          message: getMessageFromPayload(
-            error.response?.data,
-            "Error al cambiar la contraseña",
-          ),
-          status: error.response?.status || 500,
-        };
-      }
-
-      return {
-        success: false,
-        message: "Error al cambiar la contraseña",
-        status: 500,
-      };
+      return { success: false, message: "Error al restablecer la contraseña", status: 500 };
     }
   },
 
-  completeDashboardTour: async (
-    completed: boolean,
-  ): Promise<PlatformTourResponse> => {
+  /** Cambia la contraseña del usuario autenticado */
+  changePassword: async (newPassword: string, newPasswordConfirmation: string, currentPassword?: string, token?: string): Promise<ChangePasswordResponse> => {
     try {
-      const endpoint = `${URI}/dashboard-tour/complete`;
-      const response = await axios.post(
-        endpoint,
+      const authToken = (token ?? localStorage.getItem("token") ?? "").trim().replace(/^Bearer\s+/i, "").trim();
+      if (!authToken) return { success: false, message: "No se encontró token de autenticación", status: 401 };
+      const payload = { newPassword, newPasswordConfirmation, token: authToken, ...(currentPassword ? { currentPassword } : {}) };
+      const response = await apiClient.post(
+        `${BASE}/password/change`,
+        payload,
+        { validateStatus: (s) => (s >= 200 && s < 300) || [400, 401, 404, 409, 422].includes(s) }
+      );
+      if (response.status < 200 || response.status >= 300) {
+        return { success: false, message: getMessageFromPayload(response.data, "Error al cambiar la contraseña"), status: response.status };
+      }
+      return { success: true, message: response.data?.message ?? "Contraseña cambiada correctamente", status: response.status };
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        return { success: false, message: getMessageFromPayload(error.response?.data, "Error al cambiar la contraseña"), status: error.response?.status ?? 500 };
+      }
+      return { success: false, message: "Error al cambiar la contraseña", status: 500 };
+    }
+  },
+
+  /** Marca el tour del dashboard como completado */
+  completeDashboardTour: async (completed: boolean): Promise<PlatformTourResponse> => {
+    try {
+      const response = await apiClient.post(
+        `${BASE}/dashboard-tour/complete`,
         { completed },
-        {
-          headers: getAuthHeaders(),
-          validateStatus: (status) =>
-            (status >= 200 && status < 300) ||
-            status === 400 ||
-            status === 401 ||
-            status === 404 ||
-            status === 409 ||
-            status === 422,
-        },
+        { validateStatus: (s) => (s >= 200 && s < 300) || [400, 401, 404, 409, 422].includes(s) }
       );
-
       if (response.status < 200 || response.status >= 300) {
-        return {
-          success: false,
-          message: getMessageFromPayload(
-            response.data,
-            "Error al actualizar el tour de la plataforma",
-          ),
-          status: response.status,
-        };
+        return { success: false, message: getMessageFromPayload(response.data, "Error al actualizar el tour"), status: response.status };
       }
-
-      return {
-        success: true,
-        message: response.data?.message || "Tour de la plataforma actualizado",
-        status: response.status,
-      };
+      return { success: true, message: response.data?.message ?? "Tour actualizado", status: response.status };
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        return {
-          success: false,
-          message: getMessageFromPayload(
-            error.response?.data,
-            "Error al actualizar el tour de la plataforma",
-          ),
-          status: error.response?.status || 500,
-        };
+        return { success: false, message: getMessageFromPayload(error.response?.data, "Error al actualizar el tour"), status: error.response?.status ?? 500 };
       }
-
-      return {
-        success: false,
-        message: "Error al actualizar el tour de la plataforma",
-        status: 500,
-      };
+      return { success: false, message: "Error al actualizar el tour", status: 500 };
     }
   },
+
+  /** Cierra la sesión del usuario y limpia el storage local */
   logout: async () => {
-  try {
-    await axios.post(`${URI}/logout`, {}, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
-  } finally {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("isAuth");
-    localStorage.removeItem("dashboard-tour-completed");
+    try {
+      await apiClient.post(`${BASE}/logout`, {});
+    } finally {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("isAuth");
+      localStorage.removeItem("dashboard-tour-completed");
       window.location.href = "/auth/email-login";
     }
   },

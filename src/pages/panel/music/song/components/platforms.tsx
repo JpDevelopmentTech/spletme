@@ -113,7 +113,7 @@ const Platforms = ({ reproductions = [] }: PlatformsProps) => {
 
     const platformsWithData = mapped.filter((p) => p.percentage > 0);
     const platformsWithZero = mapped.filter((p) => p.percentage === 0);
-    const groupedData = [...platformsWithData];
+    const groupedData: PlatformDataItem[] = [...platformsWithData];
 
     if (platformsWithZero.length > 0) {
       const othersConfig = platformConfig.Otros;

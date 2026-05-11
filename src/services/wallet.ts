@@ -1,4 +1,4 @@
-import axios from "axios";
+import { apiClient } from "@/infrastructure/http/axiosClient";
 
 interface CreateWalletData {
   first_name: string;
@@ -12,10 +12,7 @@ interface CreateWalletData {
 interface WalletData {
   id: string;
   status: string;
-  accounts?: Array<{
-    balance: number;
-    currency: string;
-  }>;
+  accounts?: Array<{ balance: number; currency: string }>;
   [key: string]: unknown;
 }
 
@@ -25,224 +22,111 @@ interface WalletResponse {
   message?: string;
 }
 
+const errorMessage = (error: unknown, fallback: string): string => {
+  const axErr = error as { response?: { data?: { message?: string } } };
+  return axErr.response?.data?.message ?? fallback;
+};
+
 class WalletService {
-  private readonly URI = import.meta.env.VITE_URL_API + "/api/v1/wallet";
+  private readonly BASE = "/wallet";
 
-  private getAuthToken() {
-    return localStorage.getItem("token");
-  }
-
-  private get headers() {
-    return {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${this.getAuthToken()}`,
-    };
-  }
-
-  /**
-   * Crea una wallet para el usuario
-   */
+  /** Crea una wallet para el usuario autenticado */
   async createWallet(data: CreateWalletData): Promise<WalletResponse> {
     try {
-      const response = await axios.post(
-        `${this.URI}/create-wallet`,
-        data,
-        {
-          headers: this.headers,
-        }
-      );
+      const response = await apiClient.post(`${this.BASE}/create-wallet`, data);
       return response.data;
-    } catch (error: unknown) {
-      console.error("Error creating wallet:", error);
-      const errorMessage = error instanceof Error && 'response' in error
-        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-        : undefined;
-      return { 
-        error: true, 
-        message: errorMessage || "Error creating wallet" 
-      };
+    } catch (error) {
+      return { error: true, message: errorMessage(error, "Error creating wallet") };
     }
   }
 
-  /**
-   * Obtiene la wallet del usuario
-   */
+  /** Obtiene la wallet del usuario autenticado */
   async getWallet(): Promise<WalletResponse> {
     try {
-      const response = await axios.get(`${this.URI}/get-wallet`, {
-        headers: this.headers,
-      });
+      const response = await apiClient.get(`${this.BASE}/get-wallet`);
       return response.data;
-    } catch (error: unknown) {
-      console.error("Error getting wallet:", error);
-      const errorMessage = error instanceof Error && 'response' in error
-        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-        : undefined;
-      return { 
-        error: true, 
-        message: errorMessage || "Error getting wallet" 
-      };
+    } catch (error) {
+      return { error: true, message: errorMessage(error, "Error getting wallet") };
     }
   }
 
-  /**
-   * Paga a un colaborador
-   */
-  async payCollaborator(data: {
-    collaboratorId: string;
-    songId: string;
-    amount: number;
-  }): Promise<WalletResponse> {
+  /** Paga a un colaborador desde la wallet */
+  async payCollaborator(data: { collaboratorId: string; songId: string; amount: number }): Promise<WalletResponse> {
     try {
-      const response = await axios.post(
-        `${this.URI}/pay-collaborator`,
-        data,
-        {
-          headers: this.headers,
-        }
-      );
+      const response = await apiClient.post(`${this.BASE}/pay-collaborator`, data);
       return response.data;
-    } catch (error: unknown) {
-      console.error("Error paying collaborator:", error);
-      const errorMessage = error instanceof Error && 'response' in error
-        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-        : undefined;
-      return { 
-        error: true, 
-        message: errorMessage || "Error paying collaborator" 
-      };
+    } catch (error) {
+      return { error: true, message: errorMessage(error, "Error paying collaborator") };
     }
   }
 
-  /**
-   * Obtiene los métodos de pago disponibles
-   */
+  /** Obtiene los métodos de retiro disponibles */
   async getPayoutMethodTypes(): Promise<WalletResponse> {
     try {
-      const response = await axios.get(`${this.URI}/get-payout-method-types`, {
-        headers: this.headers,
-      });
+      const response = await apiClient.get(`${this.BASE}/get-payout-method-types`);
       return response.data;
-    } catch (error: unknown) {
-      console.error("Error getting payout method types:", error);
-      const errorMessage = error instanceof Error && 'response' in error
-        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-        : undefined;
-      return { 
-        error: true, 
-        message: errorMessage || "Error getting payout method types" 
-      };
+    } catch (error) {
+      return { error: true, message: errorMessage(error, "Error getting payout method types") };
     }
   }
 
-  /**
-   * Obtiene los campos requeridos para un método de pago específico
-   */
+  /** Obtiene los campos requeridos para un método de retiro */
   async getRequiredFieldsForPayoutMethod(payoutMethodType: string): Promise<WalletResponse> {
     try {
-      const response = await axios.get(
-        `${this.URI}/get-required-fields-for-payout-method`,
-        {
-          headers: this.headers,
-          params: { payoutMethodType },
-        }
-      );
+      const response = await apiClient.get(`${this.BASE}/get-required-fields-for-payout-method`, {
+        params: { payoutMethodType },
+      });
       return response.data;
-    } catch (error: unknown) {
-      console.error("Error getting required fields:", error);
-      const errorMessage = error instanceof Error && 'response' in error
-        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-        : undefined;
-      return { 
-        error: true, 
-        message: errorMessage || "Error getting required fields" 
-      };
+    } catch (error) {
+      return { error: true, message: errorMessage(error, "Error getting required fields") };
     }
   }
 
-  /**
-   * Solicita un retiro de dinero
-   */
+  /** Solicita un retiro de fondos */
   async requestWithdrawal(data: {
     amount: number;
     payoutMethodType: string;
     beneficiaryDetails: Record<string, unknown>;
   }): Promise<WalletResponse> {
     try {
-      const response = await axios.post(
-        `${this.URI}/request-withdrawal`,
-        data,
-        {
-          headers: this.headers,
-        }
-      );
+      const response = await apiClient.post(`${this.BASE}/request-withdrawal`, data);
       return response.data;
-    } catch (error: unknown) {
-      console.error("Error requesting withdrawal:", error);
-      const errorMessage = error instanceof Error && 'response' in error
-        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-        : undefined;
-      return { 
-        error: true, 
-        message: errorMessage || "Error requesting withdrawal" 
-      };
+    } catch (error) {
+      return { error: true, message: errorMessage(error, "Error requesting withdrawal") };
     }
   }
 
+  /** Crea un depósito */
   async createDeposit(data: { amount: number; currency: string; country: string }) {
     try {
-      const response = await axios.post(`${this.URI}/create-deposit`, data, {
-        headers: this.headers,
-      });
+      const response = await apiClient.post(`${this.BASE}/create-deposit`, data);
       return response.data;
-    } catch (error: unknown) {
-      console.error("Error creating deposit:", error);
+    } catch {
       return { error: true, message: "Error creating deposit" };
     }
   }
 
+  /** Obtiene el historial de transacciones */
   async getTransactions(pageNumber = 1, pageSize = 25) {
     try {
-      const response = await axios.get(`${this.URI}/get-transactions`, {
-        headers: this.headers,
+      const response = await apiClient.get(`${this.BASE}/get-transactions`, {
         params: { pageNumber, pageSize },
       });
       return response.data;
-    } catch (error: unknown) {
-      console.error("Error getting transactions:", error);
+    } catch {
       return { error: true, message: "Error getting transactions" };
     }
   }
 
-  /**
-   * Envía fondos a otro usuario
-   */
-  async sendFundsToUser(data: {
-    amount: number;
-    recipientEmail: string;
-    note?: string;
-  }): Promise<WalletResponse> {
+  /** Envía fondos a otro usuario por email */
+  async sendFundsToUser(data: { amount: number; recipientEmail: string; note?: string }): Promise<WalletResponse> {
     try {
-      const response = await axios.post(
-        `${this.URI}/send-funds-to-user`,
-        data,
-        {
-          headers: this.headers,
-        }
-      );
+      const response = await apiClient.post(`${this.BASE}/send-funds-to-user`, data);
       return response.data;
-    } catch (error: unknown) {
-      console.error("Error sending funds to user:", error);
-      const errorMessage = error instanceof Error && 'response' in error
-        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-        : undefined;
-      return { 
-        error: true, 
-        message: errorMessage || "Error sending funds to user" 
-      };
+    } catch (error) {
+      return { error: true, message: errorMessage(error, "Error sending funds to user") };
     }
   }
 }
 
 export default new WalletService();
-

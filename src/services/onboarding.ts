@@ -1,6 +1,5 @@
+import { apiClient } from "@/infrastructure/http/axiosClient";
 import axios from "axios";
-
-const URI = import.meta.env.VITE_URL_API + '/api/v1/users';
 
 interface ErrorPayload {
   message?: string;
@@ -33,135 +32,62 @@ export interface AccountVerificationVerifyResponse {
   verified: boolean;
 }
 
-const normalizeAuthToken = (token: string | null): string =>
-  (token || "").replace(/^Bearer\s+/i, "").trim();
-
-const getRequiredAuthHeaders = (): Record<string, string> => {
-  const token = normalizeAuthToken(localStorage.getItem("token"));
-  if (!token) {
-    throw new Error("No se encontró token de autenticación");
-  }
-
-  return { Authorization: `Bearer ${token}` };
-};
-
-const getOptionalAuthHeaders = (): Record<string, string> | undefined => {
-  const token = normalizeAuthToken(localStorage.getItem("token"));
-  if (!token) {
-    return undefined;
-  }
-
-  return { Authorization: `Bearer ${token}` };
-};
-
 const getErrorMessage = (error: unknown, fallback: string): string => {
-  if (
-    axios.isAxiosError(error) &&
-    error.response?.data &&
-    typeof error.response.data === "object"
-  ) {
+  if (axios.isAxiosError(error) && error.response?.data && typeof error.response.data === "object") {
     const payload = error.response.data as ErrorPayload;
-    if (typeof payload.message === "string" && payload.message.trim()) {
-      return payload.message;
-    }
+    if (typeof payload.message === "string" && payload.message.trim()) return payload.message;
   }
-
   return fallback;
 };
 
-const getBooleanFromPayload = (
-  payload: unknown,
-  key: "accepted" | "verified",
-): boolean | undefined => {
-  if (!payload || typeof payload !== "object") {
-    return undefined;
+const getBooleanFromPayload = (payload: unknown, key: "accepted" | "verified"): boolean | undefined => {
+  if (!payload || typeof payload !== "object") return undefined;
+  const top = payload as BooleanPayload;
+  if (typeof top[key] === "boolean") return top[key] as boolean;
+  if (top.data && typeof top.data === "object") {
+    const nested = top.data as BooleanPayload;
+    if (typeof nested[key] === "boolean") return nested[key] as boolean;
   }
-
-  const topLevel = payload as BooleanPayload;
-  if (typeof topLevel[key] === "boolean") {
-    return topLevel[key] as boolean;
-  }
-
-  if (topLevel.data && typeof topLevel.data === "object") {
-    const nested = topLevel.data as BooleanPayload;
-    if (typeof nested[key] === "boolean") {
-      return nested[key] as boolean;
-    }
-  }
-
   return undefined;
 };
 
+const BASE = "/users";
+
 export const OnboardingService = {
+  /** Actualiza los datos de onboarding del usuario autenticado */
   updateOnboarding: async (onboardingData: OnboardingData) => {
     try {
-      const endpoint = URI + '/onboarding';
-      const response = await axios.put(endpoint, onboardingData, {
-        headers: getRequiredAuthHeaders(),
-      });
+      const response = await apiClient.put(`${BASE}/onboarding`, onboardingData);
       return response.data;
     } catch (error) {
-      console.error('Error updating onboarding:', error);
       throw error;
     }
   },
-  requestAccountVerificationCode: async (
-    email: string,
-  ): Promise<AccountVerificationRequestResponse> => {
-    const normalizedEmail = email.trim().toLowerCase();
-    const endpoint = URI + "/account-verification/request";
 
+  /** Solicita el envío de un código de verificación de cuenta */
+  requestAccountVerificationCode: async (email: string): Promise<AccountVerificationRequestResponse> => {
     try {
-      const response = await axios.post(
-        endpoint,
-        { email: normalizedEmail },
-        {
-          headers: getOptionalAuthHeaders(),
-        },
-      );
-
-      const accepted =
-        getBooleanFromPayload(response.data, "accepted") ??
-        (response.status >= 200 && response.status < 300);
-
-      return {
-        accepted,
-      };
+      const response = await apiClient.post(`${BASE}/account-verification/request`, {
+        email: email.trim().toLowerCase(),
+      });
+      const accepted = getBooleanFromPayload(response.data, "accepted") ?? (response.status >= 200 && response.status < 300);
+      return { accepted };
     } catch (error) {
-      throw new Error(
-        getErrorMessage(error, "No se pudo enviar el código de verificación"),
-      );
+      throw new Error(getErrorMessage(error, "No se pudo enviar el código de verificación"));
     }
   },
-  verifyAccountCode: async (
-    email: string,
-    code: string,
-  ): Promise<AccountVerificationVerifyResponse> => {
-    const normalizedEmail = email.trim().toLowerCase();
-    const normalizedCode = code.trim();
-    const endpoint = URI + "/account-verification/verify-code";
 
+  /** Verifica el código de verificación de cuenta */
+  verifyAccountCode: async (email: string, code: string): Promise<AccountVerificationVerifyResponse> => {
     try {
-      const response = await axios.post(
-        endpoint,
-        { email: normalizedEmail, code: normalizedCode },
-        {
-          headers: getOptionalAuthHeaders(),
-        },
-      );
-
-      const verified =
-        getBooleanFromPayload(response.data, "verified") ??
-        (response.status >= 200 && response.status < 300);
-
-      return {
-        verified,
-      };
+      const response = await apiClient.post(`${BASE}/account-verification/verify-code`, {
+        email: email.trim().toLowerCase(),
+        code: code.trim(),
+      });
+      const verified = getBooleanFromPayload(response.data, "verified") ?? (response.status >= 200 && response.status < 300);
+      return { verified };
     } catch (error) {
-      throw new Error(
-        getErrorMessage(error, "Código inválido o expirado"),
-      );
+      throw new Error(getErrorMessage(error, "Código inválido o expirado"));
     }
   },
 };
-
