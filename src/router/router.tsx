@@ -25,6 +25,7 @@ import LabelsTable from "../pages/panel/labels/labelsTable";
 import LabelDetail from "../pages/panel/labels/labelDetail";
 import CustomLabelDetail from "../pages/panel/labels/customLabelDetail";
 import ChangePasswordPage from "@/pages/panel/profile/change-password";
+import Analytics from "../pages/panel/analytics/analytics";
 
 const routes = [
   {
@@ -107,6 +108,10 @@ const routes = [
       {
         path: "collaborators/:id",
         element: <Collaborator />
+      },
+      {
+        path: "analytics",
+        element: <Analytics />,
       },
       {
         path: "balance",
