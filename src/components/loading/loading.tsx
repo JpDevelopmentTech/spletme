@@ -1,40 +1,43 @@
-import { Loader2, Circle } from 'lucide-react';
-import { motion } from 'framer-motion';
-const Loading = () => {
-    return (
-        <div className=" absolute top-0 left-0 w-full h-full z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm">
-            <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                className="relative"
-            >
-                <motion.div 
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                    className="text-quinary"
-                >
-                    <Circle className="w-12 h-12" />
-                </motion.div>
-                <motion.div 
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                >
-                    <Loader2 className="w-6 h-6 text-gray-600" />
-                </motion.div>
-            </motion.div>
-            <motion.p 
-                className="mt-4 text-sm font-medium text-gray-600 tracking-wider"
-                initial={{ y: 10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.2 }}
-            >
-                Cargando...
-            </motion.p>
-        </div>
-    );
+interface LoadingProps {
+  text?: string;
 }
+
+const Loading = ({ text = "Cargando" }: LoadingProps) => {
+  return (
+    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-[#F7F8FA]">
+      <style>{`
+        @keyframes bar-slide {
+          0%   { transform: translateX(-100%); }
+          100% { transform: translateX(400%);  }
+        }
+        @keyframes dot-pulse {
+          0%, 80%, 100% { transform: scale(0.6); opacity: 0.3; }
+          40%            { transform: scale(1);   opacity: 1;   }
+        }
+        .bar-fill { animation: bar-slide 1.6s ease-in-out infinite; }
+        .dot { animation: dot-pulse 1.2s ease-in-out infinite; }
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+      `}</style>
+
+      <div className="flex flex-col items-center gap-4">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-[#111827] tracking-wide select-none" style={{ fontSize: 13 }}>
+            {text}
+          </span>
+          <div className="flex items-center gap-1">
+            <span className="dot w-1.5 h-1.5 rounded-full bg-[#F97316] inline-block" />
+            <span className="dot w-1.5 h-1.5 rounded-full bg-[#F97316] inline-block" />
+            <span className="dot w-1.5 h-1.5 rounded-full bg-[#F97316] inline-block" />
+          </div>
+        </div>
+
+        <div className="relative overflow-hidden rounded-full bg-[#E5E7EB]" style={{ width: 140, height: 3 }}>
+          <div className="bar-fill absolute inset-y-0 left-0 rounded-full bg-[#F97316]" style={{ width: "35%" }} />
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default Loading;

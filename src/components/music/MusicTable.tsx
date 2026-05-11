@@ -3,6 +3,24 @@ import { Music as MusicIcon, Disc, Crown, Info, Tags } from "lucide-react";
 import { hasAnySplit } from "@/utils/music.utils";
 import type { MusicMode, SongItem, AlbumItem } from "@/types/music.types";
 
+const COLLAB_COLORS = [
+  { bg: "#DBEAFE", color: "#1E40AF" },
+  { bg: "#D1FAE5", color: "#065F46" },
+  { bg: "#EDE9FE", color: "#5B21B6" },
+  { bg: "#FED7AA", color: "#9A3412" },
+  { bg: "#FCE7F3", color: "#9D174D" },
+  { bg: "#FEF3C7", color: "#92400E" },
+];
+
+function getCollabInitials(name: string) {
+  return name
+    .split(" ")
+    .slice(0, 2)
+    .map((n) => n[0] ?? "")
+    .join("")
+    .toUpperCase() || "?";
+}
+
 interface MusicTableProps {
   mode: MusicMode;
   songs: SongItem[];
@@ -108,9 +126,29 @@ export function MusicTable({
                         <div className="flex -space-x-2">
                           {song?.collaborators?.length ? (
                             <>
-                              {song.collaborators.slice(0, 3).map((c, idx) => (
-                                <img key={idx} src={c.image} alt={c.name} className="w-7 h-7 rounded-full border-2 border-white" />
-                              ))}
+                              {song.collaborators.slice(0, 3).map((c, idx) => {
+                                const palette = COLLAB_COLORS[idx % COLLAB_COLORS.length];
+                                return c.image ? (
+                                  <img
+                                    key={idx}
+                                    src={c.image}
+                                    alt={c.name}
+                                    title={c.name}
+                                    className="w-7 h-7 rounded-full border-2 border-white object-cover"
+                                  />
+                                ) : (
+                                  <div
+                                    key={idx}
+                                    title={c.name}
+                                    className="w-7 h-7 rounded-full border-2 border-white flex items-center justify-center flex-shrink-0"
+                                    style={{ backgroundColor: palette.bg }}
+                                  >
+                                    <span className="text-[10px] font-bold" style={{ color: palette.color }}>
+                                      {getCollabInitials(c.name)}
+                                    </span>
+                                  </div>
+                                );
+                              })}
                               {song.collaborators.length > 3 && (
                                 <div className="w-7 h-7 rounded-full bg-gray-100 border-2 border-white flex items-center justify-center">
                                   <span className="text-[10px] font-medium text-gray-500">+{song.collaborators.length - 3}</span>
@@ -118,7 +156,7 @@ export function MusicTable({
                               )}
                             </>
                           ) : (
-                            <span className="text-[13px] text-gray-400">None</span>
+                            <span className="text-[13px] text-gray-400">—</span>
                           )}
                         </div>
                       </td>

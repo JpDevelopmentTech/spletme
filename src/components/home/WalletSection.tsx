@@ -23,7 +23,7 @@ export function WalletSection({
 }: WalletSectionProps) {
   return (
     <div
-      className="col-span-2 bg-white rounded-xl p-6 border border-gray-200 flex flex-col gap-5"
+      className="col-span-2 row-span-2 bg-white rounded-xl p-6 border border-gray-200 flex flex-col gap-5"
       data-tour="balance-section"
     >
       {walletLoading ? (
