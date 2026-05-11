@@ -17,7 +17,11 @@ export type {
   AlbumsError,
 } from "./album.types";
 
-export type { SplitCondition } from "./split.types";
+export type {
+  SplitCondition,
+  CreateSplitRequest,
+  SplitConditionFormData,
+} from "./split.types";
 
 export type {
   PaymentRequest,
@@ -34,3 +38,10 @@ export type {
   UnlinkSubuserResponse,
   SwitchAccountResponse,
 } from "./auth.types";
+
+export type {
+  FilterType,
+  CollaboratorFormData,
+  SplitsModalProps,
+  CollaboratorWithSplit,
+} from "./splits-modal.types";
