@@ -1,4 +1,4 @@
-import axios from "axios";
+import { apiClient } from "@/infrastructure/http/axiosClient";
 
 export type PaymentValidationSeverity = "success" | "info" | "warning" | "error";
 
@@ -15,369 +15,230 @@ export interface PaymentValidationResult {
   issues: PaymentValidationIssue[];
 }
 
-const getPercentageFromSplitConditions = (collaborator: any) => {
-  const conditions = collaborator?.split?.conditions;
-  if (!Array.isArray(conditions) || conditions.length === 0) return 0;
+// ── Helpers de validación de pagos (sin dependencias de red) ──────────────────
 
-  const percentageCondition = conditions.find(
-    (condition: any) =>
-      condition?.type === "percentage" ||
-      condition?.percentage !== undefined ||
-      condition?.value !== undefined,
-  );
-
-  if (!percentageCondition) return 0;
-  return Number(percentageCondition.percentage ?? percentageCondition.value ?? 0);
+const getPercentageFromSplitConditions = (collaborator: Record<string, unknown>): number => {
+  const conditions = collaborator?.split as { conditions?: unknown[] } | undefined;
+  if (!Array.isArray(conditions?.conditions) || conditions.conditions.length === 0) return 0;
+  const cond = conditions.conditions.find((c: unknown) => {
+    const co = c as Record<string, unknown>;
+    return co?.type === "percentage" || co?.percentage !== undefined || co?.value !== undefined;
+  }) as Record<string, unknown> | undefined;
+  return Number(cond?.percentage ?? cond?.value ?? 0);
 };
 
-const getCollaboratorPercentage = (collaborator: any) => {
-  const directPercentage = Number(collaborator?.percentage ?? 0);
-  if (directPercentage > 0) return directPercentage;
-  return getPercentageFromSplitConditions(collaborator);
+const getCollaboratorPercentage = (collaborator: Record<string, unknown>): number => {
+  const direct = Number(collaborator?.percentage ?? 0);
+  return direct > 0 ? direct : getPercentageFromSplitConditions(collaborator);
 };
 
-const getCollaboratorAmountToPay = (collaborator: any) => {
-  const directAmount = Number(collaborator?.amountToPay ?? 0);
-  if (directAmount > 0) return directAmount;
-
-  const splitPaymentAmount = Number(
-    collaborator?.splitPayment?.[0]?.calculation?.amountToPay ?? 0,
-  );
-  return splitPaymentAmount > 0 ? splitPaymentAmount : 0;
+const getCollaboratorAmountToPay = (collaborator: Record<string, unknown>): number => {
+  const direct = Number(collaborator?.amountToPay ?? 0);
+  if (direct > 0) return direct;
+  const splits = collaborator?.splitPayment as Array<{ calculation?: { amountToPay?: number } }> | undefined;
+  return Number(splits?.[0]?.calculation?.amountToPay ?? 0);
 };
 
-const hasActiveWallet = (collaborator: any) => {
-  const wallet = collaborator?.wallet;
-  const walletStatus = String(wallet?.status ?? collaborator?.walletStatus ?? "").toLowerCase();
-
+const hasActiveWallet = (collaborator: Record<string, unknown>): boolean => {
+  const wallet = collaborator?.wallet as Record<string, unknown> | undefined;
+  const status = String(wallet?.status ?? collaborator?.walletStatus ?? "").toLowerCase();
   return Boolean(
     collaborator?.hasWallet === true ||
-      collaborator?.walletActive === true ||
-      collaborator?.wallet?.isActive === true ||
-      collaborator?.stripeConnected === true ||
-      collaborator?.stripeAccountConnected === true ||
-      collaborator?.stripeConnect?.isLoggedIn === true ||
-      walletStatus === "active" ||
-      walletStatus === "enabled" ||
-      walletStatus === "verified",
+    collaborator?.walletActive === true ||
+    wallet?.isActive === true ||
+    collaborator?.stripeConnected === true ||
+    collaborator?.stripeAccountConnected === true ||
+    (collaborator?.stripeConnect as Record<string, unknown>)?.isLoggedIn === true ||
+    status === "active" || status === "enabled" || status === "verified"
   );
 };
 
-const getDisplayName = (collaborator: any, idx: number) =>
-  collaborator?.name ||
-  collaborator?.username ||
-  collaborator?.email ||
-  collaborator?.id ||
-  collaborator?._id ||
-  `Colaborador ${idx + 1}`;
+const getDisplayName = (collaborator: Record<string, unknown>, idx: number): string =>
+  String(collaborator?.name ?? collaborator?.username ?? collaborator?.email ??
+    collaborator?.id ?? collaborator?._id ?? `Colaborador ${idx + 1}`);
 
 export const validatePayAllPayment = ({
   song,
   isStripeConnected,
 }: {
-  song: any;
+  song: Record<string, unknown> | null;
   isStripeConnected: boolean;
 }): PaymentValidationResult => {
   const issues: PaymentValidationIssue[] = [];
-  const collaborators = Array.isArray(song?.collaborators) ? song.collaborators : [];
+  const collaborators = Array.isArray(song?.collaborators) ? (song.collaborators as Record<string, unknown>[]) : [];
   const totalCollaborators = collaborators.length;
 
   if (!song) {
-    issues.push({
-      code: "song-not-found",
-      severity: "error",
-      message: "No se pudo cargar la canción. Recarga la página e inténtalo de nuevo.",
-    });
+    issues.push({ code: "song-not-found", severity: "error", message: "No se pudo cargar la canción. Recarga la página e inténtalo de nuevo." });
     return { canProceed: false, totalCollaborators: 0, payableCollaborators: 0, issues };
   }
 
   if (!isStripeConnected) {
-    issues.push({
-      code: "wallet-not-connected",
-      severity: "error",
-      message:
-        "No puedes pagar a todos porque tu wallet de Stripe no está conectada o no está activa.",
-    });
+    issues.push({ code: "wallet-not-connected", severity: "error", message: "No puedes pagar a todos porque tu wallet de Stripe no está conectada o no está activa." });
   }
 
-  if (Number(song?.totalNetIncome ?? 0) <= 0) {
-    issues.push({
-      code: "no-income",
-      severity: "error",
-      message:
-        "No puedes pagar a todos porque esta canción no tiene ingresos netos disponibles para distribuir.",
-    });
-  }
-
-  if (totalCollaborators === 0) {
-    issues.push({
-      code: "no-collaborators",
-      severity: "error",
-      message: "No puedes pagar a todos porque esta canción no tiene colaboradores registrados.",
-    });
-  }
-
-  const collaboratorsWithoutSplit: string[] = [];
-  const collaboratorsWithoutWallet: string[] = [];
-  const collaboratorsWithoutAmount: string[] = [];
   let payableCollaborators = 0;
 
-  collaborators.forEach((collaborator: any, idx: number) => {
-    const displayName = getDisplayName(collaborator, idx);
-    const hasSplit = getCollaboratorPercentage(collaborator) > 0;
-    const hasWallet = hasActiveWallet(collaborator);
+  collaborators.forEach((collaborator, idx) => {
+    const name = getDisplayName(collaborator, idx);
+    const percentage = getCollaboratorPercentage(collaborator);
     const amountToPay = getCollaboratorAmountToPay(collaborator);
+    const walletActive = hasActiveWallet(collaborator);
 
-    if (!hasSplit) collaboratorsWithoutSplit.push(displayName);
-    if (!hasWallet) collaboratorsWithoutWallet.push(displayName);
-    if (amountToPay <= 0) collaboratorsWithoutAmount.push(displayName);
+    if (percentage <= 0) {
+      issues.push({ code: "no-split-percentage", severity: "warning", message: `${name} no tiene un porcentaje de split asignado.` });
+    }
+    if (amountToPay <= 0) {
+      issues.push({ code: "no-amount-to-pay", severity: "info", message: `${name} no tiene monto pendiente de pago.` });
+    }
+    if (!walletActive) {
+      issues.push({ code: "wallet-inactive", severity: "warning", message: `${name} no tiene una wallet activa para recibir pagos.` });
+    }
 
-    if (hasSplit && hasWallet && amountToPay > 0) {
-      payableCollaborators += 1;
+    if (percentage > 0 && amountToPay > 0 && walletActive) {
+      payableCollaborators++;
+      issues.push({ code: "all-valid", severity: "success", message: `${name} puede recibir el pago de $${amountToPay.toFixed(2)}.` });
     }
   });
 
-  if (collaboratorsWithoutSplit.length > 0) {
-    issues.push({
-      code: "inactive-splits",
-      severity: "error",
-      message: `No puedes pagar a todos: estos colaboradores no tienen split activo (${collaboratorsWithoutSplit.join(", ")}).`,
-    });
-  }
-
-  if (collaboratorsWithoutWallet.length > 0) {
-    issues.push({
-      code: "inactive-wallets",
-      severity: "error",
-      message: `No puedes pagar a todos: estos colaboradores no tienen wallet activa (${collaboratorsWithoutWallet.join(", ")}).`,
-    });
-  }
-
-  if (collaboratorsWithoutAmount.length > 0) {
-    issues.push({
-      code: "no-amount-to-pay",
-      severity: "error",
-      message: `No puedes pagar a todos: falta monto por pagar para (${collaboratorsWithoutAmount.join(", ")}).`,
-    });
-  }
-
-  if (payableCollaborators === 0) {
-    issues.push({
-      code: "no-eligible-collaborators",
-      severity: "error",
-      message: "No hay colaboradores elegibles para ejecutar el pago masivo.",
-    });
-  }
-
-  if (issues.length === 0) {
-    issues.push({
-      code: "all-valid",
-      severity: "success",
-      message: `Validación completada: ${payableCollaborators} colaboradores listos para pago.`,
-    });
-  }
-
-  const hasBlockingIssues = issues.some((issue) => issue.code !== "all-valid");
-  const canProceed = !hasBlockingIssues && isStripeConnected && payableCollaborators > 0;
-
-  return {
-    canProceed,
-    totalCollaborators,
-    payableCollaborators,
-    issues,
-  };
+  const hasBlockingIssues = issues.some((i) => i.code !== "all-valid");
+  return { canProceed: !hasBlockingIssues && isStripeConnected && payableCollaborators > 0, totalCollaborators, payableCollaborators, issues };
 };
 
+// ── SongService ───────────────────────────────────────────────────────────────
+
 class SongService {
-  private readonly URI = import.meta.env.VITE_URL_API + "/api/v1/songs";
-  private readonly token = localStorage.getItem("token");
+  private readonly BASE = "/songs";
 
-  async getSongs(page :number, limit :number) {
+  /** Obtiene canciones del usuario con paginación */
+  async getSongs(page: number, limit: number) {
     try {
-        const endpoint = this.URI + "/by-user?page=" + page + "&limit=" + limit;
-        const response = await axios.get(endpoint, {
-            headers: {
-                Authorization: `Bearer ${this.token}`,
-            },
-        });
-        return response.data;
-    } catch (error) {
-        console.error("Error getting songs:", error);
-        return null;
-    }
-  }
-
-  async uploadSongs(file: FormData) {
-    try {
-      console.log(this.token);
-      const endpoint = this.URI + "/by-csv";
-      const response = await axios.post(endpoint, file, {
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-        },
-      });
+      const response = await apiClient.get(`${this.BASE}/by-user?page=${page}&limit=${limit}`);
       return response.data;
-    } catch (error) {
-      console.error("Error uploading songs:", error);
+    } catch {
       return null;
     }
   }
 
-  async acceptCollaboration(token: string){
+  /** Sube canciones desde un archivo CSV */
+  async uploadSongs(file: FormData) {
     try {
-      const endpoint = this.URI + "/accept-invitation";
-      const response = await axios.post(endpoint, {
-        token
-      },{
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-        },
-      });
+      const response = await apiClient.post(`${this.BASE}/by-csv`, file);
       return response.data;
-    } catch (error) {
-      return null
+    } catch {
+      return null;
     }
   }
 
-  async addCollaborator({
-    songId,
-    collaboratorEmail,
-    collaboratorId,
-  }: {
+  /** Acepta una invitación de colaboración */
+  async acceptCollaboration(token: string) {
+    try {
+      const response = await apiClient.post(`${this.BASE}/accept-invitation`, { token });
+      return response.data;
+    } catch {
+      return null;
+    }
+  }
+
+  /** Agrega un colaborador a una canción */
+  async addCollaborator({ songId, collaboratorEmail, collaboratorId }: {
     songId: string;
     collaboratorEmail?: string;
     collaboratorId?: string;
-  }){
+  }) {
     try {
-      const endpoint = this.URI + "/" + songId + "/add-collaborator";
-      const response = await axios.post(endpoint, {
+      const response = await apiClient.post(`${this.BASE}/${songId}/add-collaborator`, {
         collaboratorEmail,
         collaboratorId,
-      }, {
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-        },
       });
       return response.data;
-    } catch (error) {
-      return null
+    } catch {
+      return null;
     }
   }
 
+  /** Obtiene una canción por ID */
   async getSong(id: string) {
     try {
-      const endpoint = this.URI + "/" + id;
-      const response = await axios.get(endpoint, {
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-        },
-      });
+      const response = await apiClient.get(`${this.BASE}/${id}`);
       return response.data;
-    } catch (error) {
-      console.error("Error getting song:", error);
+    } catch {
       return null;
     }
   }
 
+  /** Obtiene una canción por su ISRC */
   async getSongByIsrc(isrc: string) {
     try {
-      const endpoint = this.URI + "/by-isrc/" + encodeURIComponent(isrc);
-      const response = await axios.get(endpoint, {
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-        },
-      });
+      const response = await apiClient.get(`${this.BASE}/by-isrc/${encodeURIComponent(isrc)}`);
       return response.data;
-    } catch (error) {
-      console.error("Error getting song by ISRC:", error);
+    } catch {
       return null;
     }
   }
 
+  /** Obtiene canciones filtradas por país, plataforma y fechas */
   async getSongsByFilter(country: string, platform: string, startDate: string, endDate: string) {
     try {
-      const endpoint = this.URI + "/by-params?country=" + country + "&platform=" + platform + "&startDate=" + startDate + "&endDate=" + endDate;
-      const response = await axios.get(endpoint, {
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-        },
+      const response = await apiClient.get(`${this.BASE}/by-params`, {
+        params: { country, platform, startDate, endDate },
       });
       return response.data;
-    } catch (error) {
-      console.error("Error getting songs by filter:", error);
-        return null;
-      }
-  }
-
-  async getMetricPayments(songId: string, date: 'month' | 'day' | 'year') {
-    try {
-      const endpoint = this.URI + "/get-metric-payments/" + songId + "/" + date;
-      const response = await axios.get(endpoint, {
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-        },
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Error getting metric payments:", error);
+    } catch {
       return null;
     }
   }
 
-  async searchSongs(query: string, page: number = 1, limit: number = 10) {
+  /** Obtiene métricas de pagos de una canción por período */
+  async getMetricPayments(songId: string, date: "month" | "day" | "year") {
     try {
-      const endpoint = this.URI + "/search?q=" + encodeURIComponent(query) + "&page=" + page + "&limit=" + limit;
-      const response = await axios.get(endpoint, {
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-        },
-      });
+      const response = await apiClient.get(`${this.BASE}/get-metric-payments/${songId}/${date}`);
       return response.data;
-    } catch (error) {
-      console.error("Error searching songs:", error);
+    } catch {
       return null;
     }
   }
 
-  async searchSongsByCode(code: string, page: number = 1, limit: number = 10) {
+  /** Busca canciones por texto */
+  async searchSongs(query: string, page = 1, limit = 10) {
     try {
-      const endpoint = this.URI + "/search-code?code=" + encodeURIComponent(code) + "&page=" + page + "&limit=" + limit;
-      const response = await axios.get(endpoint, {
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-        },
+      const response = await apiClient.get(`${this.BASE}/search`, {
+        params: { q: query, page, limit },
       });
       return response.data;
-    } catch (error) {
-      console.error("Error searching songs by code:", error);
+    } catch {
       return null;
     }
   }
 
+  /** Busca canciones por código ISRC o UPC */
+  async searchSongsByCode(code: string, page = 1, limit = 10) {
+    try {
+      const response = await apiClient.get(`${this.BASE}/search-code`, {
+        params: { code, page, limit },
+      });
+      return response.data;
+    } catch {
+      return null;
+    }
+  }
+
+  /** Obtiene las canciones con más streams */
   async getTopByStreams() {
     try {
-      const endpoint = this.URI + "/top-by-streams";
-      const response = await axios.get(endpoint, {
-        headers: { Authorization: `Bearer ${this.token}` },
-      });
+      const response = await apiClient.get(`${this.BASE}/top-by-streams`);
       return response.data;
-    } catch (error) {
-      console.error("Error getting top songs by streams:", error);
+    } catch {
       return null;
     }
   }
 
+  /** Obtiene estadísticas por plataforma de todas las canciones */
   async getStadisticsByPlatformAll() {
     try {
-      const endpoint = this.URI + "/getStadisticsByPlatformAll";
-      const response = await axios.get(endpoint, {
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-        },
-      });
+      const response = await apiClient.get(`${this.BASE}/getStadisticsByPlatformAll`);
       return response.data;
-    } catch (error) {
-      console.error("Error getting stadistics by platform:", error);
+    } catch {
       return null;
     }
   }

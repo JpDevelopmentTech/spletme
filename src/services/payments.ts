@@ -1,80 +1,60 @@
-import axios from "axios";
+import { apiClient } from "@/infrastructure/http/axiosClient";
 
 export interface Payment {
-    _id: string;
-    idCollaborator: string;
-    amount: number;
-    description?: string;
-    owner: string;
-    createdAt: string;
+  _id: string;
+  idCollaborator: string;
+  amount: number;
+  description?: string;
+  owner: string;
+  createdAt: string;
 }
 
 class PaymentsService {
-    private readonly URI = import.meta.env.VITE_URL_API + "/api/v1/splits-payments";
-    private headers = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.getAuthToken()}`
-    }
+  private readonly BASE = "/splits-payments";
 
-    private getAuthToken(){
-        return localStorage.getItem("token");
+  /** Procesa el pago de un split a un colaborador */
+  async createPayment(collaboratorId: string, splitId: string) {
+    try {
+      const response = await apiClient.post(`${this.BASE}/split/${splitId}/process-payment`, { recipientId: collaboratorId });
+      return response.data;
+    } catch {
+      return { error: true, message: "Error creating payment" };
     }
-    
-    async createPayment(collaboratorId: string, splitId: string){
-        try {
-            const endpoint = this.URI + `/split/${splitId}/process-payment`;
-            const response = await axios.post(endpoint, {recipientId: collaboratorId}, {headers: this.headers})
-            return response.data
-        } catch (error) {
-            console.error("Error creating payment:", error);
-            return { error: true, message: "Error creating payment" };
-        }
-    } 
+  }
 
-    async getPayments(): Promise<{error: boolean, data?: Payment[], message?: string}>{
-        try {
-            const endpoint = this.URI + "/by-user";
-            const response = await axios.get(endpoint, {
-                headers: {
-                    Authorization: `Bearer ${this.getAuthToken()}`
-                }
-            });
-            return response.data;
-        } catch (error) {
-            console.error("Error getting payments:", error);
-            return { error: true, message: "Error getting payments" };
-        }
+  /** Obtiene todos los pagos del usuario autenticado */
+  async getPayments(): Promise<{ error: boolean; data?: Payment[]; message?: string }> {
+    try {
+      const response = await apiClient.get(`${this.BASE}/by-user`);
+      return response.data;
+    } catch {
+      return { error: true, message: "Error getting payments" };
     }
+  }
 
-    async getPaymentsByCollaborator(idCollaborator: string): Promise<{error: boolean, data?: Payment[], message?: string}>{
-        try {
-            const endpoint = this.URI + `/by-collaborator/${idCollaborator}`;
-            const response = await axios.get(endpoint, {
-                headers: {
-                    Authorization: `Bearer ${this.getAuthToken()}`
-                }
-            });
-            return response.data;
-        } catch (error) {
-            console.error("Error getting payments by collaborator:", error);
-            return { error: true, message: "Error getting payments by collaborator" };
-        }
+  /** Obtiene los pagos de un colaborador específico */
+  async getPaymentsByCollaborator(idCollaborator: string): Promise<{ error: boolean; data?: Payment[]; message?: string }> {
+    try {
+      const response = await apiClient.get(`${this.BASE}/by-collaborator/${idCollaborator}`);
+      return response.data;
+    } catch {
+      return { error: true, message: "Error getting payments by collaborator" };
     }
+  }
 
-    async registerSongPayment(songId: string, amount: number, description?: string): Promise<{error: boolean, data?: any, message?: string}>{
-        try {
-            const endpoint = this.URI + `/song/${songId}/register-payment`;
-            const response = await axios.post(endpoint, {
-                amount,
-                description,
-                paymentDate: new Date().toISOString()
-            }, {headers: this.headers});
-            return response.data;
-        } catch (error) {
-            console.error("Error registering song payment:", error);
-            return { error: true, message: "Error registering song payment" };
-        }
+  /** Registra un pago manual para una canción */
+  async registerSongPayment(songId: string, amount: number, description?: string): Promise<{ error: boolean; data?: unknown; message?: string }> {
+    try {
+      const response = await apiClient.post(`${this.BASE}/song/${songId}/register-payment`, {
+        amount,
+        description,
+        paymentDate: new Date().toISOString(),
+      });
+      return response.data;
+    } catch {
+      return { error: true, message: "Error registering song payment" };
     }
+  }
 }
 
 export default new PaymentsService();
