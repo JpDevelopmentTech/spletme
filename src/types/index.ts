@@ -45,3 +45,10 @@ export type {
   SplitsModalProps,
   CollaboratorWithSplit,
 } from "./splits-modal.types";
+
+export type {
+  CollaboratorStatus,
+  RecentSong,
+  Collaborator,
+  CollaboratorPayment,
+} from "./collaborator.types";
