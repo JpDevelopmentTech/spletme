@@ -150,15 +150,20 @@ const Platforms = ({ reproductions = [] }: PlatformsProps) => {
 
   const visibleData = platformData.slice(0, 5);
 
+  const visibleDataByIncome = useMemo(
+    () => [...platformData].sort((a, b) => b.income - a.income).slice(0, 5),
+    [platformData],
+  );
+
   // ── Opciones INGRESOS ────────────────────────────────────────────────────────
 
   const incomeBarOptions: ApexOptions = useMemo(() => ({
     chart: { toolbar: { show: false }, background: "transparent" },
     plotOptions: { bar: { borderRadius: 5, columnWidth: "55%", borderRadiusApplication: "end" } },
     dataLabels: { enabled: false },
-    colors: visibleData.map((p) => p.color),
+    colors: visibleDataByIncome.map((p) => p.color),
     xaxis: {
-      categories: visibleData.map((p) => p.name.split(" ")[0]),
+      categories: visibleDataByIncome.map((p) => p.name.split(" ")[0]),
       labels: { style: { fontSize: "10px", colors: "#9CA3AF" } },
       axisBorder: { show: false },
       axisTicks: { show: false },
@@ -176,12 +181,12 @@ const Platforms = ({ reproductions = [] }: PlatformsProps) => {
     grid: { borderColor: "#F3F4F6", yaxis: { lines: { show: true } }, xaxis: { lines: { show: false } } },
     legend: { show: false },
     tooltip: { theme: "light", y: { formatter: (val: number) => formatCurrency(val) } },
-  }), [visibleData]);
+  }), [visibleDataByIncome]);
 
   const incomeDonutOptions: ApexOptions = useMemo(() => ({
     chart: { toolbar: { show: false }, background: "transparent" },
-    labels: visibleData.map((p) => p.name),
-    colors: visibleData.map((p) => p.color),
+    labels: visibleDataByIncome.map((p) => p.name),
+    colors: visibleDataByIncome.map((p) => p.color),
     dataLabels: { enabled: false },
     plotOptions: { pie: { donut: { size: "62%" } } },
     legend: {
@@ -191,13 +196,13 @@ const Platforms = ({ reproductions = [] }: PlatformsProps) => {
       itemMargin: { horizontal: 6, vertical: 2 },
     },
     tooltip: { theme: "light", y: { formatter: (val: number) => formatCurrency(val) } },
-  }), [visibleData]);
+  }), [visibleDataByIncome]);
 
   const incomeHorizontalOptions: ApexOptions = useMemo(() => ({
     chart: { toolbar: { show: false }, background: "transparent" },
     plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: "55%", borderRadiusApplication: "end" } },
     dataLabels: { enabled: false },
-    colors: visibleData.map((p) => p.color),
+    colors: visibleDataByIncome.map((p) => p.color),
     xaxis: {
       labels: {
         style: { fontSize: "10px", colors: "#9CA3AF" },
@@ -215,7 +220,7 @@ const Platforms = ({ reproductions = [] }: PlatformsProps) => {
     grid: { borderColor: "#F3F4F6", xaxis: { lines: { show: true } }, yaxis: { lines: { show: false } } },
     legend: { show: false },
     tooltip: { theme: "light", y: { formatter: (val: number) => formatCurrency(val) } },
-  }), [visibleData]);
+  }), [visibleDataByIncome]);
 
   // ── Opciones STREAMS ─────────────────────────────────────────────────────────
 
@@ -288,31 +293,32 @@ const Platforms = ({ reproductions = [] }: PlatformsProps) => {
 
   const renderFace = (mode: "income" | "streams") => {
     const isIncome = mode === "income";
+    const data = isIncome ? visibleDataByIncome : visibleData;
 
     const barOpts = isIncome ? incomeBarOptions : streamsBarOptions;
     const donutOpts = isIncome ? incomeDonutOptions : streamsDonutOptions;
     const horizontalOpts = isIncome ? incomeHorizontalOptions : streamsHorizontalOptions;
 
     const barSeries = isIncome
-      ? [{ name: "Ingresos", data: visibleData.map((p) => p.income) }]
-      : [{ name: "Streams", data: visibleData.map((p) => p.streams) }];
+      ? [{ name: "Ingresos", data: data.map((p) => p.income) }]
+      : [{ name: "Streams", data: data.map((p) => p.streams) }];
     const donutSeries = isIncome
-      ? visibleData.map((p) => p.income)
-      : visibleData.map((p) => p.streams);
+      ? data.map((p) => p.income)
+      : data.map((p) => p.streams);
     const horizontalSeries = isIncome
-      ? [{ name: "Ingresos", data: visibleData.map((p) => ({ x: p.name.split(" ")[0], y: p.income })) }]
-      : [{ name: "Streams", data: visibleData.map((p) => ({ x: p.name.split(" ")[0], y: p.streams })) }];
+      ? [{ name: "Ingresos", data: data.map((p) => ({ x: p.name.split(" ")[0], y: p.income })) }]
+      : [{ name: "Streams", data: data.map((p) => ({ x: p.name.split(" ")[0], y: p.streams })) }];
 
     return (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* Lista de plataformas */}
         <div className="order-2">
           <div className="flex flex-col border border-gray-100 rounded-lg px-3">
-            {visibleData.map((platform, index) => (
+            {data.map((platform, index) => (
               <div
                 key={platform.name}
                 className={`flex items-center justify-between py-2.5 ${
-                  index < visibleData.length - 1 ? "border-b border-gray-100" : ""
+                  index < data.length - 1 ? "border-b border-gray-100" : ""
                 }`}
               >
                 <div className="flex items-center gap-3">

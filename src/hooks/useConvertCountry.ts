@@ -1,6 +1,6 @@
 //hook para convertir el codigo de pais a su nombre completo
-const converseCountry = (country: string) => {
-
+const converseCountry = (country: string | null | undefined) => {
+    if (!country) return '';
     switch (country.toLocaleUpperCase()) {
         case 'CO': return 'Colombia';
         case 'US': return 'United States';
@@ -12,7 +12,7 @@ const converseCountry = (country: string) => {
         case 'VE': return 'Venezuela';
         case 'EC': return 'Ecuador';
         case 'UY': return 'Uruguay';
-        default: return country; 
+        default: return country;
     }
 
 }

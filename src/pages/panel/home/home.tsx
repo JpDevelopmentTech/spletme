@@ -458,9 +458,10 @@ export default function Home() {
 
                     {/* Table Rows */}
                     {topSongs.map((song, index) => (
-                      <div
+                      <Link
                         key={song._id}
-                        className="flex items-center py-3 border-b border-gray-100 last:border-b-0 gap-3"
+                        to={`/panel/song/${song._id}`}
+                        className="flex items-center py-3 border-b border-gray-100 last:border-b-0 gap-3 hover:bg-gray-50 rounded-lg px-1 -mx-1 transition-colors group"
                       >
                         {/* Cover */}
                         <div className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
@@ -478,7 +479,7 @@ export default function Home() {
                         </div>
 
                         <div className="flex-1 flex flex-col gap-0.5 min-w-0">
-                          <span className="text-[13px] font-semibold text-gray-900 truncate">
+                          <span className="text-[13px] font-semibold text-gray-900 truncate group-hover:text-[#F97316] transition-colors">
                             {song.trackTitle || `Canción ${index + 1}`}
                           </span>
                           <span className="text-[11px] text-gray-400 truncate">
@@ -505,7 +506,7 @@ export default function Home() {
                             {index === 0 ? "Tendencia" : "Estable"}
                           </span>
                         </div>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 ) : (

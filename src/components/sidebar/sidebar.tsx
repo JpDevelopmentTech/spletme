@@ -214,32 +214,41 @@ export default function Sidebar() {
 
         {/* Account card - clickable */}
         <button
-          onClick={() => setShowSwitchUserModal(true)}
-          className="flex gap-3 p-3 rounded-xl mx-3 mb-3 w-[calc(100%-24px)] transition-all hover:bg-opacity-80 group"
+          onClick={() => setShowSwitchUserModal((prev) => !prev)}
+          className="flex items-center gap-3 p-3 rounded-xl mx-3 mb-3 w-[calc(100%-24px)] transition-colors"
           style={{
-            backgroundColor: "#1E293B",
+            backgroundColor: showSwitchUserModal ? "#263548" : "#1E293B",
+            border: showSwitchUserModal ? "1px solid #334155" : "1px solid transparent",
+          }}
+          onMouseEnter={(e) => {
+            if (!showSwitchUserModal)
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#1a2d42";
+          }}
+          onMouseLeave={(e) => {
+            if (!showSwitchUserModal)
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#1E293B";
           }}
         >
           <div
             className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
             style={{ backgroundColor: "#F97316" }}
           >
-            <span className="text-xs font-semibold text-white">{initials}</span>
+            <span className="text-xs font-bold text-white">{initials}</span>
           </div>
-          <div className="flex flex-col  gap-0.5 min-w-0">
-            <span
-              className="text-[13px] font-semibold"
-              style={{ color: "#F1F5F9" }}
-            >
+          <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+            <span className="text-[13px] font-semibold truncate" style={{ color: "#F1F5F9" }}>
               {displayName}
             </span>
-            <span className="text-[11px] truncate" style={{ color: "#64748B" }}>
-              {displayEmail}
+            <span className="text-[11px] truncate" style={{ color: "#475569" }}>
+              @{userData?.username || displayEmail}
             </span>
           </div>
           <ChevronDown
-            className="w-4 h-4 flex-shrink-0 transition-transform group-hover:translate-y-0.5"
-            style={{ color: "#94A3B8" }}
+            className="w-4 h-4 flex-shrink-0 transition-transform duration-200"
+            style={{
+              color: "#94A3B8",
+              transform: showSwitchUserModal ? "rotate(180deg)" : "rotate(0deg)",
+            }}
           />
         </button>
 

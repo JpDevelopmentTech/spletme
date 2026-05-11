@@ -15,18 +15,30 @@ export default function Behavior({ songId, compact = false }: BehaviorProps) {
   const { metricsData, loading, error } = useMetricPayments(songId, dateType);
   const [series, setSeries] = useState<Array<{name: string; data: Array<{x: string; y: string}>}>>([]);
 
-  // Función para transformar los datos de la API al formato de ApexCharts
-  const transformDataToSeries = (data: Array<{name: string; totalNetIncome: number}>) => {
+  const transformDataToSeries = (data: Array<{name: string; totalNetIncome: number; totalStreams?: number}>) => {
     if (!data || data.length === 0) return [];
 
-    // Crear una serie con los datos de ingresos netos
-    const series = [{
-      name: "Ingresos Netos",
-      data: data.map(item => ({
-        x: item.name.substring(0, 10), // Limitar el nombre para mejor visualización
-        y: item.totalNetIncome.toFixed(2)
-      }))
-    }];
+    const hasStreams = data.some(item => (item.totalStreams ?? 0) > 0);
+
+    const series: Array<{name: string; data: Array<{x: string; y: string}>}> = [
+      {
+        name: "Ingresos Netos",
+        data: data.map(item => ({
+          x: item.name.substring(0, 10),
+          y: item.totalNetIncome.toFixed(2),
+        })),
+      },
+    ];
+
+    if (hasStreams) {
+      series.push({
+        name: "Streams",
+        data: data.map(item => ({
+          x: item.name.substring(0, 10),
+          y: String(item.totalStreams ?? 0),
+        })),
+      });
+    }
 
     return series;
   };
@@ -38,56 +50,81 @@ export default function Behavior({ songId, compact = false }: BehaviorProps) {
     }
   }, [metricsData]);
 
+  const hasStreams = metricsData.some(item => (item.totalStreams ?? 0) > 0);
+
   const options: ApexOptions = {
     chart: {
       type: "area",
       stacked: false,
-      height: 100,
-      zoom: {
-        enabled: false,
-      },
+      zoom: { enabled: false },
+      toolbar: { show: false },
     },
-    dataLabels: {
-      enabled: false,
-    },
-    markers: {
-      size: 0,
-    },
+    colors: ["#F97316", "#3B82F6"],
+    dataLabels: { enabled: false },
+    markers: { size: 0 },
+    stroke: { curve: "smooth", width: 2 },
     fill: {
       type: "gradient",
       gradient: {
         shadeIntensity: 1,
         inverseColors: false,
-        opacityFrom: 0.45,
-        opacityTo: 0.05,
-        stops: [20, 100, 100, 100],
+        opacityFrom: 0.35,
+        opacityTo: 0.02,
+        stops: [20, 100],
       },
     },
-    yaxis: {
-      labels: {
-        style: {
-          colors: "#8e8da4",
+    xaxis: {
+      categories: metricsData.map(item => item.name.substring(0, 10)),
+      labels: { style: { colors: "#9CA3AF", fontSize: "11px" } },
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+    },
+    yaxis: hasStreams
+      ? [
+          {
+            seriesName: "Ingresos Netos",
+            labels: {
+              formatter: (val: number) => `$${val.toFixed(0)}`,
+              style: { colors: "#F97316", fontSize: "11px" },
+            },
+            axisBorder: { show: false },
+            axisTicks: { show: false },
+          },
+          {
+            seriesName: "Streams",
+            opposite: true,
+            labels: {
+              formatter: (val: number) => val.toLocaleString(),
+              style: { colors: "#3B82F6", fontSize: "11px" },
+            },
+            axisBorder: { show: false },
+            axisTicks: { show: false },
+          },
+        ]
+      : {
+          labels: {
+            formatter: (val: number) => `$${val.toFixed(0)}`,
+            style: { colors: "#9CA3AF", fontSize: "11px" },
+          },
+          axisBorder: { show: false },
+          axisTicks: { show: false },
         },
-        offsetX: 0,
-      },
-      axisBorder: {
-        show: false,
-      },
-      axisTicks: {
-        show: false,
-      },
-    },
-          //xaxis dinámico basado en los datos
-      xaxis: {
-        categories: metricsData.map(item => item.name.substring(0, 10)),
-      },
     tooltip: {
       shared: true,
+      y: [
+        { formatter: (val: number) => `$${val.toFixed(2)}` },
+        { formatter: (val: number) => val.toLocaleString() },
+      ],
     },
     legend: {
       position: "top",
       horizontalAlign: "right",
-      offsetX: -10,
+      fontSize: "12px",
+      markers: { size: 8 },
+    },
+    grid: {
+      borderColor: "#F3F4F6",
+      strokeDashArray: 4,
     },
   };
 
