@@ -33,7 +33,7 @@ const navItems = [
   { to: "/panel/dealers", label: "Distribuidores", icon: Handshake },
   { to: "/panel/collaborators", label: "Colaboradores", icon: Users },
   { to: "/panel/labels", label: "Sellos", icon: Tag },
-  { to: "/panel/balance", label: "Analíticas", icon: BarChart2 },
+  { to: "/panel/analytics", label: "Analíticas", icon: BarChart2 },
   { to: "/panel/wallet", label: "Billetera", icon: Wallet },
 ];
 
