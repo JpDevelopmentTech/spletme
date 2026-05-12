@@ -6,6 +6,16 @@ export interface PaymentValidationIssue {
   code: string;
   severity: PaymentValidationSeverity;
   message: string;
+  collaboratorName?: string;
+  collaboratorEmail?: string;
+}
+
+export interface PaymentValidationCollaboratorResult {
+  id: string;
+  name: string;
+  email: string;
+  canPay: boolean;
+  reasons: PaymentValidationIssue[];
 }
 
 export interface PaymentValidationResult {
@@ -13,6 +23,7 @@ export interface PaymentValidationResult {
   totalCollaborators: number;
   payableCollaborators: number;
   issues: PaymentValidationIssue[];
+  collaborators: PaymentValidationCollaboratorResult[];
 }
 
 // ── Helpers de validación de pagos (sin dependencias de red) ──────────────────
@@ -65,12 +76,13 @@ export const validatePayAllPayment = ({
   isStripeConnected: boolean;
 }): PaymentValidationResult => {
   const issues: PaymentValidationIssue[] = [];
+  const collaboratorsResult: PaymentValidationCollaboratorResult[] = [];
   const collaborators = Array.isArray(song?.collaborators) ? (song.collaborators as Record<string, unknown>[]) : [];
   const totalCollaborators = collaborators.length;
 
   if (!song) {
     issues.push({ code: "song-not-found", severity: "error", message: "No se pudo cargar la canción. Recarga la página e inténtalo de nuevo." });
-    return { canProceed: false, totalCollaborators: 0, payableCollaborators: 0, issues };
+    return { canProceed: false, totalCollaborators: 0, payableCollaborators: 0, issues, collaborators: [] };
   }
 
   if (!isStripeConnected) {
@@ -81,28 +93,70 @@ export const validatePayAllPayment = ({
 
   collaborators.forEach((collaborator, idx) => {
     const name = getDisplayName(collaborator, idx);
+    const email = String(collaborator?.email ?? "");
+    const collaboratorIssues: PaymentValidationIssue[] = [];
     const percentage = getCollaboratorPercentage(collaborator);
     const amountToPay = getCollaboratorAmountToPay(collaborator);
     const walletActive = hasActiveWallet(collaborator);
 
     if (percentage <= 0) {
-      issues.push({ code: "no-split-percentage", severity: "warning", message: `${name} no tiene un porcentaje de split asignado.` });
+      const issue = {
+        code: "no-split-percentage",
+        severity: "warning" as const,
+        message: `${name} no tiene un porcentaje de split asignado.`,
+        collaboratorName: name,
+        collaboratorEmail: email,
+      };
+      issues.push(issue);
+      collaboratorIssues.push(issue);
     }
     if (amountToPay <= 0) {
-      issues.push({ code: "no-amount-to-pay", severity: "info", message: `${name} no tiene monto pendiente de pago.` });
+      const issue = {
+        code: "no-amount-to-pay",
+        severity: "info" as const,
+        message: `${name} no tiene monto pendiente de pago.`,
+        collaboratorName: name,
+        collaboratorEmail: email,
+      };
+      issues.push(issue);
+      collaboratorIssues.push(issue);
     }
     if (!walletActive) {
-      issues.push({ code: "wallet-inactive", severity: "warning", message: `${name} no tiene una wallet activa para recibir pagos.` });
+      const issue = {
+        code: "wallet-inactive",
+        severity: "warning" as const,
+        message: `${name} no tiene una wallet activa para recibir pagos.`,
+        collaboratorName: name,
+        collaboratorEmail: email,
+      };
+      issues.push(issue);
+      collaboratorIssues.push(issue);
     }
 
     if (percentage > 0 && amountToPay > 0 && walletActive) {
       payableCollaborators++;
-      issues.push({ code: "all-valid", severity: "success", message: `${name} puede recibir el pago de $${amountToPay.toFixed(2)}.` });
+      const issue = {
+        code: "all-valid",
+        severity: "success" as const,
+        message: `${name} puede recibir el pago de $${amountToPay.toFixed(2)}.`,
+        collaboratorName: name,
+        collaboratorEmail: email,
+      };
+      issues.push(issue);
+      collaboratorIssues.push(issue);
     }
+
+    collaboratorsResult.push({
+      id: String(collaborator?.id ?? collaborator?._id ?? email ?? name ?? idx),
+      name,
+      email,
+      canPay: percentage > 0 && amountToPay > 0 && walletActive,
+      reasons: collaboratorIssues.filter((issue) => issue.code !== "all-valid"),
+    });
   });
 
   const hasBlockingIssues = issues.some((i) => i.code !== "all-valid");
-  return { canProceed: !hasBlockingIssues && isStripeConnected && payableCollaborators > 0, totalCollaborators, payableCollaborators, issues };
+   return { canProceed: !hasBlockingIssues && isStripeConnected && payableCollaborators > 0, totalCollaborators, payableCollaborators, issues, collaborators: collaboratorsResult };
 };
 
 // ── SongService ───────────────────────────────────────────────────────────────

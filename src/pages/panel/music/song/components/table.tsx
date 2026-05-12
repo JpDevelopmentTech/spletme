@@ -183,7 +183,7 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
 
   return (
     <>
-      <ValidationToastQueue toasts={toasts} onDequeue={dequeueToast} autoHideMs={9000} />
+      <ValidationToastQueue toasts={toasts} onDequeue={dequeueToast} />
       {/* Modals */}
       <SplitsModal
         collaborators={collaborators}

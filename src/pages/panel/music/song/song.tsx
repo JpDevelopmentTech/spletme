@@ -46,10 +46,19 @@ export default function Song() {
   const [toasts, setToasts] = useState<ValidationToastItem[]>([]);
   const [paymentHistoryRefresh, setPaymentHistoryRefresh] = useState(0);
 
-  const addToast = (type: ValidationToastType, message: string) => {
+  const addToast = (
+    type: ValidationToastType,
+    message: string,
+    extra?: Partial<ValidationToastItem>,
+  ) => {
     setToasts((prev) => [
       ...prev,
-      { id: Date.now() + Math.floor(Math.random() * 1000), type, message },
+      {
+        id: Date.now() + Math.floor(Math.random() * 1000),
+        type,
+        message,
+        ...extra,
+      },
     ]);
   };
 
@@ -88,18 +97,48 @@ export default function Song() {
     const blockingIssues = validation.issues.filter(
       (issue) => issue.code !== "all-valid",
     );
+    const currentUserDisplayName =
+      currentUser?.name || currentUser?.username || currentUser?.email || "Tú";
+    const payerReasons = blockingIssues
+      .filter((issue) => !issue.collaboratorEmail)
+      .map((issue) => issue.message);
+    const getToastTypeFromReasons = (reasons: string[], fallback: ValidationToastType) => {
+      if (reasons.length === 0) return fallback;
+      return "error" as ValidationToastType;
+    };
+    const collaboratorToasts = validation.collaborators.map((collaborator) => ({
+      id: Date.now() + Math.floor(Math.random() * 1000) + Math.floor(Math.random() * 1000),
+      type: getToastTypeFromReasons(collaborator.reasons.map((issue) => issue.message), collaborator.canPay ? "success" : "error"),
+      message: collaborator.name,
+      title: collaborator.name,
+      email: collaborator.email,
+      reasons: collaborator.reasons.map((issue) => issue.message),
+      canPay: collaborator.canPay,
+    }));
+    const payerToast: ValidationToastItem = {
+      id: Date.now() + Math.floor(Math.random() * 1000),
+      type: validation.canProceed ? "success" : "error",
+      message: currentUserDisplayName,
+      title: currentUserDisplayName,
+      email: currentUser?.email || "",
+      reasons:
+        validation.canProceed
+          ? []
+          : payerReasons.length > 0
+            ? payerReasons
+            : ["No puedes continuar con el pago con la configuración actual."],
+      canPay: validation.canProceed,
+    };
+    const validationToasts = [payerToast, ...collaboratorToasts];
+
+    if (validationToasts.length > 0) {
+      setToasts((prev) => [...prev, ...validationToasts]);
+    }
 
     if (blockingIssues.length > 0 || !validation.canProceed) {
-      blockingIssues.forEach((issue) => {
-        addToast(issue.severity, issue.message);
-      });
       return;
     }
 
-    addToast(
-      "success",
-      "Validación completada. Puedes continuar con el pago a todos los colaboradores.",
-    );
     setShowPaymentModal(true);
   };
 
@@ -186,7 +225,6 @@ export default function Song() {
       <ValidationToastQueue
         toasts={toasts}
         onDequeue={dequeueToast}
-        autoHideMs={9000}
       />
       <div className="min-h-screen bg-[#F7F8FA] px-10 py-8 space-y-6">
         {/* Header */}
