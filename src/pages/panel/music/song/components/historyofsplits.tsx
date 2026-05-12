@@ -13,6 +13,8 @@ type SplitHistoryCondition = {
   countriesType?: string;
   platformsType?: string;
   type?: string;
+  selectedCountries?: string[];
+  selectedPlatforms?: string[];
 };
 
 type SplitHistoryItem = Split & {
@@ -21,6 +23,9 @@ type SplitHistoryItem = Split & {
     email?: string;
   };
   conditions?: SplitHistoryCondition[];
+  action?: string;
+  originalCreatedAt?: string;
+  originalUpdatedAt?: string;
 };
 
 const formatDate = (dateValue?: string) => {
@@ -40,7 +45,30 @@ const formatTime = (dateValue?: string) => {
   });
 };
 
+const formatDateTime = (dateValue?: string) => {
+  if (!dateValue) return "—";
+  return `${formatDate(dateValue)} ${formatTime(dateValue)}`;
+};
+
 const getSplitDate = (split: Split) => split.updatedAt || split.createdAt;
+
+const getActionLabel = (action?: string) => {
+  const actions: Record<string, string> = {
+    create: "Creado",
+    update: "Modificado",
+    delete: "Eliminado",
+  };
+  return actions[action || ""] || "—";
+};
+
+const getActionColor = (action?: string) => {
+  const colors: Record<string, string> = {
+    create: "text-green-600 bg-green-50 dark:bg-green-900/20",
+    update: "text-blue-600 bg-blue-50 dark:bg-blue-900/20",
+    delete: "text-red-600 bg-red-50 dark:bg-red-900/20",
+  };
+  return colors[action || ""] || "text-gray-600 bg-gray-50 dark:bg-gray-900/20";
+};
 
 const Historyofsplits = ({ songId }: HistoryOfSplitsProps) => {
   const [viewData, setViewData] = useState(true);
@@ -119,6 +147,7 @@ const Historyofsplits = ({ songId }: HistoryOfSplitsProps) => {
                 {allSplits.map((split, index) => {
                   const splitKey = split.id || `split-history-${index}`;
                   const splitDate = getSplitDate(split);
+                  const splitData = split as SplitHistoryItem;
 
                   return (
                     <button
@@ -127,9 +156,18 @@ const Historyofsplits = ({ songId }: HistoryOfSplitsProps) => {
                       onClick={() => setSelectedSplitKey(splitKey)}
                       className="w-full flex items-center justify-between px-4 py-3 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                     >
-                      <span className="font-medium text-gray-700">
-                        {formatDate(splitDate)}
-                      </span>
+                      <div className="flex items-center gap-3">
+                        <span className="font-medium text-gray-700">
+                          {formatDate(splitDate)}
+                        </span>
+                        {splitData.action && (
+                          <span
+                            className={`px-2 py-0.5 text-xs font-medium rounded-full ${getActionColor(splitData.action)}`}
+                          >
+                            {getActionLabel(splitData.action)}
+                          </span>
+                        )}
+                      </div>
                       <span className="text-xs text-orange-500 font-semibold">
                         Ver detalle
                       </span>
@@ -174,7 +212,7 @@ const Historyofsplits = ({ songId }: HistoryOfSplitsProps) => {
             </div>
 
             {/* Métricas destacadas */}
-            <div className="px-6 pt-4 grid grid-cols-2 gap-2">
+            <div className="px-6 pt-4 grid grid-cols-3 gap-2">
               <div className="bg-gray-50 dark:bg-white/5 rounded-xl px-4 py-3">
                 <p className="text-[11px] font-medium tracking-wider text-gray-400 uppercase mb-1">
                   Porcentaje
@@ -187,8 +225,16 @@ const Historyofsplits = ({ songId }: HistoryOfSplitsProps) => {
                 <p className="text-[11px] font-medium tracking-wider text-gray-400 uppercase mb-1">
                   Tipo
                 </p>
-                <p className="text-2xl font-medium text-gray-900 dark:text-white capitalize">
+                <p className="text-lg font-medium text-gray-900 dark:text-white capitalize">
                   {selectedCondition?.type || "General"}
+                </p>
+              </div>
+              <div className="bg-gray-50 dark:bg-white/5 rounded-xl px-4 py-3">
+                <p className="text-[11px] font-medium tracking-wider text-gray-400 uppercase mb-1">
+                  Acción
+                </p>
+                <p className="text-lg font-medium text-gray-900 dark:text-white capitalize">
+                  {getActionLabel(selectedSplitData.action)}
                 </p>
               </div>
             </div>
@@ -198,23 +244,23 @@ const Historyofsplits = ({ songId }: HistoryOfSplitsProps) => {
               {[
                 {
                   label: "Países",
-                  value: selectedCondition?.countriesType || "—",
+                  value: selectedCondition?.countriesType === "all" 
+                    ? "Todos" 
+                    : selectedCondition?.selectedCountries?.join(", ") || "—",
                 },
                 {
                   label: "Plataformas",
-                  value: selectedCondition?.platformsType || "—",
+                  value: selectedCondition?.platformsType === "all"
+                    ? "Todas"
+                    : selectedCondition?.selectedPlatforms?.join(", ") || "—",
                 },
                 {
-                  label: "Creado",
-                  value: `${formatDate(selectedSplitData.createdAt)} ${formatTime(selectedSplitData.createdAt)}`,
+                  label: "Fecha de modificación",
+                  value: formatDateTime(selectedSplitData.originalUpdatedAt),
                 },
                 {
-                  label: "Actualizado",
-                  value: `${formatDate(selectedSplitData.updatedAt)} ${formatTime(selectedSplitData.updatedAt)}`,
-                },
-                {
-                  label: "Fecha visible",
-                  value: `${formatDate(getSplitDate(selectedSplitData))} ${formatTime(getSplitDate(selectedSplitData))}`,
+                  label: "Fecha de creación original",
+                  value: formatDateTime(selectedSplitData.originalCreatedAt),
                 },
               ].map(({ label, value }) => (
                 <div
@@ -222,7 +268,7 @@ const Historyofsplits = ({ songId }: HistoryOfSplitsProps) => {
                   className="flex items-center justify-between py-2.5"
                 >
                   <span className="text-gray-400">{label}</span>
-                  <span className="font-medium text-gray-900 dark:text-white">
+                  <span className="font-medium text-gray-900 dark:text-white text-right max-w-[60%]">
                     {value}
                   </span>
                 </div>
