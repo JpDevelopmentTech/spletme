@@ -1,4 +1,4 @@
-import React, {  useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   DollarSign,
   Music,
@@ -23,6 +23,7 @@ import LocalStorageService from "../../../../services/localstorage";
 import PaymentHistory from "../../../../components/PaymentHistory/PaymentHistory";
 import useCurrentCollaborator from "../../../../hooks/useCurrentCollaborator";
 import { validatePayAllPayment } from "../../../../services/songs";
+import { accountingApi } from "../../../../services/accounting";
 import ValidationToastQueue, {
   ValidationToastItem,
   ValidationToastType,
@@ -45,6 +46,7 @@ export default function Song() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [toasts, setToasts] = useState<ValidationToastItem[]>([]);
   const [paymentHistoryRefresh, setPaymentHistoryRefresh] = useState(0);
+  const [balance, setBalance] = useState<{ totalIngresos: number; totalEgresos: number } | null>(null);
 
   const addToast = (
     type: ValidationToastType,
@@ -65,6 +67,22 @@ export default function Song() {
   const dequeueToast = (id: number) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
   };
+
+  useEffect(() => {
+    if (!id) return;
+    const fetchBalance = async () => {
+      try {
+        const data = await accountingApi.getBalanceBySongId(id);
+        setBalance({
+          totalIngresos: data?.totalIngresos || 0,
+          totalEgresos: data?.totalEgresos || 0,
+        });
+      } catch (error) {
+        console.error("Error fetching balance:", error);
+      }
+    };
+    fetchBalance();
+  }, [id]);
 
   const getUserDisplayPercentage = () => {
     const collaboratorPercentage = getCurrentUserPercentage();
@@ -90,43 +108,67 @@ export default function Song() {
   };
 
   const handlePayAllClick = () => {
+    // totalEgresos = gastos extraordinarios
+    // totalIngresos = ganancias de la canción
+    const totalEgresos = balance?.totalEgresos || 0;
+    const totalIngresos = song?.totalNetIncome || 0;
+    
+    console.log("DEBUG handlePayAllClick:", { 
+      balance, 
+      totalEgresos, 
+      totalIngresos, 
+      costsExceedIncome: totalEgresos > totalIngresos 
+    });
+    
     const validation = validatePayAllPayment({
       song,
       isStripeConnected: isStripeConnected(),
+      totalEgresos,
+      totalIngresos,
     });
     const blockingIssues = validation.issues.filter(
       (issue) => issue.code !== "all-valid",
     );
     const currentUserDisplayName =
       currentUser?.name || currentUser?.username || currentUser?.email || "Tú";
+    // Obtener todos los mensajes de error que no son de colaboradores específicos
     const payerReasons = blockingIssues
       .filter((issue) => !issue.collaboratorEmail)
       .map((issue) => issue.message);
-    const getToastTypeFromReasons = (reasons: string[], fallback: ValidationToastType) => {
+    const getToastTypeFromReasons = (
+      reasons: string[],
+      fallback: ValidationToastType,
+    ) => {
       if (reasons.length === 0) return fallback;
       return "error" as ValidationToastType;
     };
     const collaboratorToasts = validation.collaborators.map((collaborator) => ({
-      id: Date.now() + Math.floor(Math.random() * 1000) + Math.floor(Math.random() * 1000),
-      type: getToastTypeFromReasons(collaborator.reasons.map((issue) => issue.message), collaborator.canPay ? "success" : "error"),
+      id:
+        Date.now() +
+        Math.floor(Math.random() * 1000) +
+        Math.floor(Math.random() * 1000),
+      type: getToastTypeFromReasons(
+        collaborator.reasons.map((issue) => issue.message),
+        collaborator.canPay ? "success" : "error",
+      ),
       message: collaborator.name,
       title: collaborator.name,
       email: collaborator.email,
       reasons: collaborator.reasons.map((issue) => issue.message),
       canPay: collaborator.canPay,
     }));
+    // Mostrar siempre el toast del pagador con los motivos del pago
     const payerToast: ValidationToastItem = {
       id: Date.now() + Math.floor(Math.random() * 1000),
       type: validation.canProceed ? "success" : "error",
       message: currentUserDisplayName,
       title: currentUserDisplayName,
       email: currentUser?.email || "",
-      reasons:
-        validation.canProceed
+      reasons: payerReasons.length > 0
+        ? payerReasons
+        : validation.canProceed
           ? []
-          : payerReasons.length > 0
-            ? payerReasons
-            : ["No puedes continuar con el pago con la configuración actual."],
+          : ["No puedes continuar con el pago con la configuración actual."],
       canPay: validation.canProceed,
     };
     const validationToasts = [payerToast, ...collaboratorToasts];
@@ -202,8 +244,6 @@ export default function Song() {
     usernameMatchesOwner ||
     (!isSubuserSession && !hasOwnerIdentity && idMatchesOwner);
 
-
-
   if (loading) return <Loading />;
 
   return (
@@ -222,10 +262,7 @@ export default function Song() {
         collaborators={song?.collaborators || []}
         onPaymentSuccess={handlePaymentSuccess}
       />
-      <ValidationToastQueue
-        toasts={toasts}
-        onDequeue={dequeueToast}
-      />
+      <ValidationToastQueue toasts={toasts} onDequeue={dequeueToast} />
       <div className="min-h-screen bg-[#F7F8FA] px-10 py-8 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -449,7 +486,7 @@ export default function Song() {
           </div>
           {/* Extraordinary Costs */}
           <div className="bg-white border border-gray-200 rounded-xl overflow-hidden col-span-1 lg:col-span-2">
-            <Extraordinarycosts />
+            <Extraordinarycosts songId={id} />
           </div>
         </div>
         {/* Specific Data */}

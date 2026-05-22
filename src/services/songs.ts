@@ -71,18 +71,28 @@ const getDisplayName = (collaborator: Record<string, unknown>, idx: number): str
 export const validatePayAllPayment = ({
   song,
   isStripeConnected,
+  totalEgresos = 0,
+  totalIngresos = 0,
 }: {
   song: Record<string, unknown> | null;
   isStripeConnected: boolean;
+  totalEgresos?: number;
+  totalIngresos?: number;
 }): PaymentValidationResult => {
   const issues: PaymentValidationIssue[] = [];
   const collaboratorsResult: PaymentValidationCollaboratorResult[] = [];
   const collaborators = Array.isArray(song?.collaborators) ? (song.collaborators as Record<string, unknown>[]) : [];
   const totalCollaborators = collaborators.length;
 
+  console.log("DEBUG validatePayAllPayment:", { totalEgresos, totalIngresos, costsExceedIncome: totalEgresos > totalIngresos });
+
   if (!song) {
     issues.push({ code: "song-not-found", severity: "error", message: "No se pudo cargar la canción. Recarga la página e inténtalo de nuevo." });
     return { canProceed: false, totalCollaborators: 0, payableCollaborators: 0, issues, collaborators: [] };
+  }
+
+  if (totalEgresos > 0 && totalIngresos > 0 && totalEgresos > totalIngresos) {
+    issues.push({ code: "costs-exceed-income", severity: "error", message: `Los costos extraordinarios ($${totalEgresos.toFixed(2)}) superan las ganancias ($${totalIngresos.toFixed(2)}). No puedes proceder con el pago.` });
   }
 
   if (!isStripeConnected) {
