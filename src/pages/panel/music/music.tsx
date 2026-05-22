@@ -28,6 +28,9 @@ export default function Music() {
     artistFilter, setArtistFilter,
     isrcFilter, setIsrcFilter,
     upcFilter, setUpcFilter,
+    countryFilter, setCountryFilter,
+    dateFrom, setDateFrom,
+    dateTo, setDateTo,
     groupAlbumsByTrackCount, setGroupAlbumsByTrackCount,
     showFilterPanel, setShowFilterPanel,
     loading,
@@ -156,6 +159,8 @@ export default function Music() {
               getAllSongLabels={getAllSongLabels}
               onSongDetails={handleOpenSongDetails}
               onOwnerSplitModal={handleOpenOwnerSplitModal}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
               safePage={safePage}
               pageStart={pageStart}
               pageEnd={pageEnd}
@@ -205,6 +210,9 @@ export default function Music() {
         artistFilter={artistFilter}
         isrcFilter={isrcFilter}
         upcFilter={upcFilter}
+        countryFilter={countryFilter}
+        dateFrom={dateFrom}
+        dateTo={dateTo}
         groupAlbumsByTrackCount={groupAlbumsByTrackCount}
         activeFilterCount={activeFilterCount}
         onClose={() => setShowFilterPanel(false)}
@@ -213,6 +221,9 @@ export default function Music() {
         onArtistFilterChange={setArtistFilter}
         onIsrcFilterChange={setIsrcFilter}
         onUpcFilterChange={setUpcFilter}
+        onCountryFilterChange={setCountryFilter}
+        onDateFromChange={setDateFrom}
+        onDateToChange={setDateTo}
         onGroupByTrackCountChange={setGroupAlbumsByTrackCount}
         onClearAll={clearAllFilters}
       />

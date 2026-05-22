@@ -9,6 +9,9 @@ interface MusicFilterDrawerProps {
   artistFilter: string;
   isrcFilter: string;
   upcFilter: string;
+  countryFilter: string;
+  dateFrom: string;
+  dateTo: string;
   groupAlbumsByTrackCount: boolean;
   activeFilterCount: number;
   onClose: () => void;
@@ -17,6 +20,9 @@ interface MusicFilterDrawerProps {
   onArtistFilterChange: (v: string) => void;
   onIsrcFilterChange: (v: string) => void;
   onUpcFilterChange: (v: string) => void;
+  onCountryFilterChange: (v: string) => void;
+  onDateFromChange: (v: string) => void;
+  onDateToChange: (v: string) => void;
   onGroupByTrackCountChange: (v: boolean) => void;
   onClearAll: () => void;
 }
@@ -54,9 +60,11 @@ function RadioOption({ selected, label, onClick }: { selected: boolean; label: s
  */
 export function MusicFilterDrawer({
   isOpen, mode, sortBy, splitFilter, artistFilter, isrcFilter, upcFilter,
+  countryFilter, dateFrom, dateTo,
   groupAlbumsByTrackCount, activeFilterCount, onClose, onSortChange,
   onSplitFilterChange, onArtistFilterChange, onIsrcFilterChange,
-  onUpcFilterChange, onGroupByTrackCountChange, onClearAll,
+  onUpcFilterChange, onCountryFilterChange, onDateFromChange, onDateToChange,
+  onGroupByTrackCountChange, onClearAll,
 }: MusicFilterDrawerProps) {
   return (
     <>
@@ -125,6 +133,41 @@ export function MusicFilterDrawer({
                 className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               />
             )}
+          </div>
+
+          <div>
+            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-3">País</p>
+            <input
+              type="text"
+              value={countryFilter}
+              onChange={(e) => onCountryFilterChange(e.target.value)}
+              placeholder="Filtrar por país"
+              className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-3">Fecha de lanzamiento</p>
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-gray-500">Desde</label>
+                <input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => onDateFromChange(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-gray-500">Hasta</label>
+                <input
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => onDateToChange(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                />
+              </div>
+            </div>
           </div>
 
           {mode === "albums" && (

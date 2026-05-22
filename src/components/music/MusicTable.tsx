@@ -1,7 +1,20 @@
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Music as MusicIcon, Disc, Crown, Info, Tags } from "lucide-react";
+import { Music as MusicIcon, Disc, Crown, Info, Tags, ArrowUpDown, Check } from "lucide-react";
 import { hasAnySplit } from "@/utils/music.utils";
-import type { MusicMode, SongItem, AlbumItem } from "@/types/music.types";
+import type { MusicMode, SongItem, AlbumItem, SortBy } from "@/types/music.types";
+
+const COLUMN_SORT_OPTIONS: Record<string, { value: SortBy; label: string }[]> = {
+  track:         [{ value: "alpha",              label: "A → Z" },             { value: "title_desc",         label: "Z → A" }],
+  split:         [{ value: "split_desc",         label: "Con split primero" },  { value: "split_asc",          label: "Sin split primero" }],
+  percentage:    [{ value: "percentage_desc",    label: "Mayor %" },            { value: "percentage_asc",     label: "Menor %" }],
+  collaborators: [{ value: "collaborators_desc", label: "Más colaboradores" },  { value: "collaborators_asc",  label: "Menos colaboradores" }],
+  label:         [{ value: "label_asc",          label: "A → Z" },             { value: "label_desc",         label: "Z → A" }],
+  album:         [{ value: "alpha",              label: "A → Z" },             { value: "title_desc",         label: "Z → A" }],
+  artist:        [{ value: "artist_asc",         label: "A → Z" },             { value: "artist_desc",        label: "Z → A" }],
+  date:          [{ value: "date_desc",          label: "Más reciente" },       { value: "date_asc",           label: "Más antiguo" }],
+  revenue:       [{ value: "revenue",            label: "Mayor ganancia" },     { value: "streams",            label: "Más streams" }],
+};
 
 const COLLAB_COLORS = [
   { bg: "#DBEAFE", color: "#1E40AF" },
@@ -30,6 +43,8 @@ interface MusicTableProps {
   getAllSongLabels: (song: SongItem) => string[];
   onSongDetails: (song: SongItem) => void;
   onOwnerSplitModal: (album: AlbumItem) => void;
+  sortBy: SortBy;
+  onSortChange: (v: SortBy) => void;
   // Pagination
   safePage: number;
   pageStart: number;
@@ -59,32 +74,110 @@ function AlbumCover({ album, size = "9" }: { album: AlbumItem; size?: string }) 
 export function MusicTable({
   mode, songs, albums, groupedAlbums, groupAlbumsByTrackCount,
   getAllSongLabels, onSongDetails, onOwnerSplitModal,
+  sortBy, onSortChange,
   safePage, pageStart, pageEnd, totalItemsForDisplay, canGoNext,
   limit, onLimitChange, onPrevPage, onNextPage,
 }: MusicTableProps) {
+  const [sortPopover, setSortPopover] = useState<{ x: number; y: number; column: string } | null>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!sortPopover) return;
+    const handler = (e: MouseEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
+        setSortPopover(null);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [sortPopover]);
+
+  const handleSortIconClick = (e: React.MouseEvent<HTMLButtonElement>, column: string) => {
+    e.stopPropagation();
+    if (sortPopover?.column === column) { setSortPopover(null); return; }
+    const rect = e.currentTarget.getBoundingClientRect();
+    setSortPopover({ x: rect.left, y: rect.bottom + 4, column });
+  };
+
+  const isColumnActive = (column: string) =>
+    (COLUMN_SORT_OPTIONS[column] ?? []).some((o) => o.value === sortBy);
+
+  const SortBtn = ({ column }: { column: string }) => (
+    <button
+      type="button"
+      onClick={(e) => handleSortIconClick(e, column)}
+      className={`ml-1 p-0.5 rounded transition-colors flex-shrink-0 ${isColumnActive(column) ? "text-orange-500" : "text-gray-400 hover:bg-gray-200"}`}
+      title="Ordenar"
+    >
+      <ArrowUpDown size={11} />
+    </button>
+  );
+
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      {sortPopover && (
+        <div
+          ref={popoverRef}
+          style={{ position: "fixed", top: sortPopover.y, left: sortPopover.x }}
+          className="z-50 bg-white border border-gray-200 rounded-xl shadow-xl py-1.5 min-w-[190px]"
+        >
+          <p className="px-3.5 pt-1 pb-1.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-100 mb-1">
+            Ordenar
+          </p>
+          {(COLUMN_SORT_OPTIONS[sortPopover.column] ?? []).map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => { onSortChange(value); setSortPopover(null); }}
+              className={`w-full flex items-center gap-2 px-3.5 py-2 text-sm transition-colors ${sortBy === value ? "text-orange-600 font-semibold bg-orange-50" : "text-gray-700 hover:bg-gray-50"}`}
+            >
+              <span className="flex-1 text-left">{label}</span>
+              {sortBy === value && <Check size={13} className="text-orange-500 flex-shrink-0" />}
+            </button>
+          ))}
+        </div>
+      )}
       <div className="hidden lg:block">
         <table className="w-full">
           <thead>
             <tr className="bg-[#FAFAFA] border-b border-gray-200">
               {mode === "songs" ? (
                 <>
-                  <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Track</th>
-                  <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Split Status</th>
-                  <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Percentage</th>
-                  <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Collaborators</th>
-                  <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Label</th>
-                  <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <div className="flex items-center">Track <SortBtn column="track" /></div>
+                  </th>
+                  <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <div className="flex items-center">Split Status <SortBtn column="split" /></div>
+                  </th>
+                  <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <div className="flex items-center">Percentage <SortBtn column="percentage" /></div>
+                  </th>
+                  <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <div className="flex items-center">Collaborators <SortBtn column="collaborators" /></div>
+                  </th>
+                  <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <div className="flex items-center">Label <SortBtn column="label" /></div>
+                  </th>
+                  <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <div className="flex items-center">Status <SortBtn column="revenue" /></div>
+                  </th>
                   <th className="px-6 py-3.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
                 </>
               ) : (
                 <>
-                  <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Album</th>
-                  <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Artist</th>
+                  <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <div className="flex items-center">Album <SortBtn column="album" /></div>
+                  </th>
+                  <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <div className="flex items-center">Artist <SortBtn column="artist" /></div>
+                  </th>
                   <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">UPC</th>
-                  <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Label</th>
-                  <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Release Date</th>
+                  <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <div className="flex items-center">Label <SortBtn column="label" /></div>
+                  </th>
+                  <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <div className="flex items-center">Release Date <SortBtn column="date" /></div>
+                  </th>
                   <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                   <th className="px-6 py-3.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </>
