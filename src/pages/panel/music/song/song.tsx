@@ -29,6 +29,7 @@ import ValidationToastQueue, {
   ValidationToastType,
 } from "../../../../components/alert/ValidationToastQueue";
 import Behavior from "../../dealers/components/behavior";
+import DocumentManager from "./components/DocumentManager";
 
 export default function Song() {
   const { id } = useParams();
@@ -46,7 +47,10 @@ export default function Song() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [toasts, setToasts] = useState<ValidationToastItem[]>([]);
   const [paymentHistoryRefresh, setPaymentHistoryRefresh] = useState(0);
-  const [balance, setBalance] = useState<{ totalIngresos: number; totalEgresos: number } | null>(null);
+  const [balance, setBalance] = useState<{
+    totalIngresos: number;
+    totalEgresos: number;
+  } | null>(null);
 
   const addToast = (
     type: ValidationToastType,
@@ -112,14 +116,7 @@ export default function Song() {
     // totalIngresos = ganancias de la canción
     const totalEgresos = balance?.totalEgresos || 0;
     const totalIngresos = song?.totalNetIncome || 0;
-    
-    console.log("DEBUG handlePayAllClick:", { 
-      balance, 
-      totalEgresos, 
-      totalIngresos, 
-      costsExceedIncome: totalEgresos > totalIngresos 
-    });
-    
+
     const validation = validatePayAllPayment({
       song,
       isStripeConnected: isStripeConnected(),
@@ -164,11 +161,12 @@ export default function Song() {
       message: currentUserDisplayName,
       title: currentUserDisplayName,
       email: currentUser?.email || "",
-      reasons: payerReasons.length > 0
-        ? payerReasons
-        : validation.canProceed
-          ? []
-          : ["No puedes continuar con el pago con la configuración actual."],
+      reasons:
+        payerReasons.length > 0
+          ? payerReasons
+          : validation.canProceed
+            ? []
+            : ["No puedes continuar con el pago con la configuración actual."],
       canPay: validation.canProceed,
     };
     const validationToasts = [payerToast, ...collaboratorToasts];
@@ -200,7 +198,8 @@ export default function Song() {
   };
 
   const ownerAmount = getOwnerTotalOwed();
-  const totalToPay = Math.max(0, (song?.totalNetIncome || 0) - ownerAmount);
+  // Usar collaboratorsEarnings del backend si está disponible, si no calcular
+  const totalToPay = song?.collaboratorsEarnings ?? Math.max(0, (song?.totalNetIncome || 0) - ownerAmount);
   const currentUser = LocalStorageService.getItem("user");
   const normalizeIdentity = (value: unknown) =>
     String(value || "")
@@ -486,12 +485,18 @@ export default function Song() {
           </div>
           {/* Extraordinary Costs */}
           <div className="bg-white border border-gray-200 rounded-xl overflow-hidden col-span-1 lg:col-span-2">
-            <Extraordinarycosts songId={id} />
+            <Extraordinarycosts songId={id || ""} />
           </div>
         </div>
-        {/* Specific Data */}
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-          <EspecificData song={song} />
+
+        <div className="grid grid-cols-4 gap-4">
+          {/* Specific Data */}
+          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden col-span-1 lg:col-span-2">
+            <EspecificData song={song} />
+          </div>
+          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden col-span-1 lg:col-span-2">
+            <DocumentManager />
+          </div>
         </div>
       </div>
     </React.Fragment>

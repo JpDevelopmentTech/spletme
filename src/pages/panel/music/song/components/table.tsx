@@ -46,6 +46,9 @@ interface Song {
   }>;
   createdAt?: string;
   updatedAt?: string;
+  requesterRole?: "admin" | "collaborator" | "label";
+  ownerEarnings?: Array<{ calculation?: { amountToPay?: number } }>;
+  collaboratorsEarnings?: number;
 }
 
 interface TableProps {
@@ -235,7 +238,7 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
 
       {/* Actions bar */}
       <div className="flex items-center gap-2 px-6 py-4 border-b border-gray-100">
-        {isOwner && (
+        {isOwner && song?.requesterRole === "admin" && (
           <button
             onClick={() => setIsOwnerSplitModalOpen(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F97316] hover:bg-orange-600 text-white text-xs font-semibold rounded-lg transition-colors"
@@ -244,13 +247,15 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
             Owner Split
           </button>
         )}
-        <button
-          onClick={handleOpenSplitsModal}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-semibold rounded-lg transition-colors"
-        >
-          <Music className="w-3.5 h-3.5" />
-          Configurar Splits
-        </button>
+        {song?.requesterRole === "admin" && (
+          <button
+            onClick={handleOpenSplitsModal}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-semibold rounded-lg transition-colors"
+          >
+            <Music className="w-3.5 h-3.5" />
+            Configurar Splits
+          </button>
+        )}
         {currentSplitId && (
           <>
             <button

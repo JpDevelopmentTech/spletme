@@ -129,7 +129,7 @@ const Album = () => {
           </div>
 
           {/* Stats row */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <div className={`grid ${album?.ownerEarnings ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-2 sm:grid-cols-3'} gap-4`}>
             <div className="bg-[#F7F8FA] rounded-xl p-4">
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-7 h-7 bg-orange-50 rounded-lg flex items-center justify-center">
@@ -159,6 +159,22 @@ const Album = () => {
               </div>
               <p className="text-xl font-bold text-gray-900">{album.artists?.length ?? 1}</p>
             </div>
+
+            {album?.ownerEarnings && (
+              <div className="bg-green-50 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-7 h-7 bg-green-100 rounded-lg flex items-center justify-center">
+                    <span className="text-xs font-bold text-green-600">$</span>
+                  </div>
+                  <span className="text-xs font-medium text-gray-500">Ganancias</span>
+                </div>
+                <p className="text-xl font-bold text-green-600">
+                  ${(Array.isArray(album.ownerEarnings) && album.ownerEarnings[0]?.calculation?.amountToPay 
+                    ? album.ownerEarnings[0].calculation.amountToPay 
+                    : 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
