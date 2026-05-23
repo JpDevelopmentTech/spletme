@@ -21,10 +21,20 @@ import { useAlbums } from "../../../../hooks/useAlbums";
 import Loading from "../../../../components/loading/loading";
 import type { Album, AlbumTrack } from "../../../../models/album";
 import AlbumOwnerSplitModal from "./components/AlbumOwnerSplitModal";
+import AlbumExtraordinaryCosts from "./components/AlbumExtraordinaryCosts";
 import { useMemo } from "react";
 import ReactApexChart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import AlbumService from "../../../../services/albums";
+import SongService from "../../../../services/songs";
+import Platforms from "../song/components/platforms";
+
+interface ReproductionData {
+  totalStreams: number;
+  totalIncome: number;
+  releasesCount: number;
+  platform: string;
+}
 
 interface MonthlyMetric {
   month: string;
@@ -49,6 +59,7 @@ export default function AlbumDetail() {
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [monthlyMetrics, setMonthlyMetrics] = useState<MonthlyMetric[]>([]);
   const [metricsLoading, setMetricsLoading] = useState(false);
+  const [albumReproductions, setAlbumReproductions] = useState<ReproductionData[]>([]);
 
   const loadAlbum = useCallback(async () => {
     if (!upc) return;
@@ -79,6 +90,36 @@ export default function AlbumDetail() {
       .then((data) => setMonthlyMetrics(data))
       .finally(() => setMetricsLoading(false));
   }, [upc]);
+
+  useEffect(() => {
+    if (!album || album.tracks.length === 0) return;
+    const fetchReproductions = async () => {
+      const results = await Promise.allSettled(
+        album.tracks.map((t) => SongService.getSong(t._id)),
+      );
+      const map = new Map<string, ReproductionData>();
+      for (const result of results) {
+        if (result.status !== "fulfilled" || !result.value) continue;
+        const song = result.value?.data ?? result.value;
+        const repros: ReproductionData[] = song?.reproductions ?? [];
+        for (const repro of repros) {
+          const existing = map.get(repro.platform);
+          if (existing) {
+            map.set(repro.platform, {
+              ...existing,
+              totalStreams: existing.totalStreams + (repro.totalStreams || 0),
+              totalIncome: existing.totalIncome + (repro.totalIncome || 0),
+              releasesCount: existing.releasesCount + (repro.releasesCount || 0),
+            });
+          } else {
+            map.set(repro.platform, { ...repro });
+          }
+        }
+      }
+      setAlbumReproductions(Array.from(map.values()));
+    };
+    fetchReproductions();
+  }, [album]);
 
   const formatCurrency = (amount: number) =>
     `$${amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -386,7 +427,8 @@ export default function AlbumDetail() {
         </div>
       </div>
 
-      {/* Performance Chart */}
+      {/* Performance Chart + Platforms */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
       <div className="bg-white border border-gray-200 rounded-xl p-6 flex flex-col gap-5">
         <div className="flex items-start sm:items-center justify-between flex-col sm:flex-row gap-2">
           <div className="flex flex-col gap-0.5">
@@ -424,6 +466,10 @@ export default function AlbumDetail() {
             />
           </div>
         )}
+      </div>
+
+      {/* Platforms */}
+      <Platforms reproductions={albumReproductions} />
       </div>
 
       {/* Tracks Table */}
@@ -650,6 +696,15 @@ export default function AlbumDetail() {
             )}
           </div>
         )}
+      </div>
+
+      {/* Album Costs */}
+      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <AlbumExtraordinaryCosts
+          albumId={album._id || album.id || ""}
+          tracks={album.tracks.map((t) => ({ _id: t._id, trackTitle: t.trackTitle }))}
+          albumNetIncome={album.totalNetIncome}
+        />
       </div>
 
       {/* Album Owner Split Modal */}

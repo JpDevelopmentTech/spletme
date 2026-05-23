@@ -17,7 +17,8 @@ export interface AlbumTrack {
 }
 
 export interface Album {
-  _id: string;
+  _id?: string;
+  id?: string;
   upc: string;
   albumTitle: string;
   artistName: string;

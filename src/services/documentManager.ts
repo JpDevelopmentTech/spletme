@@ -4,224 +4,105 @@ import type { Document, DocumentResponse, DownloadResponse, DeleteResponse } fro
 class DocumentManagerService {
   private readonly BASE = "/documents";
 
-  /**
-   * Obtiene todos los documentos de una canción
-   */
   async getBySongId(songId: string): Promise<DocumentResponse> {
+    if (!songId) return { success: false, message: "Song ID is required" };
     try {
-      if (!songId) {
-        return { success: false, message: "Song ID is required" };
-      }
-      const response = await apiClient.get(`${this.BASE}/song/${songId}`);
-      
-      const apiResponse = response.data as any;
-      
-      // El backend devuelve { message: "...", data: [...] } sin campo success
-      // Asumir éxito si hay data o si error es false
-      const isSuccess = !apiResponse.error && (apiResponse.data || apiResponse.message);
-      
-      if (isSuccess) {
-        let dataArray: Document[] = [];
-        
-        if (apiResponse.data) {
-          if (Array.isArray(apiResponse.data)) {
-            dataArray = apiResponse.data;
-          } else if (typeof apiResponse.data === 'object') {
-            dataArray = [apiResponse.data];
-          }
-        } else if (apiResponse.documents && Array.isArray(apiResponse.documents)) {
-          dataArray = apiResponse.documents;
-        }
-        
-        return { 
-          success: true, 
-          data: dataArray,
-          message: apiResponse.message,
-          pagination: apiResponse.pagination
-        };
-      }
-      
-      // Si no es exitosa, devolver error
+      const { data } = await apiClient.get(`${this.BASE}/song/${songId}`);
+      const docs: Document[] = Array.isArray(data.data)
+        ? data.data
+        : data.data
+          ? [data.data]
+          : [];
+      return { success: true, data: docs, message: data.message, pagination: data.pagination };
+    } catch (error: unknown) {
+      const axErr = error as { response?: { data?: { message?: string; error?: string } }; message?: string };
       return {
         success: false,
-        message: apiResponse.message || "Failed to fetch documents",
-        error: apiResponse.error
-      };
-    } catch (error: unknown) {
-      const axErr = error as { response?: { data?: DocumentResponse }; message?: string };
-      if (axErr.response?.data) return axErr.response.data;
-      return { 
-        success: false, 
-        message: "Error retrieving documents", 
-        error: axErr.message ?? "Unknown error" 
+        message: axErr.response?.data?.message ?? "Error retrieving documents",
+        error: axErr.response?.data?.error ?? axErr.message,
       };
     }
   }
 
-  /**
-   * Obtiene un documento específico por ID
-   */
   async getById(documentId: string): Promise<DocumentResponse> {
+    if (!documentId) return { success: false, message: "Document ID is required" };
     try {
-      if (!documentId) {
-        return { success: false, message: "Document ID is required" };
-      }
-      const response = await apiClient.get(`${this.BASE}/${documentId}`);
-      const apiResponse = response.data as any;
-      
-      const isSuccess = !apiResponse.error && (apiResponse.data || apiResponse.message);
-      
-      if (isSuccess && apiResponse.data) {
-        return {
-          success: true,
-          data: apiResponse.data,
-          message: apiResponse.message
-        };
-      }
-      
+      const { data } = await apiClient.get(`${this.BASE}/${documentId}`);
+      return { success: true, data: data.data, message: data.message };
+    } catch (error: unknown) {
+      const axErr = error as { response?: { data?: { message?: string; error?: string } }; message?: string };
       return {
         success: false,
-        message: apiResponse.message || "Error retrieving document",
-        error: apiResponse.error
-      };
-    } catch (error: unknown) {
-      const axErr = error as { response?: { data?: DocumentResponse }; message?: string };
-      if (axErr.response?.data) return axErr.response.data;
-      return { 
-        success: false, 
-        message: "Error retrieving document", 
-        error: axErr.message ?? "Unknown error" 
+        message: axErr.response?.data?.message ?? "Error retrieving document",
+        error: axErr.response?.data?.error ?? axErr.message,
       };
     }
   }
 
-  /**
-   * Descarga un documento (obtiene la URL de descarga)
-   */
   async download(documentId: string): Promise<DownloadResponse> {
+    if (!documentId) return { success: false, message: "Document ID is required" };
     try {
-      if (!documentId) {
-        return { success: false, message: "Document ID is required" };
-      }
-      const response = await apiClient.get(`${this.BASE}/${documentId}/download`);
-      const apiResponse = response.data as any;
-      
-      const isSuccess = !apiResponse.error && (apiResponse.url || apiResponse.message);
-      
-      if (isSuccess) {
-        return {
-          success: true,
-          url: apiResponse.url,
-          name: apiResponse.name,
-          type: apiResponse.type,
-          message: apiResponse.message
-        };
-      }
-      
+      const response = await apiClient.get(`${this.BASE}/${documentId}/download`, {
+        responseType: "blob",
+      });
+
+      const disposition: string = response.headers["content-disposition"] ?? "";
+      const nameMatch = disposition.match(/filename\*?=(?:UTF-8''|")?([^";\n]+)"?/i);
+      const name = nameMatch ? decodeURIComponent(nameMatch[1]) : documentId;
+
       return {
-        success: false,
-        message: apiResponse.message || "Error getting download URL",
-        error: apiResponse.error
+        success: true,
+        blob: response.data as Blob,
+        name,
+        contentType: response.headers["content-type"] ?? "application/octet-stream",
       };
     } catch (error: unknown) {
-      const axErr = error as { response?: { data?: DownloadResponse }; message?: string };
-      if (axErr.response?.data) return axErr.response.data;
-      return { 
-        success: false, 
-        message: "Error getting download URL", 
-        error: axErr.message ?? "Unknown error" 
+      const axErr = error as { response?: { data?: { message?: string } }; message?: string };
+      return {
+        success: false,
+        message: axErr.response?.data?.message ?? "Error downloading document",
+        error: axErr.message,
       };
     }
   }
 
-  /**
-   * Sube un documento nuevo
-   */
   async upload(songId: string, file: File): Promise<DocumentResponse> {
+    if (!songId || !file) return { success: false, message: "Song ID and file are required" };
     try {
-      if (!songId || !file) {
-        return { success: false, message: "Song ID and file are required" };
-      }
-      
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await apiClient.post(`${this.BASE}/song/${songId}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+      const { data } = await apiClient.post(`${this.BASE}/song/${songId}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
-      
-      const apiResponse = response.data as any;
-      const isSuccess = !apiResponse.error && (apiResponse.data || apiResponse.message);
-      
-      if (isSuccess) {
-        let dataArray: Document[] = [];
-        
-        if (apiResponse.data) {
-          if (Array.isArray(apiResponse.data)) {
-            dataArray = apiResponse.data;
-          } else if (typeof apiResponse.data === 'object') {
-            dataArray = [apiResponse.data];
-          }
-        }
-        
-        return {
-          success: true,
-          data: dataArray.length > 0 ? dataArray : [apiResponse.data],
-          message: apiResponse.message
-        };
-      }
-      
+
+      const docs: Document[] = Array.isArray(data.data)
+        ? data.data
+        : data.data
+          ? [data.data]
+          : [];
+      return { success: true, data: docs, message: data.message };
+    } catch (error: unknown) {
+      const axErr = error as { response?: { data?: { message?: string; error?: string } }; message?: string };
       return {
         success: false,
-        message: apiResponse.message || "Error uploading document",
-        error: apiResponse.error
-      };
-    } catch (error: unknown) {
-      const axErr = error as { response?: { data?: DocumentResponse }; message?: string };
-      if (axErr.response?.data) return axErr.response.data;
-      return { 
-        success: false, 
-        message: "Error uploading document", 
-        error: axErr.message ?? "Unknown error" 
+        message: axErr.response?.data?.message ?? "Error uploading document",
+        error: axErr.response?.data?.error ?? axErr.message,
       };
     }
   }
 
-  /**
-   * Elimina un documento
-   */
   async delete(documentId: string): Promise<DeleteResponse> {
+    if (!documentId) return { success: false, message: "Document ID is required" };
     try {
-      if (!documentId) {
-        return { success: false, message: "Document ID is required" };
-      }
-      const response = await apiClient.delete(`${this.BASE}/${documentId}`);
-      const apiResponse = response.data as any;
-      
-      const isSuccess = !apiResponse.error && (apiResponse.deleted || apiResponse.message);
-      
-      if (isSuccess) {
-        return {
-          success: true,
-          deleted: apiResponse.deleted ?? true,
-          message: apiResponse.message
-        };
-      }
-      
+      const { data } = await apiClient.delete(`${this.BASE}/${documentId}`);
+      return { success: true, deleted: data.deleted ?? true, message: data.message };
+    } catch (error: unknown) {
+      const axErr = error as { response?: { data?: { message?: string; error?: string } }; message?: string };
       return {
         success: false,
-        message: apiResponse.message || "Error deleting document",
-        error: apiResponse.error
-      };
-    } catch (error: unknown) {
-      const axErr = error as { response?: { data?: DeleteResponse }; message?: string };
-      if (axErr.response?.data) return axErr.response.data;
-      return { 
-        success: false, 
-        message: "Error deleting document", 
-        error: axErr.message ?? "Unknown error" 
+        message: axErr.response?.data?.message ?? "Error deleting document",
+        error: axErr.response?.data?.error ?? axErr.message,
       };
     }
   }

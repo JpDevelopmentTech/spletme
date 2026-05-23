@@ -25,9 +25,9 @@ export interface DocumentResponse {
 
 export interface DownloadResponse {
   success: boolean;
-  url?: string;
+  blob?: Blob;
   name?: string;
-  type?: string;
+  contentType?: string;
   message?: string;
   error?: string;
 }

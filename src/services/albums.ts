@@ -1,5 +1,6 @@
 import { apiClient } from "@/infrastructure/http/axiosClient";
 import type { Album, AlbumsResponse, AlbumResponse, AlbumsError } from "../models/album";
+import type { AlbumBalance } from "../types/accounting.types";
 
 class AlbumService {
   private readonly BASE = "/albums";
@@ -53,6 +54,16 @@ class AlbumService {
     try {
       const response = await this.getAlbums(0, 1000);
       return response.success && "data" in response ? response.data : null;
+    } catch {
+      return null;
+    }
+  }
+
+  async getAlbumBalance(albumId: string): Promise<AlbumBalance | null> {
+    try {
+      if (!albumId || albumId.length !== 24) return null;
+      const response = await apiClient.get(`/accounting/balance/album/${albumId}`);
+      return response.data?.data ?? response.data;
     } catch {
       return null;
     }
