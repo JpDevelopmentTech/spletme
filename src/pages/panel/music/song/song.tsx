@@ -495,7 +495,7 @@ export default function Song() {
             <EspecificData song={song} />
           </div>
           <div className="bg-white border border-gray-200 rounded-xl overflow-hidden col-span-1 lg:col-span-2">
-            <DocumentManager />
+            <DocumentManager songId={id || ""} />
           </div>
         </div>
       </div>
