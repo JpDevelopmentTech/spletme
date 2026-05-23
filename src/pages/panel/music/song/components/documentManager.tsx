@@ -108,15 +108,18 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
   };
 
   const handleDownload = async (doc: Document) => {
-    const url = doc.url;
-    if (!url) return;
+    const docId = doc._id || doc.id;
+    if (!docId) return;
     try {
-      const res = await fetch(url);
-      const blob = await res.blob();
-      const blobUrl = URL.createObjectURL(blob);
+      const response = await documentManagerService.download(docId);
+      if (!response.success || !response.blob) {
+        setError(response.message || "No se pudo descargar el documento");
+        return;
+      }
+      const blobUrl = URL.createObjectURL(response.blob);
       const a = document.createElement("a");
       a.href = blobUrl;
-      a.download = doc.name;
+      a.download = response.name || doc.name;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

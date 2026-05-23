@@ -1,4 +1,5 @@
 import { apiClient } from "@/infrastructure/http/axiosClient";
+import type { SongBalance } from "./accounting";
 
 export type PaymentValidationSeverity = "success" | "info" | "warning" | "error";
 
@@ -300,6 +301,15 @@ class SongService {
     try {
       const response = await apiClient.get(`${this.BASE}/getStadisticsByPlatformAll`);
       return response.data;
+    } catch {
+      return null;
+    }
+  }
+
+  async getBalanceBySongId(songId: string): Promise<SongBalance | null> {
+    try {
+      const response = await apiClient.get(`/accounting/balance/song/${songId}`);
+      return response.data?.data ?? response.data;
     } catch {
       return null;
     }

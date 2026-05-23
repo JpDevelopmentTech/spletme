@@ -29,6 +29,21 @@ export interface CreateAccountingDto {
   status?: AccountingStatus;
 }
 
+export interface AlbumBalance {
+  albumId: string;
+  totalIngresos: number;
+  totalEgresos: number;
+  balance: number;
+  totalEntries: number;
+  bySong: {
+    songId: string;
+    totalIngresos: number;
+    totalEgresos: number;
+    balance: number;
+    totalEntries: number;
+  }[];
+}
+
 export interface ApiResponse<T> {
   data: T;
   message: string;
