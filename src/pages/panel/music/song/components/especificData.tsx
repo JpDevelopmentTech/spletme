@@ -46,7 +46,7 @@ export default function EspecificData({ song }: { song: any }) {
   const copyrightB = song?.phonogramCopyright || song?.masterCopyright || "N/A";
 
   return (
-    <div className="col-span-12 p-6 rounded-2xl shadow-lg" id="data-valora">
+    <div className="col-span-12 p-6 h-full shadow-lg" id="data-valora">
       <span className="text-title font-bold ">Data - Valora</span>
       <div className="flex items-center">
         <div className="mt-3 flex gap-6 pr-10">

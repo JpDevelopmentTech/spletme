@@ -84,8 +84,6 @@ export const validatePayAllPayment = ({
   const collaborators = Array.isArray(song?.collaborators) ? (song.collaborators as Record<string, unknown>[]) : [];
   const totalCollaborators = collaborators.length;
 
-  console.log("DEBUG validatePayAllPayment:", { totalEgresos, totalIngresos, costsExceedIncome: totalEgresos > totalIngresos });
-
   if (!song) {
     issues.push({ code: "song-not-found", severity: "error", message: "No se pudo cargar la canción. Recarga la página e inténtalo de nuevo." });
     return { canProceed: false, totalCollaborators: 0, payableCollaborators: 0, issues, collaborators: [] };
