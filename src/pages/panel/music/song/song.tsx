@@ -453,7 +453,7 @@ export default function Song() {
                 Colaboradores
               </h3>
             </div>
-            <AddCollaborator compact />
+            <AddCollaborator compact isOwner={isOwnerUser} />
           </div>
           <Table
             collaborators={getCollaboratorsInfo()}

@@ -433,13 +433,15 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
           <p className="text-sm text-gray-500 mb-5 max-w-xs">
             Agrega colaboradores para gestionar splits y pagos de esta canción.
           </p>
-          <button
-            onClick={handleOpenSplitsModal}
-            className="flex items-center gap-2 px-4 py-2 bg-[#F97316] hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            Configurar Splits
-          </button>
+          {isOwner && song?.requesterRole === "admin" && (
+            <button
+              onClick={handleOpenSplitsModal}
+              className="flex items-center gap-2 px-4 py-2 bg-[#F97316] hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Configurar Splits
+            </button>
+          )}
         </div>
       )}
     </>
