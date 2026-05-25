@@ -3,7 +3,7 @@ import { X, Plus, UserPlus, Mail, Hash, UserCog } from "lucide-react";
 import SongService from "../../../../services/songs";
 import { useParams } from "react-router-dom";
 
-export default function AddCollaborator({ compact = false }: { compact?: boolean }) {
+export default function AddCollaborator({ compact = false, isOwner = true }: { compact?: boolean; isOwner?: boolean }) {
   const { id } = useParams();
   const [showCollaboratorsModal, setShowCollaboratorsModal] = useState(false);
   const [method, setMethod] = useState<"email" | "code">("email");
@@ -41,7 +41,7 @@ export default function AddCollaborator({ compact = false }: { compact?: boolean
   return (
     <>
       {/* Modal */}
-      {showCollaboratorsModal && (
+      {isOwner && showCollaboratorsModal && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
           onClick={() => setShowCollaboratorsModal(false)}
@@ -179,26 +179,30 @@ export default function AddCollaborator({ compact = false }: { compact?: boolean
       )}
 
       {compact ? (
-        <button
-          onClick={() => setShowCollaboratorsModal(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F97316] hover:bg-orange-600 text-white text-xs font-semibold rounded-lg transition-colors"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          Agregar colaborador
-        </button>
+        isOwner && (
+          <button
+            onClick={() => setShowCollaboratorsModal(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F97316] hover:bg-orange-600 text-white text-xs font-semibold rounded-lg transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Agregar colaborador
+          </button>
+        )
       ) : (
-        <button
-          className="border border-gray-200 rounded-xl p-5 flex items-center justify-center gap-4 bg-white hover:bg-gray-50 transition-colors w-full col-span-3 row-span-1"
-          onClick={() => setShowCollaboratorsModal(true)}
-        >
-          <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-orange-50">
-            <Plus className="w-6 h-6 text-[#F97316]" />
-          </div>
-          <div className="flex flex-col items-start">
-            <span className="font-semibold text-gray-900 text-lg">Agregar</span>
-            <span className="text-sm text-gray-500">Nuevo colaborador</span>
-          </div>
-        </button>
+        isOwner && (
+          <button
+            className="border border-gray-200 rounded-xl p-5 flex items-center justify-center gap-4 bg-white hover:bg-gray-50 transition-colors w-full col-span-3 row-span-1"
+            onClick={() => setShowCollaboratorsModal(true)}
+          >
+            <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-orange-50">
+              <Plus className="w-6 h-6 text-[#F97316]" />
+            </div>
+            <div className="flex flex-col items-start">
+              <span className="font-semibold text-gray-900 text-lg">Agregar</span>
+              <span className="text-sm text-gray-500">Nuevo colaborador</span>
+            </div>
+          </button>
+        )
       )}
     </>
   );
