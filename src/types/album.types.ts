@@ -30,6 +30,8 @@ export interface Album {
   tracks: AlbumTrack[];
   releaseTitle: string;
   coverImage?: { url: string; height: number; width: number }[][];
+  ownerEarnings: string
+
 }
 
 export interface AlbumsPagination {
