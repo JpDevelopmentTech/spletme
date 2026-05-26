@@ -35,7 +35,7 @@ export default function Music() {
     showFilterPanel, setShowFilterPanel,
     loading,
     filteredSongs,
-    filteredAlbums,
+    displayAlbums,
     groupedAlbums,
     currentData,
     safePage,
@@ -145,7 +145,7 @@ export default function Music() {
             <MusicMobileList
               mode={mode}
               songs={filteredSongs}
-              albums={filteredAlbums}
+              albums={displayAlbums}
               groupedAlbums={groupedAlbums}
               groupAlbumsByTrackCount={groupAlbumsByTrackCount}
               onOwnerSplitModal={handleOpenOwnerSplitModal}
@@ -153,7 +153,7 @@ export default function Music() {
             <MusicTable
               mode={mode}
               songs={filteredSongs}
-              albums={filteredAlbums}
+              albums={displayAlbums}
               groupedAlbums={groupedAlbums}
               groupAlbumsByTrackCount={groupAlbumsByTrackCount}
               getAllSongLabels={getAllSongLabels}
