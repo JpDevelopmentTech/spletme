@@ -150,7 +150,26 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
     }
   };
 
+  const ALLOWED_TYPES = ['pdf', 'doc', 'docx', 'xlsx', 'xls', 'jpg', 'jpeg', 'png'];
+  const MAX_SIZE_MB = 500;
+
+  const validateFile = (file: File): string | null => {
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+    if (!ALLOWED_TYPES.includes(ext)) {
+      return `Tipo de archivo no permitido. Solo se aceptan: ${ALLOWED_TYPES.join(', ').toUpperCase()}`;
+    }
+    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+      return `El archivo supera el límite de ${MAX_SIZE_MB} MB`;
+    }
+    return null;
+  };
+
   const handleFileUpload = async (file: File) => {
+    const validationError = validateFile(file);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
     setUploading(true);
     setError(null);
     try {
@@ -357,6 +376,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
                   <input
                     type="file"
                     className="hidden"
+                    accept=".pdf,.doc,.docx,.xlsx,.xls,.jpg,.jpeg,.png"
                     onChange={handleInputChange}
                     disabled={uploading}
                   />
@@ -372,8 +392,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
                   </span>
                 </label>
                 <p className="text-xs text-slate-400 mt-4">
-                  Formatos soportados: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX,
-                  PNG, JPG
+                  Formatos: PDF, DOC, DOCX, XLS, XLSX, JPG, JPEG, PNG · Máx. 500 MB
                 </p>
               </div>
 
