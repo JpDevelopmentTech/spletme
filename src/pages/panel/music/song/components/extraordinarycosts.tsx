@@ -146,7 +146,6 @@ interface BalanceFaceProps {
   songId: string;
   costs: Accounting[];
   /** totalNetIncome from song model — added to ingresos */
-  songNetIncome: number;
   onFlip: () => void;
   expanded: boolean;
   onToggleExpand: () => void;
@@ -157,7 +156,6 @@ interface BalanceFaceProps {
 const BalanceFace = ({
   songId,
   costs,
-  songNetIncome,
   onFlip,
   expanded,
   onToggleExpand,
@@ -209,7 +207,7 @@ const BalanceFace = ({
 
   // Backend ingresos + song's own totalNetIncome
   const accountingIngresos = toNum(balance?.totalIngresos ?? localIngresos);
-  const totalIngresos = accountingIngresos + songNetIncome;
+  const totalIngresos = accountingIngresos;
   const totalEgresos = toNum(balance?.totalEgresos ?? localEgresos);
   const netBalance = totalIngresos - totalEgresos;
   const isPositive = netBalance >= 0;
@@ -316,11 +314,11 @@ const BalanceFace = ({
           <p className="text-base font-bold text-gray-900 dark:text-white">
             ${fmt(totalIngresos)}
           </p>
-          {songNetIncome > 0 && (
+          {/* {songNetIncome > 0 && (
             <p className="text-[11px] text-blue-600 dark:text-blue-400 mt-0.5">
               Incl. ${fmt(songNetIncome)} ganancia canción
             </p>
-          )}
+          )} */}
           {pendingIngresos > 0 && (
             <p className="text-[11px] text-yellow-600 dark:text-yellow-400 mt-0.5">
               ${fmt(pendingIngresos)} pendiente
@@ -379,7 +377,7 @@ const BalanceFace = ({
           </div>
 
           {/* Song net income breakdown */}
-          {songNetIncome > 0 && (
+          {/* {songNetIncome > 0 && (
             <div className="shrink-0 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/40 rounded-xl px-4 py-3">
               <p className="text-[11px] font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wide mb-0.5">
                 Ganancia propia de la canción
@@ -388,7 +386,7 @@ const BalanceFace = ({
                 ${fmt(songNetIncome)}
               </p>
             </div>
-          )}
+          )} */}
         </>
       )}
     </div>
@@ -399,8 +397,6 @@ const BalanceFace = ({
 
 const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
   /* ── song data (for totalNetIncome) ── */
-  const { song } = UseSong({ id: songId });
-  const songNetIncome = toNum(song?.totalNetIncome);
 
   /* ── state ── */
   const [isFlipped, setIsFlipped] = useState(false);
@@ -460,8 +456,8 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
     () =>
       costs
         .filter((c) => c.concept === "Ingreso")
-        .reduce((s, c) => s + toNum(c.amount), 0) + songNetIncome,
-    [costs, songNetIncome],
+        .reduce((s, c) => s + toNum(c.amount), 0),
+    [costs],
   );
   const tableEgresos = useMemo(
     () =>
@@ -878,7 +874,6 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
             <BalanceFace
               songId={songId}
               costs={costs}
-              songNetIncome={songNetIncome}
               onFlip={() => setIsFlipped(false)}
               expanded={expanded}
               onToggleExpand={toggleExpand}

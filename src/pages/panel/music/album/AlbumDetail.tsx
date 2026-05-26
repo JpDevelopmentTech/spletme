@@ -53,6 +53,9 @@ export default function AlbumDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isOwnerSplitModalOpen, setIsOwnerSplitModalOpen] = useState(false);
+  const [collaboratorsModal, setCollaboratorsModal] = useState<
+    { _id?: string; name?: string; image?: string }[] | null
+  >(null);
 
   const [search, setSearch] = useState("");
   const [sortField, setSortField] = useState<SortField>("streams");
@@ -182,6 +185,27 @@ export default function AlbumDetail() {
 
   const collaboratorsCount = (track: AlbumTrack) =>
     Array.isArray(track?.collaborators) ? track.collaborators.length : 0;
+
+  const getInitials = (name?: string) => {
+    if (!name) return "?";
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
+
+  const avatarColors = [
+    "bg-violet-100 text-violet-700",
+    "bg-blue-100 text-blue-700",
+    "bg-emerald-100 text-emerald-700",
+    "bg-rose-100 text-rose-700",
+    "bg-amber-100 text-amber-700",
+    "bg-cyan-100 text-cyan-700",
+  ];
+
+  const getAvatarColor = (name?: string) => {
+    const code = (name ?? "").split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+    return avatarColors[code % avatarColors.length];
+  };
 
   const chartCategories = useMemo(
     () =>
@@ -681,39 +705,40 @@ export default function AlbumDetail() {
                   {/* Colaboradores */}
                   <td className="px-4 py-4">
                     {collaboratorsCount(track) > 0 ? (
-                      <div className="flex items-center gap-2">
-                        <div className="flex -space-x-2">
-                          {track
-                            .collaborators!.slice(0, 3)
-                            .map((collaborator, idx) =>
-                              collaborator?.image ? (
-                                <img
-                                  key={collaborator._id || idx}
-                                  src={collaborator.image}
-                                  alt={collaborator.name || ""}
-                                  className="w-7 h-7 rounded-full border-2 border-white object-cover"
-                                />
-                              ) : (
-                                <div
-                                  key={collaborator._id || idx}
-                                  className="w-7 h-7 rounded-full border-2 border-white bg-orange-100 flex items-center justify-center"
-                                >
-                                  <Users className="w-3 h-3 text-[#F97316]" />
-                                </div>
-                              ),
-                            )}
-                          {collaboratorsCount(track) > 3 && (
-                            <div className="w-7 h-7 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center">
-                              <span className="text-[10px] font-semibold text-gray-500">
-                                +{collaboratorsCount(track) - 3}
-                              </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCollaboratorsModal(track.collaborators!);
+                        }}
+                        className="flex -space-x-2 hover:opacity-80 transition-opacity"
+                      >
+                        {track.collaborators!.slice(0, 4).map((collaborator, idx) =>
+                          collaborator?.image ? (
+                            <img
+                              key={collaborator._id || idx}
+                              src={collaborator.image}
+                              alt={collaborator.name || ""}
+                              title={collaborator.name}
+                              className="w-7 h-7 rounded-full border-2 border-white object-cover"
+                            />
+                          ) : (
+                            <div
+                              key={collaborator._id || idx}
+                              title={collaborator.name}
+                              className={`w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold ${getAvatarColor(collaborator.name)}`}
+                            >
+                              {getInitials(collaborator.name)}
                             </div>
-                          )}
-                        </div>
-                        <span className="text-xs font-semibold text-gray-700">
-                          {collaboratorsCount(track)}
-                        </span>
-                      </div>
+                          ),
+                        )}
+                        {collaboratorsCount(track) > 4 && (
+                          <div className="w-7 h-7 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center">
+                            <span className="text-[10px] font-semibold text-gray-500">
+                              +{collaboratorsCount(track) - 4}
+                            </span>
+                          </div>
+                        )}
+                      </button>
                     ) : (
                       <span className="inline-flex items-center gap-1 text-xs text-gray-400">
                         <Users className="w-3.5 h-3.5" />
@@ -758,9 +783,65 @@ export default function AlbumDetail() {
             _id: t._id,
             trackTitle: t.trackTitle,
           }))}
-          albumNetIncome={album.totalNetIncome}
         />
       </div>
+
+      {/* Collaborators Modal */}
+      {collaboratorsModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          onClick={() => setCollaboratorsModal(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-[#F97316]" />
+                <span className="text-sm font-semibold text-gray-900">
+                  Colaboradores ({collaboratorsModal.length})
+                </span>
+              </div>
+              <button
+                onClick={() => setCollaboratorsModal(null)}
+                className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors text-lg leading-none"
+              >
+                ×
+              </button>
+            </div>
+            <ul className="divide-y divide-gray-50 max-h-72 overflow-y-auto">
+              {collaboratorsModal.map((c, idx) => (
+                <li key={c._id || idx} className="flex items-center gap-3 px-6 py-3">
+                  {c.image ? (
+                    <img
+                      src={c.image}
+                      alt={c.name || ""}
+                      className="w-9 h-9 rounded-full object-cover flex-shrink-0"
+                    />
+                  ) : (
+                    <div
+                      className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${getAvatarColor(c.name)}`}
+                    >
+                      {getInitials(c.name)}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 truncate">
+                      {c.name || "Sin nombre"}
+                    </p>
+                    {c._id && (
+                      <p className="text-[11px] text-gray-400 font-mono truncate">
+                        {c._id}
+                      </p>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
 
       {/* Album Owner Split Modal */}
       <AlbumOwnerSplitModal
