@@ -77,8 +77,8 @@ export function useMusicLibrary() {
     getAlbumByUPC,
     refreshAlbums,
   } = useAlbums(
-    mode === "albums" && !albumFiltersApplied ? page : 1,
-    mode === "albums" && !albumFiltersApplied ? limit : 10000
+    mode === "albums" ? page : 1,
+    mode === "albums" ? limit : 10
   );
 
   const { customLabels } = useLabels();
@@ -247,26 +247,29 @@ export function useMusicLibrary() {
     return list;
   }, [albumSearchResult, albums, searchQuery, artistFilter, upcFilter, countryFilter, dateFrom, dateTo, splitFilter, sortBy, groupAlbumsByTrackCount]);
 
-  const groupedAlbums = useMemo(() => {
-    if (!groupAlbumsByTrackCount || mode !== "albums") return [];
-    const groups = new Map<number, AlbumItem[]>();
-    filteredAlbums.forEach((album) => {
-      const count = album?.totalTracks ?? album?.tracks?.length ?? 0;
-      groups.set(count, [...(groups.get(count) ?? []), album]);
-    });
-    return Array.from(groups.entries()).sort((a, b) => b[0] - a[0]);
-  }, [groupAlbumsByTrackCount, mode, filteredAlbums]);
-
   // Paginación
   const songFiltersApplied = Boolean(debouncedSearchQuery.trim() || artistFilter.trim() || isrcFilter.trim() || splitFilter !== "all");
-  const currentData = mode === "songs" ? filteredSongs : filteredAlbums;
-  const currentPageItems = currentData.length;
   const knownTotalItems = mode === "songs"
     ? (songFiltersApplied ? filteredSongs.length : songsPagination?.total)
     : (albumFiltersApplied ? filteredAlbums.length : albumsPagination?.total);
   const knownTotalPages = knownTotalItems != null ? Math.max(1, Math.ceil(knownTotalItems / limit)) : null;
   const safePage = knownTotalPages ? Math.min(page, knownTotalPages) : page;
   const pageStart = (safePage - 1) * limit;
+  const displayAlbums = useMemo(() => {
+    if (mode !== "albums") return filteredAlbums;
+    return filteredAlbums.slice(pageStart, pageStart + limit);
+  }, [mode, filteredAlbums, pageStart, limit]);
+  const groupedAlbums = useMemo(() => {
+    if (!groupAlbumsByTrackCount || mode !== "albums") return [];
+    const groups = new Map<number, AlbumItem[]>();
+    displayAlbums.forEach((album) => {
+      const count = album?.totalTracks ?? album?.tracks?.length ?? 0;
+      groups.set(count, [...(groups.get(count) ?? []), album]);
+    });
+    return Array.from(groups.entries()).sort((a, b) => b[0] - a[0]);
+  }, [groupAlbumsByTrackCount, mode, displayAlbums]);
+  const currentData = mode === "songs" ? filteredSongs : displayAlbums;
+  const currentPageItems = currentData.length;
   const pageEnd = pageStart + currentPageItems;
   const hasMoreFromApi = mode === "songs" ? songsPagination?.hasMore : albumsPagination?.hasMore;
   const hasMoreFallback = mode === "songs" ? (!songFiltersApplied && currentPageItems > 0) : (!albumFiltersApplied && currentPageItems > 0);
@@ -371,6 +374,7 @@ export function useMusicLibrary() {
     loading,
     filteredSongs,
     filteredAlbums,
+    displayAlbums,
     groupedAlbums,
     currentData,
     safePage,
