@@ -23,7 +23,6 @@ interface TrackRef {
 interface AlbumExtraordinaryCostsProps {
   albumId: string;
   tracks: TrackRef[];
-  albumNetIncome: number;
 }
 
 type FormState = {
@@ -123,7 +122,6 @@ const StatPill = ({
 interface BalanceFaceProps {
   albumId: string;
   costs: Accounting[];
-  albumNetIncome: number;
   onFlip: () => void;
   expanded: boolean;
   onToggleExpand: () => void;
@@ -133,7 +131,6 @@ interface BalanceFaceProps {
 const BalanceFace = ({
   albumId,
   costs,
-  albumNetIncome,
   onFlip,
   expanded,
   onToggleExpand,
@@ -164,7 +161,7 @@ const BalanceFace = ({
     [costs],
   );
 
-  const totalIngresos = toNum(balance?.totalIngresos ?? localIngresos) + albumNetIncome;
+  const totalIngresos = toNum(balance?.totalIngresos ?? localIngresos);
   const totalEgresos = toNum(balance?.totalEgresos ?? localEgresos);
   const netBalance = totalIngresos - totalEgresos;
   const isPositive = netBalance >= 0;
@@ -242,9 +239,9 @@ const BalanceFace = ({
             <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">Ingresos</p>
           </div>
           <p className="text-base font-bold text-gray-900">${fmt(totalIngresos)}</p>
-          {albumNetIncome > 0 && (
+          {/* {albumNetIncome > 0 && (
             <p className="text-[11px] text-blue-600 mt-0.5">Incl. ${fmt(albumNetIncome)} ganancia álbum</p>
-          )}
+          )} */}
           {pendingIngresos > 0 && (
             <p className="text-[11px] text-yellow-600 mt-0.5">${fmt(pendingIngresos)} pendiente</p>
           )}
@@ -291,14 +288,14 @@ const BalanceFace = ({
             />
           </div>
 
-          {albumNetIncome > 0 && (
+          {/* {albumNetIncome > 0 && (
             <div className="shrink-0 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
               <p className="text-[11px] font-medium text-blue-600 uppercase tracking-wide mb-0.5">
                 Ganancia neta del álbum
               </p>
               <p className="text-base font-bold text-blue-700">${fmt(albumNetIncome)}</p>
             </div>
-          )}
+          )} */}
         </>
       )}
     </div>
@@ -307,7 +304,7 @@ const BalanceFace = ({
 
 // ─── Main Component ─────────────────────────────────────────────────────────────
 
-const AlbumExtraordinaryCosts = ({ albumId, tracks, albumNetIncome }: AlbumExtraordinaryCostsProps) => {
+const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsProps) => {
   const trackMap = useMemo(
     () => new Map(tracks.map((t) => [t._id, t.trackTitle])),
     [tracks],
@@ -367,8 +364,8 @@ const AlbumExtraordinaryCosts = ({ albumId, tracks, albumNetIncome }: AlbumExtra
   const tableIngresos = useMemo(
     () =>
       costs.filter((c) => c.concept === "Ingreso").reduce((s, c) => s + toNum(c.amount), 0) +
-      albumNetIncome,
-    [costs, albumNetIncome],
+      0,
+    [costs],
   );
   const tableEgresos = useMemo(
     () => costs.filter((c) => c.concept !== "Ingreso").reduce((s, c) => s + toNum(c.amount), 0),
@@ -691,7 +688,6 @@ const AlbumExtraordinaryCosts = ({ albumId, tracks, albumNetIncome }: AlbumExtra
             <BalanceFace
               albumId={albumId}
               costs={costs}
-              albumNetIncome={albumNetIncome}
               onFlip={() => setIsFlipped(false)}
               expanded={expanded}
               onToggleExpand={toggleExpand}

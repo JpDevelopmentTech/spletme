@@ -9,7 +9,6 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import AddCollaborator from "../../collaborators/components/addCollaborator";
-import EspecificData from "./components/especificData";
 import Table from "./components/table";
 import { useParams, useNavigate } from "react-router-dom";
 import Platforms from "./components/platforms";
@@ -29,7 +28,7 @@ import ValidationToastQueue, {
   ValidationToastType,
 } from "../../../../components/alert/ValidationToastQueue";
 import Behavior from "../../dealers/components/behavior";
-import DocumentManager from "./components/DocumentManager";
+import DocumentManager from "./components/documentManager";
 
 export default function Song() {
   const { id } = useParams();
@@ -491,10 +490,10 @@ export default function Song() {
 
         <div className="grid grid-cols-4 gap-4">
           {/* Specific Data */}
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden col-span-1 lg:col-span-2">
+          {/* <div className="bg-white border border-gray-200 rounded-xl overflow-hidden col-span-1 lg:col-span-2">
             <EspecificData song={song} />
-          </div>
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden col-span-1 lg:col-span-2">
+          </div> */}
+          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden col-span-1 lg:col-span-4">
             <DocumentManager songId={id || ""} />
           </div>
         </div>
