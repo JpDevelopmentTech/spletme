@@ -1,4 +1,4 @@
-import { Music as MusicIcon, Search, Plus, SlidersHorizontal } from "lucide-react";
+import { Music as MusicIcon, Search, SlidersHorizontal } from "lucide-react";
 import UploadModal from "./components/UploadModal";
 import AlbumOwnerSplitModal from "./album/components/AlbumOwnerSplitModal";
 import Loading from "@/components/loading/loading";
@@ -67,13 +67,6 @@ export default function Music() {
             <h1 className="text-2xl font-bold text-gray-900">Music Library</h1>
             <p className="text-sm text-gray-500 mt-1">Manage your songs and albums</p>
           </div>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-5 py-2.5 rounded-[10px] transition-colors"
-          >
-            <Plus size={16} />
-            Upload
-          </button>
         </div>
 
         {/* Controls */}
