@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Layers, Sparkles, Check, AlertCircle, Loader2, Edit3, Trash2 } from 'lucide-react';
+import { X, Layers, Sparkles, Check, AlertCircle, Loader2, Edit3, Trash2, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LabelsService, { Label } from '../../services/labels';
 
@@ -31,6 +31,7 @@ export default function EditLabelModal({
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Resetear estado cuando se abre/cierra el modal o cambian los datos
   useEffect(() => {
@@ -40,8 +41,15 @@ export default function EditLabelModal({
       setError('');
       setSuccess(false);
       setShowDeleteConfirm(false);
+      setSearchQuery('');
     }
   }, [isOpen, currentName, currentArtisticLabels]);
+
+  const filteredAvailableLabels = availableLabels.filter((label) =>
+    (label.label || 'Sin Label')
+      .toLowerCase()
+      .includes(searchQuery.trim().toLowerCase())
+  );
 
   const toggleLabel = (label: string) => {
     setSelectedLabels(prev =>
@@ -276,45 +284,75 @@ export default function EditLabelModal({
                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
                         Selecciona los labels que deseas agrupar
                       </p>
-                      
-                      <div className="max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-xl p-3 space-y-2">
-                        {availableLabels.map((label) => (
-                          <motion.button
-                            key={label.label}
+
+                      {/* Buscador de labels */}
+                      <div className="relative mb-3">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <input
+                          type="text"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder="Buscar label artístico..."
+                          className="w-full pl-9 pr-9 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all text-sm text-gray-900 dark:text-white placeholder-gray-400"
+                        />
+                        {searchQuery && (
+                          <button
                             type="button"
-                            onClick={() => toggleLabel(label.label)}
-                            whileHover={{ scale: 1.01 }}
-                            whileTap={{ scale: 0.99 }}
-                            className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all ${
-                              selectedLabels.includes(label.label)
-                                ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20'
-                                : 'border-gray-200 dark:border-gray-600 hover:border-amber-300 dark:hover:border-amber-700'
-                            }`}
+                            onClick={() => setSearchQuery('')}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                            aria-label="Limpiar búsqueda"
                           >
-                            <div className="flex items-center gap-3">
-                              <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
+                            <X className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-xl p-3 space-y-2">
+                        {filteredAvailableLabels.length > 0 ? (
+                          filteredAvailableLabels.map((label) => (
+                            <motion.button
+                              key={label.label}
+                              type="button"
+                              onClick={() => toggleLabel(label.label)}
+                              whileHover={{ scale: 1.01 }}
+                              whileTap={{ scale: 0.99 }}
+                              className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all ${
                                 selectedLabels.includes(label.label)
-                                  ? 'border-amber-500 bg-amber-500'
-                                  : 'border-gray-300 dark:border-gray-600'
-                              }`}>
-                                {selectedLabels.includes(label.label) && (
-                                  <Check className="w-3 h-3 text-white" />
-                                )}
+                                  ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20'
+                                  : 'border-gray-200 dark:border-gray-600 hover:border-amber-300 dark:hover:border-amber-700'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
+                                  selectedLabels.includes(label.label)
+                                    ? 'border-amber-500 bg-amber-500'
+                                    : 'border-gray-300 dark:border-gray-600'
+                                }`}>
+                                  {selectedLabels.includes(label.label) && (
+                                    <Check className="w-3 h-3 text-white" />
+                                  )}
+                                </div>
+                                <span className="font-medium text-gray-900 dark:text-white">
+                                  {label.label || 'Sin Label'}
+                                </span>
                               </div>
-                              <span className="font-medium text-gray-900 dark:text-white">
-                                {label.label || 'Sin Label'}
-                              </span>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-sm text-gray-600 dark:text-gray-400">
-                                {label.count} canciones
-                              </p>
-                              <p className="text-xs text-green-600 dark:text-green-400">
-                                ${label.totalNetIncome.toFixed(2)}
-                              </p>
-                            </div>
-                          </motion.button>
-                        ))}
+                              <div className="text-right">
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                  {label.count} canciones
+                                </p>
+                                <p className="text-xs text-green-600 dark:text-green-400">
+                                  ${label.totalNetIncome.toFixed(2)}
+                                </p>
+                              </div>
+                            </motion.button>
+                          ))
+                        ) : (
+                          <div className="text-center py-6">
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              No se encontraron labels para "{searchQuery}"
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
 

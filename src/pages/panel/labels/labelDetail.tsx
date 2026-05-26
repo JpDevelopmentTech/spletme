@@ -33,14 +33,12 @@ export default function LabelDetail() {
   const totalNetIncome = songs.reduce((sum, song) => sum + (song.totalNetIncome || 0), 0);
   const totalStreams = songs.reduce((sum, song) => sum + (song.totalStreams || 0), 0);
 
-  // Monto adeudado a colaboradores = ingreso neto * (1 - % del owner)
-  // Solo se calcula para canciones que tienen split owner definido
-  const totalOwedToCollaborators = songs.reduce((sum, song) => {
-    const ownerPct =
-      song.ownerSplit?.conditions?.find((c: any) => c.type === 'general')?.percentage ?? null;
-    if (ownerPct === null) return sum;
-    return sum + (song.totalNetIncome || 0) * ((100 - ownerPct) / 100);
-  }, 0);
+  // Ganancia del owner: viene precalculada por canción desde el backend
+  // (totalNetIncome * % general del ownerSplit). Aquí solo se totaliza.
+  const totalOwnerEarnings = songs.reduce(
+    (sum, song) => sum + (song.ownerEarnings || 0),
+    0
+  );
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -176,9 +174,9 @@ export default function LabelDetail() {
             <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center">
               <DollarSign className="w-4 h-4 text-[#F97316]" />
             </div>
-            <span className="text-xs font-medium text-gray-500">A pagar colaboradores</span>
+            <span className="text-xs font-medium text-gray-500">Ganancias del Owner</span>
           </div>
-          <p className="text-2xl font-bold text-[#F97316]">{formatCurrency(totalOwedToCollaborators)}</p>
+          <p className="text-2xl font-bold text-[#F97316]">{formatCurrency(totalOwnerEarnings)}</p>
         </div>
       </div>
 
@@ -252,9 +250,6 @@ export default function LabelDetail() {
                   </button>
                 </th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                  Pendiente
-                </th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
                   Split Owner
                 </th>
               </tr>
@@ -263,10 +258,6 @@ export default function LabelDetail() {
               {filteredSongs.map((song) => {
                 const ownerPct =
                   song.ownerSplit?.conditions?.find((c: any) => c.type === 'general')?.percentage ?? null;
-                const owed =
-                  ownerPct !== null
-                    ? (song.totalNetIncome || 0) * ((100 - ownerPct) / 100)
-                    : null;
 
                 return (
                   <tr
@@ -316,17 +307,6 @@ export default function LabelDetail() {
                       <span className="text-sm font-semibold text-green-600">
                         {formatCurrency(song.totalNetIncome || 0)}
                       </span>
-                    </td>
-
-                    {/* Pending */}
-                    <td className="px-4 py-4">
-                      {owed !== null ? (
-                        <span className="text-sm font-semibold text-[#F97316]">
-                          {formatCurrency(owed)}
-                        </span>
-                      ) : (
-                        <span className="text-xs text-gray-400">—</span>
-                      )}
                     </td>
 
                     {/* Split Owner */}

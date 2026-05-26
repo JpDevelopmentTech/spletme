@@ -34,6 +34,7 @@ export interface LabelSong {
   totalGrossIncome: number;
   totalNetIncome: number;
   ownerSplit: { _id: string; conditions: Array<{ type: string; percentage: number }> };
+  ownerEarnings: number;
   ownerId: { _id: string; name: string; email: string };
   collaborators: unknown[];
   releases: unknown[];
