@@ -25,7 +25,8 @@ const COLLAB_COLORS = [
   { bg: "#FEF3C7", color: "#92400E" },
 ];
 
-function getCollabInitials(name: string) {
+function getCollabInitials(name?: string) {
+  if (!name) return "?";
   return name
     .split(" ")
     .slice(0, 2)

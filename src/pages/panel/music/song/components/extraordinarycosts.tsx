@@ -11,7 +11,6 @@ import {
 import Button from "../../../../../components/atoms/button";
 import { accountingApi } from "@/services/accounting";
 import type { SongBalance } from "../../../../../services/accounting";
-import UseSong from "../../../../../hooks/useSong";
 import type {
   Accounting,
   AccountingStatus,
@@ -37,12 +36,15 @@ type FormState = {
 const STATUS_LABELS: Record<AccountingStatus, string> = {
   pending: "Pendiente",
   paid: "Pagado",
+  cancelled: "Cancelado",
 };
 
 const STATUS_CLASSES: Record<AccountingStatus, string> = {
   pending:
     "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/60 dark:text-yellow-300",
   paid: "bg-green-100 text-green-800 dark:bg-green-900/60 dark:text-green-300",
+  cancelled:
+    "bg-red-100 text-red-800 dark:bg-red-900/60 dark:text-red-300",
 };
 
 // ─── Helpers ────────────────────────────────────────────────────────────────────
