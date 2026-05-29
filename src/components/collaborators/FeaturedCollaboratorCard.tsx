@@ -49,7 +49,11 @@ export function FeaturedCollaboratorCard({ collaborator }: FeaturedCollaboratorC
             <span className="text-[10px] text-[#6B7280]">Canciones</span>
           </div>
           <div className="flex flex-col items-center gap-1 py-3 border-x border-gray-100">
-            <span className="text-xl font-bold text-[#F97316]">{collaborator.splitPercentage}%</span>
+            <span className="text-xl font-bold text-[#F97316]">
+              {collaborator.songPresencePercentage > 0
+                ? `${(collaborator.songPresencePercentage * 100).toFixed(1)}%`
+                : "—"}
+            </span>
             <span className="text-[10px] text-[#6B7280]">Split avg</span>
           </div>
           <div className="flex flex-col items-center gap-1 py-3">

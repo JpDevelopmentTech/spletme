@@ -11,12 +11,18 @@ interface CollaboratorsTableProps {
 /**
  * Tabla de colaboradores con barra de búsqueda, filtros y filas interactivas.
  */
-export function CollaboratorsTable({ collaborators, featuredId, onSelectCollaborator }: CollaboratorsTableProps) {
+export function CollaboratorsTable({
+  collaborators,
+  featuredId,
+  onSelectCollaborator,
+}: CollaboratorsTableProps) {
   return (
     <div className="lg:col-span-8 bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col">
       <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-gray-100">
         <div className="flex items-center gap-2.5">
-          <span className="text-sm font-semibold text-[#111827]">Listado de Colaboradores</span>
+          <span className="text-sm font-semibold text-[#111827]">
+            Listado de Colaboradores
+          </span>
           <span className="px-2.5 py-0.5 bg-gray-100 text-[#6B7280] text-[11px] font-bold rounded-full">
             {collaborators.length}
           </span>
@@ -40,11 +46,24 @@ export function CollaboratorsTable({ collaborators, featuredId, onSelectCollabor
       <table className="w-full">
         <thead>
           <tr className="bg-[#FAFAFA] border-b border-gray-100">
-            <th className="text-left px-6 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">Colaborador</th>
-            <th className="text-left px-3 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider w-[110px]">Canciones</th>
-            <th className="text-left px-3 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider w-[90px]">Split %</th>
-            <th className="text-left px-3 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider w-[120px]">Pagado</th>
-            <th className="text-left px-3 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider w-[110px]">Estado</th>
+            <th className="text-left px-6 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">
+              Colaborador
+            </th>
+            <th className="text-center px-3 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider w-[110px]">
+              Canciones
+            </th>
+            <th className="text-center px-3 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider w-[90px]">
+              Split %
+            </th>
+            <th className="text-center px-3 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider w-[90px]">
+              Role
+            </th>
+            <th className="text-center px-3 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider w-[120px]">
+              Pagado
+            </th>
+            <th className="text-center px-3 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider w-[110px]">
+              Wallet
+            </th>
             <th className="w-[60px]" />
           </tr>
         </thead>

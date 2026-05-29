@@ -14,7 +14,7 @@ export interface Collaborator {
   avatarBg: string;
   avatarText: string;
   songs: number;
-  splitPercentage: number;
+  songPresencePercentage: number;
   paid: number;
   status: CollaboratorStatus;
   role?: string;

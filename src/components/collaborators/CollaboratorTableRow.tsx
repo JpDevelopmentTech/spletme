@@ -1,5 +1,5 @@
 import { MoreHorizontal } from "lucide-react";
-import { getStatusBadge, formatCurrency } from "@/utils/collaborators.utils";
+import { getStatusBadge} from "@/utils/collaborators.utils";
 import type { Collaborator } from "@/types";
 
 interface CollaboratorTableRowProps {
@@ -11,7 +11,11 @@ interface CollaboratorTableRowProps {
 /**
  * Fila individual de la tabla de colaboradores con avatar, stats y estado.
  */
-export function CollaboratorTableRow({ collaborator, isActive, onClick }: CollaboratorTableRowProps) {
+export function CollaboratorTableRow({
+  collaborator,
+  isActive,
+  onClick,
+}: CollaboratorTableRowProps) {
   const badge = getStatusBadge(collaborator.status);
 
   return (
@@ -27,21 +31,41 @@ export function CollaboratorTableRow({ collaborator, isActive, onClick }: Collab
             className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
             style={{ backgroundColor: collaborator.avatarBg }}
           >
-            <span className="text-[12px] font-bold" style={{ color: collaborator.avatarText }}>
+            <span
+              className="text-[12px] font-bold"
+              style={{ color: collaborator.avatarText }}
+            >
               {collaborator.initials}
             </span>
           </div>
           <div className="flex flex-col gap-0.5 min-w-0">
-            <span className="text-[13px] font-semibold text-[#111827] truncate">{collaborator.name}</span>
-            <span className="text-[11px] text-[#9CA3AF] truncate">{collaborator.email}</span>
+            <span className="text-[13px] font-semibold text-[#111827] truncate">
+              {collaborator.name}
+            </span>
+            <span className="text-[11px] text-[#9CA3AF] truncate">
+              {collaborator.email}
+            </span>
           </div>
         </div>
       </td>
-      <td className="px-3 py-4 text-[13px] font-semibold text-[#111827]">{collaborator.songs}</td>
-      <td className="px-3 py-4 text-[13px] font-semibold text-[#F97316]">{collaborator.splitPercentage}%</td>
-      <td className="px-3 py-4 text-[13px] font-semibold text-green-500">{formatCurrency(collaborator.paid)}</td>
+      <td className="px-3 py-4 text-[13px] text-center font-semibold text-[#111827]">
+        {collaborator.songs}
+      </td>
+      <td className="px-3 py-4 text-[13px] text-center font-semibold text-[#F97316]">
+        {collaborator.songPresencePercentage > 0
+          ? `${(collaborator.songPresencePercentage * 100).toFixed(1)}%`
+          : "—"}
+      </td>
+      <td className="px-3 py-4 text-[13px] text-center font-semibold text-[#F97316]">
+        {(collaborator.role ?? "—").toUpperCase()}
+      </td>
+      <td className="px-3 py-4 text-[13px] text-center font-semibold text-green-500">
+        {(collaborator.paid)}
+      </td>
       <td className="px-3 py-4">
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 ${badge.bg} ${badge.text} text-[11px] font-semibold rounded-full`}>
+        <span
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 ${badge.bg} ${badge.text} text-[11px] font-semibold rounded-full`}
+        >
           <span className={`w-1.5 h-1.5 ${badge.dot} rounded-full`} />
           {badge.label}
         </span>
