@@ -131,7 +131,7 @@ const Statistics = () => {
         <span className="text-sm">Reporte de tu rendimiento general</span>
       </div>
       <ReactApexChart type="area" options={options} series={series} />
-      <div className="w-full flex justify-around p-3">
+      <div className="w-full flex justify-end gap-2 p-3">
         <span className="bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-full me-2 dark:bg-gray-700 dark:text-gray-400 border  ">
           <svg
             className="w-3 h-3 me-1.5"

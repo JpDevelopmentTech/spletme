@@ -291,7 +291,7 @@ const Platforms = ({ reproductions = [] }: PlatformsProps) => {
 
   // ── Render de una cara ───────────────────────────────────────────────────────
 
-  const renderFace = (mode: "income" | "streams") => {
+  const renderFace = (mode: "income" | "streams", isBackFace = false) => {
     const isIncome = mode === "income";
     const data = isIncome ? visibleDataByIncome : visibleData;
 
@@ -309,10 +309,34 @@ const Platforms = ({ reproductions = [] }: PlatformsProps) => {
       ? [{ name: "Ingresos", data: data.map((p) => ({ x: p.name.split(" ")[0], y: p.income })) }]
       : [{ name: "Streams", data: data.map((p) => ({ x: p.name.split(" ")[0], y: p.streams })) }];
 
+    // La cara trasera está pre-rotada 180° en Y, lo que espejea las columnas.
+    // Intercambiamos el orden para que tras el flip la lista quede siempre a la derecha.
+    const chartOrder = isBackFace ? "order-2 lg:border-l lg:border-gray-100 lg:pl-6" : "order-1 lg:border-r lg:border-gray-100 lg:pr-6";
+    const listOrder  = isBackFace ? "order-1" : "order-2";
+
     return (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        {/* Gráfica */}
+        <div className={chartOrder}>
+          {chartView === "bar" && (
+            <div className="h-[200px] lg:h-[230px]">
+              <ReactApexChart options={barOpts} series={barSeries} type="bar" height="100%" width="100%" />
+            </div>
+          )}
+          {chartView === "donut" && (
+            <div className="h-[220px] lg:h-[250px]">
+              <ReactApexChart options={donutOpts} series={donutSeries} type="donut" height="100%" width="100%" />
+            </div>
+          )}
+          {chartView === "horizontal" && (
+            <div className="h-[200px] lg:h-[230px]">
+              <ReactApexChart options={horizontalOpts} series={horizontalSeries} type="bar" height="100%" width="100%" />
+            </div>
+          )}
+        </div>
+
         {/* Lista de plataformas */}
-        <div className="order-2">
+        <div className={listOrder}>
           <div className="flex flex-col border border-gray-100 rounded-lg px-3">
             {data.map((platform, index) => (
               <div
@@ -347,25 +371,6 @@ const Platforms = ({ reproductions = [] }: PlatformsProps) => {
               </div>
             ))}
           </div>
-        </div>
-
-        {/* Gráfica */}
-        <div className="order-1 lg:border-r lg:border-gray-100 lg:pr-6">
-          {chartView === "bar" && (
-            <div className="h-[200px] lg:h-[230px]">
-              <ReactApexChart options={barOpts} series={barSeries} type="bar" height="100%" width="100%" />
-            </div>
-          )}
-          {chartView === "donut" && (
-            <div className="h-[220px] lg:h-[250px]">
-              <ReactApexChart options={donutOpts} series={donutSeries} type="donut" height="100%" width="100%" />
-            </div>
-          )}
-          {chartView === "horizontal" && (
-            <div className="h-[200px] lg:h-[230px]">
-              <ReactApexChart options={horizontalOpts} series={horizontalSeries} type="bar" height="100%" width="100%" />
-            </div>
-          )}
         </div>
       </div>
     );
@@ -425,11 +430,11 @@ const Platforms = ({ reproductions = [] }: PlatformsProps) => {
               <div className={`flip-zone-inner ${isFlipped ? "flipped" : ""}`}>
                 {/* FRENTE — Ingresos */}
                 <div className="flip-zone-face front">
-                  {renderFace("income")}
+                  {renderFace("income", false)}
                 </div>
                 {/* REVERSO — Streams */}
                 <div className="flip-zone-face back">
-                  {renderFace("streams")}
+                  {renderFace("streams", true)}
                 </div>
               </div>
             </div>
