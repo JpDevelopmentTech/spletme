@@ -4,9 +4,7 @@ import {
   Headphones, ChevronRight, BarChart2, History, ArrowLeft,
 } from "lucide-react";
 import CollaboratorService from "@/services/collaborator";
-import { analyticsService } from "@/services/analyticsService";
 import { splitsService } from "@/services/splits";
-import type { PlatformCountryRow } from "@/types/analytics.types";
 import type { Collaborator } from "@/types";
 
 // ── API types ─────────────────────────────────────────────────────────────────
@@ -20,7 +18,13 @@ interface ApiSong {
   totalStreams: number;
   totalNetIncome: number;
   totalGrossIncome: number;
-  split: { splitId: string; percentage: number } | null;
+  split: {
+    splitId: string;
+    percentage: number;
+    totalOwed: number;
+    totalPaid: number;
+    pendingAmount: number;
+  } | null;
 }
 
 interface ApiCollaboratorDetail {
@@ -49,6 +53,47 @@ interface SplitHistoryEntry {
   updatedBy: { _id: string; username: string; name: string };
 }
 
+interface PlatformEntry {
+  platform: string;
+  streams: number;
+  netIncome: number;
+  grossIncome: number;
+}
+
+interface SongMetrics {
+  songId: string;
+  trackTitle: string;
+  artistName: string;
+  isrc: string;
+  upc: string;
+  totalStreams: number;
+  totalNetIncome: number;
+  totalGrossIncome: number;
+  byPlatform: PlatformEntry[];
+  split: {
+    splitId: string;
+    percentage: number;
+    totalOwed: number;
+    totalPaid: number;
+    pendingAmount: number;
+  } | null;
+}
+
+interface CollaboratorTotals {
+  totalStreams: number;
+  totalNetIncome: number;
+  totalGrossIncome: number;
+  totalOwed: number;
+  totalPaid: number;
+  pendingAmount: number;
+  byPlatform: PlatformEntry[];
+}
+
+interface CollaboratorMetrics {
+  songs: SongMetrics[];
+  totals: CollaboratorTotals;
+}
+
 interface CollaboratorDetailModalProps {
   collaborator: Collaborator;
   onClose: () => void;
@@ -65,18 +110,9 @@ const fmtStreams = (n: number) =>
 const fmtDate = (iso: string) =>
   new Date(iso).toLocaleDateString("es-CO", { year: "numeric", month: "short", day: "numeric" });
 
-const PLATFORM_COLORS: Record<string, string> = {
-  spotify: "#1DB954",
-  "apple music": "#FC3C44",
-  youtube: "#FF0000",
-  deezer: "#EF5466",
-  tidal: "#000000",
-  amazon: "#FF9900",
-};
-const platformColor = (name: string) => PLATFORM_COLORS[name.toLowerCase()] ?? "#F97316";
 
 const ACTION_STYLES: Record<string, { label: string; cls: string }> = {
-  create: { label: "Creado",     cls: "bg-green-50 text-green-600" },
+  create: { label: "Creado",     cls: "bg-green-50 text-[#8B5CF6]" },
   update: { label: "Actualizado", cls: "bg-orange-50 text-[#F97316]" },
   delete: { label: "Eliminado",  cls: "bg-red-50 text-red-500" },
 };
@@ -89,8 +125,8 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
   const [error, setError]           = useState(false);
   const [selectedSong, setSelectedSong] = useState<ApiSong | null>(null);
 
-  const [platforms, setPlatforms]           = useState<PlatformCountryRow[]>([]);
-  const [platformsLoading, setPlatformsLoading] = useState(false);
+  const [metrics, setMetrics]               = useState<CollaboratorMetrics | null>(null);
+  const [metricsLoading, setMetricsLoading] = useState(false);
   const [history, setHistory]               = useState<SplitHistoryEntry[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
 
@@ -104,18 +140,19 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
     });
   }, [collaborator.id]);
 
-  // Load metrics when a song is selected
+  // Load metrics once when panel opens
+  useEffect(() => {
+    if (!selectedSong || metrics) return;
+    setMetricsLoading(true);
+    CollaboratorService.getSongMetrics(collaborator.id)
+      .then((res) => setMetrics(res?.data ?? null))
+      .catch(() => setMetrics(null))
+      .finally(() => setMetricsLoading(false));
+  }, [selectedSong]);
+
+  // Load history when a song is selected
   useEffect(() => {
     if (!selectedSong) return;
-
-    setPlatforms([]);
-    setPlatformsLoading(true);
-    analyticsService
-      .getSongPlatformSummary(selectedSong.isrc)
-      .then((rows) => setPlatforms(rows ?? []))
-      .catch(() => setPlatforms([]))
-      .finally(() => setPlatformsLoading(false));
-
     setHistory([]);
     setHistoryLoading(true);
     splitsService
@@ -128,13 +165,18 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
   const totalStreams = detail?.songs.reduce((s, x) => s + (x.totalStreams ?? 0), 0) ?? 0;
   const totalNet     = detail?.songs.reduce((s, x) => s + (x.totalNetIncome ?? 0), 0) ?? 0;
 
-  const platformSummary = platforms.reduce<Record<string, { streams: number; netIncome: number }>>((acc, row) => {
-    if (!acc[row.platform]) acc[row.platform] = { streams: 0, netIncome: 0 };
-    acc[row.platform].streams   += row.streams;
-    acc[row.platform].netIncome += row.netIncome;
-    return acc;
-  }, {});
-  const maxStreams = Math.max(...Object.values(platformSummary).map((p) => p.streams), 1);
+  // Use metrics.totals when available, fall back to detail.songs
+  const collaboratorTotalStreams = metrics?.totals.totalStreams  ?? detail?.songs.reduce((s, x) => s + (x.totalStreams ?? 0), 0) ?? 0;
+  const collaboratorTotalNet     = metrics?.totals.totalNetIncome ?? detail?.songs.reduce((s, x) => s + (x.totalNetIncome ?? 0), 0) ?? 0;
+  const songStreams = selectedSong?.totalStreams ?? 0;
+  const songNet    = selectedSong?.totalNetIncome ?? 0;
+  const maxStreams  = Math.max(collaboratorTotalStreams, songStreams, 1);
+
+  // Platform data from metrics endpoint
+  const selectedSongMetrics = metrics?.songs.find((s) => s.songId === selectedSong?.songId);
+  const songPlatforms       = selectedSongMetrics?.byPlatform ?? [];
+  const globalPlatforms     = metrics?.totals.byPlatform ?? [];
+  const maxPlatformStreams   = Math.max(...songPlatforms.map((p) => p.streams), 1);
 
   return (
     <div
@@ -186,7 +228,7 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
                 {[
                   { icon: <Music className="w-3.5 h-3.5" />, label: "Canciones", value: detail?.songs.length ?? collaborator.songs, cls: "text-[#111827]" },
                   { icon: <Headphones className="w-3.5 h-3.5" />, label: "Streams", value: fmtStreams(totalStreams), cls: "text-[#F97316]" },
-                  { icon: <DollarSign className="w-3.5 h-3.5" />, label: "Neto total", value: fmt(totalNet), cls: "text-green-500" },
+                  { icon: <DollarSign className="w-3.5 h-3.5" />, label: "Neto total", value: fmt(totalNet), cls: "text-[#C084FC]" },
                 ].map(({ icon, label, value, cls }) => (
                   <div key={label} className="flex items-center justify-between px-3 h-9 bg-white rounded-lg border border-gray-100">
                     <div className="flex items-center gap-2 text-[11px] text-[#6B7280]">{icon}<span>{label}</span></div>
@@ -320,70 +362,177 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
 
             {/* Two columns */}
             <div className="flex flex-1 min-h-0 divide-x divide-gray-100">
-              {/* Platforms */}
+              {/* Performance — built from detail.songs */}
               <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
                   <BarChart2 className="w-3.5 h-3.5 text-[#F97316]" />
-                  <span className="text-[11px] font-bold text-[#374151] tracking-wider">PLATAFORMAS</span>
+                  <span className="text-[11px] font-bold text-[#374151] tracking-wider">RENDIMIENTO</span>
                 </div>
-                <div className="flex-1 overflow-y-auto px-3 py-3">
-                  {platformsLoading ? (
-                    <div className="flex items-center justify-center h-full">
-                      <div className="w-5 h-5 border-2 border-[#F97316] border-t-transparent rounded-full animate-spin" />
-                    </div>
-                  ) : Object.keys(platformSummary).length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full gap-2 text-[#9CA3AF]">
-                      <BarChart2 className="w-7 h-7" />
-                      <p className="text-xs">Sin datos de plataformas</p>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col gap-2">
-                      {Object.entries(platformSummary)
-                        .sort((a, b) => b[1].streams - a[1].streams)
-                        .map(([name, data]) => (
-                          <div key={name} className="flex flex-col gap-1.5 px-3 py-2.5 bg-[#F9FAFB] rounded-xl border border-gray-100">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: platformColor(name) }} />
-                                <span className="text-xs font-semibold text-[#111827] capitalize">{name}</span>
-                              </div>
-                              <div className="flex items-center gap-3 text-[11px]">
-                                <div className="flex items-center gap-1 text-[#6B7280]">
-                                  <Headphones className="w-3 h-3" /><span>{fmtStreams(data.streams)}</span>
-                                </div>
-                                <div className="flex items-center gap-1 text-green-600 font-semibold">
-                                  <DollarSign className="w-3 h-3" /><span>{fmt(data.netIncome)}</span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                              <div className="h-full rounded-full" style={{ width: `${(data.streams / maxStreams) * 100}%`, backgroundColor: platformColor(name) }} />
-                            </div>
+                <div className="flex-1 overflow-y-auto px-3 py-3 flex flex-col gap-3">
+
+                  {/* Stats cards */}
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { label: "Streams canción",   value: songStreams.toLocaleString("en-US"),             sub: "streams totales",      color: "#F97316" },
+                      { label: "Streams totales",   value: collaboratorTotalStreams.toLocaleString("en-US"), sub: "todas sus canciones",  color: "#06B6D4" },
+                      { label: "Neto canción",       value: fmt(songNet),                                    sub: "neto generado",        color: "#C084FC" },
+                      { label: "Neto total",         value: fmt(collaboratorTotalNet),                       sub: "todas sus canciones",  color: "#8B5CF6" },
+                    ].map(({ label, value, sub, color }) => (
+                      <div key={label} className="flex flex-col gap-0.5 px-3 py-2.5 bg-[#F9FAFB] rounded-xl border border-gray-100">
+                        <span className="text-[9px] text-[#9CA3AF] uppercase tracking-wide">{label}</span>
+                        <span className="text-sm font-bold" style={{ color }}>{value}</span>
+                        <span className="text-[9px] text-[#9CA3AF]">{sub}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Split financials from metrics */}
+                  {selectedSongMetrics?.split && (
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[10px] font-bold text-[#9CA3AF] tracking-wider">SPLIT — {selectedSongMetrics.split.percentage}%</span>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {[
+                          { label: "Adeudado",  value: fmt(selectedSongMetrics.split.totalOwed),    color: "#F97316" },
+                          { label: "Pagado",    value: fmt(selectedSongMetrics.split.totalPaid),    color: "#34D399" },
+                          { label: "Pendiente", value: fmt(selectedSongMetrics.split.pendingAmount), color: "#F43F5E" },
+                        ].map(({ label, value, color }) => (
+                          <div key={label} className="flex flex-col gap-0.5 px-2.5 py-2 bg-[#F9FAFB] rounded-xl border border-gray-100">
+                            <span className="text-[9px] text-[#9CA3AF] uppercase tracking-wide">{label}</span>
+                            <span className="text-[11px] font-bold" style={{ color }}>{value}</span>
                           </div>
                         ))}
-
-                      {platforms.length > 0 && (
-                        <div className="flex flex-col gap-1.5 mt-1">
-                          <span className="text-[10px] font-bold text-[#9CA3AF] tracking-wider">POR PAÍS</span>
-                          {platforms
-                            .sort((a, b) => b.streams - a.streams)
-                            .slice(0, 6)
-                            .map((row, i) => (
-                              <div key={i} className="flex items-center justify-between px-2 py-1.5 bg-[#F9FAFB] rounded-lg">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[10px] text-[#6B7280] capitalize w-16 truncate">{row.platform}</span>
-                                  <span className="text-[10px] font-semibold text-[#374151]">{row.country}</span>
-                                </div>
-                                <div className="flex items-center gap-3 text-[10px]">
-                                  <span className="text-[#9CA3AF]">{fmtStreams(row.streams)}</span>
-                                  <span className="text-green-600 font-semibold">{fmt(row.netIncome)}</span>
-                                </div>
-                              </div>
-                            ))}
-                        </div>
-                      )}
+                      </div>
                     </div>
                   )}
+
+                  {/* Comparison bars */}
+                  <div className="flex flex-col gap-2">
+                    <span className="text-[10px] font-bold text-[#9CA3AF] tracking-wider">COMPARATIVA DE STREAMS</span>
+                    <div className="flex flex-col gap-1.5 px-3 py-3 bg-[#F9FAFB] rounded-xl border border-gray-100">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] text-[#9CA3AF] w-14 flex-shrink-0">Total</span>
+                        <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="h-full rounded-full bg-[#06B6D4]" style={{ width: "100%" }} />
+                        </div>
+                        <span className="text-[9px] text-[#9CA3AF] flex-shrink-0 text-right w-16">{collaboratorTotalStreams.toLocaleString("en-US")}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] text-[#9CA3AF] w-14 flex-shrink-0">Canción</span>
+                        <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="h-full rounded-full bg-[#F97316]" style={{ width: `${(songStreams / maxStreams) * 100}%` }} />
+                        </div>
+                        <span className="text-[9px] text-[#F97316] font-semibold flex-shrink-0 text-right w-16">{songStreams.toLocaleString("en-US")}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5 px-3 py-3 bg-[#F9FAFB] rounded-xl border border-gray-100">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] text-[#9CA3AF] w-14 flex-shrink-0">Total</span>
+                        <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="h-full rounded-full bg-[#8B5CF6]" style={{ width: "100%" }} />
+                        </div>
+                        <span className="text-[9px] text-[#9CA3AF] flex-shrink-0 text-right w-16">{fmt(collaboratorTotalNet)}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] text-[#9CA3AF] w-14 flex-shrink-0">Canción</span>
+                        <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="h-full rounded-full bg-[#C084FC]" style={{ width: `${(songNet / Math.max(collaboratorTotalNet, songNet, 1)) * 100}%` }} />
+                        </div>
+                        <span className="text-[9px] text-[#C084FC] font-semibold flex-shrink-0 text-right w-16">{fmt(songNet)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* All songs ranking */}
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] font-bold text-[#9CA3AF] tracking-wider">CANCIONES DEL COLABORADOR</span>
+                    {detail?.songs
+                      .slice()
+                      .sort((a, b) => b.totalStreams - a.totalStreams)
+                      .map((song) => {
+                        const isThis = song.songId === selectedSong?.songId;
+                        const pct = (song.totalStreams / maxStreams) * 100;
+                        return (
+                          <div key={song.songId} className={`flex flex-col gap-1 px-2.5 py-2 rounded-lg border ${isThis ? "bg-orange-50 border-orange-200" : "bg-[#F9FAFB] border-gray-100"}`}>
+                            <div className="flex items-center justify-between">
+                              <span className={`text-[10px] font-semibold truncate max-w-[120px] ${isThis ? "text-[#F97316]" : "text-[#374151]"}`}>{song.trackTitle}</span>
+                              <span className="text-[10px] text-[#9CA3AF]">{song.totalStreams.toLocaleString("en-US")}</span>
+                            </div>
+                            <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden">
+                              <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: isThis ? "#F97316" : "#34D399" }} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+
+                  {/* Platform breakdown from /metrics endpoint */}
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] font-bold text-[#9CA3AF] tracking-wider">DESGLOSE POR PLATAFORMA</span>
+                    {metricsLoading ? (
+                      <div className="flex items-center justify-center py-4">
+                        <div className="w-4 h-4 border-2 border-[#F97316] border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    ) : songPlatforms.length === 0 ? (
+                      <p className="text-[10px] text-[#9CA3AF] text-center py-3">Sin datos de plataformas</p>
+                    ) : (
+                      <div className="flex flex-col gap-1.5">
+                        {/* Song platforms */}
+                        {songPlatforms
+                          .slice()
+                          .sort((a, b) => b.streams - a.streams)
+                          .map((p) => {
+                            const globalEntry = globalPlatforms.find((g) => g.platform === p.platform);
+                            const globalPct   = ((globalEntry?.streams ?? 0) / Math.max(...globalPlatforms.map((g) => g.streams), 1)) * 100;
+                            const songPct     = (p.streams / maxPlatformStreams) * 100;
+                            return (
+                              <div key={p.platform} className="flex flex-col gap-1.5 px-3 py-2.5 bg-[#F9FAFB] rounded-xl border border-gray-100">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-[11px] font-semibold text-[#111827] capitalize">{p.platform}</span>
+                                </div>
+                                <div className="grid grid-cols-3 gap-1.5">
+                                  <div className="flex flex-col gap-0.5 px-2 py-1.5 bg-white rounded-lg border border-gray-100">
+                                    <span className="text-[9px] text-[#9CA3AF] uppercase tracking-wide">Streams</span>
+                                    <div className="flex items-center gap-1 text-[#06B6D4]">
+                                      <Headphones className="w-2.5 h-2.5" />
+                                      <span className="text-[10px] font-bold">{p.streams.toLocaleString("en-US")}</span>
+                                    </div>
+                                  </div>
+                                  <div className="flex flex-col gap-0.5 px-2 py-1.5 bg-white rounded-lg border border-gray-100">
+                                    <span className="text-[9px] text-[#9CA3AF] uppercase tracking-wide">Neto</span>
+                                    <div className="flex items-center gap-1 text-[#8B5CF6]">
+                                      <DollarSign className="w-2.5 h-2.5" />
+                                      <span className="text-[10px] font-bold">{fmt(p.netIncome)}</span>
+                                    </div>
+                                  </div>
+                                  <div className="flex flex-col gap-0.5 px-2 py-1.5 bg-white rounded-lg border border-gray-100">
+                                    <span className="text-[9px] text-[#9CA3AF] uppercase tracking-wide">Bruto</span>
+                                    <div className="flex items-center gap-1 text-[#C084FC]">
+                                      <DollarSign className="w-2.5 h-2.5" />
+                                      <span className="text-[10px] font-bold">{fmt(p.grossIncome)}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[9px] text-[#9CA3AF] w-12 flex-shrink-0">Total</span>
+                                    <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                      <div className="h-full rounded-full bg-[#06B6D4]" style={{ width: `${globalPct}%` }} />
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[9px] text-[#9CA3AF] w-12 flex-shrink-0">Canción</span>
+                                    <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                      <div className="h-full rounded-full bg-[#F97316]" style={{ width: `${songPct}%` }} />
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
