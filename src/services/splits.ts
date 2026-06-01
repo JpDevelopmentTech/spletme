@@ -152,6 +152,16 @@ class SplitsService {
     return this.normalizeSplitArray(response.data.data);
   }
 
+  /** Obtiene el historial de splits de un usuario específico */
+  async getUserSplitHistory(userId: string): Promise<Split[]> {
+    try {
+      const response = await apiClient.get<SplitsResponse>(`${this.BASE}/user/${userId}/history`);
+      return this.normalizeSplitArray(response.data.data);
+    } catch {
+      return [];
+    }
+  }
+
   /** Obtiene el historial de splits de una canción */
   async getSongSplitHistory(songId: string): Promise<Split[]> {
     const response = await apiClient.get<SplitsResponse>(`${this.BASE}/song/${songId}/history`);

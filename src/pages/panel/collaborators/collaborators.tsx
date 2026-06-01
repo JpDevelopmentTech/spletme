@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 import { CollaboratorsStatsGrid } from "@/components/collaborators/CollaboratorsStatsGrid";
 import { CollaboratorsTable } from "@/components/collaborators/CollaboratorsTable";
 import { FeaturedCollaboratorCard } from "@/components/collaborators/FeaturedCollaboratorCard";
+
 import { CollaboratorDetailModal } from "@/components/collaborators/CollaboratorDetailModal";
 import { RecentPaymentsSection } from "@/components/collaborators/RecentPaymentsSection";
 import type { Collaborator, CollaboratorPayment } from "@/types";
