@@ -4,13 +4,14 @@ import type { Collaborator } from "@/types";
 
 interface FeaturedCollaboratorCardProps {
   collaborator: Collaborator;
+  onViewProfile: () => void;
 }
 
 /**
  * Tarjeta de detalle del colaborador seleccionado.
  * Muestra avatar, stats, canciones recientes y acciones rápidas.
  */
-export function FeaturedCollaboratorCard({ collaborator }: FeaturedCollaboratorCardProps) {
+export function FeaturedCollaboratorCard({ collaborator, onViewProfile }: FeaturedCollaboratorCardProps) {
   return (
     <div className="lg:col-span-4 bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col">
       <div className="relative h-[140px] bg-[#0F172A] flex items-start justify-center pt-6">
@@ -83,7 +84,10 @@ export function FeaturedCollaboratorCard({ collaborator }: FeaturedCollaboratorC
         )}
 
         <div className="w-full flex items-center gap-2">
-          <button className="flex-1 h-10 bg-[#F97316] hover:bg-orange-600 text-white text-[13px] font-semibold rounded-lg transition-colors">
+          <button
+            onClick={onViewProfile}
+            className="flex-1 h-10 bg-[#F97316] hover:bg-orange-600 text-white text-[13px] font-semibold rounded-lg transition-colors"
+          >
             Ver perfil
           </button>
           <button className="flex-1 h-10 bg-white border border-gray-200 hover:bg-gray-50 text-[#111827] text-[13px] font-semibold rounded-lg transition-colors">

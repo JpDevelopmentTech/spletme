@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 import { CollaboratorsStatsGrid } from "@/components/collaborators/CollaboratorsStatsGrid";
 import { CollaboratorsTable } from "@/components/collaborators/CollaboratorsTable";
 import { FeaturedCollaboratorCard } from "@/components/collaborators/FeaturedCollaboratorCard";
+import { CollaboratorDetailModal } from "@/components/collaborators/CollaboratorDetailModal";
 import { RecentPaymentsSection } from "@/components/collaborators/RecentPaymentsSection";
 import type { Collaborator, CollaboratorPayment } from "@/types";
 import CollaboratorService from "@/services/collaborator";
@@ -109,6 +110,7 @@ export default function Collaborators() {
   const [metrics, setMetrics] = useState<ApiSummary | null>(null);
   const [featuredId, setFeaturedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   useEffect(() => {
     CollaboratorService.getMetrics().then((response) => {
@@ -160,12 +162,19 @@ export default function Collaborators() {
               featuredId={featuredId ?? ""}
               onSelectCollaborator={setFeaturedId}
             />
-            <FeaturedCollaboratorCard collaborator={featured} />
+            <FeaturedCollaboratorCard collaborator={featured} onViewProfile={() => setProfileOpen(true)} />
           </div>
         )}
 
         <RecentPaymentsSection payments={MOCK_PAYMENTS} />
       </div>
+
+      {profileOpen && featured && (
+        <CollaboratorDetailModal
+          collaborator={featured}
+          onClose={() => setProfileOpen(false)}
+        />
+      )}
     </div>
   );
 }
