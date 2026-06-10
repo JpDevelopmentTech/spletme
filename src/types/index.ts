@@ -55,6 +55,19 @@ export type {
 
 export type { TopSong } from "./song.types";
 
+export type { SelectOption, ReleaseFiltersOptions } from "./select.types";
+
+export type {
+  SplitRole,
+  SplitUserRef,
+  SongSplit,
+  SplitFilterPayload,
+  CreateOwnerSplitPayload,
+  CreateCollaboratorSplitPayload,
+  SplitDistributionEntry,
+  SongSplitDistribution,
+} from "./song-split.types";
+
 export type {
   MusicMode,
   SortBy,
