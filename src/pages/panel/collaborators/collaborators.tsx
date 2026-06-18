@@ -1,52 +1,84 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { CollaboratorsStatsGrid } from "@/components/collaborators/CollaboratorsStatsGrid";
 import { CollaboratorsTable } from "@/components/collaborators/CollaboratorsTable";
 import { FeaturedCollaboratorCard } from "@/components/collaborators/FeaturedCollaboratorCard";
+
+import { CollaboratorDetailModal } from "@/components/collaborators/CollaboratorDetailModal";
 import { RecentPaymentsSection } from "@/components/collaborators/RecentPaymentsSection";
 import type { Collaborator, CollaboratorPayment } from "@/types";
+import CollaboratorService from "@/services/collaborator";
 
-// TODO: reemplazar con datos reales del hook useCollaborators cuando esté integrado
-const MOCK_COLLABORATORS: Collaborator[] = [
-  {
-    id: "1", name: "Lucia Reyes", email: "lucia.reyes@email.com",
-    initials: "LR", avatarBg: "#FED7AA", avatarText: "#9A3412",
-    songs: 12, splitPercentage: 30, paid: 3180, status: "active",
-    role: "Productor principal",
-    recentSongs: [
-      { title: "Solar Drift", streams: "612K streams", percentage: 30 },
-      { title: "Velvet Horizon", streams: "480K streams", percentage: 30 },
-      { title: "Echo Chambers", streams: "352K streams", percentage: 30 },
-    ],
-  },
-  {
-    id: "2", name: "Diego Marín", email: "diego.marin@email.com",
-    initials: "DM", avatarBg: "#DBEAFE", avatarText: "#1E40AF",
-    songs: 8, splitPercentage: 25, paid: 2140.5, status: "active",
-  },
-  {
-    id: "3", name: "Ana Velasco", email: "ana.velasco@email.com",
-    initials: "AV", avatarBg: "#FCE7F3", avatarText: "#9D174D",
-    songs: 15, splitPercentage: 40, paid: 1820.3, status: "pending",
-  },
-  {
-    id: "4", name: "Mateo Salas", email: "mateo.salas@email.com",
-    initials: "MS", avatarBg: "#D1FAE5", avatarText: "#065F46",
-    songs: 5, splitPercentage: 15, paid: 895.4, status: "active",
-  },
-  {
-    id: "5", name: "Sofia Castro", email: "sofia.castro@email.com",
-    initials: "SC", avatarBg: "#EDE9FE", avatarText: "#5B21B6",
-    songs: 7, splitPercentage: 20, paid: 1240.8, status: "no_wallet",
-  },
-  {
-    id: "6", name: "Javier Torres", email: "javier.torres@email.com",
-    initials: "JT", avatarBg: "#FEF3C7", avatarText: "#92400E",
-    songs: 3, splitPercentage: 10, paid: 420.1, status: "active",
-  },
+const AVATAR_PALETTE = [
+  { bg: "#FED7AA", text: "#9A3412" },
+  { bg: "#DBEAFE", text: "#1E40AF" },
+  { bg: "#FCE7F3", text: "#9D174D" },
+  { bg: "#D1FAE5", text: "#065F46" },
+  { bg: "#EDE9FE", text: "#5B21B6" },
+  { bg: "#FEF3C7", text: "#92400E" },
 ];
 
-// TODO: reemplazar con datos reales del hook usePayments cuando esté integrado
+interface ApiCollaborator {
+  userId: string;
+  name: string;
+  email: string;
+  role: string;
+  songCount: number;
+  songPresencePercentage: number;
+  activeSplits: number;
+  splitPercentage: number | null;
+  totalPaid: number;
+  paymentStatus: string;
+  isActive: boolean;
+  hasWallet: boolean;
+  hasActiveStripeAccount: boolean;
+}
+
+interface ApiSummary {
+  totalCollaborators: number;
+  totalLabels: number;
+  byRole: { collaborator: number; label: number };
+  activeSplits: number;
+  totalAmountSent: number;
+  totalAmountReceived: number;
+}
+
+interface MetricsResponse {
+  summary: ApiSummary;
+  collaborators: ApiCollaborator[];
+}
+
+const getInitials = (name: string) =>
+  name
+    .split(" ")
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+
+const resolveStatus = (c: ApiCollaborator): Collaborator["status"] => {
+  if (!c.hasWallet) return "no_wallet";
+  if (c.paymentStatus === "pending") return "pending";
+  return "active";
+};
+
+const adaptCollaborator = (raw: ApiCollaborator, idx: number): Collaborator => {
+  const palette = AVATAR_PALETTE[idx % AVATAR_PALETTE.length];
+  return {
+    id: raw.userId,
+    name: raw.name,
+    email: raw.email,
+    initials: getInitials(raw.name),
+    avatarBg: palette.bg,
+    avatarText: palette.text,
+    songs: raw.songCount,
+    songPresencePercentage: raw.songPresencePercentage ?? 0,
+    paid: raw.totalPaid,
+    status: resolveStatus(raw),
+    role: raw.role,
+  };
+};
+
+// TODO: reemplazar con endpoint de pagos cuando esté disponible
 const MOCK_PAYMENTS: CollaboratorPayment[] = [
   {
     id: "p1", collaboratorName: "Lucia Reyes", initials: "LR",
@@ -75,8 +107,31 @@ const MOCK_PAYMENTS: CollaboratorPayment[] = [
 ];
 
 export default function Collaborators() {
-  const [featuredId, setFeaturedId] = useState(MOCK_COLLABORATORS[0].id);
-  const featured = MOCK_COLLABORATORS.find((c) => c.id === featuredId) ?? MOCK_COLLABORATORS[0];
+  const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
+  const [metrics, setMetrics] = useState<ApiSummary | null>(null);
+  const [featuredId, setFeaturedId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  useEffect(() => {
+    CollaboratorService.getMetrics().then((response) => {
+      const payload: MetricsResponse | null = response?.data ?? null;
+      if (payload) {
+        setMetrics(payload.summary);
+        const list = payload.collaborators.map(adaptCollaborator);
+        setCollaborators(list);
+        if (list.length > 0) setFeaturedId(list[0].id);
+      }
+      setLoading(false);
+    });
+  }, []);
+
+  const featured = collaborators.find((c) => c.id === featuredId) ?? collaborators[0];
+
+  const totalSent = metrics?.totalAmountSent ?? 0;
+  const totalReceived = metrics?.totalAmountReceived ?? 0;
+  const activeSplits = metrics?.activeSplits ?? 0;
+  const pendingPayments = collaborators.filter((c) => c.status === "pending").length;
 
   return (
     <div className="min-h-screen bg-[#F7F8FA]">
@@ -94,24 +149,33 @@ export default function Collaborators() {
         </div>
 
         <CollaboratorsStatsGrid
-          totalCollaborators={24}
-          totalSent="$8,420.00"
-          totalReceived="$3,180.00"
-          activeSplits={58}
-          pendingPayments={12}
+          totalCollaborators={loading ? 0 : (metrics?.totalCollaborators ?? collaborators.length)}
+          totalSent={loading ? "$0.00" : `$${totalSent.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
+          totalReceived={loading ? "$0.00" : `$${totalReceived.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
+          activeSplits={loading ? 0 : activeSplits}
+          pendingPayments={loading ? 0 : pendingPayments}
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-          <CollaboratorsTable
-            collaborators={MOCK_COLLABORATORS}
-            featuredId={featuredId}
-            onSelectCollaborator={setFeaturedId}
-          />
-          <FeaturedCollaboratorCard collaborator={featured} />
-        </div>
+        {!loading && collaborators.length > 0 && featured && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <CollaboratorsTable
+              collaborators={collaborators}
+              featuredId={featuredId ?? ""}
+              onSelectCollaborator={setFeaturedId}
+            />
+            <FeaturedCollaboratorCard collaborator={featured} onViewProfile={() => setProfileOpen(true)} />
+          </div>
+        )}
 
         <RecentPaymentsSection payments={MOCK_PAYMENTS} />
       </div>
+
+      {profileOpen && featured && (
+        <CollaboratorDetailModal
+          collaborator={featured}
+          onClose={() => setProfileOpen(false)}
+        />
+      )}
     </div>
   );
 }

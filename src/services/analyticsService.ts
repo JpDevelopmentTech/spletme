@@ -94,4 +94,10 @@ export const analyticsService = {
   getFilterOptions(): Promise<FilterOptions> {
     return apiClient.get('/analytics/filter-options').then((r) => r.data.data);
   },
+
+  getSongPlatformSummary(isrc: string): Promise<PlatformCountryRow[]> {
+    return apiClient
+      .get('/analytics/platform-country-summary', { params: { isrc } })
+      .then((r) => r.data.data);
+  },
 };
