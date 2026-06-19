@@ -31,6 +31,8 @@ export default function Music() {
     countryFilter, setCountryFilter,
     dateFrom, setDateFrom,
     dateTo, setDateTo,
+    percentageMin, setPercentageMin,
+    percentageMax, setPercentageMax,
     groupAlbumsByTrackCount, setGroupAlbumsByTrackCount,
     showFilterPanel, setShowFilterPanel,
     loading,
@@ -154,6 +156,8 @@ export default function Music() {
               onOwnerSplitModal={handleOpenOwnerSplitModal}
               sortBy={sortBy}
               onSortChange={setSortBy}
+              splitFilter={splitFilter}
+              onSplitFilterChange={setSplitFilter}
               safePage={safePage}
               pageStart={pageStart}
               pageEnd={pageEnd}
@@ -217,6 +221,10 @@ export default function Music() {
         onCountryFilterChange={setCountryFilter}
         onDateFromChange={setDateFrom}
         onDateToChange={setDateTo}
+        percentageMin={percentageMin}
+        percentageMax={percentageMax}
+        onPercentageMinChange={setPercentageMin}
+        onPercentageMaxChange={setPercentageMax}
         onGroupByTrackCountChange={setGroupAlbumsByTrackCount}
         onClearAll={clearAllFilters}
       />

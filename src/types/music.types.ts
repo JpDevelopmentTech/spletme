@@ -49,6 +49,7 @@ export interface SongItem {
   customLabels?: unknown[];
   labelNames?: unknown[];
   otherLabels?: unknown[];
+  labelCount?: number;
   releaseDate?: string;
   release_date?: string;
   releasedAt?: string;

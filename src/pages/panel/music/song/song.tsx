@@ -49,6 +49,7 @@ export default function Song() {
   const [balance, setBalance] = useState<{
     totalIngresos: number;
     totalEgresos: number;
+    balance: number;
   } | null>(null);
 
   const addToast = (
@@ -79,6 +80,7 @@ export default function Song() {
         setBalance({
           totalIngresos: data?.totalIngresos || 0,
           totalEgresos: data?.totalEgresos || 0,
+          balance: data?.balance ?? 0,
         });
       } catch (error) {
         console.error("Error fetching balance:", error);
@@ -121,6 +123,7 @@ export default function Song() {
       isStripeConnected: isStripeConnected(),
       totalEgresos,
       totalIngresos,
+      balanceNet: balance?.balance,
     });
     const blockingIssues = validation.issues.filter(
       (issue) => issue.code !== "all-valid",
@@ -168,7 +171,23 @@ export default function Song() {
             : ["No puedes continuar con el pago con la configuración actual."],
       canPay: validation.canProceed,
     };
-    const validationToasts = [payerToast, ...collaboratorToasts];
+    // Toast independiente: el balance neto debe ser positivo para habilitar el pago
+    const netBalance = balance?.balance ?? 0;
+    const incomeBlockToasts: ValidationToastItem[] = [];
+    if (netBalance <= 0) {
+      incomeBlockToasts.push({
+        id: Date.now() + 1,
+        type: "error",
+        title: "No se puede pagar",
+        message: "No se puede pagar",
+        reasons: [
+          "Los ingresos no superan los costos.",
+        ],
+        canPay: false,
+      });
+    }
+
+    const validationToasts = [...incomeBlockToasts, payerToast, ...collaboratorToasts];
 
     if (validationToasts.length > 0) {
       setToasts((prev) => [...prev, ...validationToasts]);

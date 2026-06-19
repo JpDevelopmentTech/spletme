@@ -12,6 +12,8 @@ interface MusicFilterDrawerProps {
   countryFilter: string;
   dateFrom: string;
   dateTo: string;
+  percentageMin: string;
+  percentageMax: string;
   groupAlbumsByTrackCount: boolean;
   activeFilterCount: number;
   onClose: () => void;
@@ -23,6 +25,8 @@ interface MusicFilterDrawerProps {
   onCountryFilterChange: (v: string) => void;
   onDateFromChange: (v: string) => void;
   onDateToChange: (v: string) => void;
+  onPercentageMinChange: (v: string) => void;
+  onPercentageMaxChange: (v: string) => void;
   onGroupByTrackCountChange: (v: boolean) => void;
   onClearAll: () => void;
 }
@@ -60,10 +64,11 @@ function RadioOption({ selected, label, onClick }: { selected: boolean; label: s
  */
 export function MusicFilterDrawer({
   isOpen, mode, sortBy, splitFilter, artistFilter, isrcFilter, upcFilter,
-  countryFilter, dateFrom, dateTo,
+  countryFilter, dateFrom, dateTo, percentageMin, percentageMax,
   groupAlbumsByTrackCount, activeFilterCount, onClose, onSortChange,
   onSplitFilterChange, onArtistFilterChange, onIsrcFilterChange,
   onUpcFilterChange, onCountryFilterChange, onDateFromChange, onDateToChange,
+  onPercentageMinChange, onPercentageMaxChange,
   onGroupByTrackCountChange, onClearAll,
 }: MusicFilterDrawerProps) {
   return (
@@ -169,6 +174,38 @@ export function MusicFilterDrawer({
               </div>
             </div>
           </div>
+
+          {mode === "songs" && (
+            <div>
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-3">Porcentaje de split</p>
+              <div className="flex gap-2">
+                <div className="flex flex-col gap-1 flex-1">
+                  <label className="text-xs text-gray-500">Mínimo (%)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={percentageMin}
+                    onChange={(e) => onPercentageMinChange(e.target.value)}
+                    placeholder="0"
+                    className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                </div>
+                <div className="flex flex-col gap-1 flex-1">
+                  <label className="text-xs text-gray-500">Máximo (%)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={percentageMax}
+                    onChange={(e) => onPercentageMaxChange(e.target.value)}
+                    placeholder="100"
+                    className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           {mode === "albums" && (
             <div>

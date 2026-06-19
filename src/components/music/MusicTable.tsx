@@ -2,11 +2,16 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Music as MusicIcon, Disc, Crown, Info, Tags, ArrowUpDown, Check } from "lucide-react";
 import { hasAnySplit } from "@/utils/music.utils";
-import type { MusicMode, SongItem, AlbumItem, SortBy } from "@/types/music.types";
+import type { MusicMode, SongItem, AlbumItem, SortBy, SplitFilter } from "@/types/music.types";
+
+const SPLIT_FILTER_OPTIONS: { value: SplitFilter; label: string }[] = [
+  { value: "all",           label: "Todos" },
+  { value: "with_split",    label: "Con split asignado" },
+  { value: "without_split", label: "Sin split" },
+];
 
 const COLUMN_SORT_OPTIONS: Record<string, { value: SortBy; label: string }[]> = {
   track:         [{ value: "alpha",              label: "A → Z" },             { value: "title_desc",         label: "Z → A" }],
-  split:         [{ value: "split_desc",         label: "Con split primero" },  { value: "split_asc",          label: "Sin split primero" }],
   percentage:    [{ value: "percentage_desc",    label: "Mayor %" },            { value: "percentage_asc",     label: "Menor %" }],
   collaborators: [{ value: "collaborators_desc", label: "Más colaboradores" },  { value: "collaborators_asc",  label: "Menos colaboradores" }],
   label:         [{ value: "label_asc",          label: "A → Z" },             { value: "label_desc",         label: "Z → A" }],
@@ -46,6 +51,8 @@ interface MusicTableProps {
   onOwnerSplitModal: (album: AlbumItem) => void;
   sortBy: SortBy;
   onSortChange: (v: SortBy) => void;
+  splitFilter: SplitFilter;
+  onSplitFilterChange: (v: SplitFilter) => void;
   // Pagination
   safePage: number;
   pageStart: number;
@@ -75,7 +82,7 @@ function AlbumCover({ album, size = "9" }: { album: AlbumItem; size?: string }) 
 export function MusicTable({
   mode, songs, albums, groupedAlbums, groupAlbumsByTrackCount,
   getAllSongLabels, onSongDetails, onOwnerSplitModal,
-  sortBy, onSortChange,
+  sortBy, onSortChange, splitFilter, onSplitFilterChange,
   safePage, pageStart, pageEnd, totalItemsForDisplay, canGoNext,
   limit, onLimitChange, onPrevPage, onNextPage,
 }: MusicTableProps) {
@@ -100,8 +107,10 @@ export function MusicTable({
     setSortPopover({ x: rect.left, y: rect.bottom + 4, column });
   };
 
-  const isColumnActive = (column: string) =>
-    (COLUMN_SORT_OPTIONS[column] ?? []).some((o) => o.value === sortBy);
+  const isColumnActive = (column: string) => {
+    if (column === "split") return splitFilter !== "all";
+    return (COLUMN_SORT_OPTIONS[column] ?? []).some((o) => o.value === sortBy);
+  };
 
   const SortBtn = ({ column }: { column: string }) => (
     <button
@@ -125,17 +134,29 @@ export function MusicTable({
           <p className="px-3.5 pt-1 pb-1.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-100 mb-1">
             Ordenar
           </p>
-          {(COLUMN_SORT_OPTIONS[sortPopover.column] ?? []).map(({ value, label }) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => { onSortChange(value); setSortPopover(null); }}
-              className={`w-full flex items-center gap-2 px-3.5 py-2 text-sm transition-colors ${sortBy === value ? "text-orange-600 font-semibold bg-orange-50" : "text-gray-700 hover:bg-gray-50"}`}
-            >
-              <span className="flex-1 text-left">{label}</span>
-              {sortBy === value && <Check size={13} className="text-orange-500 flex-shrink-0" />}
-            </button>
-          ))}
+          {sortPopover.column === "split"
+            ? SPLIT_FILTER_OPTIONS.map(({ value, label }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => { onSplitFilterChange(value); setSortPopover(null); }}
+                  className={`w-full flex items-center gap-2 px-3.5 py-2 text-sm transition-colors ${splitFilter === value ? "text-orange-600 font-semibold bg-orange-50" : "text-gray-700 hover:bg-gray-50"}`}
+                >
+                  <span className="flex-1 text-left">{label}</span>
+                  {splitFilter === value && <Check size={13} className="text-orange-500 flex-shrink-0" />}
+                </button>
+              ))
+            : (COLUMN_SORT_OPTIONS[sortPopover.column] ?? []).map(({ value, label }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => { onSortChange(value); setSortPopover(null); }}
+                  className={`w-full flex items-center gap-2 px-3.5 py-2 text-sm transition-colors ${sortBy === value ? "text-orange-600 font-semibold bg-orange-50" : "text-gray-700 hover:bg-gray-50"}`}
+                >
+                  <span className="flex-1 text-left">{label}</span>
+                  {sortBy === value && <Check size={13} className="text-orange-500 flex-shrink-0" />}
+                </button>
+              ))}
         </div>
       )}
       <div className="hidden lg:block">
@@ -255,12 +276,17 @@ export function MusicTable({
                         </div>
                       </td>
                       <td className="px-6 py-3">
-                        <div className="flex flex-col gap-0.5">
-                          <span className="text-[13px] text-gray-900 truncate max-w-[160px]">{song?.artisticLabel ?? "Unknown"}</span>
-                          {allLabels.length > 1 && (
-                            <span className="inline-flex items-center gap-1 text-[11px] text-orange-500 font-medium" title={allLabels.join(", ")}>
-                              <Tags className="h-3 w-3 flex-shrink-0" />
-                              En {allLabels.length} labels
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="text-[13px] text-gray-900 truncate max-w-[120px]" title={song?.artisticLabel ?? ""}>
+                            {song?.artisticLabel ?? "Unknown"}
+                          </span>
+                          {(song?.labelCount ?? 0) > 0 && (
+                            <span
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-50 text-orange-600 text-[11px] font-semibold flex-shrink-0"
+                              title={allLabels.join(", ")}
+                            >
+                              <Tags size={11} className="flex-shrink-0" />
+                              {song.labelCount}
                             </span>
                           )}
                         </div>
