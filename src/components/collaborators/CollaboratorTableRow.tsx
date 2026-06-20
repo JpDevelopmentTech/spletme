@@ -56,8 +56,21 @@ export function CollaboratorTableRow({
           ? `${(collaborator.songPresencePercentage * 100).toFixed(1)}%`
           : "—"}
       </td>
-      <td className="px-3 py-4 text-[13px] text-center font-semibold text-[#F97316]">
-        {(collaborator.role ?? "—").toUpperCase()}
+      <td className="px-3 py-4 text-center">
+        {collaborator.roles && collaborator.roles.length > 0 ? (
+          <div className="flex items-center justify-center gap-1 flex-wrap">
+            {collaborator.roles.map((r) => (
+              <span
+                key={r}
+                className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-orange-50 text-[#F97316] capitalize"
+              >
+                {r}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <span className="text-[13px] text-[#9CA3AF]">—</span>
+        )}
       </td>
       <td className="px-3 py-4 text-[13px] text-center font-semibold text-green-500">
         {(collaborator.paid)}

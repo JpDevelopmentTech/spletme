@@ -15,6 +15,7 @@ interface ApiSong {
   artistName: string;
   isrc: string;
   upc: string;
+  roles?: string[];
   totalStreams: number;
   totalNetIncome: number;
   totalGrossIncome: number;
@@ -32,7 +33,7 @@ interface ApiCollaboratorDetail {
   userExternalId: string;
   email: string;
   name: string;
-  role: string;
+  roles: string[];
   invitedBy: { _id: string; name: string; email: string } | null;
   createdAt: string;
   songs: ApiSong[];
@@ -186,7 +187,7 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
       {/* ── Main modal ─────────────────────────────────────────────────── */}
       <div
         className="bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col flex-shrink-0 transition-all duration-300"
-        style={{ width: 672, height: "90vh" }}
+        style={{ width: 820, height: "90vh" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top bar */}
@@ -214,11 +215,15 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
                   <span className="truncate max-w-[160px]">{detail?.email ?? collaborator.email}</span>
                 </div>
               </div>
-              {(detail?.role ?? collaborator.role) && (
-                <span className="inline-flex items-center gap-1 px-2.5 h-6 bg-orange-50 border border-orange-100 rounded-full">
-                  <Crown className="w-3 h-3 text-[#F97316]" />
-                  <span className="text-[11px] font-semibold text-orange-900 capitalize">{detail?.role ?? collaborator.role}</span>
-                </span>
+              {(detail?.roles?.length ?? (collaborator.roles?.length ?? 0)) > 0 && (
+                <div className="flex items-center gap-1 flex-wrap justify-center">
+                  {(detail?.roles ?? collaborator.roles ?? []).map((r) => (
+                    <span key={r} className="inline-flex items-center gap-1 px-2.5 h-6 bg-orange-50 border border-orange-100 rounded-full">
+                      <Crown className="w-3 h-3 text-[#F97316]" />
+                      <span className="text-[11px] font-semibold text-orange-900 capitalize">{r}</span>
+                    </span>
+                  ))}
+                </div>
               )}
             </div>
 
@@ -267,7 +272,7 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
           </div>
 
           {/* Songs panel */}
-          <div className="flex-1 flex flex-col min-h-0">
+          <div className="flex-1 min-w-0 flex flex-col min-h-0">
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 flex-shrink-0">
               <span className="text-[11px] font-bold text-[#9CA3AF] tracking-wider">CANCIONES</span>
               {detail && <span className="text-[10px] text-[#9CA3AF]">{detail.songs.length} en total</span>}
@@ -294,16 +299,23 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${isSelected ? "bg-[#F97316]" : "bg-orange-100 group-hover:bg-[#F97316]"}`}>
                       <Music className={`w-3.5 h-3.5 transition-colors ${isSelected ? "text-white" : "text-[#F97316] group-hover:text-white"}`} />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-xs font-bold truncate ${isSelected ? "text-[#F97316]" : "text-[#111827]"}`}>{song.trackTitle}</p>
-                      <p className="text-[10px] text-[#6B7280] truncate">{song.artistName}</p>
+                    <div className="flex-1 min-w-0 overflow-hidden">
+                      <p className={`text-xs font-bold truncate ${isSelected ? "text-[#F97316]" : "text-[#111827]"}`} title={song.trackTitle}>{song.trackTitle}</p>
+                      <div className="flex items-center gap-1 mt-0.5 flex-wrap min-w-0">
+                        <p className="text-[10px] text-[#6B7280] truncate">{song.artistName}</p>
+                        {(song.roles ?? []).map((r) => (
+                          <span key={r} className="flex-shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-purple-50 text-purple-600 capitalize leading-none">
+                            {r}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
                       {song.split
-                        ? <span className={`text-[10px] font-bold ${isSelected ? "text-[#F97316]" : "text-[#9CA3AF]"}`}>{song.split.percentage}%</span>
-                        : <span className="text-[9px] text-gray-300">Sin split</span>
+                        ? <span className={`text-[11px] font-bold whitespace-nowrap ${isSelected ? "text-[#F97316]" : "text-[#9CA3AF]"}`}>{song.split.percentage}%</span>
+                        : <span className="text-[9px] text-gray-300 whitespace-nowrap">Sin split</span>
                       }
-                      <ChevronRight className={`w-3.5 h-3.5 transition-colors ${isSelected ? "text-[#F97316]" : "text-gray-300 group-hover:text-[#F97316]"}`} />
+                      <ChevronRight className={`w-3.5 h-3.5 flex-shrink-0 transition-colors ${isSelected ? "text-[#F97316]" : "text-gray-300 group-hover:text-[#F97316]"}`} />
                     </div>
                   </button>
                 );
@@ -328,7 +340,7 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
       <div
         className="bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col flex-shrink-0 transition-all duration-300"
         style={{
-          width: selectedSong ? 560 : 0,
+          width: selectedSong ? 680 : 0,
           height: "90vh",
           opacity: selectedSong ? 1 : 0,
           pointerEvents: selectedSong ? "auto" : "none",

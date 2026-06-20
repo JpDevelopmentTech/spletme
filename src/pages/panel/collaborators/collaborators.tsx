@@ -22,7 +22,7 @@ interface ApiCollaborator {
   userId: string;
   name: string;
   email: string;
-  role: string;
+  roles: string[];
   songCount: number;
   songPresencePercentage: number;
   activeSplits: number;
@@ -74,7 +74,7 @@ const adaptCollaborator = (raw: ApiCollaborator, idx: number): Collaborator => {
     songPresencePercentage: raw.songPresencePercentage ?? 0,
     paid: raw.totalPaid,
     status: resolveStatus(raw),
-    role: raw.role,
+    roles: raw.roles ?? [],
   };
 };
 
