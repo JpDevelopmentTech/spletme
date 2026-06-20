@@ -128,10 +128,12 @@ export default function Dealers() {
           distributorName={uploadTarget.distributor.name}
           existingUploads={uploadTarget.existingUploads}
           onClose={() => setUploadTarget(null)}
-          onConfirm={async (file, quarter, year) => {
-            await distributorsService.uploadSongs(uploadTarget.distributor._id, file, quarter, year);
-            setUploadTarget(null);
+          onConfirm={async (file, quarter, year, onProgress) => {
+            const result = await distributorsService.uploadSongs(
+              uploadTarget.distributor._id, file, quarter, year, onProgress,
+            );
             await load();
+            return result;
           }}
         />
       )}
