@@ -11,8 +11,17 @@ export const apiClient = axios.create({
 /** Endpoints que no deben disparar el redirect por 401 */
 const AUTH_ENDPOINTS = ["sign-in", "sign-up", "password-recovery"];
 
+/**
+ * Endpoints donde 401 significa "sin permiso", no sesión expirada.
+ * No deben limpiar la sesión ni redirigir al login.
+ */
+const PERMISSION_ONLY_ENDPOINTS = ["add-collaborator"];
+
 const isAuthEndpoint = (url = "") =>
   AUTH_ENDPOINTS.some((path) => url.includes(path));
+
+const isPermissionEndpoint = (url = "") =>
+  PERMISSION_ONLY_ENDPOINTS.some((path) => url.includes(path));
 
 const clearSession = () => {
   localStorage.removeItem("token");
@@ -39,7 +48,7 @@ apiClient.interceptors.response.use(
     const status = error.response?.status;
     const url = error.config?.url ?? "";
 
-    if (status === 401 && !isAuthEndpoint(url) && localStorage.getItem("token")) {
+    if (status === 401 && !isAuthEndpoint(url) && !isPermissionEndpoint(url) && localStorage.getItem("token")) {
       // Sesión expirada — limpia y redirige al login
       clearSession();
       window.location.href = "/auth/email-login";

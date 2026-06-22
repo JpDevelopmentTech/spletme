@@ -234,15 +234,23 @@ class SongService {
     songId: string;
     collaboratorEmail?: string;
     collaboratorId?: string;
-  }) {
+  }): Promise<{ success: true; data: unknown } | { success: false; message: string }> {
     try {
       const response = await apiClient.post(`${this.BASE}/${songId}/add-collaborator`, {
         collaboratorEmail,
         collaboratorId,
       });
-      return response.data;
-    } catch {
-      return null;
+      return { success: true, data: response.data };
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { message?: string }; status?: number } };
+      const serverMsg = axiosErr?.response?.data?.message;
+      const status = axiosErr?.response?.status;
+      const message =
+        serverMsg ??
+        (status === 401 || status === 403
+          ? "No tienes permiso para agregar colaboradores a esta canción."
+          : "No se pudo enviar la invitación. Intenta de nuevo.");
+      return { success: false, message };
     }
   }
 

@@ -3,11 +3,12 @@ import { Plus } from "lucide-react";
 import { CollaboratorsStatsGrid } from "@/components/collaborators/CollaboratorsStatsGrid";
 import { CollaboratorsTable } from "@/components/collaborators/CollaboratorsTable";
 import { FeaturedCollaboratorCard } from "@/components/collaborators/FeaturedCollaboratorCard";
-
 import { CollaboratorDetailModal } from "@/components/collaborators/CollaboratorDetailModal";
 import { RecentPaymentsSection } from "@/components/collaborators/RecentPaymentsSection";
+import { AddCollaboratorSidebar } from "./components/AddCollaboratorSidebar";
 import type { Collaborator, CollaboratorPayment } from "@/types";
 import CollaboratorService from "@/services/collaborator";
+import LocalStorageService from "@/services/localstorage";
 
 const AVATAR_PALETTE = [
   { bg: "#FED7AA", text: "#9A3412" },
@@ -112,6 +113,11 @@ export default function Collaborators() {
   const [featuredId, setFeaturedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const currentUser = LocalStorageService.getItem("user");
+  const userRole = String(currentUser?.role ?? "").toLowerCase();
+  const canAddCollaborator = !currentUser?.parentUserId || userRole === "label";
 
   useEffect(() => {
     CollaboratorService.getMetrics().then((response) => {
@@ -142,10 +148,15 @@ export default function Collaborators() {
             <p className="text-sm text-[#6B7280]">Organiza y gestiona a las personas que comparten tus regalías</p>
             <div className="w-10 h-0.5 rounded-full bg-[#F97316] mt-1" />
           </div>
-          <button className="flex items-center gap-2 px-4 h-10 bg-[#F97316] hover:bg-orange-600 text-white text-[13px] font-semibold rounded-lg transition-colors">
-            <Plus className="w-4 h-4" />
-            Agregar Colaborador
-          </button>
+          {canAddCollaborator && (
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="flex items-center gap-2 px-4 h-10 bg-[#F97316] hover:bg-orange-600 text-white text-[13px] font-semibold rounded-lg transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Agregar Colaborador
+            </button>
+          )}
         </div>
 
         <CollaboratorsStatsGrid
@@ -176,6 +187,11 @@ export default function Collaborators() {
           onClose={() => setProfileOpen(false)}
         />
       )}
+
+      <AddCollaboratorSidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
     </div>
   );
 }
