@@ -424,7 +424,7 @@ export default function AlbumDetail() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white border border-gray-200 rounded-xl p-5">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center">
@@ -448,20 +448,6 @@ export default function AlbumDetail() {
           </div>
           <p className="text-2xl font-bold text-gray-900">
             {formatStreams(album.totalStreams)}
-          </p>
-        </div>
-
-        <div className="bg-white border border-gray-200 rounded-xl p-5">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 bg-purple-50 rounded-lg flex items-center justify-center">
-              <DollarSign className="w-4 h-4 text-purple-600" />
-            </div>
-            <span className="text-xs font-medium text-gray-500">
-              Ingresos Brutos
-            </span>
-          </div>
-          <p className="text-2xl font-bold text-gray-900">
-            {formatCurrency(album.totalGrossIncome)}
           </p>
         </div>
 
