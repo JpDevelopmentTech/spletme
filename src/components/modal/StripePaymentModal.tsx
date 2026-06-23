@@ -7,7 +7,8 @@ interface Collaborator {
   id?: string;
   name?: string;
   email?: string;
-  percentage?: number;
+  percentage?: number | string;
+  amountToPay?: number | string;
   [key: string]: unknown;
 }
 
@@ -32,7 +33,6 @@ const StripePaymentModal = ({
 }: StripePaymentModalProps) => {
   const [step, setStep] = useState<'confirm' | 'processing' | 'success'>('confirm');
   const [amount, setAmount] = useState<number>(totalAmount);
-  const [description, setDescription] = useState('');
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   // Reset modal state when closed
@@ -40,19 +40,12 @@ const StripePaymentModal = ({
     if (!isOpen) {
       setStep('confirm');
       setAmount(totalAmount);
-      setDescription('');
       setErrors({});
     }
   }, [isOpen, totalAmount]);
 
   const handlePayment = async () => {
     setErrors({});
-    
-    // Validaciones
-    if (amount <= 0) {
-      setErrors({ amount: 'El monto debe ser mayor a 0' });
-      return;
-    }
 
     if (!songId) {
       setErrors({ general: 'No se encontró el ID de la canción' });
@@ -60,24 +53,21 @@ const StripePaymentModal = ({
     }
 
     setStep('processing');
-    
+
     try {
-      // Registrar el pago en el backend
-      const response = await PaymentsService.registerSongPayment(
-        songId,
-        amount,
-        description || undefined
-      );
+      // Inicia el cobro ACH de regalías y el reparto a colaboradores vía Wise.
+      // El backend calcula el monto a partir de los splits de la canción.
+      const response = await PaymentsService.payRoyalties(songId);
 
       if (response.error) {
-        setErrors({ general: response.message || 'Error al registrar el pago' });
+        setErrors({ general: response.message || 'Error al procesar el pago' });
         setStep('confirm');
         return;
       }
 
-      // Pago exitoso
+      // Pago iniciado correctamente
       setStep('success');
-      
+
       // Llamar al callback después de 2 segundos y cerrar el modal
       setTimeout(() => {
         if (onPaymentSuccess) {
@@ -96,7 +86,6 @@ const StripePaymentModal = ({
   const handleClose = () => {
     setStep('confirm');
     setAmount(totalAmount);
-    setDescription('');
     setErrors({});
     onClose();
   };
@@ -137,52 +126,13 @@ const StripePaymentModal = ({
         </div>
       </div>
 
-      {/* Amount Input */}
-      <div>
-        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-          Monto a Distribuir *
-        </label>
-        <div className="relative">
-          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">$</span>
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            value={amount || ''}
-            onChange={(e) => {
-              setAmount(parseFloat(e.target.value) || 0);
-              if (errors.amount) {
-                setErrors(prev => ({ ...prev, amount: '' }));
-              }
-            }}
-            className={`w-full pl-8 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
-              errors.amount 
-                ? 'border-red-300 bg-red-50' 
-                : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700'
-            } dark:text-white`}
-            placeholder="0.00"
-          />
-        </div>
-        {errors.amount && (
-          <p className="mt-1 text-sm text-red-600 dark:text-red-400 flex items-center">
-            <AlertCircle className="w-4 h-4 mr-1" />
-            {errors.amount}
-          </p>
-        )}
-      </div>
-
-      {/* Description */}
-      <div>
-        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-          Descripción (Opcional)
-        </label>
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors dark:text-white"
-          placeholder="Ej: Regalías de Spotify - Enero 2024"
-          rows={3}
-        />
+      {/* Info del cobro */}
+      <div className="rounded-lg border border-indigo-100 bg-indigo-50/50 dark:bg-indigo-900/10 p-4">
+        <p className="text-sm text-gray-700 dark:text-gray-300">
+          Se cobrará <span className="font-semibold">{formatCurrency(amount)}</span> desde tu cuenta
+          bancaria por débito ACH y se repartirá automáticamente a los colaboradores según sus splits.
+          El monto lo calcula el sistema a partir de los splits de la canción.
+        </p>
       </div>
 
       {/* Collaborators Preview */}
@@ -198,8 +148,8 @@ const StripePaymentModal = ({
                   {collaborator.name || collaborator.email || `Colaborador ${index + 1}`}
                 </span>
                 <span className="text-gray-500 dark:text-gray-400">
-                  {collaborator.percentage || 0}%
-
+                  {collaborator.percentage ? `${collaborator.percentage}%` : "0%"}
+                  {collaborator.amountToPay ? ` · $${collaborator.amountToPay}` : ""}
                 </span>
               </div>
             ))}
@@ -235,7 +185,7 @@ const StripePaymentModal = ({
           disabled={amount <= 0}
           className="flex-1 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-semibold py-3 rounded-lg transition-all hover:from-indigo-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
         >
-          <span>Registrar Pago</span>
+          <span>Pagar a todos</span>
           <ArrowRight className="w-5 h-5" />
         </button>
       </div>
@@ -252,20 +202,20 @@ const StripePaymentModal = ({
       
       <div>
         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-          Registrando Pago
+          Procesando pago
         </h3>
         <p className="text-gray-600 dark:text-gray-400">
-          Registrando pago de {formatCurrency(amount)} para la canción...
+          Iniciando el cobro de {formatCurrency(amount)} por débito ACH...
         </p>
       </div>
 
       <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
         <div className="flex items-center justify-center space-x-2 text-blue-800 dark:text-blue-300">
           <Clock className="w-5 h-5" />
-          <span className="font-medium">Guardando registro del pago</span>
+          <span className="font-medium">Enviando solicitud a Stripe</span>
         </div>
         <p className="text-sm text-blue-600 dark:text-blue-400 mt-2">
-          Este pago será descontado del monto total pendiente
+          Al liquidar el ACH, los colaboradores recibirán su parte vía Wise
         </p>
       </div>
     </div>
@@ -289,27 +239,21 @@ const StripePaymentModal = ({
         transition={{ delay: 0.3 }}
       >
         <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-          ¡Pago Registrado Exitosamente!
+          ¡Pago iniciado!
         </h3>
         <p className="text-gray-600 dark:text-gray-400 mb-6">
-          Se ha registrado el pago de {formatCurrency(amount)} para esta canción
+          El cobro por {formatCurrency(amount)} se está procesando por ACH
         </p>
-        
-        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600 dark:text-gray-400">ID de Transacción:</span>
-            <span className="font-mono text-sm text-gray-900 dark:text-white">
-              STR_{Math.random().toString(36).substr(2, 9).toUpperCase()}
-            </span>
-          </div>
+
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6 space-y-3 text-left">
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-600 dark:text-gray-400">Estado:</span>
-            <span className="text-green-600 dark:text-green-400 font-medium">Completado</span>
+            <span className="text-green-600 dark:text-green-400 font-medium">En proceso</span>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600 dark:text-gray-400">Tiempo de procesamiento:</span>
-            <span className="text-gray-900 dark:text-white">2.3 segundos</span>
-          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            El débito ACH puede tardar algunos días en liquidar. Cuando se confirme,
+            los colaboradores recibirán automáticamente su parte vía Wise.
+          </p>
         </div>
       </motion.div>
 
@@ -327,11 +271,11 @@ const StripePaymentModal = ({
   const getModalTitle = () => {
     switch (step) {
       case 'confirm':
-        return 'Registrar Pago';
+        return 'Pagar a todos';
       case 'processing':
-        return 'Registrando Pago';
+        return 'Procesando pago';
       case 'success':
-        return 'Pago Registrado';
+        return 'Pago iniciado';
       default:
         return 'Pago';
     }

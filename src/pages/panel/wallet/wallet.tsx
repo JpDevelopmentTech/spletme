@@ -1,16 +1,20 @@
 import { useEffect, useState } from "react";
 import {
   Wallet,
-  Download,
-  Upload,
   Search,
   ChevronLeft,
   ChevronRight,
-  ArrowRightLeft,
+  ChevronDown,
   Loader2,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
 } from "lucide-react";
 import WalletService from "@/services/wallet";
-import DepositModal from "./DepositModal";
+import PaymentsService from "@/services/payments";
+import type { RoyaltyPayment, RoyaltyBreakdownItem } from "@/services/payments";
+import BankAccountSection from "@/components/bank-account/BankAccountSection";
+import PayoutAccountSection from "@/components/bank-account/PayoutAccountSection";
 
 interface WalletAccount {
   balance: number;
@@ -27,41 +31,35 @@ interface WalletData {
   last_name?: string;
 }
 
-interface Transaction {
-  id: string;
-  amount: number;
-  currency: string;
-  type: string;
-  subtype?: string;
-  balance_type?: string;
-  balance?: number;
-  created_at: number;
-  source_ewallet_id?: string;
-  destination_ewallet_id?: string;
-  metadata?: Record<string, unknown>;
-}
-
-const TYPE_CONFIG: Record<string, { label: string; color: string; bg: string; icon: typeof Download }> = {
-  payment:      { label: "Deposit",  color: "#1D4ED8", bg: "#EFF6FF", icon: Download },
-  transfer:     { label: "Transfer", color: "#6D28D9", bg: "#F5F3FF", icon: ArrowRightLeft },
-  payout:       { label: "Withdraw", color: "#DC2626", bg: "#FFF1F2", icon: Upload },
-  refund:       { label: "Refund",   color: "#0369A1", bg: "#E0F2FE", icon: Download },
+const STATUS_CONFIG: Record<
+  RoyaltyPayment["status"],
+  { label: string; color: string; bg: string; icon: typeof CheckCircle2 }
+> = {
+  succeeded: { label: "Completado", color: "#16A34A", bg: "#ECFDF5", icon: CheckCircle2 },
+  processing: { label: "En proceso", color: "#1D4ED8", bg: "#EFF6FF", icon: Clock },
+  pending: { label: "Pendiente", color: "#D97706", bg: "#FFFBEB", icon: Clock },
+  failed: { label: "Fallido", color: "#DC2626", bg: "#FFF1F2", icon: AlertCircle },
 };
 
-function getTypeConfig(type: string) {
-  return TYPE_CONFIG[type] ?? { label: type, color: "#374151", bg: "#F3F4F6", icon: Download };
-}
-
-function formatDate(ts: number) {
-  return new Date(ts * 1000).toLocaleDateString("en-US", {
-    month: "short", day: "numeric", year: "numeric",
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString("es-ES", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
   });
 }
 
-function formatAmount(amount: number, currency: string, type: string) {
-  const sign = ["payment", "refund"].includes(type) ? "+" : "-";
-  const color = sign === "+" ? "#16A34A" : "#EF4444";
-  return { text: `${sign}${currency} ${Math.abs(amount).toLocaleString("en-US", { minimumFractionDigits: 2 })}`, color };
+/** Devuelve el título de la canción del pago (songId puede venir poblado o como id). */
+function getSongTitle(songId: RoyaltyPayment["songId"]) {
+  if (songId && typeof songId === "object") return songId.trackTitle || "—";
+  return "—";
+}
+
+/** Devuelve el nombre del colaborador destinatario (poblado o id). */
+function getCollaboratorName(collaboratorId: RoyaltyBreakdownItem["collaboratorId"]) {
+  if (collaboratorId && typeof collaboratorId === "object")
+    return collaboratorId.name || collaboratorId.username || collaboratorId.email || "Colaborador";
+  return "Colaborador";
 }
 
 const PAGE_SIZE = 10;
@@ -69,13 +67,13 @@ const PAGE_SIZE = 10;
 export default function WalletPage() {
   const [wallet, setWallet] = useState<WalletData | null>(null);
   const [walletError, setWalletError] = useState<string | null>(null);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [payments, setPayments] = useState<RoyaltyPayment[]>([]);
   const [loadingWallet, setLoadingWallet] = useState(true);
   const [loadingTx, setLoadingTx] = useState(true);
   const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
-  const [showDeposit, setShowDeposit] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
     WalletService.getWallet().then((res) => {
@@ -86,20 +84,20 @@ export default function WalletPage() {
       }
       setLoadingWallet(false);
     });
-    WalletService.getTransactions(1, 100).then((res) => {
-      if (!res.error && res.data) setTransactions(res.data as Transaction[]);
+    PaymentsService.getRoyaltyPayments().then((res) => {
+      if (!res.error && res.data) setPayments(res.data);
       setLoadingTx(false);
     });
   }, []);
 
-  const filtered = transactions.filter((tx) => {
-    const matchesType = typeFilter === "all" || tx.type === typeFilter;
+  const filtered = payments.filter((p) => {
+    const matchesStatus = statusFilter === "all" || p.status === statusFilter;
+    const title = getSongTitle(p.songId).toLowerCase();
     const matchesSearch =
       !search ||
-      tx.id.toLowerCase().includes(search.toLowerCase()) ||
-      tx.type.toLowerCase().includes(search.toLowerCase()) ||
-      tx.currency.toLowerCase().includes(search.toLowerCase());
-    return matchesType && matchesSearch;
+      title.includes(search.toLowerCase()) ||
+      (p.stripePaymentIntentId ?? "").toLowerCase().includes(search.toLowerCase());
+    return matchesStatus && matchesSearch;
   });
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
@@ -109,29 +107,11 @@ export default function WalletPage() {
 
   return (
     <div className="min-h-screen bg-[#F7F8FA] p-10 flex flex-col gap-6">
-      {showDeposit && <DepositModal onClose={() => setShowDeposit(false)} />}
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold text-gray-900">Wallet</h1>
-          <p className="text-sm text-gray-500">Your Rapyd wallet balances and transaction history</p>
-        </div>
-        <div className="flex items-center gap-2.5">
-          <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
-            <Upload className="w-4 h-4" />
-            Withdraw
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
-            <ArrowRightLeft className="w-4 h-4" />
-            Transfer
-          </button>
-          <button
-            onClick={() => setShowDeposit(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-orange-500 text-sm font-semibold text-white hover:bg-orange-600 transition-colors"
-          >
-            <Download className="w-4 h-4" />
-            Deposit
-          </button>
+          <p className="text-sm text-gray-500">Tus saldos y el historial de pagos hechos a Stripe</p>
         </div>
       </div>
 
@@ -173,6 +153,12 @@ export default function WalletPage() {
         )}
       </div>
 
+      {/* Cuenta bancaria del Owner (ACH) — para PAGAR regalías */}
+      <BankAccountSection />
+
+      {/* Cuenta de recepción (Wise) — para RECIBIR dinero (cualquier usuario) */}
+      <PayoutAccountSection />
+
       {/* Transaction Table */}
       <div className="bg-white rounded-xl border border-gray-200 flex flex-col overflow-hidden">
         {/* Table Header */}
@@ -184,27 +170,27 @@ export default function WalletPage() {
               <input
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                placeholder="Search..."
+                placeholder="Buscar canción o ID..."
                 className="bg-transparent text-xs text-gray-700 placeholder-gray-400 outline-none w-full"
               />
             </div>
             <select
-              value={typeFilter}
-              onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
+              value={statusFilter}
+              onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
               className="px-3 py-2 rounded-lg bg-[#F7F8FA] border border-gray-200 text-xs text-gray-700 outline-none cursor-pointer"
             >
-              <option value="all">All Types</option>
-              <option value="payment">Deposit</option>
-              <option value="transfer">Transfer</option>
-              <option value="payout">Withdraw</option>
-              <option value="refund">Refund</option>
+              <option value="all">Todos los estados</option>
+              <option value="processing">En proceso</option>
+              <option value="succeeded">Completado</option>
+              <option value="pending">Pendiente</option>
+              <option value="failed">Fallido</option>
             </select>
           </div>
         </div>
 
         {/* Column Headers */}
-        <div className="grid grid-cols-[120px_1fr_130px_130px_140px_100px] gap-0 px-5 py-2.5 bg-[#F7F8FA] border-b border-gray-100">
-          {["Date", "Transaction ID", "Wallet", "Type", "Amount", "Currency"].map((h) => (
+        <div className="grid grid-cols-[120px_1fr_220px_140px_120px] gap-0 px-5 py-2.5 bg-[#F7F8FA] border-b border-gray-100">
+          {["Fecha", "Canción", "ID de cobro", "Estado", "Monto"].map((h) => (
             <span key={h} className="text-xs font-semibold text-gray-500">{h}</span>
           ))}
         </div>
@@ -213,42 +199,79 @@ export default function WalletPage() {
         {loadingTx ? (
           <div className="flex items-center justify-center py-16 gap-2 text-gray-400">
             <Loader2 className="w-5 h-5 animate-spin" />
-            <span className="text-sm">Loading transactions...</span>
+            <span className="text-sm">Cargando pagos...</span>
           </div>
         ) : paginated.length === 0 ? (
           <div className="flex items-center justify-center py-16 text-sm text-gray-400">
-            No transactions found.
+            No hay pagos registrados.
           </div>
         ) : (
-          paginated.map((tx, idx) => {
-            const cfg = getTypeConfig(tx.type);
-            const { text: amtText, color: amtColor } = formatAmount(tx.amount, tx.currency, tx.type);
+          paginated.map((p, idx) => {
+            const cfg = STATUS_CONFIG[p.status] ?? STATUS_CONFIG.pending;
             const Icon = cfg.icon;
+            const ref = p.stripePaymentIntentId || p._id;
+            const isOpen = expandedId === p._id;
+            const recipients = p.breakdown ?? [];
             return (
               <div
-                key={tx.id}
-                className={`grid grid-cols-[120px_1fr_130px_130px_140px_100px] gap-0 px-5 py-3.5 items-center ${
-                  idx < paginated.length - 1 ? "border-b border-gray-50" : ""
-                } hover:bg-gray-50 transition-colors`}
+                key={p._id}
+                className={idx < paginated.length - 1 ? "border-b border-gray-50" : ""}
               >
-                <span className="text-xs text-gray-500">{formatDate(tx.created_at)}</span>
-                <span className="text-xs text-gray-700 font-medium truncate pr-4" title={tx.id}>
-                  {tx.id}
-                </span>
-                <span className="text-xs text-gray-500 truncate pr-4">
-                  {tx.source_ewallet_id ?? "—"}
-                </span>
-                <div className="flex items-center">
-                  <span
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold"
-                    style={{ background: cfg.bg, color: cfg.color }}
-                  >
-                    <Icon className="w-2.5 h-2.5" />
-                    {cfg.label}
+                <div
+                  onClick={() => setExpandedId(isOpen ? null : p._id)}
+                  className="grid grid-cols-[120px_1fr_220px_140px_120px] gap-0 px-5 py-3.5 items-center hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  <span className="text-xs text-gray-500">{formatDate(p.createdAt)}</span>
+                  <span className="text-xs text-gray-700 font-medium truncate pr-4">
+                    {getSongTitle(p.songId)}
+                  </span>
+                  <span className="text-xs text-gray-500 truncate pr-4" title={ref}>
+                    {ref}
+                  </span>
+                  <div className="flex items-center">
+                    <span
+                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold"
+                      style={{ background: cfg.bg, color: cfg.color }}
+                    >
+                      <Icon className="w-2.5 h-2.5" />
+                      {cfg.label}
+                    </span>
+                  </div>
+                  <span className="text-xs font-bold text-gray-900 flex items-center justify-between gap-1">
+                    <span>
+                      ${p.amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}{" "}
+                      {(p.currency || "usd").toUpperCase()}
+                    </span>
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
+                    />
                   </span>
                 </div>
-                <span className="text-xs font-bold" style={{ color: amtColor }}>{amtText}</span>
-                <span className="text-xs text-gray-500 font-medium">{tx.currency}</span>
+
+                {isOpen && (
+                  <div className="px-5 py-3 bg-[#FAFAFA] border-t border-gray-100">
+                    <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                      Repartido a
+                    </span>
+                    <div className="mt-2 flex flex-col gap-1.5">
+                      {recipients.length > 0 ? (
+                        recipients.map((b, i) => (
+                          <div key={i} className="flex items-center justify-between text-xs">
+                            <span className="text-gray-700 font-medium">
+                              {getCollaboratorName(b.collaboratorId)}
+                            </span>
+                            <span className="text-gray-500">
+                              {b.percentage}% · $
+                              {b.amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <span className="text-xs text-gray-400">Sin desglose disponible.</span>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })
@@ -258,7 +281,7 @@ export default function WalletPage() {
         {!loadingTx && filtered.length > 0 && (
           <div className="flex items-center justify-between px-5 py-3.5 border-t border-gray-100">
             <span className="text-xs text-gray-400">
-              Showing {Math.min((page - 1) * PAGE_SIZE + 1, filtered.length)}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
+              Mostrando {Math.min((page - 1) * PAGE_SIZE + 1, filtered.length)}–{Math.min(page * PAGE_SIZE, filtered.length)} de {filtered.length}
             </span>
             <div className="flex items-center gap-1.5">
               <button
@@ -271,12 +294,11 @@ export default function WalletPage() {
               {Array.from({ length: totalPages }, (_, i) => i + 1)
                 .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
                 .map((p, i, arr) => (
-                  <>
+                  <span key={p} className="flex items-center gap-1.5">
                     {i > 0 && arr[i - 1] !== p - 1 && (
-                      <span key={`ellipsis-${p}`} className="text-xs text-gray-400 px-1">…</span>
+                      <span className="text-xs text-gray-400 px-1">…</span>
                     )}
                     <button
-                      key={p}
                       onClick={() => setPage(p)}
                       className={`min-w-[28px] h-7 rounded-md text-xs font-semibold transition-colors ${
                         p === page
@@ -286,7 +308,7 @@ export default function WalletPage() {
                     >
                       {p}
                     </button>
-                  </>
+                  </span>
                 ))}
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}

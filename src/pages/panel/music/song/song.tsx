@@ -7,7 +7,10 @@ import {
   BarChart3,
   Award,
   ArrowLeft,
+  AlertCircle,
 } from "lucide-react";
+import PaymentsService from "@/services/payments";
+import type { PaymentReadiness } from "@/services/payments";
 import AddCollaborator from "../../collaborators/components/addCollaborator";
 import Table from "./components/table";
 import { useParams, useNavigate } from "react-router-dom";
@@ -21,8 +24,6 @@ import StripePaymentModal from "../../../../components/modal/StripePaymentModal"
 import LocalStorageService from "../../../../services/localstorage";
 import PaymentHistory from "../../../../components/PaymentHistory/PaymentHistory";
 import useCurrentCollaborator from "../../../../hooks/useCurrentCollaborator";
-import { validatePayAllPayment } from "../../../../services/songs";
-import { accountingApi } from "../../../../services/accounting";
 import ValidationToastQueue, {
   ValidationToastItem,
   ValidationToastType,
@@ -46,10 +47,14 @@ export default function Song() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [toasts, setToasts] = useState<ValidationToastItem[]>([]);
   const [paymentHistoryRefresh, setPaymentHistoryRefresh] = useState(0);
-  const [balance, setBalance] = useState<{
-    totalIngresos: number;
-    totalEgresos: number;
-  } | null>(null);
+  const [readiness, setReadiness] = useState<PaymentReadiness | null>(null);
+
+  useEffect(() => {
+    if (!id) return;
+    PaymentsService.getPaymentReadiness(id).then((res) => {
+      if (!res.error && res.data) setReadiness(res.data);
+    });
+  }, [id, paymentHistoryRefresh]);
 
   const addToast = (
     type: ValidationToastType,
@@ -71,22 +76,6 @@ export default function Song() {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
   };
 
-  useEffect(() => {
-    if (!id) return;
-    const fetchBalance = async () => {
-      try {
-        const data = await accountingApi.getBalanceBySongId(id);
-        setBalance({
-          totalIngresos: data?.totalIngresos || 0,
-          totalEgresos: data?.totalEgresos || 0,
-        });
-      } catch (error) {
-        console.error("Error fetching balance:", error);
-      }
-    };
-    fetchBalance();
-  }, [id]);
-
   const getUserDisplayPercentage = () => {
     const collaboratorPercentage = getCurrentUserPercentage();
     if (collaboratorPercentage && collaboratorPercentage > 0) {
@@ -105,79 +94,13 @@ export default function Song() {
     return ((ownerPct / 100) * totalIncome).toFixed(2);
   };
 
-  const isStripeConnected = () => {
-    const authData = LocalStorageService.getItem("stripe_connect_auth");
-    return authData?.isLoggedIn === true;
-  };
-
   const handlePayAllClick = () => {
-    // totalEgresos = gastos extraordinarios
-    // totalIngresos = ganancias de la canción
-    const totalEgresos = balance?.totalEgresos || 0;
-    const totalIngresos = song?.totalNetIncome || 0;
-
-    const validation = validatePayAllPayment({
-      song,
-      isStripeConnected: isStripeConnected(),
-      totalEgresos,
-      totalIngresos,
-    });
-    const blockingIssues = validation.issues.filter(
-      (issue) => issue.code !== "all-valid",
-    );
-    const currentUserDisplayName =
-      currentUser?.name || currentUser?.username || currentUser?.email || "Tú";
-    // Obtener todos los mensajes de error que no son de colaboradores específicos
-    const payerReasons = blockingIssues
-      .filter((issue) => !issue.collaboratorEmail)
-      .map((issue) => issue.message);
-    const getToastTypeFromReasons = (
-      reasons: string[],
-      fallback: ValidationToastType,
-    ) => {
-      if (reasons.length === 0) return fallback;
-      return "error" as ValidationToastType;
-    };
-    const collaboratorToasts = validation.collaborators.map((collaborator) => ({
-      id:
-        Date.now() +
-        Math.floor(Math.random() * 1000) +
-        Math.floor(Math.random() * 1000),
-      type: getToastTypeFromReasons(
-        collaborator.reasons.map((issue) => issue.message),
-        collaborator.canPay ? "success" : "error",
-      ),
-      message: collaborator.name,
-      title: collaborator.name,
-      email: collaborator.email,
-      reasons: collaborator.reasons.map((issue) => issue.message),
-      canPay: collaborator.canPay,
-    }));
-    // Mostrar siempre el toast del pagador con los motivos del pago
-    const payerToast: ValidationToastItem = {
-      id: Date.now() + Math.floor(Math.random() * 1000),
-      type: validation.canProceed ? "success" : "error",
-      message: currentUserDisplayName,
-      title: currentUserDisplayName,
-      email: currentUser?.email || "",
-      reasons:
-        payerReasons.length > 0
-          ? payerReasons
-          : validation.canProceed
-            ? []
-            : ["No puedes continuar con el pago con la configuración actual."],
-      canPay: validation.canProceed,
-    };
-    const validationToasts = [payerToast, ...collaboratorToasts];
-
-    if (validationToasts.length > 0) {
-      setToasts((prev) => [...prev, ...validationToasts]);
-    }
-
-    if (blockingIssues.length > 0 || !validation.canProceed) {
+    // Pre-chequeo: si la canción no está lista para pagar, se avisan los problemas
+    // y no se abre el modal. El backend revalida lo mismo al confirmar el pago.
+    if (readiness && !readiness.canPay) {
+      readiness.issues.forEach((issue) => addToast("error", issue.message));
       return;
     }
-
     setShowPaymentModal(true);
   };
 
@@ -256,8 +179,8 @@ export default function Song() {
         onClose={() => setShowPaymentModal(false)}
         songTitle={song?.trackTitle}
         songId={song?._id || song?.id}
-        totalAmount={song?.totalNetIncome || 0}
-        collaborators={song?.collaborators || []}
+        totalAmount={totalToPay}
+        collaborators={getCollaboratorsInfo()}
         onPaymentSuccess={handlePaymentSuccess}
       />
       <ValidationToastQueue toasts={toasts} onDequeue={dequeueToast} />
@@ -434,11 +357,28 @@ export default function Song() {
                 </div>
                 <button
                   onClick={handlePayAllClick}
-                  className="w-full flex items-center justify-center gap-2 bg-white text-[#F97316] font-bold text-sm px-4 py-3 rounded-xl hover:bg-orange-50 active:scale-[0.98] transition-all"
+                  disabled={readiness !== null && !readiness.canPay}
+                  className="w-full flex items-center justify-center gap-2 bg-white text-[#F97316] font-bold text-sm px-4 py-3 rounded-xl hover:bg-orange-50 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100"
                 >
                   <DollarSign className="w-4 h-4" />
                   Pagar a todos
                 </button>
+
+                {readiness !== null && !readiness.canPay && (
+                  <div className="rounded-xl bg-white/10 border border-white/20 p-3 space-y-1.5">
+                    <p className="flex items-center gap-1.5 text-white text-xs font-semibold">
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      Falta esto para poder pagar:
+                    </p>
+                    <ul className="list-disc list-inside space-y-1">
+                      {readiness.issues.map((issue) => (
+                        <li key={issue.code} className="text-white/85 text-[11px] leading-snug">
+                          {issue.message}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
           )}

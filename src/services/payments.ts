@@ -1,4 +1,14 @@
+import axios from "axios";
 import { apiClient } from "@/infrastructure/http/axiosClient";
+
+/** Extrae el mensaje de error devuelto por el backend en una llamada fallida. */
+const extractErrorMessage = (error: unknown, fallback: string): string => {
+  if (axios.isAxiosError(error)) {
+    const data = error.response?.data as { message?: string } | undefined;
+    if (data?.message) return data.message;
+  }
+  return fallback;
+};
 
 export interface Payment {
   _id: string;
@@ -6,6 +16,41 @@ export interface Payment {
   amount: number;
   description?: string;
   owner: string;
+  createdAt: string;
+}
+
+/** Un destinatario del reparto de un cobro de regalías. */
+export interface RoyaltyBreakdownItem {
+  collaboratorId:
+    | { _id: string; name?: string; email?: string; username?: string }
+    | string;
+  amount: number;
+  percentage: number;
+}
+
+/** Un problema que impide pagar una canción (pre-chequeo). */
+export interface PaymentReadinessIssue {
+  code: string;
+  message: string;
+}
+
+/** Resultado del pre-chequeo de pago de una canción. */
+export interface PaymentReadiness {
+  canPay: boolean;
+  amount: number;
+  issues: PaymentReadinessIssue[];
+}
+
+/** Cobro ACH de regalías (pago hecho a Stripe por el owner). */
+export interface RoyaltyPayment {
+  _id: string;
+  songId?: { _id: string; trackTitle?: string; artistName?: string } | string;
+  amount: number;
+  currency: string;
+  stripePaymentIntentId: string | null;
+  status: "pending" | "processing" | "succeeded" | "failed";
+  escrowStatus?: string;
+  breakdown?: RoyaltyBreakdownItem[];
   createdAt: string;
 }
 
@@ -32,6 +77,28 @@ class PaymentsService {
     }
   }
 
+  /** Historial de cobros ACH de regalías hechos a Stripe por el owner. */
+  async getRoyaltyPayments(): Promise<{ error: boolean; data?: RoyaltyPayment[]; message?: string }> {
+    try {
+      const response = await apiClient.get("/payments");
+      return response.data;
+    } catch {
+      return { error: true, message: "Error getting royalty payments" };
+    }
+  }
+
+  /** Pre-chequeo de si una canción está lista para pagar regalías (sin cobrar). */
+  async getPaymentReadiness(
+    songId: string
+  ): Promise<{ error: boolean; data?: PaymentReadiness; message?: string }> {
+    try {
+      const response = await apiClient.get(`/payments/readiness/${songId}`);
+      return response.data;
+    } catch {
+      return { error: true, message: "Error checking payment readiness" };
+    }
+  }
+
   /** Obtiene los pagos de un colaborador específico */
   async getPaymentsByCollaborator(idCollaborator: string): Promise<{ error: boolean; data?: Payment[]; message?: string }> {
     try {
@@ -39,6 +106,21 @@ class PaymentsService {
       return response.data;
     } catch {
       return { error: true, message: "Error getting payments by collaborator" };
+    }
+  }
+
+  /**
+   * Inicia el cobro ACH de regalías de una canción (Stripe) y su reparto a los
+   * colaboradores vía Wise. El monto lo calcula el backend a partir de los splits.
+   */
+  async payRoyalties(
+    songId: string
+  ): Promise<{ error: boolean; data?: unknown; message?: string }> {
+    try {
+      const response = await apiClient.post("/payments/pay", { songId });
+      return response.data;
+    } catch (error) {
+      return { error: true, message: extractErrorMessage(error, "Error al procesar el pago") };
     }
   }
 

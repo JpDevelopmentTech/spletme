@@ -100,7 +100,7 @@ export const validatePayAllPayment = ({
   }
 
   if (!isStripeConnected) {
-    issues.push({ code: "wallet-not-connected", severity: "error", message: "No puedes pagar a todos porque tu wallet no está conectada o no está activa." });
+    issues.push({ code: "wallet-not-connected", severity: "error", message: "No puedes pagar a todos porque aún no has vinculado y verificado tu cuenta bancaria (ACH) en Billetera." });
   }
 
   let payableCollaborators = 0;
