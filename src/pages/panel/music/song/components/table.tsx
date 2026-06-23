@@ -4,6 +4,7 @@ import PaymentHistoryModal from "../../../../../components/modal/PaymentHistoryM
 import OwnerSplitModal from "./ownerfrom";
 import RegisterPaymentModal from "../../../../../components/modal/RegisterPaymentModal";
 import PaymentConfirmationModal from "../../../../../components/modal/PaymentConfirmationModal";
+import CollaboratorPaymentHistoryModal from "../../../../../components/modal/CollaboratorPaymentHistoryModal";
 import {
   DollarSign,
   Plus,
@@ -86,6 +87,11 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
   const [isOwnerSplitModalOpen, setIsOwnerSplitModalOpen] = useState(false);
   const [isPaymentConfirmationOpen, setIsPaymentConfirmationOpen] =
     useState(false);
+  const [historyModal, setHistoryModal] = useState<{
+    open: boolean;
+    id: string;
+    name: string;
+  }>({ open: false, id: "", name: "" });
   const [paymentData, setPaymentData] = useState<{
     collaboratorId: string;
     collaboratorName: string;
@@ -221,6 +227,13 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
         song={song || { id: songId || "", trackTitle: "" }}
         onSplitCreated={handleOwnerSplitCreated}
       />
+      <CollaboratorPaymentHistoryModal
+        isOpen={historyModal.open}
+        onClose={() => setHistoryModal({ open: false, id: "", name: "" })}
+        songId={songId || ""}
+        collaboratorId={historyModal.id}
+        collaboratorName={historyModal.name}
+      />
       <PaymentConfirmationModal
         isOpen={isPaymentConfirmationOpen}
         onClose={() => {
@@ -300,7 +313,10 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
                 Split %
               </th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                Monto
+                Pagado
+              </th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                Pendiente
               </th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
                 Estado
@@ -355,7 +371,16 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
                     </span>
                   </td>
 
-                  {/* Amount */}
+                  {/* Pagado */}
+                  <td className="px-4 py-4">
+                    <span className="text-sm font-medium text-gray-500">
+                      {(collaborator as any).amountPaid
+                        ? `$${(collaborator as any).amountPaid}`
+                        : "$0.00"}
+                    </span>
+                  </td>
+
+                  {/* Pendiente */}
                   <td className="px-4 py-4">
                     <span className="text-sm font-semibold text-gray-900">
                       {collaborator.amountToPay
@@ -382,7 +407,13 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
                     <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() =>
-                          openPaymentHistoryModal(currentSplitId)
+                          setHistoryModal({
+                            open: true,
+                            id: String(
+                              (collaborator as any)._id || collaborator.id || ""
+                            ),
+                            name: collaborator.name || "",
+                          })
                         }
                         className="flex items-center gap-1 px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded-lg transition-colors"
                       >

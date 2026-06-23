@@ -41,6 +41,16 @@ export interface PaymentReadiness {
   issues: PaymentReadinessIssue[];
 }
 
+/** Un pago hecho a un colaborador en una canción (histórico). */
+export interface CollaboratorPaymentHistoryItem {
+  royaltyPaymentId: string;
+  date: string;
+  amount: number;
+  percentage: number | null;
+  paymentStatus: "pending" | "processing" | "succeeded" | "failed";
+  payoutStatus: string | null;
+}
+
 /** Cobro ACH de regalías (pago hecho a Stripe por el owner). */
 export interface RoyaltyPayment {
   _id: string;
@@ -96,6 +106,33 @@ class PaymentsService {
       return response.data;
     } catch {
       return { error: true, message: "Error checking payment readiness" };
+    }
+  }
+
+  /** Histórico de todos los cobros realizados para una canción. */
+  async getSongHistory(
+    songId: string
+  ): Promise<{ error: boolean; data?: RoyaltyPayment[]; message?: string }> {
+    try {
+      const response = await apiClient.get(`/payments/song/${songId}/history`);
+      return response.data;
+    } catch {
+      return { error: true, message: "Error getting song payment history" };
+    }
+  }
+
+  /** Histórico de pagos hechos a un colaborador en una canción. */
+  async getCollaboratorHistory(
+    songId: string,
+    collaboratorId: string
+  ): Promise<{ error: boolean; data?: CollaboratorPaymentHistoryItem[]; message?: string }> {
+    try {
+      const response = await apiClient.get(
+        `/payments/song/${songId}/collaborator/${collaboratorId}/history`
+      );
+      return response.data;
+    } catch {
+      return { error: true, message: "Error getting collaborator history" };
     }
   }
 

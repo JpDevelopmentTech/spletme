@@ -56,12 +56,17 @@ const UseSong = ({ id }: { id: string }) => {
     return song.collaborators.map((collaborator: any) => {
       const percentage = collaborator.split?.percentage || 0;
       const amountOwed = collaborator.amountOwed || 0;
+      // amountToPay refleja lo PENDIENTE (devengado − ya pagado), no el bruto.
+      const amountPending = collaborator.amountPending ?? amountOwed;
+      const amountPaid = collaborator.amountPaid || 0;
 
       return {
         ...collaborator,
         percentage: percentage.toFixed(2),
-        amountToPay: amountOwed.toFixed(2),
-        calculatedAmount: amountOwed,
+        amountToPay: amountPending.toFixed(2),
+        amountPaid: amountPaid.toFixed(2),
+        amountOwed: amountOwed.toFixed(2),
+        calculatedAmount: amountPending,
       };
     });
   };

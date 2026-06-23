@@ -22,7 +22,7 @@ import Loading from "../../../../components/loading/loading";
 import StripeConnectLoginModal from "../../../../components/modal/StripeConnectLoginModal";
 import StripePaymentModal from "../../../../components/modal/StripePaymentModal";
 import LocalStorageService from "../../../../services/localstorage";
-import PaymentHistory from "../../../../components/PaymentHistory/PaymentHistory";
+import SongPaymentsHistory from "../../../../components/PaymentHistory/SongPaymentsHistory";
 import useCurrentCollaborator from "../../../../hooks/useCurrentCollaborator";
 import ValidationToastQueue, {
   ValidationToastItem,
@@ -121,7 +121,11 @@ export default function Song() {
 
   const ownerAmount = getOwnerTotalOwed();
   // Usar collaboratorsEarnings del backend si está disponible, si no calcular
-  const totalToPay = song?.collaboratorsEarnings ?? Math.max(0, (song?.totalNetIncome || 0) - ownerAmount);
+  // Total a pagar = lo PENDIENTE de los colaboradores (devengado − ya pagado).
+  const totalToPay =
+    song?.collaboratorsPending ??
+    song?.collaboratorsEarnings ??
+    Math.max(0, (song?.totalNetIncome || 0) - ownerAmount);
   const currentUser = LocalStorageService.getItem("user");
   const normalizeIdentity = (value: unknown) =>
     String(value || "")
@@ -409,13 +413,7 @@ export default function Song() {
         </div>
         {/* Payment History + Platforms */}
 
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-          <PaymentHistory
-            title="Historial de Pagos Realizados"
-            maxHeight="400px"
-            refreshTrigger={paymentHistoryRefresh}
-          />
-        </div>
+        <SongPaymentsHistory songId={id} refreshTrigger={paymentHistoryRefresh} />
 
         <div className="grid grid-cols-4 gap-4">
           {/* History of Splits */}
