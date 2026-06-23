@@ -28,7 +28,9 @@ interface ApiCollaborator {
   songPresencePercentage: number;
   activeSplits: number;
   splitPercentage: number | null;
+  amountOwed: number;
   totalPaid: number;
+  amountPending: number;
   paymentStatus: string;
   isActive: boolean;
   hasWallet: boolean;
@@ -41,6 +43,7 @@ interface ApiSummary {
   byRole: { collaborator: number; label: number };
   activeSplits: number;
   totalAmountSent: number;
+  totalPending: number;
   totalAmountReceived: number;
 }
 
@@ -73,7 +76,10 @@ const adaptCollaborator = (raw: ApiCollaborator, idx: number): Collaborator => {
     avatarText: palette.text,
     songs: raw.songCount,
     songPresencePercentage: raw.songPresencePercentage ?? 0,
+    splitPercentage: raw.splitPercentage ?? null,
     paid: raw.totalPaid,
+    amountOwed: raw.amountOwed ?? 0,
+    amountPending: raw.amountPending ?? 0,
     status: resolveStatus(raw),
     roles: raw.roles ?? [],
   };

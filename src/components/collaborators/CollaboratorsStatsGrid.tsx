@@ -1,4 +1,4 @@
-import { Users, ArrowUp, ArrowDown, Percent } from "lucide-react";
+import { Users, ArrowUp, Percent } from "lucide-react";
 
 interface CollaboratorsStatsGridProps {
   totalCollaborators: number;
@@ -14,12 +14,10 @@ interface CollaboratorsStatsGridProps {
 export function CollaboratorsStatsGrid({
   totalCollaborators,
   totalSent,
-  totalReceived,
   activeSplits,
-  pendingPayments,
 }: CollaboratorsStatsGridProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
       <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <span className="text-xs font-medium text-[#6B7280]">Total Colaboradores</span>
@@ -42,17 +40,7 @@ export function CollaboratorsStatsGrid({
         <span className="text-[11px] font-medium text-[#9CA3AF]">32 pagos en total</span>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-[#6B7280]">Pagos Recibidos</span>
-          <div className="w-7 h-7 bg-green-50 rounded-md flex items-center justify-center">
-            <ArrowDown className="w-3.5 h-3.5 text-green-500" />
-          </div>
-        </div>
-        <p className="text-[26px] font-bold text-green-500 leading-none">{totalReceived}</p>
-        <span className="text-[11px] font-medium text-[#F97316]">{pendingPayments} pagos pendientes</span>
-      </div>
-
+  
       <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <span className="text-xs font-medium text-[#6B7280]">Splits Activos</span>

@@ -1,5 +1,4 @@
-import { MoreHorizontal } from "lucide-react";
-import { getStatusBadge } from "@/utils/collaborators.utils";
+import { formatCurrency } from "@/utils/collaborators.utils";
 import type { Collaborator } from "@/types";
 
 interface CollaboratorTableRowProps {
@@ -9,15 +8,13 @@ interface CollaboratorTableRowProps {
 }
 
 /**
- * Fila individual de la tabla de colaboradores con avatar, stats y estado.
+ * Fila individual de la tabla de colaboradores con avatar, stats y montos.
  */
 export function CollaboratorTableRow({
   collaborator,
   isActive,
   onClick,
 }: CollaboratorTableRowProps) {
-  const badge = getStatusBadge(collaborator.status);
-
   return (
     <tr
       onClick={() => onClick(collaborator.id)}
@@ -52,10 +49,9 @@ export function CollaboratorTableRow({
         {collaborator.songs}
       </td>
       <td className="px-3 py-4 text-[13px] text-center font-semibold text-[#F97316]">
-        {collaborator.songPresencePercentage
-          ? `${collaborator.songPresencePercentage}`
+        {collaborator.splitPercentage != null
+          ? `${collaborator.splitPercentage}%`
           : "—"}
-        %
       </td>
       <td className="px-3 py-4 text-center">
         {collaborator.roles && collaborator.roles.length > 0 ? (
@@ -73,21 +69,15 @@ export function CollaboratorTableRow({
           <span className="text-[13px] text-[#9CA3AF]">—</span>
         )}
       </td>
+      <td
+        className={`px-3 py-4 text-[13px] text-center font-semibold ${
+          collaborator.amountPending > 0 ? "text-[#F43F5E]" : "text-[#9CA3AF]"
+        }`}
+      >
+        {formatCurrency(collaborator.amountPending)}
+      </td>
       <td className="px-3 py-4 text-[13px] text-center font-semibold text-green-500">
-        {collaborator.paid}
-      </td>
-      <td className="px-3 py-4">
-        <span
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 ${badge.bg} ${badge.text} text-[11px] font-semibold rounded-full`}
-        >
-          <span className={`w-1.5 h-1.5 ${badge.dot} rounded-full`} />
-          {badge.label}
-        </span>
-      </td>
-      <td className="px-3 py-4 text-center">
-        <button className="text-[#9CA3AF] hover:text-[#6B7280] transition-colors">
-          <MoreHorizontal className="w-4 h-4" />
-        </button>
+        {formatCurrency(collaborator.paid)}
       </td>
     </tr>
   );

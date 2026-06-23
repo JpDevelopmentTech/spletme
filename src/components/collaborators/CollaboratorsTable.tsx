@@ -59,12 +59,11 @@ export function CollaboratorsTable({
               Role
             </th>
             <th className="text-center px-3 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider w-[120px]">
+              Adeudado
+            </th>
+            <th className="text-center px-3 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider w-[120px]">
               Pagado
             </th>
-            <th className="text-center px-3 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider w-[110px]">
-              Wallet
-            </th>
-            <th className="w-[60px]" />
           </tr>
         </thead>
         <tbody>
