@@ -8,24 +8,17 @@ interface HistoryOfSplitsProps {
   songId?: string;
 }
 
-type SplitHistoryCondition = {
+type SplitHistoryItem = Split & {
+  action?: string;
   percentage?: number;
   countriesType?: string;
   platformsType?: string;
-  type?: string;
   selectedCountries?: string[];
   selectedPlatforms?: string[];
-};
-
-type SplitHistoryItem = Split & {
-  collaboratorId?: {
-    name?: string;
-    email?: string;
-  };
-  conditions?: SplitHistoryCondition[];
-  action?: string;
-  originalCreatedAt?: string;
-  originalUpdatedAt?: string;
+  version?: number;
+  role?: string;
+  userId?: string;
+  updatedBy?: { _id: string; username: string; name: string; email: string };
 };
 
 const formatDate = (dateValue?: string) => {
@@ -108,19 +101,8 @@ const Historyofsplits = ({ songId }: HistoryOfSplitsProps) => {
   }, [allSplits, selectedSplitKey]);
 
   const selectedSplitData = selectedSplit as SplitHistoryItem | null;
-  const selectedCondition: SplitHistoryCondition | null =
-    selectedSplitData?.generalCondition ||
-    selectedSplitData?.conditions?.[0] ||
-    selectedSplitData?.splitConditions?.[0] ||
-    null;
-  const collaboratorName =
-    selectedSplitData?.collaborator?.name ||
-    selectedSplitData?.collaboratorId?.name ||
-    "Owner";
-  const collaboratorEmail =
-    selectedSplitData?.collaborator?.email ||
-    selectedSplitData?.collaboratorId?.email ||
-    "—";
+  const collaboratorName = selectedSplitData?.updatedBy?.name || selectedSplitData?.collaborator?.name || "—";
+  const collaboratorEmail = selectedSplitData?.updatedBy?.email || selectedSplitData?.collaborator?.email || "—";
 
   return (
     <div className="col-span-12 p-6 rounded-xl border border-gray-200 bg-white">
@@ -218,15 +200,15 @@ const Historyofsplits = ({ songId }: HistoryOfSplitsProps) => {
                   Porcentaje
                 </p>
                 <p className="text-2xl font-medium text-gray-900 dark:text-white">
-                  {selectedCondition?.percentage ?? 0}%
+                  {selectedSplitData.percentage ?? 0}%
                 </p>
               </div>
               <div className="bg-gray-50 dark:bg-white/5 rounded-xl px-4 py-3">
                 <p className="text-[11px] font-medium tracking-wider text-gray-400 uppercase mb-1">
-                  Tipo
+                  Rol
                 </p>
                 <p className="text-lg font-medium text-gray-900 dark:text-white capitalize">
-                  {selectedCondition?.type || "General"}
+                  {selectedSplitData.role || "—"}
                 </p>
               </div>
               <div className="bg-gray-50 dark:bg-white/5 rounded-xl px-4 py-3">
@@ -244,23 +226,27 @@ const Historyofsplits = ({ songId }: HistoryOfSplitsProps) => {
               {[
                 {
                   label: "Países",
-                  value: selectedCondition?.countriesType === "all" 
-                    ? "Todos" 
-                    : selectedCondition?.selectedCountries?.join(", ") || "—",
+                  value: selectedSplitData.countriesType === "all"
+                    ? "Todos"
+                    : selectedSplitData.selectedCountries?.join(", ") || "—",
                 },
                 {
                   label: "Plataformas",
-                  value: selectedCondition?.platformsType === "all"
+                  value: selectedSplitData.platformsType === "all"
                     ? "Todas"
-                    : selectedCondition?.selectedPlatforms?.join(", ") || "—",
+                    : selectedSplitData.selectedPlatforms?.join(", ") || "—",
                 },
                 {
-                  label: "Fecha de modificación",
-                  value: formatDateTime(selectedSplitData.originalUpdatedAt),
+                  label: "Versión",
+                  value: selectedSplitData.version != null ? String(selectedSplitData.version) : "—",
                 },
                 {
-                  label: "Fecha de creación original",
-                  value: formatDateTime(selectedSplitData.originalCreatedAt),
+                  label: "Modificado por",
+                  value: selectedSplitData.updatedBy?.name || "—",
+                },
+                {
+                  label: "Fecha",
+                  value: formatDateTime(selectedSplitData.updatedAt),
                 },
               ].map(({ label, value }) => (
                 <div

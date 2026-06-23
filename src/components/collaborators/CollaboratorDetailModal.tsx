@@ -4,7 +4,7 @@ import {
   Headphones, ChevronRight, BarChart2, History, ArrowLeft,
 } from "lucide-react";
 import CollaboratorService from "@/services/collaborator";
-import { splitsService } from "@/services/splits";
+import { songSplitsService } from "@/services/songSplits";
 import type { Collaborator } from "@/types";
 
 // ── API types ─────────────────────────────────────────────────────────────────
@@ -43,15 +43,20 @@ interface SplitHistoryEntry {
   _id: string;
   action: "create" | "update" | "delete";
   isDeleted: boolean;
-  collaboratorId: { _id: string; username: string; email: string; name?: string };
-  conditions: Array<{ percentage: number; countriesType: string; selectedCountries: string[]; selectedPlatforms: string[] }>;
-  createdAt: string;
-  originalCreatedAt: string;
-  originalUpdatedAt: string;
+  percentage: number;
+  countriesType: string;
+  selectedCountries: string[];
+  platformsType: string;
+  selectedPlatforms: string[];
+  version: number;
+  role: string;
+  userId: string;
   songId: string;
-  splitId: { _id: string };
+  splitId: string | null;
+  createdAt: string;
   updatedAt: string;
-  updatedBy: { _id: string; username: string; name: string };
+  updatedBy: { _id: string; username: string; name: string; email: string };
+  conditions: [];
 }
 
 interface PlatformEntry {
@@ -156,7 +161,7 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
     if (!selectedSong) return;
     setHistory([]);
     setHistoryLoading(true);
-    splitsService
+    songSplitsService
       .getUserSplitHistory(collaborator.id)
       .then((rows) => setHistory((rows ?? []) as unknown as SplitHistoryEntry[]))
       .catch(() => setHistory([]))
@@ -571,7 +576,7 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
                         ...history.filter((e) => e.songId !== selectedSong?.songId),
                       ].map((entry) => {
                         const style      = ACTION_STYLES[entry.action] ?? ACTION_STYLES.update;
-                        const pct        = entry.conditions?.[0]?.percentage;
+                        const pct        = entry.percentage;
                         const isThisSong = entry.songId === selectedSong?.songId;
                         return (
                           <div key={entry._id} className="flex flex-col gap-1.5 px-3 py-2.5 bg-[#F9FAFB] rounded-xl border border-gray-100">
@@ -597,9 +602,6 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
                               </div>
                               {entry.updatedBy?.name && (
                                 <span className="truncate">Por: <span className="font-semibold text-[#374151]">{entry.updatedBy.name}</span></span>
-                              )}
-                              {entry.collaboratorId?.username && (
-                                <span className="truncate">Colaborador: <span className="font-semibold text-[#374151]">{entry.collaboratorId.username}</span></span>
                               )}
                             </div>
                           </div>

@@ -37,10 +37,10 @@ export function FeaturedCollaboratorCard({ collaborator, onViewProfile }: Featur
           <p className="text-xs text-[#6B7280]">{collaborator.email}</p>
         </div>
 
-        {collaborator.role && (
+        {collaborator.roles && collaborator.roles.length > 0 && (
           <span className="inline-flex items-center gap-1.5 px-2.5 h-6 bg-orange-50 rounded-full">
             <Crown className="w-3 h-3 text-[#F97316]" />
-            <span className="text-[11px] font-semibold text-orange-900">{collaborator.role}</span>
+            <span className="text-[11px] font-semibold text-orange-900">{collaborator.roles[0]}</span>
           </span>
         )}
 
@@ -51,9 +51,7 @@ export function FeaturedCollaboratorCard({ collaborator, onViewProfile }: Featur
           </div>
           <div className="flex flex-col items-center gap-1 py-3 border-x border-gray-100">
             <span className="text-xl font-bold text-[#F97316]">
-              {collaborator.songPresencePercentage > 0
-                ? `${(collaborator.songPresencePercentage * 100).toFixed(1)}%`
-                : "—"}
+              {(collaborator.songPresencePercentage)  ? `${collaborator.songPresencePercentage}` : "—"}%
             </span>
             <span className="text-[10px] text-[#6B7280]">Split avg</span>
           </div>

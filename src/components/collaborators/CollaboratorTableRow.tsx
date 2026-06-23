@@ -1,5 +1,5 @@
 import { MoreHorizontal } from "lucide-react";
-import { getStatusBadge} from "@/utils/collaborators.utils";
+import { getStatusBadge } from "@/utils/collaborators.utils";
 import type { Collaborator } from "@/types";
 
 interface CollaboratorTableRowProps {
@@ -52,9 +52,10 @@ export function CollaboratorTableRow({
         {collaborator.songs}
       </td>
       <td className="px-3 py-4 text-[13px] text-center font-semibold text-[#F97316]">
-        {collaborator.songPresencePercentage > 0
-          ? `${(collaborator.songPresencePercentage * 100).toFixed(1)}%`
+        {collaborator.songPresencePercentage
+          ? `${collaborator.songPresencePercentage}`
           : "—"}
+        %
       </td>
       <td className="px-3 py-4 text-center">
         {collaborator.roles && collaborator.roles.length > 0 ? (
@@ -73,7 +74,7 @@ export function CollaboratorTableRow({
         )}
       </td>
       <td className="px-3 py-4 text-[13px] text-center font-semibold text-green-500">
-        {(collaborator.paid)}
+        {collaborator.paid}
       </td>
       <td className="px-3 py-4">
         <span

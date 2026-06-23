@@ -1,4 +1,5 @@
-import { Music as MusicIcon, Search, SlidersHorizontal } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Music as MusicIcon, Search, SlidersHorizontal, AlertCircle } from "lucide-react";
 import UploadModal from "./components/UploadModal";
 import AlbumOwnerSplitModal from "./album/components/AlbumOwnerSplitModal";
 import Loading from "@/components/loading/loading";
@@ -7,34 +8,69 @@ import { SongDetailsModal } from "@/components/music/SongDetailsModal";
 import { MusicTable } from "@/components/music/MusicTable";
 import { MusicMobileList } from "@/components/music/MusicMobileList";
 import { useMusicLibrary } from "@/hooks/useMusicLibrary";
+import songService from "@/services/songs";
 
 export default function Music() {
+  const [songsWithoutSplits, setSongsWithoutSplits] = useState<number | null>(null);
+
+  useEffect(() => {
+    songService
+      .filterSongs({ hasSplits: false, page: 1, limit: 1 })
+      .then((res) => {
+        const total =
+          res?.data?.pagination?.total ??
+          res?.pagination?.total ??
+          res?.data?.total ??
+          null;
+        setSongsWithoutSplits(total);
+      })
+      .catch(() => setSongsWithoutSplits(null));
+  }, []);
+
   const {
-    mode, setMode,
+    mode,
+    setMode,
     setPage,
-    limit, setLimit,
-    isModalOpen, setIsModalOpen,
-    searchQuery, setSearchQuery,
+    limit,
+    setLimit,
+    isModalOpen,
+    setIsModalOpen,
+    searchQuery,
+    setSearchQuery,
     isAlbumSearching,
-    isOwnerSplitModalOpen, setIsOwnerSplitModalOpen,
-    selectedAlbum, setSelectedAlbum,
+    isOwnerSplitModalOpen,
+    setIsOwnerSplitModalOpen,
+    selectedAlbum,
+    setSelectedAlbum,
     isSongDetailsOpen,
     selectedSong,
     selectedSongDetails,
     isSongDetailsLoading,
     songDetailsError,
-    sortBy, setSortBy,
-    splitFilter, setSplitFilter,
-    artistFilter, setArtistFilter,
-    isrcFilter, setIsrcFilter,
-    upcFilter, setUpcFilter,
-    countryFilter, setCountryFilter,
-    dateFrom, setDateFrom,
-    dateTo, setDateTo,
-    percentageMin, setPercentageMin,
-    percentageMax, setPercentageMax,
-    groupAlbumsByTrackCount, setGroupAlbumsByTrackCount,
-    showFilterPanel, setShowFilterPanel,
+    sortBy,
+    setSortBy,
+    splitFilter,
+    setSplitFilter,
+    artistFilter,
+    setArtistFilter,
+    isrcFilter,
+    setIsrcFilter,
+    upcFilter,
+    setUpcFilter,
+    countryFilter,
+    setCountryFilter,
+    dateFrom,
+    setDateFrom,
+    dateTo,
+    setDateTo,
+    percentageMin,
+    setPercentageMin,
+    percentageMax,
+    setPercentageMax,
+    groupAlbumsByTrackCount,
+    setGroupAlbumsByTrackCount,
+    showFilterPanel,
+    setShowFilterPanel,
     loading,
     filteredSongs,
     displayAlbums,
@@ -67,9 +103,28 @@ export default function Music() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Music Library</h1>
-            <p className="text-sm text-gray-500 mt-1">Manage your songs and albums</p>
+            <p className="text-sm text-gray-500 mt-1">
+              Manage your songs and albums
+            </p>
           </div>
         </div>
+
+        {/* Stat card — songs without splits */}
+        {songsWithoutSplits !== null && songsWithoutSplits > 0 && (
+          <div className="mb-6">
+            <div className="inline-flex items-center gap-4 px-5 py-4 bg-white border border-amber-200 rounded-2xl shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
+                <AlertCircle size={20} className="text-amber-500" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900 leading-none">{songsWithoutSplits}</p>
+                <p className="text-sm text-gray-500 mt-0.5">
+                  {songsWithoutSplits === 1 ? "canción sin" : "canciones sin"} splits asignados
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Controls */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
@@ -86,15 +141,23 @@ export default function Music() {
           </div>
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <div className="relative flex-1 sm:w-72">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                size={16}
+              />
               <input
                 type="text"
-                placeholder={mode === "songs" ? "Search by title, artist, ISRC..." : "Search by title, artist, UPC..."}
+                placeholder={
+                  mode === "songs"
+                    ? "Search by title, artist, ISRC..."
+                    : "Search by title, artist, UPC..."
+                }
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-9 pr-10 py-2.5 bg-white border border-gray-200 rounded-[10px] text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
               />
-              {(isSearching && mode === "songs") || (isAlbumSearching && mode === "albums") ? (
+              {(isSearching && mode === "songs") ||
+              (isAlbumSearching && mode === "albums") ? (
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500" />
                 </div>
@@ -124,7 +187,9 @@ export default function Music() {
               No {mode === "songs" ? "songs" : "albums"} found
             </h3>
             <p className="text-sm text-gray-400 mb-6">
-              {searchQuery ? `No results for "${searchQuery}". Try different terms.` : "Start by uploading your first track"}
+              {searchQuery
+                ? `No results for "${searchQuery}". Try different terms.`
+                : "Start by uploading your first track"}
             </p>
             {!searchQuery && (
               <button
@@ -167,7 +232,11 @@ export default function Music() {
               limit={limit}
               onLimitChange={setLimit}
               onPrevPage={() => setPage((p) => Math.max(1, p - 1))}
-              onNextPage={() => setPage((p) => knownTotalPages ? Math.min(knownTotalPages, p + 1) : p + 1)}
+              onNextPage={() =>
+                setPage((p) =>
+                  knownTotalPages ? Math.min(knownTotalPages, p + 1) : p + 1,
+                )
+              }
             />
           </>
         )}
@@ -193,7 +262,10 @@ export default function Music() {
       {selectedAlbum && (
         <AlbumOwnerSplitModal
           isOpen={isOwnerSplitModalOpen}
-          onClose={() => { setIsOwnerSplitModalOpen(false); setSelectedAlbum(null); }}
+          onClose={() => {
+            setIsOwnerSplitModalOpen(false);
+            setSelectedAlbum(null);
+          }}
           album={selectedAlbum}
           onSplitsCreated={refreshAlbums}
         />
