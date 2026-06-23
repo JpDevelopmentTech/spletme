@@ -162,11 +162,11 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
     setHistory([]);
     setHistoryLoading(true);
     songSplitsService
-      .getUserSplitHistory(collaborator.id)
+      .getSplitHistoryBySong(selectedSong.songId)
       .then((rows) => setHistory((rows ?? []) as unknown as SplitHistoryEntry[]))
       .catch(() => setHistory([]))
       .finally(() => setHistoryLoading(false));
-  }, [selectedSong]);
+  }, [selectedSong?.songId]);
 
   const totalStreams = detail?.songs.reduce((s, x) => s + (x.totalStreams ?? 0), 0) ?? 0;
   const totalNet     = detail?.songs.reduce((s, x) => s + (x.totalNetIncome ?? 0), 0) ?? 0;
@@ -571,28 +571,16 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
                     </div>
                   ) : (
                     <div className="flex flex-col gap-2">
-                      {[
-                        ...history.filter((e) => e.songId === selectedSong?.songId),
-                        ...history.filter((e) => e.songId !== selectedSong?.songId),
-                      ].map((entry) => {
-                        const style      = ACTION_STYLES[entry.action] ?? ACTION_STYLES.update;
-                        const pct        = entry.percentage;
-                        const isThisSong = entry.songId === selectedSong?.songId;
+                      {history.map((entry) => {
+                        const style = ACTION_STYLES[entry.action] ?? ACTION_STYLES.update;
                         return (
                           <div key={entry._id} className="flex flex-col gap-1.5 px-3 py-2.5 bg-[#F9FAFB] rounded-xl border border-gray-100">
                             <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-1.5">
-                                <span className={`text-[10px] font-bold px-2 h-5 rounded-full flex items-center ${style.cls}`}>
-                                  {style.label}
-                                </span>
-                                {isThisSong && (
-                                  <div className="w-4 h-4 bg-[#F97316] rounded-full flex items-center justify-center" title={selectedSong?.trackTitle}>
-                                    <Music className="w-2.5 h-2.5 text-white" />
-                                  </div>
-                                )}
-                              </div>
-                              {pct !== undefined && (
-                                <span className="text-xs font-bold text-[#F97316]">{pct}%</span>
+                              <span className={`text-[10px] font-bold px-2 h-5 rounded-full flex items-center ${style.cls}`}>
+                                {style.label}
+                              </span>
+                              {entry.percentage !== undefined && (
+                                <span className="text-xs font-bold text-[#F97316]">{entry.percentage}%</span>
                               )}
                             </div>
                             <div className="flex flex-col gap-0.5 text-[10px] text-[#6B7280]">
