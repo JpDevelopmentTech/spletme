@@ -7,10 +7,17 @@ import type {
   CreateDistributorPayload,
 } from '../types/distributor.types';
 
+export interface RejectedSong {
+  isrc: string;
+  trackTitle: string;
+  artistName: string;
+  upc: string;
+}
+
 export interface UploadSongsResult {
   uploadId: string;
   songsProcessed: number;
-  rejected: Array<{ isrc: string; existingOwnerId: string }>;
+  rejected: RejectedSong[];
   rejectedCount: number;
 }
 

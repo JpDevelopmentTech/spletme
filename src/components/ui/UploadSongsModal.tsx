@@ -376,6 +376,31 @@ function UploadProgressView({ phase, progress, result, fileName, quarter, year, 
               </div>
             )}
           </div>
+
+          {result?.rejected && result.rejected.length > 0 && (
+            <div className="flex flex-col gap-2 rounded-xl bg-amber-50 border border-amber-100 p-3">
+              <p className="text-xs font-semibold text-amber-700 flex items-center gap-1.5">
+                <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                Estas canciones ya tienen propietario y no se subieron
+              </p>
+              <ul className="flex flex-col gap-1.5 max-h-40 overflow-y-auto">
+                {result.rejected.map((song) => (
+                  <li
+                    key={song.isrc}
+                    className="flex flex-col rounded-lg bg-white border border-amber-100 px-2.5 py-1.5"
+                  >
+                    <span className="text-xs font-medium text-[#111827] truncate">
+                      {song.trackTitle || song.isrc}
+                    </span>
+                    <span className="text-[11px] text-[#9CA3AF] truncate">
+                      {[song.artistName, song.isrc].filter(Boolean).join(' · ')}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <button
             type="button"
             onClick={onClose}
