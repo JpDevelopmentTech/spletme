@@ -14,7 +14,7 @@ import {
   Music,
 } from "lucide-react";
 import { User as UserType } from "../../../../../models/user";
-import WalletService from "@/services/wallet";
+import PaymentsService from "@/services/payments";
 import { useWallet } from "@/hooks/useWallet";
 import { Link } from "react-router-dom";
 import LocalStorageService from "@/services/localstorage";
@@ -101,7 +101,7 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
   } | null>(null);
   const [toasts, setToasts] = useState<ValidationToastItem[]>([]);
 
-  const { wallet, hasWallet } = useWallet();
+  const { hasWallet } = useWallet();
   const currentUser = LocalStorageService.getItem("user");
   const rawUserType = String(
     currentUser?.role ||
@@ -180,11 +180,11 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
 
   const paymentToCollaborator = async () => {
     if (!paymentData) return;
-    const response = await WalletService.payCollaborator({
-      collaboratorId: paymentData.collaboratorId,
-      songId: paymentData.songId,
-      amount: paymentData.amount,
-    });
+    // Cobro ACH dirigido a un solo colaborador (su pendiente) y payout vía Wise.
+    const response = await PaymentsService.payRoyalties(
+      paymentData.songId,
+      paymentData.collaboratorId,
+    );
     if (response.error) {
       throw new Error(response.message || "Error al procesar el pago");
     }
@@ -244,7 +244,6 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
         collaboratorName={paymentData?.collaboratorName || ""}
         collaboratorEmail={paymentData?.collaboratorEmail || ""}
         amount={paymentData?.amount || 0}
-        walletBalance={wallet?.data?.accounts?.[0]?.balance || 0}
         currency="USD"
       />
 
@@ -421,11 +420,11 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
                         Historial
                       </button>
 
-                      {hasWallet ? (
+                      {Number(collaborator.amountToPay) > 0 ? (
                         <button
                           onClick={() =>
                             openPaymentConfirmation(
-                              collaborator.id,
+                              String((collaborator as any)._id || collaborator.id || ""),
                               collaborator.name,
                               collaborator.email,
                               Number(collaborator.amountToPay) || 0,
@@ -438,12 +437,9 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
                           Pagar
                         </button>
                       ) : (
-                        <Link to="/panel/home">
-                          <button className="flex items-center gap-1 px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-medium rounded-lg transition-colors">
-                            <Wallet className="w-3.5 h-3.5" />
-                            Wallet
-                          </button>
-                        </Link>
+                        <span className="px-2.5 py-1.5 text-xs font-medium text-gray-400">
+                          Pagado
+                        </span>
                       )}
                     </div>
                   </td>

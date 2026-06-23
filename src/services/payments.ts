@@ -151,10 +151,11 @@ class PaymentsService {
    * colaboradores vía Wise. El monto lo calcula el backend a partir de los splits.
    */
   async payRoyalties(
-    songId: string
+    songId: string,
+    collaboratorId?: string
   ): Promise<{ error: boolean; data?: unknown; message?: string }> {
     try {
-      const response = await apiClient.post("/payments/pay", { songId });
+      const response = await apiClient.post("/payments/pay", { songId, collaboratorId });
       return response.data;
     } catch (error) {
       return { error: true, message: extractErrorMessage(error, "Error al procesar el pago") };

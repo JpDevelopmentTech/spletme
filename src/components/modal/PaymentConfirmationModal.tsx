@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, DollarSign, User, Wallet, AlertTriangle, CheckCircle } from "lucide-react";
+import { X, DollarSign, User, AlertTriangle, Landmark } from "lucide-react";
 import { useState } from "react";
 
 interface PaymentConfirmationModalProps {
@@ -9,10 +9,14 @@ interface PaymentConfirmationModalProps {
   collaboratorName: string;
   collaboratorEmail: string;
   amount: number;
-  walletBalance: number;
   currency?: string;
 }
 
+/**
+ * Modal de confirmación para pagar a un colaborador individual. El cobro se hace
+ * por débito ACH a la cuenta del owner y el reparto al colaborador vía Wise; no
+ * depende de ningún balance de wallet previo.
+ */
 export default function PaymentConfirmationModal({
   isOpen,
   onClose,
@@ -20,24 +24,14 @@ export default function PaymentConfirmationModal({
   collaboratorName,
   collaboratorEmail,
   amount,
-  walletBalance,
   currency = "USD",
 }: PaymentConfirmationModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const hasInsufficientFunds = walletBalance < amount;
-  const remainingBalance = walletBalance - amount;
-
   const handleConfirm = async () => {
-    if (hasInsufficientFunds) {
-      setError("Fondos insuficientes en tu wallet");
-      return;
-    }
-
     setLoading(true);
     setError(null);
-    
     try {
       await onConfirm();
       onClose();
@@ -53,7 +47,6 @@ export default function PaymentConfirmationModal({
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -62,7 +55,6 @@ export default function PaymentConfirmationModal({
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
           />
 
-          {/* Modal */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -77,12 +69,8 @@ export default function PaymentConfirmationModal({
                     <DollarSign className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold text-white">
-                      Confirmar Pago
-                    </h2>
-                    <p className="text-blue-100 text-sm">
-                      Revisa los detalles antes de continuar
-                    </p>
+                    <h2 className="text-2xl font-bold text-white">Confirmar Pago</h2>
+                    <p className="text-blue-100 text-sm">Revisa los detalles antes de continuar</p>
                   </div>
                 </div>
                 <button
@@ -97,7 +85,6 @@ export default function PaymentConfirmationModal({
 
             {/* Content */}
             <div className="p-6 space-y-6">
-              {/* Error Message */}
               {error && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
@@ -106,30 +93,7 @@ export default function PaymentConfirmationModal({
                 >
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
-                    <p className="text-red-600 dark:text-red-400 text-sm font-medium">
-                      {error}
-                    </p>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Insufficient Funds Warning */}
-              {hasInsufficientFunds && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-300 dark:border-amber-700 rounded-xl p-4"
-                >
-                  <div className="flex items-start gap-3">
-                    <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-amber-900 dark:text-amber-200 text-sm font-semibold mb-1">
-                        Fondos Insuficientes
-                      </p>
-                      <p className="text-amber-800 dark:text-amber-300 text-sm">
-                        No tienes suficiente balance en tu wallet para realizar este pago.
-                      </p>
-                    </div>
+                    <p className="text-red-600 dark:text-red-400 text-sm font-medium">{error}</p>
                   </div>
                 </motion.div>
               )}
@@ -147,9 +111,7 @@ export default function PaymentConfirmationModal({
                     <p className="text-base font-bold text-gray-900 dark:text-white">
                       {collaboratorName}
                     </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {collaboratorEmail}
-                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{collaboratorEmail}</p>
                   </div>
                 </div>
               </div>
@@ -161,43 +123,19 @@ export default function PaymentConfirmationModal({
                 </p>
                 <div className="flex items-baseline gap-2">
                   <span className="text-3xl font-bold text-green-600 dark:text-green-400">
-                    ${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    ${amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                   <span className="text-sm text-gray-600 dark:text-gray-400">{currency}</span>
                 </div>
               </div>
 
-              {/* Wallet Balance */}
-              <div className="space-y-3">
-                <div className="bg-white dark:bg-gray-700 rounded-xl p-4 border border-gray-200 dark:border-gray-600">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <Wallet className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                        Balance Actual
-                      </span>
-                    </div>
-                    <span className="text-lg font-bold text-gray-900 dark:text-white">
-                      ${walletBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </span>
-                  </div>
-                </div>
-
-                {!hasInsufficientFunds && (
-                  <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                        <span className="text-sm text-blue-900 dark:text-blue-200 font-medium">
-                          Balance Después del Pago
-                        </span>
-                      </div>
-                      <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                        ${remainingBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </span>
-                    </div>
-                  </div>
-                )}
+              {/* Info del cobro */}
+              <div className="flex items-start gap-2 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-4">
+                <Landmark className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-blue-900 dark:text-blue-200">
+                  Se cobrará este monto desde tu cuenta bancaria por débito ACH y se enviará al
+                  colaborador vía Wise. El ACH puede tardar unos días en liquidar.
+                </p>
               </div>
 
               {/* Buttons */}
@@ -215,12 +153,12 @@ export default function PaymentConfirmationModal({
                 <motion.button
                   type="button"
                   onClick={handleConfirm}
-                  disabled={loading || hasInsufficientFunds}
-                  whileHover={{ scale: hasInsufficientFunds ? 1 : 1.02 }}
-                  whileTap={{ scale: hasInsufficientFunds ? 1 : 0.98 }}
+                  disabled={loading}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   className="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? "Procesando..." : hasInsufficientFunds ? "Fondos Insuficientes" : "Confirmar Pago"}
+                  {loading ? "Procesando..." : "Confirmar Pago"}
                 </motion.button>
               </div>
             </div>
@@ -230,4 +168,3 @@ export default function PaymentConfirmationModal({
     </AnimatePresence>
   );
 }
-
