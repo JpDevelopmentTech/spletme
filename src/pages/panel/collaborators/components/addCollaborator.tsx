@@ -22,12 +22,11 @@ export default function AddCollaborator({ compact = false, isOwner = true }: { c
     };
 
     const response = await SongService.addCollaborator(requestPayload);
-    
-    if (response !== null) {
-      // Reset form and close modal
+
+    if (response.success) {
       resetForm();
-    }else{
-      alert("Error al agregar el colaborador");
+    } else {
+      alert(response.message);
     }
   };
 

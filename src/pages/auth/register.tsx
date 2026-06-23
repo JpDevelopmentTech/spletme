@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, User, AtSign } from "lucide-react";
 import { AuthService } from "../../services/auth";
-import { OnboardingService } from "../../services/onboarding";
 
 const FEATURES = [
   "Rastrea streams en todas las plataformas",
@@ -48,12 +47,6 @@ export default function Register() {
       setErrorMessage("No se pudo crear la cuenta. Intenta nuevamente.");
       setIsSubmitting(false);
       return;
-    }
-
-    try {
-      await OnboardingService.requestAccountVerificationCode(formData.email);
-    } catch {
-      // el backend envía el código al registrarse
     }
 
     setSuccessMessage("¡Cuenta creada! Te enviamos un código de verificación.");

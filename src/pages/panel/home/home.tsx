@@ -37,9 +37,11 @@ export default function Home() {
     <>
 
 
+
+
       <div className="min-h-screen bg-[#F7F8FA]">
         <div className="px-6 lg:px-10 py-8 flex flex-col gap-7">
-          <div data-tour="hero-header" className="flex flex-col gap-1.5">
+          <div  className="flex flex-col gap-1.5">
             <div className="flex flex-col gap-1">
               <h1 className="text-2xl font-bold text-[#111827]">
                 Bienvenido de vuelta, {user?.name}
@@ -51,7 +53,7 @@ export default function Home() {
             <div className="w-10 h-0.5 rounded-full bg-[#F97316]" />
           </div>
 
-          <div className="grid grid-cols-12 gap-4" data-tour="stats-cards">
+          <div className="grid grid-cols-12 gap-4" >
             <DashboardStatsCards
               totalStreams={summary.totalStreams}
               totalNetIncome={summary.totalNetIncome}
@@ -82,8 +84,7 @@ export default function Home() {
 
             <div
               className="flex-1 bg-white rounded-xl p-6 border border-gray-200 col-span-9"
-              data-tour="top-songs"
-            >
+                          >
               <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-base font-semibold text-gray-900">Canciones Principales</h2>

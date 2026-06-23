@@ -17,7 +17,7 @@ export interface Collaborator {
   songPresencePercentage: number;
   paid: number;
   status: CollaboratorStatus;
-  role?: string;
+  roles?: string[];
   recentSongs?: RecentSong[];
 }
 

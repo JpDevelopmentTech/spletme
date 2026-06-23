@@ -5,7 +5,13 @@ export type SplitRole = "owner" | "collaborator";
 /** Referencia a usuario que el backend puede devolver poblada o como id. */
 export type SplitUserRef =
   | string
-  | { _id: string; id?: string; name?: string; email?: string; username?: string };
+  | {
+      _id: string;
+      id?: string;
+      name?: string;
+      email?: string;
+      username?: string;
+    };
 
 export interface SongSplit {
   _id: string;
@@ -56,4 +62,28 @@ export interface SongSplitDistribution {
   collaborators: SplitDistributionEntry[];
   songTotalNetIncome: number;
   collaboratorsPool: number;
+}
+
+export interface SplitHistoryItem {
+  _id: string;
+  action: "create" | "update" | "delete";
+  isDeleted: boolean;
+  percentage: number;
+  countriesType: string;
+  selectedCountries: string[];
+  platformsType: string;
+  selectedPlatforms: string[];
+  version: number;
+  role: string;
+  userId: string;
+  songId: string;
+  splitId: string | null;
+  createdAt: string;
+  updatedAt: string;
+  updatedBy: { _id: string; username: string; name: string; email: string };
+  conditions: [];
+}
+
+export interface SplitHistoryResponse {
+  data: SplitHistoryItem[];
 }

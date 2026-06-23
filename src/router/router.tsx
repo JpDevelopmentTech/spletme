@@ -1,4 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
+import GuardedRoute, { PublicOnlyRoute } from "../guards/auth";
 import Login from "../pages/auth/login";
 import Panel from "../pages/panel/panel";
 import Home from "../pages/panel/home/home";
@@ -35,11 +36,11 @@ const routes = [
   },
   {
     path: "/auth/email-login",
-    element: <EmailLogin />
+    element: <PublicOnlyRoute><EmailLogin /></PublicOnlyRoute>
   },
   {
     path: "/auth/register",
-    element: <Register />
+    element: <PublicOnlyRoute><Register /></PublicOnlyRoute>
   },
   {
     path: "/auth/password-recovery",
@@ -64,7 +65,7 @@ const routes = [
 
   {
     path: "/panel",
-    element: <Panel />,
+    element: <GuardedRoute><Panel /></GuardedRoute>,
     children: [
       {
         path: "stripe/:status",

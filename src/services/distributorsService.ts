@@ -7,6 +7,13 @@ import type {
   CreateDistributorPayload,
 } from '../types/distributor.types';
 
+export interface UploadSongsResult {
+  uploadId: string;
+  songsProcessed: number;
+  rejected: Array<{ isrc: string; existingOwnerId: string }>;
+  rejectedCount: number;
+}
+
 export const distributorsService = {
   getAll(): Promise<Distributor[]> {
     return apiClient.get('/distributors').then((r) => r.data.data);
@@ -36,13 +43,9 @@ export const distributorsService = {
     distributorId: string,
     file: File,
     quarter: string,
-    year: number
-  ): Promise<{
-    uploadId: string;
-    songsProcessed: number;
-    rejected: Array<{ isrc: string; existingOwnerId: string }>;
-    rejectedCount: number;
-  }> {
+    year: number,
+    onUploadProgress?: (percent: number) => void
+  ): Promise<UploadSongsResult> {
     const form = new FormData();
     form.append('csvFile', file);
     form.append('quarter', quarter);
@@ -50,6 +53,12 @@ export const distributorsService = {
     return apiClient
       .post(`/distributors/${distributorId}/upload`, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (e) => {
+          if (!onUploadProgress) return;
+          const total = e.total ?? 0;
+          const percent = total > 0 ? Math.round((e.loaded / total) * 100) : 0;
+          onUploadProgress(percent);
+        },
       })
       .then((r) => r.data.data);
   },

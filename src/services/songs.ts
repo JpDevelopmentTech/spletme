@@ -79,11 +79,13 @@ export const validatePayAllPayment = ({
   isStripeConnected,
   totalEgresos = 0,
   totalIngresos = 0,
+  balanceNet,
 }: {
   song: Record<string, unknown> | null;
   isStripeConnected: boolean;
   totalEgresos?: number;
   totalIngresos?: number;
+  balanceNet?: number;
 }): PaymentValidationResult => {
   const issues: PaymentValidationIssue[] = [];
   const collaboratorsResult: PaymentValidationCollaboratorResult[] = [];
@@ -95,8 +97,16 @@ export const validatePayAllPayment = ({
     return { canProceed: false, totalCollaborators: 0, payableCollaborators: 0, issues, collaborators: [] };
   }
 
-  if (totalEgresos > 0 && totalIngresos > 0 && totalEgresos > totalIngresos) {
-    issues.push({ code: "costs-exceed-income", severity: "error", message: `Los costos extraordinarios ($${totalEgresos.toFixed(2)}) superan las ganancias ($${totalIngresos.toFixed(2)}). No puedes proceder con el pago.` });
+  // El balance neto debe ser positivo para habilitar el pago
+  const netBalance = balanceNet ?? (totalIngresos - totalEgresos);
+  const incomeExceedsCosts = netBalance > 0;
+
+  if (!incomeExceedsCosts) {
+    issues.push({
+      code: "income-not-exceeds-costs",
+      severity: "error",
+      message: `Los ingresos no superan los costos.`,
+    });
   }
 
   if (!isStripeConnected) {
@@ -112,6 +122,17 @@ export const validatePayAllPayment = ({
     const percentage = getCollaboratorPercentage(collaborator);
     const amountToPay = getCollaboratorAmountToPay(collaborator);
     const walletActive = hasActiveWallet(collaborator);
+
+    if (!incomeExceedsCosts) {
+      const issue = {
+        code: "income-not-exceeds-costs",
+        severity: "error" as const,
+        message: `Los ingresos no superan los costos.`,
+        collaboratorName: name,
+        collaboratorEmail: email,
+      };
+      collaboratorIssues.push(issue);
+    }
 
     if (percentage <= 0) {
       const issue = {
@@ -147,7 +168,7 @@ export const validatePayAllPayment = ({
       collaboratorIssues.push(issue);
     }
 
-    if (percentage > 0 && amountToPay > 0 && walletActive) {
+    if (incomeExceedsCosts && percentage > 0 && amountToPay > 0 && walletActive) {
       payableCollaborators++;
       const issue = {
         code: "all-valid",
@@ -164,7 +185,7 @@ export const validatePayAllPayment = ({
       id: String(collaborator?.id ?? collaborator?._id ?? email ?? name ?? idx),
       name,
       email,
-      canPay: percentage > 0 && amountToPay > 0 && walletActive,
+      canPay: incomeExceedsCosts && percentage > 0 && amountToPay > 0 && walletActive,
       reasons: collaboratorIssues.filter((issue) => issue.code !== "all-valid"),
     });
   });
@@ -213,15 +234,23 @@ class SongService {
     songId: string;
     collaboratorEmail?: string;
     collaboratorId?: string;
-  }) {
+  }): Promise<{ success: true; data: unknown } | { success: false; message: string }> {
     try {
       const response = await apiClient.post(`${this.BASE}/${songId}/add-collaborator`, {
         collaboratorEmail,
         collaboratorId,
       });
-      return response.data;
-    } catch {
-      return null;
+      return { success: true, data: response.data };
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { message?: string }; status?: number } };
+      const serverMsg = axiosErr?.response?.data?.message;
+      const status = axiosErr?.response?.status;
+      const message =
+        serverMsg ??
+        (status === 401 || status === 403
+          ? "No tienes permiso para agregar colaboradores a esta canción."
+          : "No se pudo enviar la invitación. Intenta de nuevo.");
+      return { success: false, message };
     }
   }
 
@@ -251,6 +280,25 @@ class SongService {
       const response = await apiClient.get(`${this.BASE}/by-params`, {
         params: { country, platform, startDate, endDate },
       });
+      return response.data;
+    } catch {
+      return null;
+    }
+  }
+
+  /** Filtra canciones en el servidor por splits, fechas, país y porcentaje */
+  async filterSongs(params: {
+    hasSplits?: boolean;
+    dateFrom?: string;
+    dateTo?: string;
+    country?: string;
+    percentageMin?: number;
+    percentageMax?: number;
+    page?: number;
+    limit?: number;
+  }) {
+    try {
+      const response = await apiClient.get(`${this.BASE}/filter`, { params });
       return response.data;
     } catch {
       return null;

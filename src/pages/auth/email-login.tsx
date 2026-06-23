@@ -14,7 +14,6 @@ const FEATURES = [
 export default function EmailLogin() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const TOUR_STORAGE_KEY = "dashboard-tour-completed";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -32,28 +31,14 @@ export default function EmailLogin() {
         const serverStep = Number(serverUser?.onboardingData?.currentStep || 0);
         const onboardingCompleted =
           Boolean(serverUser.onboardingCompleted) || serverStep >= 4;
-        const dashboardTourCompleted =
-          typeof serverUser?.dashboardTourCompleted === "boolean"
-            ? serverUser.dashboardTourCompleted
-            : typeof serverUser?.platformTourCompleted === "boolean"
-              ? serverUser.platformTourCompleted
-              : typeof serverUser?.tourCompleted === "boolean"
-                ? serverUser.tourCompleted
-                : false;
         const userToStore = {
           ...serverUser,
           onboardingCompleted,
-          dashboardTourCompleted,
         };
 
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("user", JSON.stringify(userToStore));
         localStorage.setItem("isAuth", "true");
-        if (dashboardTourCompleted) {
-          localStorage.setItem(TOUR_STORAGE_KEY, "true");
-        } else {
-          localStorage.removeItem(TOUR_STORAGE_KEY);
-        }
         dispatch(setAuth({ isAuth: "true", user: userToStore }));
 
         if (userToStore.onboardingCompleted) {
