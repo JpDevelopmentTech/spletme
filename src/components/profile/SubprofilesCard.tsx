@@ -1,7 +1,9 @@
-import { UserPlus, UserMinus, RefreshCcw, X, AlertCircle, CheckCircle2, Loader2, Check } from "lucide-react";
+import { useEffect, useState } from "react";
+import { UserPlus, UserMinus, RefreshCcw, X, AlertCircle, Loader2, Check, CheckCircle2 } from "lucide-react";
 import { getInitials, inputCls } from "@/utils/profile.utils";
 import type { SubprofileItem } from "@/types/profile.types";
 import type { RegisterSubuserSchema } from "@/types";
+import { SubuserSuccessModal } from "@/components/modal/SubuserSuccessModal";
 
 interface SubprofilesCardProps {
   subprofiles: SubprofileItem[];
@@ -34,8 +36,14 @@ export function SubprofilesCard({
   onReload, onToggleCreate, onCreateFormChange, onCreateSubmit, onConfirmUnlink, onCancelUnlink, onUnlink,
 }: SubprofilesCardProps) {
   const hasBorder = subprofiles.length > 0 || isCreating;
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  useEffect(() => {
+    if (createSuccess) setShowSuccessModal(true);
+  }, [createSuccess]);
 
   return (
+    <>
     <div className="overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white">
       {/* Header */}
       <div className="flex items-center gap-4 px-5 py-4" style={{ borderBottom: hasBorder ? "1px solid #E5E7EB" : undefined }}>
@@ -84,12 +92,6 @@ export function SubprofilesCard({
             <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm text-red-600 mb-3"
               style={{ backgroundColor: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)" }}>
               <AlertCircle size={14} className="flex-shrink-0" /> {createError}
-            </div>
-          )}
-          {createSuccess && (
-            <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm text-green-700 mb-3"
-              style={{ backgroundColor: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.2)" }}>
-              <CheckCircle2 size={14} className="flex-shrink-0" /> Subperfil creado. Se envió un código de verificación al correo.
             </div>
           )}
           <div className="grid grid-cols-2 gap-3 mb-3">
@@ -186,5 +188,11 @@ export function SubprofilesCard({
         </div>
       )}
     </div>
+
+    <SubuserSuccessModal
+      isOpen={showSuccessModal}
+      onClose={() => setShowSuccessModal(false)}
+    />
+    </>
   );
 }

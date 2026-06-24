@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check } from "lucide-react";
+import { Check, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch } from "react-redux";
 import ProfessionStep from "./steps/ProfessionStep";
@@ -9,6 +9,7 @@ import VerificationStep from "./steps/VerificationStep";
 import CompletionStep from "./steps/CompletionStep";
 import { OnboardingService, OnboardingData } from "../../services/onboarding";
 import { setAuth } from "@/store/states/authSlice";
+import { AuthService } from "@/services/auth";
 
 const TOTAL_STEPS = 4;
 
@@ -194,12 +195,21 @@ const OnboardingContainer = () => {
           </div>
           <span className="text-[#111827] font-bold text-lg">SplitMe</span>
         </div>
-        <span
-          className="text-sm font-medium"
-          style={{ color: isLastStep ? "#22C55E" : "#9CA3AF" }}
-        >
-          Paso {currentStep} de {TOTAL_STEPS}
-        </span>
+        <div className="flex items-center gap-4">
+          <span
+            className="text-sm font-medium"
+            style={{ color: isLastStep ? "#22C55E" : "#9CA3AF" }}
+          >
+            Paso {currentStep} de {TOTAL_STEPS}
+          </span>
+          <button
+            onClick={() => AuthService.logout()}
+            className="flex items-center gap-1.5 text-sm font-medium text-gray-400 hover:text-gray-700 transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-100"
+          >
+            <LogOut size={15} />
+            <span>Cerrar sesión</span>
+          </button>
+        </div>
       </div>
 
       {/* Content */}

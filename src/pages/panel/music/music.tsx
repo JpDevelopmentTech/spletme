@@ -71,7 +71,7 @@ export default function Music() {
     setGroupAlbumsByTrackCount,
     showFilterPanel,
     setShowFilterPanel,
-    loading,
+    initialLoading,
     filteredSongs,
     displayAlbums,
     groupedAlbums,
@@ -94,7 +94,7 @@ export default function Music() {
     isSearching,
   } = useMusicLibrary();
 
-  if (loading && currentData.length === 0) return <Loading />;
+  if (initialLoading) return <Loading />;
 
   return (
     <div className="min-h-screen">

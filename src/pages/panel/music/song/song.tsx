@@ -418,7 +418,7 @@ export default function Song() {
         <div className="grid grid-cols-4 gap-4">
           {/* History of Splits */}
           <div className="bg-white border border-gray-200 rounded-xl overflow-hidden col-span-1 lg:col-span-2">
-            <Historyofsplits songId={id} />
+            <Historyofsplits songId={id} isOwner={isOwnerUser} />
           </div>
           {/* Extraordinary Costs */}
           <div className="bg-white border border-gray-200 rounded-xl overflow-hidden col-span-1 lg:col-span-2">

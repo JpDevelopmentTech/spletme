@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import type { ApexOptions } from "apexcharts";
 import UseFilterSongsData from "@/hooks/useFilterSongsData";
@@ -7,16 +7,68 @@ import { useWallet } from "@/hooks/useWallet";
 import SongService from "@/services/songs";
 import type { TopSong } from "@/types";
 
-const MONTH_WEIGHTS = [0.1, 0.12, 0.15, 0.18, 0.2, 0.25];
-const WEIGHTS_SUM = MONTH_WEIGHTS.reduce((acc, v) => acc + v, 0);
+interface DataPoint {
+  label: Date;
+  streams: number;
+  income: number;
+}
+
+const pad = (n: number) => String(n).padStart(2, "0");
+const fmtDate = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+interface PeriodSlice {
+  startDate: string;
+  endDate: string;
+  label: Date;
+}
+
+function buildPeriods(timeframe: string): PeriodSlice[] {
+  const now = new Date();
+  const periods: PeriodSlice[] = [];
+
+  if (timeframe === "7d") {
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+      periods.push({ startDate: fmtDate(d), endDate: fmtDate(d), label: d });
+    }
+  } else if (timeframe === "30d") {
+    for (let i = 3; i >= 0; i--) {
+      const endD = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i * 7);
+      const startD = new Date(endD.getFullYear(), endD.getMonth(), endD.getDate() - 6);
+      periods.push({ startDate: fmtDate(startD), endDate: fmtDate(endD), label: new Date(startD) });
+    }
+  } else if (timeframe === "90d") {
+    for (let i = 2; i >= 0; i--) {
+      const start = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const end = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+      periods.push({ startDate: fmtDate(start), endDate: fmtDate(end), label: new Date(start) });
+    }
+  } else {
+    // 1y — 12 months
+    for (let i = 11; i >= 0; i--) {
+      const start = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const end = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+      periods.push({ startDate: fmtDate(start), endDate: fmtDate(end), label: new Date(start) });
+    }
+  }
+
+  return periods;
+}
+
+function xaxisLabel(timeframe: string): string {
+  if (timeframe === "7d") return "dd MMM";
+  if (timeframe === "30d") return "dd MMM";
+  return "MMM yyyy";
+}
 
 /**
  * Centraliza el estado y la lógica de datos del dashboard principal.
  * Expone datos listos para consumir por los componentes de presentación.
  */
 export function useHomeDashboard() {
-  const [selectedTimeframe, setSelectedTimeframe] = useState("7d");
+  const [selectedTimeframe, setSelectedTimeframe] = useState("90d");
   const [topSongs, setTopSongs] = useState<TopSong[]>([]);
+  const [dataPoints, setDataPoints] = useState<DataPoint[]>([]);
 
   const { totalAmount } = useSplitPayments();
   const { summary } = UseFilterSongsData();
@@ -37,33 +89,48 @@ export function useHomeDashboard() {
     window.location.reload();
   }, []);
 
-  const monthlyCategories = useMemo(() => {
-    const now = new Date();
-    return Array.from({ length: 6 }, (_, i) => {
-      const d = new Date(now);
-      d.setDate(1);
-      d.setHours(0, 0, 0, 0);
-      d.setMonth(now.getMonth() - (5 - i));
-      return d.toISOString();
-    });
+  const fetchData = useCallback(async (timeframe: string) => {
+    const periods = buildPeriods(timeframe);
+    const results = await Promise.all(
+      periods.map(async ({ startDate, endDate, label }) => {
+        try {
+          const res = await SongService.getSongsByFilter("", "", startDate, endDate);
+          return {
+            label,
+            streams: res?.data?.summary?.totalStreams ?? 0,
+            income: res?.data?.summary?.totalNetIncome ?? 0,
+          };
+        } catch {
+          return { label, streams: 0, income: 0 };
+        }
+      })
+    );
+    setDataPoints(results);
   }, []);
+
+  useEffect(() => {
+    fetchData(selectedTimeframe);
+  }, [selectedTimeframe, fetchData]);
+
+  const xCategories = useMemo(
+    () => dataPoints.map((p) => p.label.toISOString()),
+    [dataPoints]
+  );
 
   const series = useMemo(
     () => [
       {
         name: "Streams",
         type: "area",
-        data: MONTH_WEIGHTS.map((w) => Math.round(((summary.totalStreams ?? 0) * w) / WEIGHTS_SUM)),
+        data: dataPoints.length > 0 ? dataPoints.map((p) => p.streams) : [],
       },
       {
         name: "Revenue",
         type: "area",
-        data: MONTH_WEIGHTS.map((w) =>
-          Number((((summary.totalNetIncome ?? 0) * w) / WEIGHTS_SUM).toFixed(2))
-        ),
+        data: dataPoints.length > 0 ? dataPoints.map((p) => Number(p.income.toFixed(2))) : [],
       },
     ],
-    [summary.totalStreams, summary.totalNetIncome]
+    [dataPoints]
   );
 
   const chartOptions: ApexOptions = useMemo(
@@ -85,10 +152,11 @@ export function useHomeDashboard() {
       },
       xaxis: {
         type: "datetime",
-        categories: monthlyCategories,
+        categories: xCategories,
         labels: {
           style: { fontSize: "11px", colors: "#9CA3AF" },
-          datetimeFormatter: { month: "MMM" },
+          datetimeFormatter: { day: "dd MMM", month: "MMM yy" },
+          format: xaxisLabel(selectedTimeframe),
         },
         axisBorder: { show: false },
         axisTicks: { show: false },
@@ -115,7 +183,11 @@ export function useHomeDashboard() {
         },
       ],
       tooltip: {
-        x: { format: "MMM yyyy" },
+        x: {
+          format: selectedTimeframe === "7d" || selectedTimeframe === "30d"
+            ? "dd MMM yyyy"
+            : "MMM yyyy",
+        },
         theme: "light",
         style: { fontSize: "12px" },
         y: [
@@ -131,7 +203,7 @@ export function useHomeDashboard() {
       },
       legend: { show: false },
     }),
-    [monthlyCategories]
+    [xCategories, selectedTimeframe]
   );
 
   const netBalance = (summary.totalNetIncome ?? 0) - totalAmount;
