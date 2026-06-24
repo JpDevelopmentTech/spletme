@@ -1,25 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import Title from "../../../../../components/title/title";
 import Button from "../../../../../components/atoms/button";
-import type { Split } from "../../../../../services/splits";
-import { useSplits } from "../../../../../hooks/useSplits";
+import { songSplitsService } from "../../../../../services/songSplits";
+import type { SplitHistoryItem } from "../../../../../types/song-split.types";
 
 interface HistoryOfSplitsProps {
   songId?: string;
 }
-
-type SplitHistoryItem = Split & {
-  action?: string;
-  percentage?: number;
-  countriesType?: string;
-  platformsType?: string;
-  selectedCountries?: string[];
-  selectedPlatforms?: string[];
-  version?: number;
-  role?: string;
-  userId?: string;
-  updatedBy?: { _id: string; username: string; name: string; email: string };
-};
 
 const formatDate = (dateValue?: string) => {
   if (!dateValue) return "—";
@@ -43,7 +30,7 @@ const formatDateTime = (dateValue?: string) => {
   return `${formatDate(dateValue)} ${formatTime(dateValue)}`;
 };
 
-const getSplitDate = (split: Split) => split.updatedAt || split.createdAt;
+const getSplitDate = (split: SplitHistoryItem) => split.updatedAt || split.createdAt;
 
 const getActionLabel = (action?: string) => {
   const actions: Record<string, string> = {
@@ -66,8 +53,8 @@ const getActionColor = (action?: string) => {
 const Historyofsplits = ({ songId }: HistoryOfSplitsProps) => {
   const [viewData, setViewData] = useState(true);
   const [selectedSplitKey, setSelectedSplitKey] = useState<string | null>(null);
-  const [historySplits, setHistorySplits] = useState<Split[]>([]);
-  const { getSongSplitHistory, loading } = useSplits();
+  const [historySplits, setHistorySplits] = useState<SplitHistoryItem[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!songId) {
@@ -75,8 +62,21 @@ const Historyofsplits = ({ songId }: HistoryOfSplitsProps) => {
       return;
     }
 
-    getSongSplitHistory(songId).then(setHistorySplits);
-  }, [songId, getSongSplitHistory]);
+    let active = true;
+    setLoading(true);
+    songSplitsService
+      .getSplitHistoryBySong(songId)
+      .then((history) => {
+        if (active) setHistorySplits(history);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [songId]);
 
   const allSplits = useMemo(() => {
     const safeSplits = Array.isArray(historySplits) ? historySplits : [];
@@ -95,14 +95,14 @@ const Historyofsplits = ({ songId }: HistoryOfSplitsProps) => {
     return (
       allSplits.find(
         (split, index) =>
-          (split.id || `split-history-${index}`) === selectedSplitKey,
+          (split._id || `split-history-${index}`) === selectedSplitKey,
       ) || null
     );
   }, [allSplits, selectedSplitKey]);
 
-  const selectedSplitData = selectedSplit as SplitHistoryItem | null;
-  const collaboratorName = selectedSplitData?.updatedBy?.name || selectedSplitData?.collaborator?.name || "—";
-  const collaboratorEmail = selectedSplitData?.updatedBy?.email || selectedSplitData?.collaborator?.email || "—";
+  const selectedSplitData = selectedSplit;
+  const collaboratorName = selectedSplitData?.updatedBy?.name || "—";
+  const collaboratorEmail = selectedSplitData?.updatedBy?.email || "—";
 
   return (
     <div className="col-span-12 p-6 rounded-xl border border-gray-200 bg-white">
@@ -127,9 +127,9 @@ const Historyofsplits = ({ songId }: HistoryOfSplitsProps) => {
             <>
               <div className="space-y-2">
                 {allSplits.map((split, index) => {
-                  const splitKey = split.id || `split-history-${index}`;
+                  const splitKey = split._id || `split-history-${index}`;
                   const splitDate = getSplitDate(split);
-                  const splitData = split as SplitHistoryItem;
+                  const splitData = split;
 
                   return (
                     <button

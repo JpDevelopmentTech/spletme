@@ -12,6 +12,7 @@ const UseSong = ({ id }: { id: string }) => {
   const [loading, setLoading] = useState(false);
 
   const getSong = async (songId: string) => {
+    console.log("getSong llamado con id:", songId);
     setLoading(true);
     const response = await songs.getSong(songId);
     setSong(response.data);
