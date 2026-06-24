@@ -6,6 +6,7 @@ import type { SplitHistoryItem } from "@/types/song-split.types";
 
 interface HistoryOfSplitsProps {
   songId?: string;
+  isOwner?: boolean;
 }
 
 const formatDate = (dateValue?: string) => {
@@ -50,7 +51,7 @@ const getActionColor = (action?: string) => {
   return colors[action || ""] || "text-gray-600 bg-gray-50 dark:bg-gray-900/20";
 };
 
-const Historyofsplits = ({ songId }: HistoryOfSplitsProps) => {
+const Historyofsplits = ({ songId, isOwner = false }: HistoryOfSplitsProps) => {
   const [viewData, setViewData] = useState(true);
   const [selectedSplitKey, setSelectedSplitKey] = useState<string | null>(null);
   const [historySplits, setHistorySplits] = useState<SplitHistoryItem[]>([]);
@@ -70,8 +71,9 @@ const Historyofsplits = ({ songId }: HistoryOfSplitsProps) => {
 
   const allSplits = useMemo(() => {
     const safeSplits = Array.isArray(historySplits) ? historySplits : [];
+    const visible = isOwner ? safeSplits : safeSplits.filter((s) => s.role !== "owner");
 
-    return [...safeSplits].sort((a, b) => {
+    return [...visible].sort((a, b) => {
       const aDate = getSplitDate(a);
       const bDate = getSplitDate(b);
       const aTime = aDate ? new Date(aDate).getTime() : 0;
