@@ -89,7 +89,7 @@ export function SubprofilesCard({
           {createSuccess && (
             <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm text-green-700 mb-3"
               style={{ backgroundColor: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.2)" }}>
-              <CheckCircle2 size={14} className="flex-shrink-0" /> Subperfil creado. Se envió un código de verificación al correo.
+              <CheckCircle2 size={14} className="flex-shrink-0" /> Subperfil creado exitosamente.
             </div>
           )}
           <div className="grid grid-cols-2 gap-3 mb-3">

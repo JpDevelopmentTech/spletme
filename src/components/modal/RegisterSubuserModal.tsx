@@ -74,7 +74,7 @@ const RegisterSubuserModal = ({ isOpen, onClose, parentUserId, onSubuserCreated 
       const response = await AuthService.registerSubuser(formData);
       
       if (response) {
-        setSuccessMessage('Subusuario creado exitosamente. Se envió un código de verificación al correo.');
+        setSuccessMessage('Subusuario creado exitosamente.');
         
         setTimeout(() => {
           onSubuserCreated?.();
