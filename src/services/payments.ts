@@ -41,6 +41,21 @@ export interface PaymentReadiness {
   issues: PaymentReadinessIssue[];
 }
 
+/** Una canción con pendiente del colaborador en el pre-chequeo de pago completo. */
+export interface CollaboratorReadinessSong {
+  songId: string;
+  trackTitle: string;
+  pendingAmount: number;
+}
+
+/** Pre-chequeo del pago completo (todas las canciones) a un colaborador. */
+export interface CollaboratorReadiness {
+  canPay: boolean;
+  totalPending: number;
+  songs: CollaboratorReadinessSong[];
+  issues: PaymentReadinessIssue[];
+}
+
 /** Un pago hecho a un colaborador en una canción (histórico). */
 export interface CollaboratorPaymentHistoryItem {
   royaltyPaymentId: string;
@@ -156,6 +171,36 @@ class PaymentsService {
   ): Promise<{ error: boolean; data?: unknown; message?: string }> {
     try {
       const response = await apiClient.post("/payments/pay", { songId, collaboratorId });
+      return response.data;
+    } catch (error) {
+      return { error: true, message: extractErrorMessage(error, "Error al procesar el pago") };
+    }
+  }
+
+  /**
+   * Pre-chequeo del pago completo a un colaborador (sin cobrar): total pendiente,
+   * desglose por canción e issues que lo impiden.
+   */
+  async getCollaboratorReadiness(
+    collaboratorId: string
+  ): Promise<{ error: boolean; data?: CollaboratorReadiness; message?: string }> {
+    try {
+      const response = await apiClient.get(`/payments/readiness/collaborator/${collaboratorId}`);
+      return response.data;
+    } catch (error) {
+      return { error: true, message: extractErrorMessage(error, "Error checking collaborator readiness") };
+    }
+  }
+
+  /**
+   * Inicia el cobro ACH del total pendiente de un colaborador (todas sus canciones,
+   * un solo débito) y su reparto vía Wise. El backend calcula el monto.
+   */
+  async payCollaborator(
+    collaboratorId: string
+  ): Promise<{ error: boolean; data?: unknown; message?: string }> {
+    try {
+      const response = await apiClient.post("/payments/pay-collaborator", { collaboratorId });
       return response.data;
     } catch (error) {
       return { error: true, message: extractErrorMessage(error, "Error al procesar el pago") };

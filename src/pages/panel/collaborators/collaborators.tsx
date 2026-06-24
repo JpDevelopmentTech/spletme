@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Plus } from "lucide-react";
 import { CollaboratorsStatsGrid } from "@/components/collaborators/CollaboratorsStatsGrid";
 import { CollaboratorsTable } from "@/components/collaborators/CollaboratorsTable";
 import { FeaturedCollaboratorCard } from "@/components/collaborators/FeaturedCollaboratorCard";
 import { CollaboratorDetailModal } from "@/components/collaborators/CollaboratorDetailModal";
+import { CollaboratorPaymentModal } from "@/components/modal/CollaboratorPaymentModal";
 import { RecentPaymentsSection } from "@/components/collaborators/RecentPaymentsSection";
 import { AddCollaboratorSidebar } from "./components/AddCollaboratorSidebar";
 import type { Collaborator, CollaboratorPayment } from "@/types";
@@ -119,24 +120,29 @@ export default function Collaborators() {
   const [featuredId, setFeaturedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [payOpen, setPayOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const currentUser = LocalStorageService.getItem("user");
   const userRole = String(currentUser?.role ?? "").toLowerCase();
   const canAddCollaborator = !currentUser?.parentUserId || userRole === "label";
 
-  useEffect(() => {
-    CollaboratorService.getMetrics().then((response) => {
-      const payload: MetricsResponse | null = response?.data ?? null;
-      if (payload) {
-        setMetrics(payload.summary);
-        const list = payload.collaborators.map(adaptCollaborator);
-        setCollaborators(list);
-        if (list.length > 0) setFeaturedId(list[0].id);
-      }
-      setLoading(false);
-    });
+  const refreshMetrics = useCallback(async () => {
+    const response = await CollaboratorService.getMetrics();
+    const payload: MetricsResponse | null = response?.data ?? null;
+    if (payload) {
+      setMetrics(payload.summary);
+      const list = payload.collaborators.map(adaptCollaborator);
+      setCollaborators(list);
+      // Conserva la selección actual; solo destaca el primero en la carga inicial.
+      setFeaturedId((prev) => prev ?? (list.length > 0 ? list[0].id : null));
+    }
+    setLoading(false);
   }, []);
+
+  useEffect(() => {
+    refreshMetrics();
+  }, [refreshMetrics]);
 
   const featured = collaborators.find((c) => c.id === featuredId) ?? collaborators[0];
 
@@ -180,7 +186,11 @@ export default function Collaborators() {
               featuredId={featuredId ?? ""}
               onSelectCollaborator={setFeaturedId}
             />
-            <FeaturedCollaboratorCard collaborator={featured} onViewProfile={() => setProfileOpen(true)} />
+            <FeaturedCollaboratorCard
+              collaborator={featured}
+              onViewProfile={() => setProfileOpen(true)}
+              onPaySplit={() => setPayOpen(true)}
+            />
           </div>
         )}
 
@@ -191,6 +201,17 @@ export default function Collaborators() {
         <CollaboratorDetailModal
           collaborator={featured}
           onClose={() => setProfileOpen(false)}
+        />
+      )}
+
+      {featured && (
+        <CollaboratorPaymentModal
+          isOpen={payOpen}
+          onClose={() => setPayOpen(false)}
+          collaboratorId={featured.id}
+          collaboratorName={featured.name}
+          collaboratorEmail={featured.email}
+          onPaymentSuccess={refreshMetrics}
         />
       )}
 

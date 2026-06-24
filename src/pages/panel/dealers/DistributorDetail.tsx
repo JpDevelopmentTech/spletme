@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import type { DistributorDashboard, Quarter } from '../../../types/distributor.types';
 import { distributorsService } from '../../../services/distributorsService';
+import type { RejectedSong } from '../../../services/distributorsService';
 import UploadSongsModal from '../../../components/ui/UploadSongsModal';
 
 const QUARTER_COLORS: Record<Quarter, string> = {
@@ -51,7 +52,7 @@ export default function DistributorDetail() {
 
   const [uploadResult, setUploadResult] = useState<{
     songsProcessed: number;
-    rejected: Array<{ isrc: string; existingOwnerId: string }>;
+    rejected: RejectedSong[];
   } | null>(null);
 
   async function handleUpload(file: File, quarter: Quarter, year: number) {

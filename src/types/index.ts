@@ -27,6 +27,7 @@ export type {
   PaymentRequest,
   PaymentHistory,
   PayoneerAccount,
+  CollaboratorPaymentModalProps,
 } from "./payment.types";
 
 export type {

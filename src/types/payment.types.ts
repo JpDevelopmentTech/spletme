@@ -25,3 +25,12 @@ export interface PayoneerAccount {
   balance: number;
   isLinked: boolean;
 }
+
+export interface CollaboratorPaymentModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  collaboratorId: string;
+  collaboratorName: string;
+  collaboratorEmail: string;
+  onPaymentSuccess?: () => void;
+}

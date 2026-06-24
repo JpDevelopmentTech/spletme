@@ -5,13 +5,14 @@ import type { Collaborator } from "@/types";
 interface FeaturedCollaboratorCardProps {
   collaborator: Collaborator;
   onViewProfile: () => void;
+  onPaySplit: () => void;
 }
 
 /**
  * Tarjeta de detalle del colaborador seleccionado.
  * Muestra avatar, stats, canciones recientes y acciones rápidas.
  */
-export function FeaturedCollaboratorCard({ collaborator, onViewProfile }: FeaturedCollaboratorCardProps) {
+export function FeaturedCollaboratorCard({ collaborator, onViewProfile, onPaySplit }: FeaturedCollaboratorCardProps) {
   return (
     <div className="lg:col-span-4 bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col">
       <div className="relative h-[140px] bg-[#0F172A] flex items-start justify-center pt-6">
@@ -94,7 +95,11 @@ export function FeaturedCollaboratorCard({ collaborator, onViewProfile }: Featur
           >
             Ver perfil
           </button>
-          <button className="flex-1 h-10 bg-white border border-gray-200 hover:bg-gray-50 text-[#111827] text-[13px] font-semibold rounded-lg transition-colors">
+          <button
+            onClick={onPaySplit}
+            disabled={collaborator.amountPending <= 0}
+            className="flex-1 h-10 bg-green-500 hover:bg-green-600 text-white text-[13px] font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-green-500"
+          >
             Pagar split
           </button>
         </div>
