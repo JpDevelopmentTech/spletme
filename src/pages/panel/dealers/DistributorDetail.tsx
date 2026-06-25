@@ -268,6 +268,10 @@ export default function DistributorDetail() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[13px] font-semibold text-[#111827]">{u.quarter} {u.year}</p>
+                      <div className="flex items-center gap-1 text-[13px] text-[#111827]">
+                        <p>Nombre del archivo: </p>
+                        <p className="text-[11px] text-[#111827] font-semibold truncate">{u.fileName}</p>
+                      </div>
                       <p className="text-[11px] text-[#9CA3AF] truncate">
                         {u.songsCount} canciones · {new Date(u.createdAt).toLocaleDateString('es-ES')}
                       </p>
