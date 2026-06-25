@@ -43,7 +43,11 @@ const ProfessionStep = ({ nextStep, initialData }: ProfessionStepProps) => {
   const [selectedOther, setSelectedOther] = useState<string[]>([]);
 
   useEffect(() => {
-    if (initialData?.profession)      setSelected(parse(initialData.profession));
+    const initProfs =
+      initialData?.professions && initialData.professions.length > 0
+        ? initialData.professions
+        : parse(initialData?.profession);
+    if (initProfs.length > 0)         setSelected(initProfs);
     if (initialData?.otherProfession) setSelectedOther(parse(initialData.otherProfession));
   }, [initialData]);
 

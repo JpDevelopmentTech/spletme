@@ -319,10 +319,10 @@ const AccountDetailsStep = ({ nextStep, prevStep, initialData }: AccountDetailsS
     if (initialData) {
       setFormData({
         country:        initialData.country       || "",
-        state:          initialData.state         || "",
+        state:          initialData.department    || initialData.state || "",
         city:           initialData.city          || "",
         postalCode:     initialData.postalCode    || "",
-        phoneCode:      initialData.phoneCode     || "+57",
+        phoneCode:      initialData.phoneCountryCode || initialData.phoneCode || "+57",
         phone:          initialData.phone         || "",
         address:        initialData.address       || "",
         identification: initialData.identification || "",

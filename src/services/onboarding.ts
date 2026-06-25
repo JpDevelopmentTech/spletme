@@ -1,5 +1,6 @@
 import { apiClient } from "@/infrastructure/http/axiosClient";
 import axios from "axios";
+import { toOnboardingPayload } from "@/utils/onboarding.mapper";
 
 interface ErrorPayload {
   message?: string;
@@ -11,13 +12,19 @@ interface BooleanPayload {
 }
 
 export interface OnboardingData {
+  // Nombres canónicos del modelo (backend)
+  professions?: string[];
+  department?: string;
+  phoneCountryCode?: string;
+  // Nombres internos usados por los steps del flujo de onboarding
   profession?: string;
-  otherProfession?: string;
-  country?: string;
   state?: string;
-  city?: string;
   postalCode?: string;
   phoneCode?: string;
+  // Campos compartidos
+  otherProfession?: string;
+  country?: string;
+  city?: string;
   phone?: string;
   address?: string;
   identification?: string;
@@ -68,7 +75,8 @@ export const OnboardingService = {
   /** Actualiza los datos de onboarding del usuario autenticado */
   updateOnboarding: async (onboardingData: OnboardingData) => {
     try {
-      const response = await apiClient.put(`${BASE}/onboarding`, onboardingData);
+      const payload = toOnboardingPayload(onboardingData);
+      const response = await apiClient.put(`${BASE}/onboarding`, payload);
       return response.data;
     } catch (error) {
       throw error;
