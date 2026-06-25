@@ -281,8 +281,9 @@ class SongService {
       if (platform && platform !== "all") params.platform = platform;
       if (country  && country  !== "all") params.country  = country;
       const response = await apiClient.get(`${this.BASE}/by-params`, { params });
-      // Estructura real: { message, data: { data: [...], filters: {...} } }
+      // Estructura real: { message, data: { summary, data: [...], filters: {...} } }
       return (response.data?.data ?? null) as {
+        summary: { totalStreams: number; totalNetIncome: number; matchingReleases: number; songsWithMatches: number };
         data: Array<{ date: string; totalStreams: number; totalNetIncome: number; releasesCount: number }>;
         filters: { period: string; platform: string; country: string; groupBy: string };
       } | null;

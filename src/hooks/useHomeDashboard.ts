@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import type { ApexOptions } from "apexcharts";
-import UseFilterSongsData from "@/hooks/useFilterSongsData";
 import { useSplitPayments } from "@/hooks/useSplitPayments";
 import { useWallet } from "@/hooks/useWallet";
 import SongService from "@/services/songs";
@@ -26,10 +25,10 @@ export function useHomeDashboard() {
   const [selectedTimeframe, setSelectedTimeframe] = useState("90d");
   const [topSongs, setTopSongs] = useState<TopSong[]>([]);
   const [dataPoints, setDataPoints] = useState<DataPoint[]>([]);
+  const [apiSummary, setApiSummary] = useState({ totalStreams: 0, totalNetIncome: 0, matchingReleases: 0, songsWithMatches: 0 });
 
   const { totalAmount } = useSplitPayments();
-  const { summary } = UseFilterSongsData();
-  const { wallet, loading: walletLoading, hasWallet, createWallet, refreshWallet } = useWallet();
+const { wallet, loading: walletLoading, hasWallet, createWallet, refreshWallet } = useWallet();
   const { user } = useAuth0();
 
   useEffect(() => {
@@ -48,12 +47,13 @@ export function useHomeDashboard() {
 
   const fetchData = useCallback(async (timeframe: string) => {
     const res = await SongService.getSongsByParams(timeframe);
-    const points: DataPoint[] = (res?.data ?? []).map((row) => ({
+    if (!res) return;
+    if (res.summary) setApiSummary(res.summary);
+    setDataPoints((res.data ?? []).map((row) => ({
       date:    row.date,
       streams: row.totalStreams,
       income:  row.totalNetIncome,
-    }));
-    setDataPoints(points);
+    })));
   }, []);
 
   useEffect(() => {
@@ -154,7 +154,7 @@ export function useHomeDashboard() {
     [xCategories, selectedTimeframe]
   );
 
-  const netBalance = (summary.totalNetIncome ?? 0) - totalAmount;
+  const netBalance = apiSummary.totalNetIncome - totalAmount;
   const walletBalance = wallet?.accounts?.[0]?.balance ?? 0;
 
   return {
@@ -162,7 +162,7 @@ export function useHomeDashboard() {
     selectedTimeframe,
     setSelectedTimeframe,
     topSongs,
-    summary,
+    summary: apiSummary,
     totalAmount,
     netBalance,
     wallet,
