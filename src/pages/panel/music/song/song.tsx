@@ -372,7 +372,7 @@ export default function Song() {
               <Users className="h-5 w-5 text-gray-900" />
               <h3 className="text-base font-bold text-gray-900">Colaboradores</h3>
             </div>
-            <AddCollaborator compact isOwner={isOwnerUser} />
+            <AddCollaborator compact isOwner={isOwnerUser || song?.requesterRole === "label"} />
           </div>
           <Table
             collaborators={getCollaboratorsInfo()}

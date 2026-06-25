@@ -234,6 +234,7 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
 
       {/* Actions bar */}
       <div className="flex items-center gap-2 border-b border-gray-100 px-6 py-4">
+        {/* Owner Split solo disponible para admin, label no puede crearlo */}
         {isOwner && song?.requesterRole === "admin" && (
           <button
             onClick={() => setIsOwnerSplitModalOpen(true)}
@@ -243,7 +244,8 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
             Owner Split
           </button>
         )}
-        {song?.requesterRole === "admin" && (
+        {/* Configurar Splits disponible para admin y label */}
+        {(song?.requesterRole === "admin" || song?.requesterRole === "label") && (
           <button
             onClick={handleOpenSplitsModal}
             className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50"
@@ -429,7 +431,7 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
           <p className="mb-5 max-w-xs text-sm text-gray-500">
             Agrega colaboradores para gestionar splits y pagos de esta canción.
           </p>
-          {isOwner && song?.requesterRole === "admin" && (
+          {(song?.requesterRole === "admin" || song?.requesterRole === "label") && (
             <button
               onClick={handleOpenSplitsModal}
               className="flex items-center gap-2 rounded-lg bg-[#F97316] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-orange-600"
