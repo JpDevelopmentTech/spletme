@@ -333,6 +333,31 @@ class SongService {
     }
   }
 
+  /** Obtiene el resumen de rendimiento filtrado por país, plataforma y rango de fechas */
+  async getSongsByFilter(
+    country?: string,
+    platform?: string,
+    startDate?: string,
+    endDate?: string,
+  ) {
+    const emptySummary = {
+      data: {
+        summary: { matchingReleases: 0, songsWithMatches: 0, totalNetIncome: 0, totalStreams: 0 },
+      },
+    };
+    try {
+      const params: Record<string, string> = {};
+      if (country && country !== "all") params.country = country;
+      if (platform && platform !== "all") params.platform = platform;
+      if (startDate) params.startDate = startDate;
+      if (endDate) params.endDate = endDate;
+      const response = await apiClient.get(`${this.BASE}/by-params`, { params });
+      return response.data ?? emptySummary;
+    } catch {
+      return emptySummary;
+    }
+  }
+
   /** Filtra canciones en el servidor por splits, fechas, país y porcentaje */
   async filterSongs(params: {
     hasSplits?: boolean;

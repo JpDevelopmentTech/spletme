@@ -51,7 +51,7 @@ export function ProfileDetailsCard({
   editForm, editErrors, editLoading, editError, editSuccess,
   departments, deptLoading, cities, cityLoading,
   parseProfessions,
-  onToggleEdit, onCountryChange, onDepartmentChange, onEditFormChange,
+  onCountryChange, onDepartmentChange, onEditFormChange,
   onToggleProfession, onToggleOther, onSaveProfile,
 }: ProfileDetailsCardProps) {
   const selectedProfs  = parseProfessions(editForm.profession);
