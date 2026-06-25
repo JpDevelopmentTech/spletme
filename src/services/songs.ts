@@ -315,13 +315,19 @@ class SongService {
     }
   }
 
-  /** Obtiene canciones filtradas por país, plataforma y fechas */
-  async getSongsByFilter(country: string, platform: string, startDate: string, endDate: string) {
+  /** Obtiene datos de rendimiento agrupados por el backend */
+  async getSongsByParams(period: string, platform?: string, country?: string) {
     try {
-      const response = await apiClient.get(`${this.BASE}/by-params`, {
-        params: { country, platform, startDate, endDate },
-      });
-      return response.data;
+      const params: Record<string, string> = { period };
+      if (platform && platform !== "all") params.platform = platform;
+      if (country  && country  !== "all") params.country  = country;
+      const response = await apiClient.get(`${this.BASE}/by-params`, { params });
+      // Estructura real: { message, data: { summary, data: [...], filters: {...} } }
+      return (response.data?.data ?? null) as {
+        summary: { totalStreams: number; totalNetIncome: number; matchingReleases: number; songsWithMatches: number };
+        data: Array<{ date: string; totalStreams: number; totalNetIncome: number; releasesCount: number }>;
+        filters: { period: string; platform: string; country: string; groupBy: string };
+      } | null;
     } catch {
       return null;
     }

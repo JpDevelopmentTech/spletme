@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, User, AtSign } from "lucide-react";
 import { AuthService } from "../../services/auth";
+import { WelcomeModal } from "../../components/modal/WelcomeModal";
 
 const FEATURES = [
   "Rastrea streams en todas las plataformas",
@@ -23,7 +24,7 @@ export default function Register() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [showWelcome, setShowWelcome] = useState(false);
 
   const set = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -33,7 +34,6 @@ export default function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage("");
-    setSuccessMessage("");
 
     if (formData.password !== formData.passwordConfirmation) {
       setErrorMessage("Las contraseñas no coinciden.");
@@ -49,9 +49,8 @@ export default function Register() {
       return;
     }
 
-    setSuccessMessage("¡Cuenta creada! Te enviamos un código de verificación.");
     setIsSubmitting(false);
-    setTimeout(() => navigate("/auth/email-login"), 1200);
+    setShowWelcome(true);
   };
 
   const inputBase: React.CSSProperties = {
@@ -68,6 +67,12 @@ export default function Register() {
   };
 
   return (
+    <>
+    <WelcomeModal
+      isOpen={showWelcome}
+      userName={formData.name}
+      onContinue={() => navigate("/auth/email-login")}
+    />
     <div className="flex min-h-screen">
       {/* Panel izquierdo */}
       <div
@@ -175,19 +180,6 @@ export default function Register() {
               }}
             >
               {errorMessage}
-            </div>
-          )}
-          {successMessage && (
-            <div
-              className="text-sm text-green-700"
-              style={{
-                backgroundColor: "#F0FDF4",
-                border: "1px solid #BBF7D0",
-                borderRadius: 10,
-                padding: "10px 14px",
-              }}
-            >
-              {successMessage}
             </div>
           )}
 
@@ -379,5 +371,6 @@ export default function Register() {
         </div>
       </div>
     </div>
+    </>
   );
 }

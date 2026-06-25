@@ -133,17 +133,12 @@ export const AuthService = {
     return AuthService.switchAccount(subuserId);
   },
 
-  /** Desvincula un subperfil del usuario actual */
+  /** Desvincula un subperfil del usuario actual — usa el id generado (ej: "USR-abc123"), no el _id de Mongo */
   unlinkSubuser: async (subuserId: string): Promise<UnlinkSubuserResponse> => {
     if (!subuserId.trim()) return { success: false, message: "ID de subperfil inválido" };
     try {
-      const response = await apiClient.post(`${BASE}/subusers/unlink`, {
-        subuserId,
-      });
-      return {
-        success: true,
-        message: response.data?.message ?? "Subperfil desvinculado correctamente",
-      };
+      const response = await apiClient.delete(`${BASE}/subusers/${subuserId}`);
+      return { success: true, message: response.data?.message ?? "Subperfil desvinculado correctamente" };
     } catch (error) {
       return {
         success: false,
@@ -181,9 +176,16 @@ export const AuthService = {
         onboardingData: {
           ...(currentUser.onboardingData ?? {}),
           ...(updatedPayload.onboardingData ?? {}),
-          country: payload.country ?? currentUser.onboardingData?.country ?? null,
-          profession: payload.profession ?? currentUser.onboardingData?.profession ?? null,
-          address: payload.address ?? currentUser.onboardingData?.address ?? null,
+          country:          payload.country          ?? currentUser.onboardingData?.country          ?? null,
+          department:       payload.department       ?? currentUser.onboardingData?.department       ?? null,
+          city:             payload.city             ?? currentUser.onboardingData?.city             ?? null,
+          phoneCountryCode: payload.phoneCountryCode ?? currentUser.onboardingData?.phoneCountryCode ?? null,
+          phone:            payload.phone            ?? currentUser.onboardingData?.phone            ?? null,
+          address:          payload.address          ?? currentUser.onboardingData?.address          ?? null,
+          profession: payload.professions
+            ? payload.professions.join(",")
+            : currentUser.onboardingData?.profession ?? null,
+          otherProfession: payload.otherProfession ?? currentUser.onboardingData?.otherProfession ?? null,
         },
       };
       localStorage.setItem("user", JSON.stringify(updatedUser));

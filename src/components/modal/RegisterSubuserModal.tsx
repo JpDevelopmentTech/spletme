@@ -1,7 +1,8 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, UserPlus, Mail, User, AlertCircle, Check, Loader2, UserCircle } from "lucide-react";
-import { AuthService, RegisterSubuserSchema } from "@/services/auth";
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, UserPlus, Mail, User, AlertCircle, Check, Loader2, UserCircle} from 'lucide-react';
+import { AuthService, RegisterSubuserSchema } from '@/services/auth';
+import { SubuserSuccessModal } from './SubuserSuccessModal';
 
 interface RegisterSubuserModalProps {
   isOpen: boolean;
@@ -26,7 +27,7 @@ const RegisterSubuserModal = ({
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -73,20 +74,13 @@ const RegisterSubuserModal = ({
     }
 
     setLoading(true);
-    setSuccessMessage("");
 
     try {
       const response = await AuthService.registerSubuser(formData);
 
       if (response) {
-        setSuccessMessage(
-          "Subusuario creado exitosamente. Se envió un código de verificación al correo.",
-        );
-
-        setTimeout(() => {
-          onSubuserCreated?.();
-          handleClose();
-        }, 1500);
+        onSubuserCreated?.();
+        setShowSuccessModal(true);
       } else {
         setErrors({
           submit: "Error al crear el subusuario. Intenta nuevamente.",
@@ -111,12 +105,13 @@ const RegisterSubuserModal = ({
         lastName: "",
       });
       setErrors({});
-      setSuccessMessage("");
+      setShowSuccessModal(false);
       onClose();
     }
   };
 
   return (
+    <>
     <AnimatePresence>
       {isOpen && (
         <motion.div
@@ -152,20 +147,7 @@ const RegisterSubuserModal = ({
               </button>
             </div>
 
-            <div className="max-h-[calc(90vh-200px)] overflow-y-auto p-6">
-              {successMessage && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mb-4 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20"
-                >
-                  <p className="flex items-center text-sm text-green-600 dark:text-green-400">
-                    <Check className="mr-2 h-4 w-4" />
-                    {successMessage}
-                  </p>
-                </motion.div>
-              )}
-
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
               {errors.submit && (
                 <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20">
                   <p className="flex items-center text-sm text-red-600 dark:text-red-400">
@@ -305,6 +287,12 @@ const RegisterSubuserModal = ({
         </motion.div>
       )}
     </AnimatePresence>
+
+    <SubuserSuccessModal
+      isOpen={showSuccessModal}
+      onClose={handleClose}
+    />
+    </>
   );
 };
 

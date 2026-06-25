@@ -1,16 +1,9 @@
-import {
-  UserPlus,
-  UserMinus,
-  RefreshCcw,
-  X,
-  AlertCircle,
-  CheckCircle2,
-  Loader2,
-  Check,
-} from "lucide-react";
+import { useEffect, useState } from "react";
+import { UserPlus, UserMinus, RefreshCcw, X, AlertCircle, Loader2, Check, CheckCircle2 } from "lucide-react";
 import { getInitials, inputCls } from "@/utils/profile.utils";
 import type { SubprofileItem } from "@/types/profile.types";
 import type { RegisterSubuserSchema } from "@/types";
+import { SubuserSuccessModal } from "@/components/modal/SubuserSuccessModal";
 
 interface SubprofilesCardProps {
   subprofiles: SubprofileItem[];
@@ -59,8 +52,14 @@ export function SubprofilesCard({
   onUnlink,
 }: SubprofilesCardProps) {
   const hasBorder = subprofiles.length > 0 || isCreating;
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  useEffect(() => {
+    if (createSuccess) setShowSuccessModal(true);
+  }, [createSuccess]);
 
   return (
+    <>
     <div className="overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white">
       {/* Header */}
       <div
@@ -141,19 +140,7 @@ export function SubprofilesCard({
               <AlertCircle size={14} className="flex-shrink-0" /> {createError}
             </div>
           )}
-          {createSuccess && (
-            <div
-              className="mb-3 flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm text-green-700"
-              style={{
-                backgroundColor: "rgba(34,197,94,0.06)",
-                border: "1px solid rgba(34,197,94,0.2)",
-              }}
-            >
-              <CheckCircle2 size={14} className="flex-shrink-0" /> Subperfil creado. Se envió un
-              código de verificación al correo.
-            </div>
-          )}
-          <div className="mb-3 grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 mb-3">
             {(["name", "lastName"] as const).map((field) => (
               <div key={field}>
                 <label className="mb-1.5 block text-xs font-semibold text-[#6B7280]">
@@ -291,5 +278,11 @@ export function SubprofilesCard({
         </div>
       )}
     </div>
+
+    <SubuserSuccessModal
+      isOpen={showSuccessModal}
+      onClose={() => setShowSuccessModal(false)}
+    />
+    </>
   );
 }

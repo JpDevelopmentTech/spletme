@@ -1,26 +1,34 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import type { ApexOptions } from "apexcharts";
-import UseFilterSongsData from "@/hooks/useFilterSongsData";
 import { useSplitPayments } from "@/hooks/useSplitPayments";
 import { useWallet } from "@/hooks/useWallet";
 import SongService from "@/services/songs";
 import type { TopSong } from "@/types";
 
-const MONTH_WEIGHTS = [0.1, 0.12, 0.15, 0.18, 0.2, 0.25];
-const WEIGHTS_SUM = MONTH_WEIGHTS.reduce((acc, v) => acc + v, 0);
+interface DataPoint {
+  date: string;
+  streams: number;
+  income: number;
+}
+
+function xaxisLabel(timeframe: string): string {
+  if (timeframe === "7d" || timeframe === "30d") return "dd MMM";
+  return "MMM yyyy";
+}
 
 /**
  * Centraliza el estado y la lógica de datos del dashboard principal.
  * Expone datos listos para consumir por los componentes de presentación.
  */
 export function useHomeDashboard() {
-  const [selectedTimeframe, setSelectedTimeframe] = useState("7d");
+  const [selectedTimeframe, setSelectedTimeframe] = useState("90d");
   const [topSongs, setTopSongs] = useState<TopSong[]>([]);
+  const [dataPoints, setDataPoints] = useState<DataPoint[]>([]);
+  const [apiSummary, setApiSummary] = useState({ totalStreams: 0, totalNetIncome: 0, matchingReleases: 0, songsWithMatches: 0 });
 
   const { totalAmount } = useSplitPayments();
-  const { summary } = UseFilterSongsData();
-  const { wallet, loading: walletLoading, hasWallet, createWallet, refreshWallet } = useWallet();
+const { wallet, loading: walletLoading, hasWallet, createWallet, refreshWallet } = useWallet();
   const { user } = useAuth0();
 
   useEffect(() => {
@@ -37,33 +45,40 @@ export function useHomeDashboard() {
     window.location.reload();
   }, []);
 
-  const monthlyCategories = useMemo(() => {
-    const now = new Date();
-    return Array.from({ length: 6 }, (_, i) => {
-      const d = new Date(now);
-      d.setDate(1);
-      d.setHours(0, 0, 0, 0);
-      d.setMonth(now.getMonth() - (5 - i));
-      return d.toISOString();
-    });
+  const fetchData = useCallback(async (timeframe: string) => {
+    const res = await SongService.getSongsByParams(timeframe);
+    if (!res) return;
+    if (res.summary) setApiSummary(res.summary);
+    setDataPoints((res.data ?? []).map((row) => ({
+      date:    row.date,
+      streams: row.totalStreams,
+      income:  row.totalNetIncome,
+    })));
   }, []);
+
+  useEffect(() => {
+    fetchData(selectedTimeframe);
+  }, [selectedTimeframe, fetchData]);
+
+  const xCategories = useMemo(
+    () => dataPoints.map((p) => p.date),
+    [dataPoints]
+  );
 
   const series = useMemo(
     () => [
       {
         name: "Streams",
         type: "area",
-        data: MONTH_WEIGHTS.map((w) => Math.round(((summary.totalStreams ?? 0) * w) / WEIGHTS_SUM)),
+        data: dataPoints.map((p) => p.streams),
       },
       {
         name: "Revenue",
         type: "area",
-        data: MONTH_WEIGHTS.map((w) =>
-          Number((((summary.totalNetIncome ?? 0) * w) / WEIGHTS_SUM).toFixed(2)),
-        ),
+        data: dataPoints.map((p) => Number(p.income.toFixed(2))),
       },
     ],
-    [summary.totalStreams, summary.totalNetIncome],
+    [dataPoints]
   );
 
   const chartOptions: ApexOptions = useMemo(
@@ -90,10 +105,11 @@ export function useHomeDashboard() {
       },
       xaxis: {
         type: "datetime",
-        categories: monthlyCategories,
+        categories: xCategories,
         labels: {
           style: { fontSize: "11px", colors: "#9CA3AF" },
-          datetimeFormatter: { month: "MMM" },
+          datetimeFormatter: { day: "dd MMM", month: "MMM yy" },
+          format: xaxisLabel(selectedTimeframe),
         },
         axisBorder: { show: false },
         axisTicks: { show: false },
@@ -120,7 +136,11 @@ export function useHomeDashboard() {
         },
       ],
       tooltip: {
-        x: { format: "MMM yyyy" },
+        x: {
+          format: selectedTimeframe === "7d" || selectedTimeframe === "30d"
+            ? "dd MMM yyyy"
+            : "MMM yyyy",
+        },
         theme: "light",
         style: { fontSize: "12px" },
         y: [
@@ -136,10 +156,10 @@ export function useHomeDashboard() {
       },
       legend: { show: false },
     }),
-    [monthlyCategories],
+    [xCategories, selectedTimeframe]
   );
 
-  const netBalance = (summary.totalNetIncome ?? 0) - totalAmount;
+  const netBalance = apiSummary.totalNetIncome - totalAmount;
   const walletBalance = wallet?.accounts?.[0]?.balance ?? 0;
 
   return {
@@ -147,7 +167,7 @@ export function useHomeDashboard() {
     selectedTimeframe,
     setSelectedTimeframe,
     topSongs,
-    summary,
+    summary: apiSummary,
     totalAmount,
     netBalance,
     wallet,
