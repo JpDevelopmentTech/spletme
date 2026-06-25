@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import bankAccountService from "@/services/bankAccount";
 import { getStripe } from "@/infrastructure/stripe/stripeClient";
-import type {
-  BankAccountStatusData,
-  LinkedBankAccount,
-} from "@/types/bank-account.types";
+import type { BankAccountStatusData, LinkedBankAccount } from "@/types/bank-account.types";
 import type { User } from "@/types/user.types";
 
 type FeedbackType = "success" | "error" | "info";
@@ -78,10 +75,7 @@ export const useOwnerBankAccount = () => {
       }
 
       const user = getCurrentUser();
-      const fullName = [user.name, user.lastName]
-        .filter(Boolean)
-        .join(" ")
-        .trim();
+      const fullName = [user.name, user.lastName].filter(Boolean).join(" ").trim();
 
       const collectResult = await stripe.collectBankAccountForSetup({
         clientSecret,
@@ -108,8 +102,7 @@ export const useOwnerBankAccount = () => {
         return;
       }
 
-      const confirmResult =
-        await stripe.confirmUsBankAccountSetup(clientSecret);
+      const confirmResult = await stripe.confirmUsBankAccountSetup(clientSecret);
       if (confirmResult.error) {
         setFeedback({
           type: "error",

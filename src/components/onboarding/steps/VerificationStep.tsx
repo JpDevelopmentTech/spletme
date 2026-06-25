@@ -1,9 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import {
-  OnboardingData,
-  OnboardingService,
-} from "../../../services/onboarding";
+import { OnboardingData, OnboardingService } from "../../../services/onboarding";
 
 interface VerificationStepProps {
   nextStep: (data?: Partial<OnboardingData>) => void;
@@ -14,11 +11,7 @@ interface VerificationStepProps {
 
 const CODE_LENGTH = 6;
 
-const VerificationStep = ({
-  nextStep,
-  prevStep,
-  verificationEmail,
-}: VerificationStepProps) => {
+const VerificationStep = ({ nextStep, prevStep, verificationEmail }: VerificationStepProps) => {
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [isResending, setIsResending] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -56,10 +49,7 @@ const VerificationStep = ({
 
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
-    const pastedData = e.clipboardData
-      .getData("text")
-      .replace(/\D/g, "")
-      .slice(0, CODE_LENGTH);
+    const pastedData = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, CODE_LENGTH);
     const newCode = [...code];
 
     for (let i = 0; i < pastedData.length && i < CODE_LENGTH; i++) {
@@ -85,10 +75,7 @@ const VerificationStep = ({
     setSuccessMessage("");
     setIsResending(true);
     try {
-      const response =
-        await OnboardingService.requestAccountVerificationCode(
-          verificationEmail,
-        );
+      const response = await OnboardingService.requestAccountVerificationCode(verificationEmail);
 
       if (!response.accepted) {
         setError("No fue posible reenviar el código.");
@@ -99,9 +86,7 @@ const VerificationStep = ({
       setSuccessMessage("Te enviamos un nuevo código de verificación.");
     } catch (requestError) {
       setError(
-        requestError instanceof Error
-          ? requestError.message
-          : "No fue posible reenviar el código.",
+        requestError instanceof Error ? requestError.message : "No fue posible reenviar el código.",
       );
     } finally {
       setIsResending(false);
@@ -186,9 +171,7 @@ const VerificationStep = ({
           </h3>
           <p className="text-gray-600 dark:text-gray-400">
             Hemos enviado un código de verificación a{" "}
-            <span className="font-semibold text-gray-900 dark:text-white">
-              {emailToVerify}
-            </span>
+            <span className="font-semibold text-gray-900 dark:text-white">{emailToVerify}</span>
           </p>
         </div>
       </div>
@@ -248,17 +231,14 @@ const VerificationStep = ({
           animate={{ opacity: 1, y: 0 }}
           className="text-center"
         >
-          <p className="text-sm text-green-600 dark:text-green-400">
-            {successMessage}
-          </p>
+          <p className="text-sm text-green-600 dark:text-green-400">{successMessage}</p>
         </motion.div>
       )}
       {/* Resend */}
       <div className="text-center">
         {countdown > 0 ? (
           <p className="text-sm text-[#9CA3AF]">
-            ¿No recibiste el código? Reenviar en{" "}
-            <span className="font-semibold">{countdown}s</span>
+            ¿No recibiste el código? Reenviar en <span className="font-semibold">{countdown}s</span>
           </p>
         ) : (
           <button

@@ -26,9 +26,7 @@ class CollaboratorService {
   /** Obtiene métricas de plataformas por canción de un colaborador */
   async getSongMetrics(collaboratorId: string) {
     try {
-      const response = await apiClient.get(
-        `${this.BASE}/${collaboratorId}/metrics`,
-      );
+      const response = await apiClient.get(`${this.BASE}/${collaboratorId}/metrics`);
       return response.data;
     } catch {
       return null;

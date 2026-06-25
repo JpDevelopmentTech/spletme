@@ -20,9 +20,7 @@ export function CollaboratorsTable({
     <div className="flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white lg:col-span-8">
       <div className="flex items-center justify-between gap-4 border-b border-gray-100 px-6 py-4">
         <div className="flex items-center gap-2.5">
-          <span className="text-sm font-semibold text-[#111827]">
-            Listado de Colaboradores
-          </span>
+          <span className="text-sm font-semibold text-[#111827]">Listado de Colaboradores</span>
           <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[11px] font-bold text-[#6B7280]">
             {collaborators.length}
           </span>

@@ -39,8 +39,7 @@ const getErrorMessage = (error: unknown, fallback: string): string => {
     typeof error.response.data === "object"
   ) {
     const payload = error.response.data as ErrorPayload;
-    if (typeof payload.message === "string" && payload.message.trim())
-      return payload.message;
+    if (typeof payload.message === "string" && payload.message.trim()) return payload.message;
   }
   return fallback;
 };
@@ -65,10 +64,7 @@ export const OnboardingService = {
   /** Actualiza los datos de onboarding del usuario autenticado */
   updateOnboarding: async (onboardingData: OnboardingData) => {
     try {
-      const response = await apiClient.put(
-        `${BASE}/onboarding`,
-        onboardingData,
-      );
+      const response = await apiClient.put(`${BASE}/onboarding`, onboardingData);
       return response.data;
     } catch (error) {
       throw error;
@@ -80,20 +76,15 @@ export const OnboardingService = {
     email: string,
   ): Promise<AccountVerificationRequestResponse> => {
     try {
-      const response = await apiClient.post(
-        `${BASE}/account-verification/request`,
-        {
-          email: email.trim().toLowerCase(),
-        },
-      );
+      const response = await apiClient.post(`${BASE}/account-verification/request`, {
+        email: email.trim().toLowerCase(),
+      });
       const accepted =
         getBooleanFromPayload(response.data, "accepted") ??
         (response.status >= 200 && response.status < 300);
       return { accepted };
     } catch (error) {
-      throw new Error(
-        getErrorMessage(error, "No se pudo enviar el código de verificación"),
-      );
+      throw new Error(getErrorMessage(error, "No se pudo enviar el código de verificación"));
     }
   },
 
@@ -103,13 +94,10 @@ export const OnboardingService = {
     code: string,
   ): Promise<AccountVerificationVerifyResponse> => {
     try {
-      const response = await apiClient.post(
-        `${BASE}/account-verification/verify-code`,
-        {
-          email: email.trim().toLowerCase(),
-          code: code.trim(),
-        },
-      );
+      const response = await apiClient.post(`${BASE}/account-verification/verify-code`, {
+        email: email.trim().toLowerCase(),
+        code: code.trim(),
+      });
       const verified =
         getBooleanFromPayload(response.data, "verified") ??
         (response.status >= 200 && response.status < 300);

@@ -12,9 +12,7 @@ const GuardedRoute = ({ children }: GuardedRouteProps) => {
   const location = useLocation();
 
   if (isAuthenticated !== "true") {
-    return (
-      <Navigate to="/auth/email-login" replace state={{ from: location }} />
-    );
+    return <Navigate to="/auth/email-login" replace state={{ from: location }} />;
   }
 
   return children;

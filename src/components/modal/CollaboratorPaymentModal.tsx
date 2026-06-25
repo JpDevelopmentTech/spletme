@@ -1,17 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  X,
-  CreditCard,
-  AlertCircle,
-  CheckCircle,
-  Clock,
-  ArrowRight,
-  Music2,
-} from "lucide-react";
-import PaymentsService, {
-  type CollaboratorReadiness,
-} from "@/services/payments";
+import { X, CreditCard, AlertCircle, CheckCircle, Clock, ArrowRight, Music2 } from "lucide-react";
+import PaymentsService, { type CollaboratorReadiness } from "@/services/payments";
 import { formatCurrency } from "@/utils/format.utils";
 import type { CollaboratorPaymentModalProps } from "@/types";
 
@@ -31,17 +21,14 @@ export function CollaboratorPaymentModal({
   onPaymentSuccess,
 }: CollaboratorPaymentModalProps) {
   const [step, setStep] = useState<Step>("loading");
-  const [readiness, setReadiness] = useState<CollaboratorReadiness | null>(
-    null,
-  );
+  const [readiness, setReadiness] = useState<CollaboratorReadiness | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const loadReadiness = useCallback(async () => {
     setStep("loading");
     setError(null);
     setReadiness(null);
-    const response =
-      await PaymentsService.getCollaboratorReadiness(collaboratorId);
+    const response = await PaymentsService.getCollaboratorReadiness(collaboratorId);
     if (response.error || !response.data) {
       setError(response.message ?? "No se pudo calcular el monto a pagar.");
       setStep("confirm");
@@ -99,12 +86,9 @@ export function CollaboratorPaymentModal({
         <p className="text-xs font-semibold uppercase tracking-wide text-[#F97316]">
           Total a pagar
         </p>
-        <p className="mt-1 text-3xl font-bold text-gray-900">
-          {formatCurrency(total)}
-        </p>
+        <p className="mt-1 text-3xl font-bold text-gray-900">{formatCurrency(total)}</p>
         <p className="mt-1 text-xs text-gray-500">
-          Se cobrará por débito ACH desde tu cuenta y se enviará a{" "}
-          {collaboratorName} vía Wise.
+          Se cobrará por débito ACH desde tu cuenta y se enviará a {collaboratorName} vía Wise.
         </p>
       </div>
 
@@ -116,10 +100,7 @@ export function CollaboratorPaymentModal({
           </h4>
           <div className="max-h-56 space-y-1.5 overflow-y-auto rounded-lg bg-gray-50 p-3">
             {readiness.songs.map((song) => (
-              <div
-                key={song.songId}
-                className="flex items-center justify-between gap-3 text-sm"
-              >
+              <div key={song.songId} className="flex items-center justify-between gap-3 text-sm">
                 <span className="flex min-w-0 items-center gap-2 text-gray-700">
                   <Music2 className="h-3.5 w-3.5 flex-shrink-0 text-[#F97316]" />
                   <span className="truncate">{song.trackTitle}</span>
@@ -137,10 +118,7 @@ export function CollaboratorPaymentModal({
       {readiness && readiness.issues.length > 0 && (
         <div className="space-y-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
           {readiness.issues.map((issue) => (
-            <p
-              key={issue.code}
-              className="flex items-start gap-2 text-sm text-amber-700"
-            >
+            <p key={issue.code} className="flex items-start gap-2 text-sm text-amber-700">
               <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
               {issue.message}
             </p>
@@ -215,8 +193,8 @@ export function CollaboratorPaymentModal({
         </p>
       </div>
       <p className="max-w-sm text-xs text-gray-400">
-        El débito ACH puede tardar algunos días en liquidar. Al confirmarse,{" "}
-        {collaboratorName} recibirá su pago vía Wise.
+        El débito ACH puede tardar algunos días en liquidar. Al confirmarse, {collaboratorName}{" "}
+        recibirá su pago vía Wise.
       </p>
     </div>
   );
@@ -246,9 +224,7 @@ export function CollaboratorPaymentModal({
                   <CreditCard className="h-5 w-5 text-white" />
                 </div>
                 <div className="min-w-0">
-                  <h2 className="text-lg font-bold text-gray-900">
-                    Pagar colaborador
-                  </h2>
+                  <h2 className="text-lg font-bold text-gray-900">Pagar colaborador</h2>
                   <p className="truncate text-xs text-gray-500">
                     {collaboratorName} · {collaboratorEmail}
                   </p>

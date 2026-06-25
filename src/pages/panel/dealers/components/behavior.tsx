@@ -156,9 +156,7 @@ export default function Behavior({ songId, compact = false }: BehaviorProps) {
             subtitle={`Métricas de pagos por ${dateType === "day" ? "día" : dateType === "month" ? "mes" : "año"}`}
           />
         </div>
-        <div
-          className={`flex items-center justify-center ${placeholderHeightClass} text-gray-500`}
-        >
+        <div className={`flex items-center justify-center ${placeholderHeightClass} text-gray-500`}>
           Selecciona una canción para ver las métricas
         </div>
       </div>
@@ -197,9 +195,7 @@ export default function Behavior({ songId, compact = false }: BehaviorProps) {
       </div>
       <div>
         {loading ? (
-          <div
-            className={`flex items-center justify-center ${placeholderHeightClass}`}
-          >
+          <div className={`flex items-center justify-center ${placeholderHeightClass}`}>
             <Loading />
           </div>
         ) : error ? (
@@ -209,12 +205,7 @@ export default function Behavior({ songId, compact = false }: BehaviorProps) {
             {error}
           </div>
         ) : series.length > 0 ? (
-          <ReactApexChart
-            type="area"
-            options={options}
-            series={series}
-            height={chartHeight}
-          />
+          <ReactApexChart type="area" options={options} series={series} height={chartHeight} />
         ) : (
           <div
             className={`flex items-center justify-center ${placeholderHeightClass} text-gray-500`}

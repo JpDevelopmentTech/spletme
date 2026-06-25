@@ -1,10 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSplits } from "./useSplits";
-import {
-  splitsService,
-  type Split,
-  type CreateSplitRequest,
-} from "../services/splits";
+import { splitsService, type Split, type CreateSplitRequest } from "../services/splits";
 
 interface UseSplitsIntegrationOptions {
   songId?: string;

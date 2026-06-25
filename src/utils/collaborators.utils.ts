@@ -42,9 +42,7 @@ interface PaymentBadgeStyle {
 }
 
 /** Devuelve las clases Tailwind y la etiqueta para un estado de pago */
-export const getPaymentStatusBadge = (
-  status: CollaboratorPayment["status"],
-): PaymentBadgeStyle => {
+export const getPaymentStatusBadge = (status: CollaboratorPayment["status"]): PaymentBadgeStyle => {
   switch (status) {
     case "completed":
       return { bg: "bg-green-50", text: "text-green-700", label: "Completado" };

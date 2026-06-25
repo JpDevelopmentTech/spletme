@@ -17,11 +17,7 @@ export type {
   AlbumsError,
 } from "./album.types";
 
-export type {
-  SplitCondition,
-  CreateSplitRequest,
-  SplitConditionFormData,
-} from "./split.types";
+export type { SplitCondition, CreateSplitRequest, SplitConditionFormData } from "./split.types";
 
 export type {
   PaymentRequest,

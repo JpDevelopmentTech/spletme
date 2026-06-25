@@ -46,9 +46,7 @@ export default function CardSong({ data }: { data: any }) {
           {/* Artist Icons */}
           <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
             <User className="h-4 w-4" />
-            <span className="text-sm">
-              {data?.artists?.length || 0} artistas
-            </span>
+            <span className="text-sm">{data?.artists?.length || 0} artistas</span>
           </div>
         </motion.div>
 
@@ -60,9 +58,7 @@ export default function CardSong({ data }: { data: any }) {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Colaboradores
-            </p>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Colaboradores</p>
             <div className="flex items-center">
               <div className="flex -space-x-3">
                 {data.artists.map((item: any, index: number) => (
@@ -140,10 +136,7 @@ export default function CardSong({ data }: { data: any }) {
           >
             <Plus className="h-4 w-4" />
             Añadir
-            <motion.div
-              animate={{ x: [0, 3, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-            >
+            <motion.div animate={{ x: [0, 3, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
               →
             </motion.div>
           </motion.button>

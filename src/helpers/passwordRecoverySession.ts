@@ -12,9 +12,7 @@ type PasswordRecoverySessionData = {
   verificationCode: string;
 };
 
-const isValidPayload = (
-  payload: unknown,
-): payload is PasswordRecoverySessionPayload => {
+const isValidPayload = (payload: unknown): payload is PasswordRecoverySessionPayload => {
   if (!payload || typeof payload !== "object") {
     return false;
   }
@@ -46,10 +44,7 @@ const save = (email: string, verificationCode: string): void => {
     expiresAt: Date.now() + PASSWORD_RECOVERY_TTL_MS,
   };
 
-  sessionStorage.setItem(
-    PASSWORD_RECOVERY_SESSION_KEY,
-    JSON.stringify(payload),
-  );
+  sessionStorage.setItem(PASSWORD_RECOVERY_SESSION_KEY, JSON.stringify(payload));
 };
 
 const get = (): PasswordRecoverySessionData | null => {

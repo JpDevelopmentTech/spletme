@@ -146,10 +146,7 @@ const ACTION_STYLES: Record<string, { label: string; cls: string }> = {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function CollaboratorDetailModal({
-  collaborator,
-  onClose,
-}: CollaboratorDetailModalProps) {
+export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorDetailModalProps) {
   const [detail, setDetail] = useState<ApiCollaboratorDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -187,17 +184,13 @@ export function CollaboratorDetailModal({
     setHistoryLoading(true);
     songSplitsService
       .getSplitHistoryBySong(selectedSong.songId)
-      .then((rows) =>
-        setHistory((rows ?? []) as unknown as SplitHistoryEntry[]),
-      )
+      .then((rows) => setHistory((rows ?? []) as unknown as SplitHistoryEntry[]))
       .catch(() => setHistory([]))
       .finally(() => setHistoryLoading(false));
   }, [selectedSong?.songId]);
 
-  const totalStreams =
-    detail?.songs.reduce((s, x) => s + (x.totalStreams ?? 0), 0) ?? 0;
-  const totalNet =
-    detail?.songs.reduce((s, x) => s + (x.totalNetIncome ?? 0), 0) ?? 0;
+  const totalStreams = detail?.songs.reduce((s, x) => s + (x.totalStreams ?? 0), 0) ?? 0;
+  const totalNet = detail?.songs.reduce((s, x) => s + (x.totalNetIncome ?? 0), 0) ?? 0;
 
   // Use metrics.totals when available, fall back to detail.songs
   const collaboratorTotalStreams =
@@ -213,15 +206,10 @@ export function CollaboratorDetailModal({
   const maxStreams = Math.max(collaboratorTotalStreams, songStreams, 1);
 
   // Platform data from metrics endpoint
-  const selectedSongMetrics = metrics?.songs.find(
-    (s) => s.songId === selectedSong?.songId,
-  );
+  const selectedSongMetrics = metrics?.songs.find((s) => s.songId === selectedSong?.songId);
   const songPlatforms = selectedSongMetrics?.byPlatform ?? [];
   const globalPlatforms = metrics?.totals.byPlatform ?? [];
-  const maxPlatformStreams = Math.max(
-    ...songPlatforms.map((p) => p.streams),
-    1,
-  );
+  const maxPlatformStreams = Math.max(...songPlatforms.map((p) => p.streams), 1);
 
   return (
     <div
@@ -258,10 +246,7 @@ export function CollaboratorDetailModal({
                 className="flex h-16 w-16 items-center justify-center rounded-full"
                 style={{ backgroundColor: collaborator.avatarBg }}
               >
-                <span
-                  className="text-xl font-bold"
-                  style={{ color: collaborator.avatarText }}
-                >
+                <span className="text-xl font-bold" style={{ color: collaborator.avatarText }}>
                   {collaborator.initials}
                 </span>
               </div>
@@ -276,8 +261,7 @@ export function CollaboratorDetailModal({
                   </span>
                 </div>
               </div>
-              {(detail?.roles?.length ?? collaborator.roles?.length ?? 0) >
-                0 && (
+              {(detail?.roles?.length ?? collaborator.roles?.length ?? 0) > 0 && (
                 <div className="flex flex-wrap items-center justify-center gap-1">
                   {(detail?.roles ?? collaborator.roles ?? []).map((r) => (
                     <span
@@ -295,9 +279,7 @@ export function CollaboratorDetailModal({
             </div>
 
             <div className="flex flex-col gap-2 border-b border-gray-100 px-4 py-4">
-              <span className="text-[10px] font-bold tracking-wider text-[#9CA3AF]">
-                RESUMEN
-              </span>
+              <span className="text-[10px] font-bold tracking-wider text-[#9CA3AF]">RESUMEN</span>
               <div className="flex flex-col gap-1.5">
                 {[
                   {
@@ -335,17 +317,13 @@ export function CollaboratorDetailModal({
 
             {detail && (detail.invitedBy || detail.createdAt) && (
               <div className="flex flex-col gap-2 px-4 py-4">
-                <span className="text-[10px] font-bold tracking-wider text-[#9CA3AF]">
-                  INFO
-                </span>
+                <span className="text-[10px] font-bold tracking-wider text-[#9CA3AF]">INFO</span>
                 <div className="flex flex-col gap-2.5">
                   {detail.createdAt && (
                     <div className="flex items-start gap-2">
                       <Calendar className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-[#9CA3AF]" />
                       <div className="flex flex-col">
-                        <span className="text-[10px] text-[#9CA3AF]">
-                          Miembro desde
-                        </span>
+                        <span className="text-[10px] text-[#9CA3AF]">Miembro desde</span>
                         <span className="text-[11px] font-semibold text-[#374151]">
                           {fmtDate(detail.createdAt)}
                         </span>
@@ -356,9 +334,7 @@ export function CollaboratorDetailModal({
                     <div className="flex items-start gap-2">
                       <UserCheck className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-[#9CA3AF]" />
                       <div className="flex min-w-0 flex-col">
-                        <span className="text-[10px] text-[#9CA3AF]">
-                          Invitado por
-                        </span>
+                        <span className="text-[10px] text-[#9CA3AF]">Invitado por</span>
                         <span className="truncate text-[11px] font-semibold text-[#374151]">
                           {detail.invitedBy.name}
                         </span>
@@ -376,13 +352,9 @@ export function CollaboratorDetailModal({
           {/* Songs panel */}
           <div className="flex min-h-0 min-w-0 flex-1 flex-col">
             <div className="flex flex-shrink-0 items-center justify-between border-b border-gray-100 px-4 py-3">
-              <span className="text-[11px] font-bold tracking-wider text-[#9CA3AF]">
-                CANCIONES
-              </span>
+              <span className="text-[11px] font-bold tracking-wider text-[#9CA3AF]">CANCIONES</span>
               {detail && (
-                <span className="text-[10px] text-[#9CA3AF]">
-                  {detail.songs.length} en total
-                </span>
+                <span className="text-[10px] text-[#9CA3AF]">{detail.songs.length} en total</span>
               )}
             </div>
             <div className="flex flex-1 flex-col gap-1.5 overflow-y-auto px-3 py-3">
@@ -392,9 +364,7 @@ export function CollaboratorDetailModal({
                 </div>
               )}
               {!loading && error && (
-                <p className="py-4 text-center text-xs text-red-400">
-                  Error al cargar.
-                </p>
+                <p className="py-4 text-center text-xs text-red-400">Error al cargar.</p>
               )}
               {!loading &&
                 !error &&
@@ -425,9 +395,7 @@ export function CollaboratorDetailModal({
                           {song.trackTitle}
                         </p>
                         <div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-1">
-                          <p className="truncate text-[10px] text-[#6B7280]">
-                            {song.artistName}
-                          </p>
+                          <p className="truncate text-[10px] text-[#6B7280]">{song.artistName}</p>
                           {(song.roles ?? []).map((r) => (
                             <span
                               key={r}
@@ -604,10 +572,7 @@ export function CollaboratorDetailModal({
                             <span className="text-[9px] uppercase tracking-wide text-[#9CA3AF]">
                               {label}
                             </span>
-                            <span
-                              className="text-[11px] font-bold"
-                              style={{ color }}
-                            >
+                            <span className="text-[11px] font-bold" style={{ color }}>
                               {value}
                             </span>
                           </div>
@@ -623,9 +588,7 @@ export function CollaboratorDetailModal({
                     </span>
                     <div className="flex flex-col gap-1.5 rounded-xl border border-gray-100 bg-[#F9FAFB] px-3 py-3">
                       <div className="flex items-center gap-2">
-                        <span className="w-14 flex-shrink-0 text-[9px] text-[#9CA3AF]">
-                          Total
-                        </span>
+                        <span className="w-14 flex-shrink-0 text-[9px] text-[#9CA3AF]">Total</span>
                         <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-100">
                           <div
                             className="h-full rounded-full bg-[#06B6D4]"
@@ -656,9 +619,7 @@ export function CollaboratorDetailModal({
 
                     <div className="flex flex-col gap-1.5 rounded-xl border border-gray-100 bg-[#F9FAFB] px-3 py-3">
                       <div className="flex items-center gap-2">
-                        <span className="w-14 flex-shrink-0 text-[9px] text-[#9CA3AF]">
-                          Total
-                        </span>
+                        <span className="w-14 flex-shrink-0 text-[9px] text-[#9CA3AF]">Total</span>
                         <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-100">
                           <div
                             className="h-full rounded-full bg-[#8B5CF6]"
@@ -719,9 +680,7 @@ export function CollaboratorDetailModal({
                                 className="h-full rounded-full"
                                 style={{
                                   width: `${pct}%`,
-                                  backgroundColor: isThis
-                                    ? "#F97316"
-                                    : "#34D399",
+                                  backgroundColor: isThis ? "#F97316" : "#34D399",
                                 }}
                               />
                             </div>
@@ -755,13 +714,9 @@ export function CollaboratorDetailModal({
                             );
                             const globalPct =
                               ((globalEntry?.streams ?? 0) /
-                                Math.max(
-                                  ...globalPlatforms.map((g) => g.streams),
-                                  1,
-                                )) *
+                                Math.max(...globalPlatforms.map((g) => g.streams), 1)) *
                               100;
-                            const songPct =
-                              (p.streams / maxPlatformStreams) * 100;
+                            const songPct = (p.streams / maxPlatformStreams) * 100;
                             return (
                               <div
                                 key={p.platform}
@@ -861,8 +816,7 @@ export function CollaboratorDetailModal({
                   ) : (
                     <div className="flex flex-col gap-2">
                       {history.map((entry) => {
-                        const style =
-                          ACTION_STYLES[entry.action] ?? ACTION_STYLES.update;
+                        const style = ACTION_STYLES[entry.action] ?? ACTION_STYLES.update;
                         return (
                           <div
                             key={entry._id}

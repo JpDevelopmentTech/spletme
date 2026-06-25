@@ -27,10 +27,7 @@ interface SubprofilesCardProps {
   createSuccess: boolean;
   onReload: () => void;
   onToggleCreate: () => void;
-  onCreateFormChange: (
-    field: keyof RegisterSubuserSchema,
-    value: string,
-  ) => void;
+  onCreateFormChange: (field: keyof RegisterSubuserSchema, value: string) => void;
   onCreateSubmit: (e: React.FormEvent) => void;
   onConfirmUnlink: (id: string) => void;
   onCancelUnlink: () => void;
@@ -71,9 +68,7 @@ export function SubprofilesCard({
         style={{ borderBottom: hasBorder ? "1px solid #E5E7EB" : undefined }}
       >
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <span className="text-[15px] font-semibold text-[#111827]">
-            Subperfiles
-          </span>
+          <span className="text-[15px] font-semibold text-[#111827]">Subperfiles</span>
           <span className="text-xs text-[#6B7280]">
             {subLoading
               ? "Cargando..."
@@ -85,11 +80,7 @@ export function SubprofilesCard({
           className="flex-shrink-0 rounded-lg p-2 transition-colors hover:bg-[#F3F4F6]"
           title="Recargar"
         >
-          <RefreshCcw
-            size={14}
-            color="#9CA3AF"
-            className={subLoading ? "animate-spin" : ""}
-          />
+          <RefreshCcw size={14} color="#9CA3AF" className={subLoading ? "animate-spin" : ""} />
         </button>
         <button
           onClick={onToggleCreate}
@@ -127,8 +118,7 @@ export function SubprofilesCard({
                 border: "1px solid rgba(34,197,94,0.2)",
               }}
             >
-              <CheckCircle2 size={14} className="flex-shrink-0" />{" "}
-              {unlinkSuccess}
+              <CheckCircle2 size={14} className="flex-shrink-0" /> {unlinkSuccess}
             </div>
           )}
         </div>
@@ -136,10 +126,7 @@ export function SubprofilesCard({
 
       {/* Create form */}
       {isCreating && (
-        <form
-          onSubmit={onCreateSubmit}
-          className="border-b border-[#E5E7EB] px-5 py-4"
-        >
+        <form onSubmit={onCreateSubmit} className="border-b border-[#E5E7EB] px-5 py-4">
           <p className="mb-4 text-[11px] font-semibold uppercase tracking-widest text-[#9CA3AF]">
             Nuevo subperfil
           </p>
@@ -162,8 +149,8 @@ export function SubprofilesCard({
                 border: "1px solid rgba(34,197,94,0.2)",
               }}
             >
-              <CheckCircle2 size={14} className="flex-shrink-0" /> Subperfil
-              creado. Se envió un código de verificación al correo.
+              <CheckCircle2 size={14} className="flex-shrink-0" /> Subperfil creado. Se envió un
+              código de verificación al correo.
             </div>
           )}
           <div className="mb-3 grid grid-cols-2 gap-3">
@@ -181,17 +168,13 @@ export function SubprofilesCard({
                   disabled={createLoading || createSuccess}
                 />
                 {createErrors[field] && (
-                  <p className="mt-1 text-xs text-red-500">
-                    {createErrors[field]}
-                  </p>
+                  <p className="mt-1 text-xs text-red-500">{createErrors[field]}</p>
                 )}
               </div>
             ))}
           </div>
           <div className="mb-3">
-            <label className="mb-1.5 block text-xs font-semibold text-[#6B7280]">
-              Usuario *
-            </label>
+            <label className="mb-1.5 block text-xs font-semibold text-[#6B7280]">Usuario *</label>
             <input
               type="text"
               value={createForm.username}
@@ -201,9 +184,7 @@ export function SubprofilesCard({
               disabled={createLoading || createSuccess}
             />
             {createErrors.username && (
-              <p className="mt-1 text-xs text-red-500">
-                {createErrors.username}
-              </p>
+              <p className="mt-1 text-xs text-red-500">{createErrors.username}</p>
             )}
           </div>
           <div className="mb-4">
@@ -252,12 +233,8 @@ export function SubprofilesCard({
         </div>
       ) : subprofiles.length === 0 && !isCreating ? (
         <div className="flex flex-col items-center justify-center gap-2 py-10">
-          <p className="text-sm font-medium text-[#6B7280]">
-            Sin subperfiles vinculados
-          </p>
-          <p className="text-xs text-[#9CA3AF]">
-            Usa el botón "Crear subperfil" para agregar uno.
-          </p>
+          <p className="text-sm font-medium text-[#6B7280]">Sin subperfiles vinculados</p>
+          <p className="text-xs text-[#9CA3AF]">Usa el botón "Crear subperfil" para agregar uno.</p>
         </div>
       ) : (
         <div className="divide-y divide-[#E5E7EB]">
@@ -288,9 +265,7 @@ export function SubprofilesCard({
                       className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"
                       style={{ backgroundColor: "#EF4444" }}
                     >
-                      {isUnlinking && (
-                        <Loader2 size={12} className="animate-spin" />
-                      )}
+                      {isUnlinking && <Loader2 size={12} className="animate-spin" />}
                       Confirmar
                     </button>
                     <button

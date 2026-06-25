@@ -4,10 +4,7 @@ import Title from "../../../../components/title/title";
 const TotalPay = () => {
   return (
     <div className="col-span-6 flex flex-col rounded-2xl p-6 shadow-lg">
-      <Title
-        title="Total a pagar"
-        subtitle="Unificado de canciones pendientes por pagar"
-      />
+      <Title title="Total a pagar" subtitle="Unificado de canciones pendientes por pagar" />
       <div className="mt-3 flex items-center justify-between">
         <span className="text-3xl text-quinary">$1.159,80</span>
         <Button onClick={() => {}} type="quinary">

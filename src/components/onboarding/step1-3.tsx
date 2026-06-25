@@ -4,16 +4,8 @@ import theorchardLogo from "../../assets/images/The_Orchard_Logo.svg.png";
 import symphonicLogo from "../../assets/images/SymPhoNic_Logo_Square_BGwhite_BlackText-1024x1024.png";
 import { useState } from "react";
 
-const Step13 = ({
-  nextStep,
-  prevStep,
-}: {
-  nextStep: VoidFunction;
-  prevStep: VoidFunction;
-}) => {
-  const [selectedDistributor, setSelectedDistributor] = useState<
-    string | null
-  >();
+const Step13 = ({ nextStep, prevStep }: { nextStep: VoidFunction; prevStep: VoidFunction }) => {
+  const [selectedDistributor, setSelectedDistributor] = useState<string | null>();
 
   return (
     <div>
@@ -35,11 +27,7 @@ const Step13 = ({
             htmlFor="believe"
             className="inline-flex h-32 w-32 cursor-pointer items-center justify-center rounded-lg border-2 border-gray-200 bg-gray-50 p-5 text-gray-500 hover:bg-gray-100 hover:text-gray-600 peer-checked:border-gray-500 peer-checked:text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300 dark:peer-checked:text-gray-500"
           >
-            <img
-              src={believeLogo}
-              alt="believe"
-              className="h-full w-full object-contain"
-            />
+            <img src={believeLogo} alt="believe" className="h-full w-full object-contain" />
           </label>
         </div>
         <div>
@@ -56,11 +44,7 @@ const Step13 = ({
             htmlFor="onerpm"
             className="inline-flex h-32 w-32 cursor-pointer items-center justify-center rounded-lg border-2 border-gray-200 bg-gray-50 p-5 text-gray-500 hover:bg-gray-100 hover:text-gray-600 peer-checked:border-gray-500 peer-checked:text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300 dark:peer-checked:text-gray-500"
           >
-            <img
-              src={onerpmLogo}
-              alt="believe"
-              className="h-full w-full object-contain"
-            />
+            <img src={onerpmLogo} alt="believe" className="h-full w-full object-contain" />
           </label>
         </div>
         <div>
@@ -77,11 +61,7 @@ const Step13 = ({
             htmlFor="orchard"
             className="inline-flex h-32 w-32 cursor-pointer items-center justify-center rounded-lg border-2 border-gray-200 bg-gray-50 p-5 text-gray-500 hover:bg-gray-100 hover:text-gray-600 peer-checked:border-gray-500 peer-checked:text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300 dark:peer-checked:text-gray-500"
           >
-            <img
-              src={theorchardLogo}
-              alt="believe"
-              className="h-full w-full object-contain"
-            />
+            <img src={theorchardLogo} alt="believe" className="h-full w-full object-contain" />
           </label>
         </div>
         <div>
@@ -98,11 +78,7 @@ const Step13 = ({
             htmlFor="symphonic"
             className="inline-flex h-32 w-32 cursor-pointer items-center justify-center rounded-lg border-2 border-gray-200 bg-gray-50 p-5 text-gray-500 hover:bg-gray-100 hover:text-gray-600 peer-checked:border-gray-500 peer-checked:text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300 dark:peer-checked:text-gray-500"
           >
-            <img
-              src={symphonicLogo}
-              alt="believe"
-              className="h-full w-full object-contain"
-            />
+            <img src={symphonicLogo} alt="believe" className="h-full w-full object-contain" />
           </label>
         </div>
       </div>

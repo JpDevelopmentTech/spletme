@@ -1,10 +1,5 @@
 import { apiClient } from "@/infrastructure/http/axiosClient";
-import type {
-  Album,
-  AlbumsResponse,
-  AlbumResponse,
-  AlbumsError,
-} from "../models/album";
+import type { Album, AlbumsResponse, AlbumResponse, AlbumsError } from "../models/album";
 import type { AlbumBalance } from "../types/accounting.types";
 
 class AlbumService {
@@ -15,9 +10,7 @@ class AlbumService {
    */
   async getAlbums(skip = 0, limit = 10): Promise<AlbumsResponse | AlbumsError> {
     try {
-      const response = await apiClient.get(
-        `${this.BASE}/albums?skip=${skip}&limit=${limit}`,
-      );
+      const response = await apiClient.get(`${this.BASE}/albums?skip=${skip}&limit=${limit}`);
       return response.data as AlbumsResponse;
     } catch (error: unknown) {
       const axErr = error as {
@@ -39,9 +32,7 @@ class AlbumService {
   async getAlbumByUPC(upc: string): Promise<AlbumResponse | AlbumsError> {
     try {
       if (!upc) return { success: false, message: "UPC parameter is required" };
-      const response = await apiClient.get(
-        `${this.BASE}/albums/${encodeURIComponent(upc)}`,
-      );
+      const response = await apiClient.get(`${this.BASE}/albums/${encodeURIComponent(upc)}`);
       return response.data as AlbumResponse;
     } catch (error: unknown) {
       const axErr = error as {
@@ -90,9 +81,7 @@ class AlbumService {
   async getAlbumBalance(albumId: string): Promise<AlbumBalance | null> {
     try {
       if (!albumId || albumId.length !== 24) return null;
-      const response = await apiClient.get(
-        `/accounting/balance/album/${albumId}`,
-      );
+      const response = await apiClient.get(`/accounting/balance/album/${albumId}`);
       return response.data?.data ?? response.data;
     } catch {
       return null;

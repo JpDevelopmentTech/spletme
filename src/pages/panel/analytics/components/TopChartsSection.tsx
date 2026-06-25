@@ -1,8 +1,4 @@
-import type {
-  TopSong,
-  TopArtist,
-  TopLabel,
-} from "../../../../types/analytics.types";
+import type { TopSong, TopArtist, TopLabel } from "../../../../types/analytics.types";
 
 interface Props {
   topSongs: TopSong[];
@@ -63,23 +59,17 @@ function TopCard<T>({
         <div className="flex flex-col gap-3">
           {items.map((item, i) => (
             <div key={i} className="flex items-center gap-3">
-              <span
-                className={`w-5 flex-shrink-0 text-[13px] font-bold ${RANK_COLORS[i]}`}
-              >
+              <span className={`w-5 flex-shrink-0 text-[13px] font-bold ${RANK_COLORS[i]}`}>
                 #{i + 1}
               </span>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-[13px] font-semibold text-[#111827]">
                   {getLabel(item)}
                 </p>
-                <p className="truncate text-[11px] text-[#9CA3AF]">
-                  {getSub(item)}
-                </p>
+                <p className="truncate text-[11px] text-[#9CA3AF]">{getSub(item)}</p>
               </div>
               <div className="flex flex-shrink-0 flex-col items-end gap-0.5">
-                <span className="text-[12px] font-bold text-green-500">
-                  {fmt(getIncome(item))}
-                </span>
+                <span className="text-[12px] font-bold text-green-500">{fmt(getIncome(item))}</span>
                 <span className="text-[10px] text-[#9CA3AF]">
                   {fmtStreams(getStreams(item))} streams
                 </span>
@@ -92,12 +82,7 @@ function TopCard<T>({
   );
 }
 
-export default function TopChartsSection({
-  topSongs,
-  topArtists,
-  topLabels,
-  loading,
-}: Props) {
+export default function TopChartsSection({ topSongs, topArtists, topLabels, loading }: Props) {
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
       <TopCard<TopSong>

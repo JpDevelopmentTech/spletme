@@ -1,12 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
-import {
-  Loader2,
-  AlertCircle,
-  CheckCircle2,
-  Users,
-  RefreshCw,
-} from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle2, Users, RefreshCw } from "lucide-react";
 import { AuthService } from "@/services/auth";
 import { setAuth } from "@/store/states/authSlice";
 import LocalStorageService from "@/services/localstorage";
@@ -26,14 +20,9 @@ interface SwitchSubuserModalProps {
 }
 
 const getInitials = (name: string, lastName: string) =>
-  (name?.charAt(0) || "U").toUpperCase() +
-  (lastName?.charAt(0) || "").toUpperCase();
+  (name?.charAt(0) || "U").toUpperCase() + (lastName?.charAt(0) || "").toUpperCase();
 
-const SwitchSubuserModal = ({
-  isOpen,
-  onClose,
-  currentUserId,
-}: SwitchSubuserModalProps) => {
+const SwitchSubuserModal = ({ isOpen, onClose, currentUserId }: SwitchSubuserModalProps) => {
   const dispatch = useDispatch();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -58,10 +47,7 @@ const SwitchSubuserModal = ({
   useEffect(() => {
     if (!isOpen) return;
     const handleClickOutside = (e: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         onClose();
       }
     };
@@ -102,11 +88,9 @@ const SwitchSubuserModal = ({
         ...stored,
         ...responseUser,
         id: (responseUser.id || responseUser.userId || subuser.id) as string,
-        username:
-          (responseUser.username as string | undefined) ?? subuser.username,
+        username: (responseUser.username as string | undefined) ?? subuser.username,
         name: (responseUser.name as string | undefined) ?? subuser.name,
-        lastName:
-          (responseUser.lastName as string | undefined) ?? subuser.lastName,
+        lastName: (responseUser.lastName as string | undefined) ?? subuser.lastName,
         email: (responseUser.email as string | undefined) ?? subuser.email,
       };
 
@@ -151,10 +135,7 @@ const SwitchSubuserModal = ({
         }}
       >
         {/* Current account */}
-        <div
-          className="px-4 pb-3 pt-4"
-          style={{ borderBottom: "1px solid #1E293B" }}
-        >
+        <div className="px-4 pb-3 pt-4" style={{ borderBottom: "1px solid #1E293B" }}>
           <p
             className="mb-2.5 text-[10px] font-semibold uppercase tracking-widest"
             style={{ color: "#475569" }}
@@ -169,20 +150,14 @@ const SwitchSubuserModal = ({
               {getInitials(currentName, currentLastName)}
             </div>
             <div className="min-w-0 flex-1">
-              <p
-                className="truncate text-sm font-semibold"
-                style={{ color: "#F1F5F9" }}
-              >
+              <p className="truncate text-sm font-semibold" style={{ color: "#F1F5F9" }}>
                 {currentName} {currentLastName}
               </p>
               <p className="truncate text-xs" style={{ color: "#64748B" }}>
                 @{currentUsername}
               </p>
             </div>
-            <CheckCircle2
-              className="h-4 w-4 flex-shrink-0"
-              style={{ color: "#22C55E" }}
-            />
+            <CheckCircle2 className="h-4 w-4 flex-shrink-0" style={{ color: "#22C55E" }} />
           </div>
         </div>
 
@@ -227,10 +202,7 @@ const SwitchSubuserModal = ({
           <div className="pb-2" style={{ maxHeight: 240, overflowY: "auto" }}>
             {loading ? (
               <div className="flex flex-col items-center justify-center gap-2 py-8">
-                <Loader2
-                  className="h-5 w-5 animate-spin"
-                  style={{ color: "#F97316" }}
-                />
+                <Loader2 className="h-5 w-5 animate-spin" style={{ color: "#F97316" }} />
                 <p className="text-xs" style={{ color: "#475569" }}>
                   Cargando cuentas...
                 </p>
@@ -243,10 +215,7 @@ const SwitchSubuserModal = ({
                 >
                   <Users className="h-5 w-5" style={{ color: "#334155" }} />
                 </div>
-                <p
-                  className="text-center text-sm font-medium"
-                  style={{ color: "#94A3B8" }}
-                >
+                <p className="text-center text-sm font-medium" style={{ color: "#94A3B8" }}>
                   Sin subperfiles
                 </p>
                 <p className="text-center text-xs" style={{ color: "#475569" }}>
@@ -266,14 +235,11 @@ const SwitchSubuserModal = ({
                     style={{ backgroundColor: "transparent" }}
                     onMouseEnter={(e) => {
                       if (!isDisabled)
-                        (
-                          e.currentTarget as HTMLButtonElement
-                        ).style.backgroundColor = "rgba(255,255,255,0.04)";
+                        (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+                          "rgba(255,255,255,0.04)";
                     }}
                     onMouseLeave={(e) => {
-                      (
-                        e.currentTarget as HTMLButtonElement
-                      ).style.backgroundColor = "transparent";
+                      (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent";
                     }}
                   >
                     <div
@@ -285,33 +251,21 @@ const SwitchSubuserModal = ({
                       }}
                     >
                       {isSwitching ? (
-                        <Loader2
-                          className="h-4 w-4 animate-spin"
-                          style={{ color: "#F97316" }}
-                        />
+                        <Loader2 className="h-4 w-4 animate-spin" style={{ color: "#F97316" }} />
                       ) : (
                         getInitials(subuser.name, subuser.lastName)
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p
-                        className="truncate text-sm font-medium"
-                        style={{ color: "#E2E8F0" }}
-                      >
+                      <p className="truncate text-sm font-medium" style={{ color: "#E2E8F0" }}>
                         {subuser.name} {subuser.lastName}
                       </p>
-                      <p
-                        className="truncate text-xs"
-                        style={{ color: "#475569" }}
-                      >
+                      <p className="truncate text-xs" style={{ color: "#475569" }}>
                         @{subuser.username}
                       </p>
                     </div>
                     {isSwitching && (
-                      <span
-                        className="text-[10px] font-medium"
-                        style={{ color: "#F97316" }}
-                      >
+                      <span className="text-[10px] font-medium" style={{ color: "#F97316" }}>
                         Cambiando...
                       </span>
                     )}
@@ -343,8 +297,7 @@ const SwitchSubuserModal = ({
               (e.currentTarget as HTMLButtonElement).style.color = "#94A3B8";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                "transparent";
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent";
               (e.currentTarget as HTMLButtonElement).style.color = "#64748B";
             }}
           >

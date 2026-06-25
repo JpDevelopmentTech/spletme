@@ -1,15 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  X,
-  UserPlus,
-  Mail,
-  User,
-  AlertCircle,
-  Check,
-  Loader2,
-  UserCircle,
-} from "lucide-react";
+import { X, UserPlus, Mail, User, AlertCircle, Check, Loader2, UserCircle } from "lucide-react";
 import { AuthService, RegisterSubuserSchema } from "@/services/auth";
 
 interface RegisterSubuserModalProps {
@@ -148,12 +139,8 @@ const RegisterSubuserModal = ({
                   <UserPlus className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-white">
-                    Crear Subusuario
-                  </h2>
-                  <p className="text-sm text-white/80">
-                    Agregar un nuevo subusuario a tu cuenta
-                  </p>
+                  <h2 className="text-xl font-bold text-white">Crear Subusuario</h2>
+                  <p className="text-sm text-white/80">Agregar un nuevo subusuario a tu cuenta</p>
                 </div>
               </div>
               <button
@@ -208,9 +195,7 @@ const RegisterSubuserModal = ({
                     placeholder="johndoe"
                   />
                   {errors.username && (
-                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                      {errors.username}
-                    </p>
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.username}</p>
                   )}
                 </div>
 
@@ -234,9 +219,7 @@ const RegisterSubuserModal = ({
                       placeholder="Juan"
                     />
                     {errors.name && (
-                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                        {errors.name}
-                      </p>
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name}</p>
                     )}
                   </div>
 
@@ -285,9 +268,7 @@ const RegisterSubuserModal = ({
                     placeholder="juan@example.com"
                   />
                   {errors.email && (
-                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                      {errors.email}
-                    </p>
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email}</p>
                   )}
                 </div>
 

@@ -57,8 +57,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
         setError(response.message || "Error loading documents");
       }
     } catch (err) {
-      const errorMsg =
-        err instanceof Error ? err.message : "Failed to load documents";
+      const errorMsg = err instanceof Error ? err.message : "Failed to load documents";
       setError(errorMsg);
     } finally {
       setLoading(false);
@@ -151,16 +150,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
     }
   };
 
-  const ALLOWED_TYPES = [
-    "pdf",
-    "doc",
-    "docx",
-    "xlsx",
-    "xls",
-    "jpg",
-    "jpeg",
-    "png",
-  ];
+  const ALLOWED_TYPES = ["pdf", "doc", "docx", "xlsx", "xls", "jpg", "jpeg", "png"];
   const MAX_SIZE_MB = 500;
 
   const validateFile = (file: File): string | null => {
@@ -246,21 +236,11 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-gray-200 bg-gray-50">
-                    <th className="p-2 text-left font-semibold text-gray-700">
-                      Documento
-                    </th>
-                    <th className="p-2 text-left font-semibold text-gray-700">
-                      Tipo
-                    </th>
-                    <th className="p-2 text-left font-semibold text-gray-700">
-                      Tamaño
-                    </th>
-                    <th className="p-2 text-left font-semibold text-gray-700">
-                      Fecha
-                    </th>
-                    <th className="p-2 text-center font-semibold text-gray-700">
-                      Acciones
-                    </th>
+                    <th className="p-2 text-left font-semibold text-gray-700">Documento</th>
+                    <th className="p-2 text-left font-semibold text-gray-700">Tipo</th>
+                    <th className="p-2 text-left font-semibold text-gray-700">Tamaño</th>
+                    <th className="p-2 text-left font-semibold text-gray-700">Fecha</th>
+                    <th className="p-2 text-center font-semibold text-gray-700">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -272,9 +252,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           {getFileIcon(doc.type)}
-                          <span className="text-xs text-gray-700">
-                            {doc.name}
-                          </span>
+                          <span className="text-xs text-gray-700">{doc.name}</span>
                         </div>
                       </td>
                       <td className="p-2">
@@ -335,9 +313,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
             <div className="flex h-full items-center justify-center">
               <div className="text-center">
                 <FileText className="mx-auto mb-2 h-8 w-8 text-gray-300" />
-                <p className="text-sm text-gray-500">
-                  No hay documentos cargados
-                </p>
+                <p className="text-sm text-gray-500">No hay documentos cargados</p>
               </div>
             </div>
           )}
@@ -350,9 +326,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
           <div className="animate-in fade-in zoom-in w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl duration-300">
             {/* Modal Header */}
             <div className="flex items-center justify-between bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
-              <h2 className="text-xl font-bold text-white">
-                Cargar Nuevo Documento
-              </h2>
+              <h2 className="text-xl font-bold text-white">Cargar Nuevo Documento</h2>
               <button
                 onClick={() => setShowUploadModal(false)}
                 disabled={uploading}
@@ -402,8 +376,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
                   </span>
                 </label>
                 <p className="mt-4 text-xs text-slate-400">
-                  Formatos: PDF, DOC, DOCX, XLS, XLSX, JPG, JPEG, PNG · Máx. 500
-                  MB
+                  Formatos: PDF, DOC, DOCX, XLS, XLSX, JPG, JPEG, PNG · Máx. 500 MB
                 </p>
               </div>
 
@@ -432,12 +405,8 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
                   <AlertCircle className="h-6 w-6 text-red-600" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-slate-900">
-                    ¿Estás seguro?
-                  </h3>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Esta acción no se puede deshacer
-                  </p>
+                  <h3 className="text-xl font-bold text-slate-900">¿Estás seguro?</h3>
+                  <p className="mt-1 text-sm text-slate-500">Esta acción no se puede deshacer</p>
                 </div>
               </div>
 
@@ -473,9 +442,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
           <div className="animate-in fade-in zoom-in w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-2xl duration-300">
             <div className="flex items-center justify-between bg-gradient-to-r from-slate-700 to-slate-900 px-6 py-4">
-              <h2 className="text-xl font-bold text-white">
-                Vista Previa: {selectedDoc.name}
-              </h2>
+              <h2 className="text-xl font-bold text-white">Vista Previa: {selectedDoc.name}</h2>
               <button
                 onClick={() => {
                   setShowPreview(false);
@@ -510,9 +477,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
                   <div className="rounded-full bg-white p-4 shadow">
                     {getFileIcon(selectedDoc.type)}
                   </div>
-                  <p className="font-semibold text-slate-600">
-                    {selectedDoc.name}
-                  </p>
+                  <p className="font-semibold text-slate-600">{selectedDoc.name}</p>
                   <p className="text-sm text-slate-400">
                     Este tipo de archivo no admite vista previa
                   </p>

@@ -1,10 +1,4 @@
-const Step12 = ({
-  nextStep,
-  prevStep,
-}: {
-  nextStep: () => void;
-  prevStep: () => void;
-}) => {
+const Step12 = ({ nextStep, prevStep }: { nextStep: () => void; prevStep: () => void }) => {
   return (
     <div>
       <h1 className="leding-tight mb-4 text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:mb-6">
@@ -91,12 +85,8 @@ const Step12 = ({
               />
             </div>
             <div className="ml-3 text-sm">
-              <label
-                htmlFor="terms"
-                className="font-light text-gray-500 dark:text-gray-300"
-              >
-                Al registrarte, estás creando una cuenta de Flowbite y aceptas
-                los{" "}
+              <label htmlFor="terms" className="font-light text-gray-500 dark:text-gray-300">
+                Al registrarte, estás creando una cuenta de Flowbite y aceptas los{" "}
                 <a
                   className="font-medium text-gray-600 hover:underline dark:text-gray-500"
                   href="#"
@@ -124,10 +114,7 @@ const Step12 = ({
               />
             </div>
             <div className="ml-3 text-sm">
-              <label
-                htmlFor="newsletter"
-                className="font-light text-gray-500 dark:text-gray-300"
-              >
+              <label htmlFor="newsletter" className="font-light text-gray-500 dark:text-gray-300">
                 Enviame correos con informacion de actualizaciones
               </label>
             </div>

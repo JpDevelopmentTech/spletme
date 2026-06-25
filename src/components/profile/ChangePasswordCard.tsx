@@ -56,9 +56,7 @@ function PasswordField({
 }: PasswordFieldProps) {
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-semibold text-[#6B7280]">
-        {label} *
-      </label>
+      <label className="mb-1.5 block text-xs font-semibold text-[#6B7280]">{label} *</label>
       <div className="relative">
         <input
           type={show ? "text" : "password"}
@@ -113,12 +111,8 @@ export function ChangePasswordCard({
           <Lock size={17} color="#6B7280" />
         </div>
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <span className="text-[15px] font-semibold text-[#111827]">
-            Cambiar contraseña
-          </span>
-          <span className="text-xs text-[#6B7280]">
-            Actualiza tu contraseña de acceso
-          </span>
+          <span className="text-[15px] font-semibold text-[#111827]">Cambiar contraseña</span>
+          <span className="text-xs text-[#6B7280]">Actualiza tu contraseña de acceso</span>
         </div>
         <ChevronDown
           size={18}
@@ -129,10 +123,7 @@ export function ChangePasswordCard({
       </button>
 
       {isOpen && (
-        <form
-          onSubmit={onSubmit}
-          className="border-t border-[#E5E7EB] px-5 pb-5 pt-4"
-        >
+        <form onSubmit={onSubmit} className="border-t border-[#E5E7EB] px-5 pb-5 pt-4">
           <div className="flex flex-col gap-3">
             <PasswordField
               label="Contraseña actual"
@@ -181,8 +172,7 @@ export function ChangePasswordCard({
                   border: "1px solid rgba(34,197,94,0.2)",
                 }}
               >
-                <CheckCircle2 size={14} className="flex-shrink-0" />{" "}
-                {pwdSuccess}
+                <CheckCircle2 size={14} className="flex-shrink-0" /> {pwdSuccess}
               </div>
             )}
 

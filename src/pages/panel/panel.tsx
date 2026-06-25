@@ -93,9 +93,7 @@ export default function Panel() {
                     <div className="rounded-lg bg-purple-100 p-2 transition-colors duration-200 group-hover:bg-purple-200 dark:bg-purple-900/30 dark:group-hover:bg-purple-900/50">
                       <User className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                     </div>
-                    <span className="font-medium text-gray-700 dark:text-gray-200">
-                      Perfil
-                    </span>
+                    <span className="font-medium text-gray-700 dark:text-gray-200">Perfil</span>
                     <ChevronRight className="ml-auto h-4 w-4 text-gray-400 transition-transform duration-200 group-hover:translate-x-1" />
                   </motion.button>
 

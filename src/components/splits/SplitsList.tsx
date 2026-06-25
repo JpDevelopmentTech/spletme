@@ -182,8 +182,8 @@ export const SplitsList: React.FC<SplitsListProps> = ({
                 {split.splitConditions && split.splitConditions.length > 0 && (
                   <div className="mt-2">
                     <p className="text-sm text-gray-600">
-                      <strong>Condiciones específicas:</strong>{" "}
-                      {split.splitConditions.length} configurada(s)
+                      <strong>Condiciones específicas:</strong> {split.splitConditions.length}{" "}
+                      configurada(s)
                     </p>
                   </div>
                 )}
@@ -200,16 +200,10 @@ export const SplitsList: React.FC<SplitsListProps> = ({
       {splits.length > 0 && (
         <div className="mt-4 rounded-lg bg-gray-50 p-3">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600">
-              Total de splits: {splits.length}
-            </span>
+            <span className="text-gray-600">Total de splits: {splits.length}</span>
             <span className="text-gray-600">
               Porcentaje total:{" "}
-              {splits.reduce(
-                (sum, split) => sum + split.generalCondition.percentage,
-                0,
-              )}
-              %
+              {splits.reduce((sum, split) => sum + split.generalCondition.percentage, 0)}%
             </span>
           </div>
         </div>

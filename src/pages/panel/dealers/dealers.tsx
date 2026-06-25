@@ -13,11 +13,7 @@ import {
   MoreHorizontal,
   ArrowRight,
 } from "lucide-react";
-import type {
-  Distributor,
-  DistributorKpi,
-  Quarter,
-} from "../../../types/distributor.types";
+import type { Distributor, DistributorKpi, Quarter } from "../../../types/distributor.types";
 import { distributorsService } from "../../../services/distributorsService";
 import CreateDistributorModal from "../../../components/ui/CreateDistributorModal";
 import UploadSongsModal from "../../../components/ui/UploadSongsModal";
@@ -95,9 +91,7 @@ export default function Dealers() {
     load();
   }, []);
 
-  const filtered = distributors.filter((d) =>
-    d.name.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filtered = distributors.filter((d) => d.name.toLowerCase().includes(search.toLowerCase()));
 
   const totalIncome = kpis.reduce((s, k) => s + k.totalNetIncome, 0);
   const totalStreams = kpis.reduce((s, k) => s + k.totalStreams, 0);
@@ -174,9 +168,7 @@ export default function Dealers() {
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-col gap-1">
-            <h1 className="text-2xl font-bold text-[#111827]">
-              Distribuidores
-            </h1>
+            <h1 className="text-2xl font-bold text-[#111827]">Distribuidores</h1>
             <p className="text-sm text-[#6B7280]">
               Gestiona y analiza el rendimiento de tus distribuidores
             </p>
@@ -230,52 +222,28 @@ export default function Dealers() {
               iconColor: "text-purple-600",
               valueColor: "text-[#111827]",
             },
-          ].map(
-            ({
-              label,
-              value,
-              sub,
-              icon: Icon,
-              iconBg,
-              iconColor,
-              valueColor,
-            }) => (
-              <div
-                key={label}
-                className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-5"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-[#6B7280]">
-                    {label}
-                  </span>
-                  <div
-                    className={`h-7 w-7 ${iconBg} flex items-center justify-center rounded-md`}
-                  >
-                    <Icon className={`h-3.5 w-3.5 ${iconColor}`} />
-                  </div>
+          ].map(({ label, value, sub, icon: Icon, iconBg, iconColor, valueColor }) => (
+            <div
+              key={label}
+              className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-5"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-[#6B7280]">{label}</span>
+                <div className={`h-7 w-7 ${iconBg} flex items-center justify-center rounded-md`}>
+                  <Icon className={`h-3.5 w-3.5 ${iconColor}`} />
                 </div>
-                <p
-                  className={`text-[26px] font-bold leading-none ${valueColor}`}
-                >
-                  {value}
-                </p>
-                <span className="text-[11px] font-medium text-[#9CA3AF]">
-                  {sub}
-                </span>
               </div>
-            ),
-          )}
+              <p className={`text-[26px] font-bold leading-none ${valueColor}`}>{value}</p>
+              <span className="text-[11px] font-medium text-[#9CA3AF]">{sub}</span>
+            </div>
+          ))}
         </div>
 
         {/* KPI comparison chart */}
         {kpis.length > 0 && (
           <div className="rounded-xl border border-gray-200 bg-white p-6">
-            <h2 className="text-sm font-semibold text-[#111827]">
-              KPIs Comparativos
-            </h2>
-            <p className="mb-4 mt-0.5 text-xs text-[#6B7280]">
-              Ingresos netos por distribuidor
-            </p>
+            <h2 className="text-sm font-semibold text-[#111827]">KPIs Comparativos</h2>
+            <p className="mb-4 mt-0.5 text-xs text-[#6B7280]">Ingresos netos por distribuidor</p>
             <ReactApexChart
               options={{
                 ...kpiChartOptions,
@@ -327,9 +295,7 @@ export default function Dealers() {
             ) : filtered.length === 0 ? (
               <div className="flex h-40 flex-col items-center justify-center gap-3">
                 <p className="text-sm text-[#9CA3AF]">
-                  {distributors.length === 0
-                    ? "Aún no tienes distribuidores"
-                    : "Sin resultados"}
+                  {distributors.length === 0 ? "Aún no tienes distribuidores" : "Sin resultados"}
                 </p>
                 {distributors.length === 0 && (
                   <button
@@ -382,10 +348,7 @@ export default function Dealers() {
                               className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full"
                               style={{ backgroundColor: pal.bg }}
                             >
-                              <span
-                                className="text-[12px] font-bold"
-                                style={{ color: pal.color }}
-                              >
+                              <span className="text-[12px] font-bold" style={{ color: pal.color }}>
                                 {initials}
                               </span>
                             </div>

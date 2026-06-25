@@ -18,10 +18,7 @@ export interface IAuthService {
   register(payload: RegisterSchema): Promise<unknown>;
   logout(): Promise<void>;
   sentPasswordRecoveryRequest(email: string): Promise<PasswordRecoveryResponse>;
-  sentcodeForPasswordRecovery(
-    email: string,
-    code: string,
-  ): Promise<CodeVerificationResponse>;
+  sentcodeForPasswordRecovery(email: string, code: string): Promise<CodeVerificationResponse>;
   resetPasswordByCode(
     email: string,
     code: string,

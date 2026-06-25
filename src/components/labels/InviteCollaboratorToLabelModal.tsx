@@ -205,20 +205,16 @@ export default function InviteCollaboratorToLabelModal({
                     <div className="mx-auto max-w-sm rounded-xl bg-gray-50 p-4 dark:bg-gray-700/50">
                       <p className="text-sm text-gray-600 dark:text-gray-400">
                         Email:{" "}
-                        <span className="font-medium">
-                          {invitationResult.collaboratorEmail}
-                        </span>
+                        <span className="font-medium">{invitationResult.collaboratorEmail}</span>
                       </p>
                       <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                         Canciones que se agregarán:{" "}
-                        <span className="font-medium">
-                          {invitationResult.totalSongs}
-                        </span>
+                        <span className="font-medium">{invitationResult.totalSongs}</span>
                       </p>
                     </div>
                     <p className="mt-4 text-xs text-gray-500 dark:text-gray-500">
-                      El colaborador recibirá un email con un enlace para
-                      aceptar la invitación. La invitación expira en 7 días.
+                      El colaborador recibirá un email con un enlace para aceptar la invitación. La
+                      invitación expira en 7 días.
                     </p>
                   </motion.div>
                 ) : (
@@ -265,8 +261,8 @@ export default function InviteCollaboratorToLabelModal({
                             }`}
                           >
                             El colaborador será agregado automáticamente a las{" "}
-                            <strong>{songCount} canciones</strong> de este
-                            label, permitiéndole ver sus métricas y datos.
+                            <strong>{songCount} canciones</strong> de este label, permitiéndole ver
+                            sus métricas y datos.
                           </p>
                         </div>
                       </div>
@@ -308,9 +304,7 @@ export default function InviteCollaboratorToLabelModal({
                         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                           <Mail
                             className={`h-5 w-5 ${
-                              labelType === "custom"
-                                ? "text-amber-500"
-                                : "text-indigo-500"
+                              labelType === "custom" ? "text-amber-500" : "text-indigo-500"
                             }`}
                           />
                         </div>
@@ -323,17 +317,15 @@ export default function InviteCollaboratorToLabelModal({
                         />
                       </div>
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        Ingresa el correo electrónico del usuario registrado que
-                        deseas invitar
+                        Ingresa el correo electrónico del usuario registrado que deseas invitar
                       </p>
                     </div>
 
                     {/* Note */}
                     <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-900/20">
                       <p className="text-xs text-blue-700 dark:text-blue-300">
-                        <strong>Nota:</strong> Los splits de pago se configuran
-                        por separado después de que el colaborador acepte la
-                        invitación.
+                        <strong>Nota:</strong> Los splits de pago se configuran por separado después
+                        de que el colaborador acepte la invitación.
                       </p>
                     </div>
 
@@ -345,9 +337,7 @@ export default function InviteCollaboratorToLabelModal({
                         className="mt-4 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20"
                       >
                         <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600 dark:text-red-400" />
-                        <p className="text-sm text-red-600 dark:text-red-400">
-                          {error}
-                        </p>
+                        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
                       </motion.div>
                     )}
                   </>

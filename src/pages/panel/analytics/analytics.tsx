@@ -31,16 +31,13 @@ export default function Analytics() {
 
   const [kpis, setKpis] = useState<AnalyticsKpis | null>(null);
   const [historical, setHistorical] = useState<HistoricalTotal | null>(null);
-  const [revenueByPlatform, setRevenueByPlatform] =
-    useState<RevenueByPlatformData | null>(null);
+  const [revenueByPlatform, setRevenueByPlatform] = useState<RevenueByPlatformData | null>(null);
   const [storeData, setStoreData] = useState<PieChartEntry[]>([]);
   const [countryData, setCountryData] = useState<PieChartEntry[]>([]);
   const [topSongs, setTopSongs] = useState<TopSong[]>([]);
   const [topArtists, setTopArtists] = useState<TopArtist[]>([]);
   const [topLabels, setTopLabels] = useState<TopLabel[]>([]);
-  const [platformSummary, setPlatformSummary] = useState<PlatformCountryRow[]>(
-    [],
-  );
+  const [platformSummary, setPlatformSummary] = useState<PlatformCountryRow[]>([]);
   const [splitOwner, setSplitOwner] = useState<SplitOwnerInfo | null>(null);
 
   const [loadingKpis, setLoadingKpis] = useState(false);
@@ -148,20 +145,13 @@ export default function Analytics() {
         </div>
 
         {/* KPIs — always visible */}
-        <AnalyticsKpisSection
-          kpis={kpis}
-          historical={historical}
-          loading={loadingKpis}
-        />
+        <AnalyticsKpisSection kpis={kpis} historical={historical} loading={loadingKpis} />
 
         {/* Tab: Overview */}
         {activeTab === "overview" && (
           <>
             {/* Stacked bar chart */}
-            <RevenueByPlatformChart
-              data={revenueByPlatform}
-              loading={loadingCharts}
-            />
+            <RevenueByPlatformChart data={revenueByPlatform} loading={loadingCharts} />
 
             {/* Pie charts */}
             <RevenuePieCharts
@@ -187,17 +177,12 @@ export default function Analytics() {
             </div>
 
             {/* TOP 10 Platform × Country */}
-            <PlatformCountrySummary
-              data={platformSummary}
-              loading={loadingCharts}
-            />
+            <PlatformCountrySummary data={platformSummary} loading={loadingCharts} />
           </>
         )}
 
         {/* Tab: Transactions */}
-        {activeTab === "transactions" && (
-          <TransactionsTable filters={filters} />
-        )}
+        {activeTab === "transactions" && <TransactionsTable filters={filters} />}
 
         {/* Tab: Songs */}
         {activeTab === "songs" && <SongsAnalyticsView filters={filters} />}

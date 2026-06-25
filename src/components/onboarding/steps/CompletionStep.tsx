@@ -1,12 +1,6 @@
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import {
-  TrendingUp,
-  DollarSign,
-  Music,
-  ArrowRight,
-  PartyPopper,
-} from "lucide-react";
+import { TrendingUp, DollarSign, Music, ArrowRight, PartyPopper } from "lucide-react";
 import { setAuth } from "@/store/states/authSlice";
 
 const FEATURES = [
@@ -58,9 +52,7 @@ const CompletionStep = () => {
 
       {/* Title */}
       <div className="flex flex-col gap-2">
-        <h2 className="text-2xl font-bold text-[#111827]">
-          ¡Cuenta configurada exitosamente!
-        </h2>
+        <h2 className="text-2xl font-bold text-[#111827]">¡Cuenta configurada exitosamente!</h2>
         <p className="mx-auto max-w-md text-sm text-[#6B7280]">
           Tu perfil está listo. Ya puedes gestionar tus regalías musicales.
         </p>
@@ -80,9 +72,7 @@ const CompletionStep = () => {
             }}
           >
             <Icon size={28} color="#F97316" />
-            <span className="text-sm font-semibold text-[#111827]">
-              {title}
-            </span>
+            <span className="text-sm font-semibold text-[#111827]">{title}</span>
             <span className="text-xs text-[#6B7280]">{description}</span>
           </div>
         ))}

@@ -8,15 +8,9 @@ interface RequestPaymentModalProps {
   onClose: () => void;
 }
 
-const RequestPaymentModal: React.FC<RequestPaymentModalProps> = ({
-  isOpen,
-  onClose,
-}) => {
-  const { requestPayment, findUser, loading, error, clearError } =
-    usePayoneer();
-  const [step, setStep] = useState<"find-user" | "request-details" | "success">(
-    "find-user",
-  );
+const RequestPaymentModal: React.FC<RequestPaymentModalProps> = ({ isOpen, onClose }) => {
+  const { requestPayment, findUser, loading, error, clearError } = usePayoneer();
+  const [step, setStep] = useState<"find-user" | "request-details" | "success">("find-user");
 
   // Form states
   const [email, setEmail] = useState("");
@@ -87,12 +81,9 @@ const RequestPaymentModal: React.FC<RequestPaymentModalProps> = ({
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
                 <User className="h-6 w-6 text-blue-600" />
               </div>
-              <h3 className="mb-2 text-lg font-semibold text-gray-900">
-                Buscar Usuario
-              </h3>
+              <h3 className="mb-2 text-lg font-semibold text-gray-900">Buscar Usuario</h3>
               <p className="text-sm text-gray-600">
-                Ingresa el email de Payoneer del usuario al que le vas a
-                solicitar dinero
+                Ingresa el email de Payoneer del usuario al que le vas a solicitar dinero
               </p>
             </div>
 
@@ -135,9 +126,7 @@ const RequestPaymentModal: React.FC<RequestPaymentModalProps> = ({
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
                 <CheckCircle className="h-6 w-6 text-green-600" />
               </div>
-              <h3 className="mb-2 text-lg font-semibold text-gray-900">
-                Usuario Encontrado
-              </h3>
+              <h3 className="mb-2 text-lg font-semibold text-gray-900">Usuario Encontrado</h3>
               <div className="rounded-lg bg-gray-50 p-3">
                 <p className="font-medium text-gray-900">{foundUser?.name}</p>
                 <p className="text-sm text-gray-600">{email}</p>
@@ -147,9 +136,7 @@ const RequestPaymentModal: React.FC<RequestPaymentModalProps> = ({
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
-                    Cantidad
-                  </label>
+                  <label className="mb-2 block text-sm font-medium text-gray-700">Cantidad</label>
                   <input
                     type="number"
                     value={amount}
@@ -161,9 +148,7 @@ const RequestPaymentModal: React.FC<RequestPaymentModalProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
-                    Moneda
-                  </label>
+                  <label className="mb-2 block text-sm font-medium text-gray-700">Moneda</label>
                   <select
                     value={currency}
                     onChange={(e) => setCurrency(e.target.value)}
@@ -190,9 +175,7 @@ const RequestPaymentModal: React.FC<RequestPaymentModalProps> = ({
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">
-                  Descripción
-                </label>
+                <label className="mb-2 block text-sm font-medium text-gray-700">Descripción</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -236,9 +219,7 @@ const RequestPaymentModal: React.FC<RequestPaymentModalProps> = ({
               <CheckCircle className="h-6 w-6 text-green-600" />
             </div>
             <div>
-              <h3 className="mb-2 text-lg font-semibold text-gray-900">
-                ¡Solicitud Enviada!
-              </h3>
+              <h3 className="mb-2 text-lg font-semibold text-gray-900">¡Solicitud Enviada!</h3>
               <p className="mb-4 text-sm text-gray-600">
                 Tu solicitud de pago ha sido enviada a {foundUser?.name}
               </p>
@@ -257,23 +238,19 @@ const RequestPaymentModal: React.FC<RequestPaymentModalProps> = ({
                 {dueDate && (
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600">Fecha límite:</span>
-                    <span className="font-medium">
-                      {new Date(dueDate).toLocaleDateString()}
-                    </span>
+                    <span className="font-medium">{new Date(dueDate).toLocaleDateString()}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">
-                    ID de Solicitud:
-                  </span>
+                  <span className="text-sm text-gray-600">ID de Solicitud:</span>
                   <span className="font-mono text-xs">{requestResult?.id}</span>
                 </div>
               </div>
 
               <div className="rounded-lg bg-blue-50 p-3">
                 <p className="text-sm text-blue-800">
-                  El usuario recibirá una notificación por email y podrá aprobar
-                  o rechazar tu solicitud.
+                  El usuario recibirá una notificación por email y podrá aprobar o rechazar tu
+                  solicitud.
                 </p>
               </div>
             </div>
@@ -312,13 +289,8 @@ const RequestPaymentModal: React.FC<RequestPaymentModalProps> = ({
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-200 p-6">
-              <h2 className="text-xl font-semibold text-gray-900">
-                Solicitar Pago
-              </h2>
-              <button
-                onClick={handleClose}
-                className="rounded-lg p-2 hover:bg-gray-100"
-              >
+              <h2 className="text-xl font-semibold text-gray-900">Solicitar Pago</h2>
+              <button onClick={handleClose} className="rounded-lg p-2 hover:bg-gray-100">
                 <X className="h-5 w-5 text-gray-400" />
               </button>
             </div>

@@ -2,16 +2,11 @@ import type { SubprofileItem } from "@/types/profile.types";
 
 /** Genera las iniciales del nombre y apellido para avatares */
 export const getInitials = (name: string, lastName: string): string =>
-  (name?.charAt(0) ?? "U").toUpperCase() +
-  (lastName?.charAt(0) ?? "").toUpperCase();
+  (name?.charAt(0) ?? "U").toUpperCase() + (lastName?.charAt(0) ?? "").toUpperCase();
 
-const isRecord = (v: unknown): v is Record<string, unknown> =>
-  typeof v === "object" && v !== null;
+const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null;
 
-const getString = (
-  src: Record<string, unknown>,
-  keys: string[],
-): string | undefined => {
+const getString = (src: Record<string, unknown>, keys: string[]): string | undefined => {
   for (const k of keys) {
     const v = src[k];
     if (typeof v === "string" && v.trim()) return v.trim();

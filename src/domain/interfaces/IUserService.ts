@@ -1,8 +1,4 @@
-import type {
-  User,
-  UpdateUserSchema,
-  UpdateProfileInfoSchema,
-} from "../../types/user.types";
+import type { User, UpdateUserSchema, UpdateProfileInfoSchema } from "../../types/user.types";
 
 /**
  * Puerto que define el contrato del servicio de gestión de usuarios.

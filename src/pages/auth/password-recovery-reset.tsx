@@ -13,18 +13,12 @@ type PasswordRecoveryLocationState = {
 const PasswordRecoveryReset = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const locationState =
-    (location.state as PasswordRecoveryLocationState | null) ?? null;
+  const locationState = (location.state as PasswordRecoveryLocationState | null) ?? null;
   const stateRecoveryEmail = locationState?.email?.trim().toLowerCase() || "";
   const stateRecoveryToken = locationState?.token?.trim() || "";
-  const persistedRecoverySession = useMemo(
-    () => PasswordRecoverySessionHelper.get(),
-    [],
-  );
-  const recoveryEmail =
-    stateRecoveryEmail || persistedRecoverySession?.email || "";
-  const recoveryToken =
-    stateRecoveryToken || persistedRecoverySession?.verificationCode || "";
+  const persistedRecoverySession = useMemo(() => PasswordRecoverySessionHelper.get(), []);
+  const recoveryEmail = stateRecoveryEmail || persistedRecoverySession?.email || "";
+  const recoveryToken = stateRecoveryToken || persistedRecoverySession?.verificationCode || "";
 
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -38,10 +32,7 @@ const PasswordRecoveryReset = () => {
 
   useEffect(() => {
     if (stateRecoveryEmail && stateRecoveryToken) {
-      PasswordRecoverySessionHelper.save(
-        stateRecoveryEmail,
-        stateRecoveryToken,
-      );
+      PasswordRecoverySessionHelper.save(stateRecoveryEmail, stateRecoveryToken);
     }
   }, [stateRecoveryEmail, stateRecoveryToken]);
 
@@ -69,9 +60,7 @@ const PasswordRecoveryReset = () => {
     }
 
     if (!recoveryEmail || !recoveryToken) {
-      setPasswordError(
-        "No hay una sesión válida para restablecer la contraseña",
-      );
+      setPasswordError("No hay una sesión válida para restablecer la contraseña");
       return;
     }
 
@@ -85,9 +74,7 @@ const PasswordRecoveryReset = () => {
       );
 
       if (!response.success) {
-        setPasswordError(
-          response.message || "Error al restablecer la contraseña",
-        );
+        setPasswordError(response.message || "Error al restablecer la contraseña");
         if ([400, 401, 404, 422].includes(response.status)) {
           PasswordRecoverySessionHelper.clear();
         }
@@ -95,9 +82,7 @@ const PasswordRecoveryReset = () => {
       }
 
       PasswordRecoverySessionHelper.clear();
-      setSuccessMessage(
-        response.message || "Contraseña actualizada correctamente",
-      );
+      setSuccessMessage(response.message || "Contraseña actualizada correctamente");
       navigate("/auth/email-login", { replace: true });
     } catch {
       setPasswordError("Error al restablecer la contraseña");
@@ -133,8 +118,7 @@ const PasswordRecoveryReset = () => {
 
           {recoveryEmail ? (
             <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
-              Correo verificado:{" "}
-              <span className="font-semibold">{recoveryEmail}</span>
+              Correo verificado: <span className="font-semibold">{recoveryEmail}</span>
             </p>
           ) : (
             <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-900/20">
@@ -170,11 +154,7 @@ const PasswordRecoveryReset = () => {
                 disabled={isSubmitting}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               >
-                {showNewPassword ? (
-                  <EyeOff className="h-5 w-5" />
-                ) : (
-                  <Eye className="h-5 w-5" />
-                )}
+                {showNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
 
@@ -196,11 +176,7 @@ const PasswordRecoveryReset = () => {
                 disabled={isSubmitting}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               >
-                {showConfirmPassword ? (
-                  <EyeOff className="h-5 w-5" />
-                ) : (
-                  <Eye className="h-5 w-5" />
-                )}
+                {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
 

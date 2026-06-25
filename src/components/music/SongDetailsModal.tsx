@@ -32,16 +32,13 @@ export function SongDetailsModal({
   const source = songDetails ?? song;
 
   const getField = (...keys: (keyof SongItem)[]): string | number | undefined =>
-    keys
-      .map((k) => source?.[k])
-      .find((v) => v !== undefined && v !== null && v !== "") as
+    keys.map((k) => source?.[k]).find((v) => v !== undefined && v !== null && v !== "") as
       | string
       | number
       | undefined;
 
   const coverUrl =
-    songDetails?.spotifyData?.album?.images?.[0]?.url ??
-    song?.spotifyData?.album?.images?.[0]?.url;
+    songDetails?.spotifyData?.album?.images?.[0]?.url ?? song?.spotifyData?.album?.images?.[0]?.url;
 
   const releaseDate = formatReleaseDate(
     getField("releaseDate", "release_date", "releasedAt", "release") ??
@@ -51,15 +48,11 @@ export function SongDetailsModal({
   );
 
   const duration = formatDuration(
-    getField("duration", "durationMs", "duration_ms") ??
-      source?.spotifyData?.duration_ms,
+    getField("duration", "durationMs", "duration_ms") ?? source?.spotifyData?.duration_ms,
   );
 
   const assignedSplits = countAssignedSplits(source);
-  const unassignedSplits = Math.max(
-    countTotalSplits(source) - assignedSplits,
-    0,
-  );
+  const unassignedSplits = Math.max(countTotalSplits(source) - assignedSplits, 0);
   const releasesCount = countReleases(source);
 
   const upc = getField("upc", "ean") ?? source?.releases?.[0]?.upc ?? "N/A";
@@ -106,25 +99,18 @@ export function SongDetailsModal({
             <div className="space-y-2.5">
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
-                  <p className="text-[11px] uppercase tracking-wide text-gray-500">
-                    ISRC
-                  </p>
+                  <p className="text-[11px] uppercase tracking-wide text-gray-500">ISRC</p>
                   <div className="flex items-center gap-1.5">
                     <p className="truncate font-mono text-sm font-semibold text-gray-900">
                       {getField("isrc") ?? "N/A"}
                     </p>
                     {getField("isrc") && (
-                      <CopyButton
-                        value={String(getField("isrc"))}
-                        title="Copiar ISRC"
-                      />
+                      <CopyButton value={String(getField("isrc"))} title="Copiar ISRC" />
                     )}
                   </div>
                 </div>
                 <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
-                  <p className="text-[11px] uppercase tracking-wide text-gray-500">
-                    UPC / EAN
-                  </p>
+                  <p className="text-[11px] uppercase tracking-wide text-gray-500">UPC / EAN</p>
                   <div className="flex items-center gap-1.5">
                     <p className="truncate font-mono text-sm font-semibold text-gray-900">
                       {String(upc)}
@@ -138,17 +124,13 @@ export function SongDetailsModal({
                   <p className="text-[11px] uppercase tracking-wide text-green-700">
                     Splits asignados
                   </p>
-                  <p className="text-lg font-bold text-green-700">
-                    {assignedSplits}
-                  </p>
+                  <p className="text-lg font-bold text-green-700">{assignedSplits}</p>
                 </div>
                 <div className="rounded-lg border border-orange-200 bg-orange-50 px-3 py-2">
                   <p className="text-[11px] uppercase tracking-wide text-orange-700">
                     Splits no asignados
                   </p>
-                  <p className="text-lg font-bold text-orange-700">
-                    {unassignedSplits}
-                  </p>
+                  <p className="text-lg font-bold text-orange-700">{unassignedSplits}</p>
                 </div>
               </div>
 
@@ -162,9 +144,7 @@ export function SongDetailsModal({
                     { label: "Releases", value: releasesCount },
                     {
                       label: "Streams",
-                      value: (
-                        Number(getField("totalStreams", "streams")) || 0
-                      ).toLocaleString(),
+                      value: (Number(getField("totalStreams", "streams")) || 0).toLocaleString(),
                     },
                     {
                       label: "Ganancia",
@@ -172,9 +152,7 @@ export function SongDetailsModal({
                     },
                     {
                       label: "Sello",
-                      value: String(
-                        getField("artisticLabel", "label") ?? "N/A",
-                      ),
+                      value: String(getField("artisticLabel", "label") ?? "N/A"),
                     },
                     { label: "Duración", value: duration },
                   ].map(({ label, value }) => (
@@ -182,12 +160,8 @@ export function SongDetailsModal({
                       key={label}
                       className="rounded-lg border border-gray-200 bg-white px-3 py-2"
                     >
-                      <p className="text-[11px] uppercase tracking-wide text-gray-500">
-                        {label}
-                      </p>
-                      <p className="text-sm font-semibold text-gray-900">
-                        {String(value)}
-                      </p>
+                      <p className="text-[11px] uppercase tracking-wide text-gray-500">{label}</p>
+                      <p className="text-sm font-semibold text-gray-900">{String(value)}</p>
                     </div>
                   ))}
                 </div>

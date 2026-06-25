@@ -1,12 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  Music,
-  Crown,
-  Globe,
-  Percent,
-  Settings,
-  ChevronDown,
-} from "lucide-react";
+import { Music, Crown, Globe, Percent, Settings, ChevronDown } from "lucide-react";
 import Select from "react-select";
 import { amberSelectStyles } from "@/components/ui/selectStyles";
 import type { OwnerFormData } from "@/types/album-owner-split.types";
@@ -21,10 +14,7 @@ interface OwnerSplitConfigFormProps {
   countryOptions: SelectOption[];
   platformOptions: SelectOption[];
   onToggleExpanded: () => void;
-  onUpdateForm: (
-    field: keyof OwnerFormData,
-    value: string | readonly SelectOption[],
-  ) => void;
+  onUpdateForm: (field: keyof OwnerFormData, value: string | readonly SelectOption[]) => void;
 }
 
 const COUNTRY_TYPE_OPTIONS = [
@@ -67,8 +57,8 @@ export function OwnerSplitConfigForm({
         <div className="text-sm text-blue-900">
           <p className="mb-1 font-medium">Creación masiva de splits</p>
           <p>
-            La configuración que definas se aplicará a todas las {tracksCount}{" "}
-            canciones de este álbum.
+            La configuración que definas se aplicará a todas las {tracksCount} canciones de este
+            álbum.
           </p>
         </div>
       </div>
@@ -135,8 +125,7 @@ export function OwnerSplitConfigForm({
                         Configuración del Split
                       </h4>
                       <p className="text-sm text-gray-600">
-                        Porcentaje del owner y filtros opcionales de país y
-                        plataforma
+                        Porcentaje del owner y filtros opcionales de país y plataforma
                       </p>
                     </div>
                   </div>
@@ -155,9 +144,7 @@ export function OwnerSplitConfigForm({
                           step="0.01"
                           placeholder="0.00"
                           value={ownerForm.percentage}
-                          onChange={(e) =>
-                            onUpdateForm("percentage", e.target.value)
-                          }
+                          onChange={(e) => onUpdateForm("percentage", e.target.value)}
                           className="w-full rounded-xl border border-gray-200 py-3 pl-4 pr-12 font-medium text-gray-900 transition-all focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
                         />
                         <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
@@ -183,14 +170,10 @@ export function OwnerSplitConfigForm({
                               type="radio"
                               name="countries-type"
                               checked={ownerForm.countriesType === opt.value}
-                              onChange={() =>
-                                onUpdateForm("countriesType", opt.value)
-                              }
+                              onChange={() => onUpdateForm("countriesType", opt.value)}
                               className="h-4 w-4 text-amber-500 focus:ring-amber-500/20"
                             />
-                            <span className="text-sm text-gray-900">
-                              {opt.label}
-                            </span>
+                            <span className="text-sm text-gray-900">{opt.label}</span>
                           </motion.label>
                         ))}
                       </div>
@@ -232,14 +215,10 @@ export function OwnerSplitConfigForm({
                               type="radio"
                               name="platforms-type"
                               checked={ownerForm.platformsType === opt.value}
-                              onChange={() =>
-                                onUpdateForm("platformsType", opt.value)
-                              }
+                              onChange={() => onUpdateForm("platformsType", opt.value)}
                               className="h-4 w-4 text-amber-500 focus:ring-amber-500/20"
                             />
-                            <span className="text-sm text-gray-900">
-                              {opt.label}
-                            </span>
+                            <span className="text-sm text-gray-900">{opt.label}</span>
                           </motion.label>
                         ))}
                       </div>
@@ -258,9 +237,7 @@ export function OwnerSplitConfigForm({
                             }
                             styles={amberSelectStyles}
                             placeholder="Seleccionar plataformas..."
-                            noOptionsMessage={() =>
-                              "No hay plataformas disponibles"
-                            }
+                            noOptionsMessage={() => "No hay plataformas disponibles"}
                           />
                         </motion.div>
                       )}

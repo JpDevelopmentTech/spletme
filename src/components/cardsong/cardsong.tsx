@@ -41,10 +41,8 @@ export default function CardSong({ song }: CardSongProps) {
   }, [song?.isrc]);
 
   // Use MusicBrainz data if available, otherwise fallback to song data
-  const displayTitle =
-    recordingData?.title || song?.trackTitle || "Unknown Title";
-  const displayArtist =
-    recordingData?.artist || song?.artistName || "Unknown Artist";
+  const displayTitle = recordingData?.title || song?.trackTitle || "Unknown Title";
+  const displayArtist = recordingData?.artist || song?.artistName || "Unknown Artist";
   const dataSpotify = song?.spotifyData;
 
   if (!song) {
@@ -93,8 +91,7 @@ export default function CardSong({ song }: CardSongProps) {
           {/* Image Section */}
           <div className="relative mb-6">
             <div className="relative aspect-[4/3] overflow-hidden rounded-2xl shadow-2xl">
-              {dataSpotify?.album?.images &&
-              dataSpotify?.album.images.length > 0 ? (
+              {dataSpotify?.album?.images && dataSpotify?.album.images.length > 0 ? (
                 <motion.img
                   src={dataSpotify.album.images[0].url}
                   alt={`${displayTitle} cover`}
@@ -123,10 +120,7 @@ export default function CardSong({ song }: CardSongProps) {
                   {isPlaying ? (
                     <div className="h-6 w-6 rounded-sm bg-gray-800" />
                   ) : (
-                    <Play
-                      className="ml-1 h-6 w-6 text-gray-800"
-                      fill="currentColor"
-                    />
+                    <Play className="ml-1 h-6 w-6 text-gray-800" fill="currentColor" />
                   )}
                 </motion.button>
               </motion.div>
@@ -162,29 +156,25 @@ export default function CardSong({ song }: CardSongProps) {
                 transition={{ delay: 0.2 }}
                 className="space-y-3"
               >
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Artistas
-                </p>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Artistas</p>
                 <div className="flex items-center">
                   <div className="flex -space-x-2">
-                    {song.artists
-                      .slice(0, 3)
-                      .map((artist: any, index: number) => (
-                        <motion.div
-                          key={artist.id}
-                          initial={{ scale: 0.8, x: index * -10 }}
-                          animate={{ scale: 1, x: 0 }}
-                          whileHover={{ scale: 1.2, y: -8, zIndex: 10 }}
-                          transition={{
-                            type: "spring",
-                            stiffness: 400,
-                            delay: index * 0.1,
-                          }}
-                          className="rounded-full border-2 border-white/80 shadow-lg"
-                        >
-                          <ImageProfile id={artist.id} />
-                        </motion.div>
-                      ))}
+                    {song.artists.slice(0, 3).map((artist: any, index: number) => (
+                      <motion.div
+                        key={artist.id}
+                        initial={{ scale: 0.8, x: index * -10 }}
+                        animate={{ scale: 1, x: 0 }}
+                        whileHover={{ scale: 1.2, y: -8, zIndex: 10 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 400,
+                          delay: index * 0.1,
+                        }}
+                        className="rounded-full border-2 border-white/80 shadow-lg"
+                      >
+                        <ImageProfile id={artist.id} />
+                      </motion.div>
+                    ))}
                   </div>
                   {song.artists.length > 3 && (
                     <motion.span
@@ -202,10 +192,7 @@ export default function CardSong({ song }: CardSongProps) {
             <div className="space-y-4 pt-4">
               {/* Price and Percentage */}
               <div className="flex items-center justify-between">
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  className="flex items-center gap-3"
-                >
+                <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-3">
                   <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-2xl font-bold text-transparent">
                     $00,00
                   </span>
@@ -228,9 +215,7 @@ export default function CardSong({ song }: CardSongProps) {
                         : "bg-gray-200/50 text-gray-600 hover:bg-red-500/20 hover:text-red-500"
                     }`}
                   >
-                    <Heart
-                      className={`h-5 w-5 ${isLiked ? "fill-current" : ""}`}
-                    />
+                    <Heart className={`h-5 w-5 ${isLiked ? "fill-current" : ""}`} />
                   </motion.button>
 
                   <motion.button

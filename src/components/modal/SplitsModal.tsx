@@ -1,13 +1,4 @@
-import {
-  Music,
-  X,
-  Globe,
-  Percent,
-  Users,
-  ChevronDown,
-  Save,
-  AlertCircle,
-} from "lucide-react";
+import { Music, X, Globe, Percent, Users, ChevronDown, Save, AlertCircle } from "lucide-react";
 import Select from "react-select";
 import { createPortal } from "react-dom";
 import { FilterSegment } from "@/components/ui/FilterSegment";
@@ -33,12 +24,7 @@ function getInitials(name: string) {
     .toUpperCase();
 }
 
-export default function SplitsModal({
-  collaborators,
-  isOpen,
-  onClose,
-  songId,
-}: SplitsModalProps) {
+export default function SplitsModal({ collaborators, isOpen, onClose, songId }: SplitsModalProps) {
   const {
     mounted,
     isLoading,
@@ -98,21 +84,15 @@ export default function SplitsModal({
               <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100">
                 <Users className="h-6 w-6 text-gray-400" />
               </div>
-              <p className="mb-1 text-sm font-semibold text-gray-700">
-                Sin colaboradores
-              </p>
-              <p className="text-xs text-gray-400">
-                Agrega colaboradores a la canción primero.
-              </p>
+              <p className="mb-1 text-sm font-semibold text-gray-700">Sin colaboradores</p>
+              <p className="text-xs text-gray-400">Agrega colaboradores a la canción primero.</p>
             </div>
           ) : (
             collaborators.map((collaborator, idx) => {
               const form = getForm(collaborator.id);
-              const isExpanded =
-                expandedCollaborators[collaborator.id] ?? false;
+              const isExpanded = expandedCollaborators[collaborator.id] ?? false;
               const avatarColor = AVATAR_COLORS[idx % AVATAR_COLORS.length];
-              const hasPercentage =
-                form.percentage && parseFloat(form.percentage) > 0;
+              const hasPercentage = form.percentage && parseFloat(form.percentage) > 0;
               const hasExistingSplit = Boolean(collaborator.split);
 
               return (
@@ -135,12 +115,8 @@ export default function SplitsModal({
                         </span>
                       </div>
                       <div className="text-left">
-                        <p className="text-sm font-semibold text-gray-900">
-                          {collaborator.name}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {collaborator.email}
-                        </p>
+                        <p className="text-sm font-semibold text-gray-900">{collaborator.name}</p>
+                        <p className="text-xs text-gray-500">{collaborator.email}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -177,11 +153,7 @@ export default function SplitsModal({
                             placeholder="0.00"
                             value={form.percentage}
                             onChange={(e) =>
-                              updateForm(
-                                collaborator.id,
-                                "percentage",
-                                e.target.value,
-                              )
+                              updateForm(collaborator.id, "percentage", e.target.value)
                             }
                             className="w-full rounded-lg border border-gray-200 bg-white py-2.5 pl-4 pr-10 text-sm font-semibold text-gray-900 transition-colors focus:border-[#F97316] focus:outline-none"
                           />
@@ -198,9 +170,7 @@ export default function SplitsModal({
                         </label>
                         <FilterSegment
                           value={form.countriesType}
-                          onChange={(v) =>
-                            updateForm(collaborator.id, "countriesType", v)
-                          }
+                          onChange={(v) => updateForm(collaborator.id, "countriesType", v)}
                           labels={{
                             all: "Todos",
                             except: "Excepto",
@@ -215,11 +185,7 @@ export default function SplitsModal({
                             options={countryOptions}
                             value={form.selectedCountries}
                             onChange={(selected) =>
-                              updateForm(
-                                collaborator.id,
-                                "selectedCountries",
-                                selected ?? [],
-                              )
+                              updateForm(collaborator.id, "selectedCountries", selected ?? [])
                             }
                             styles={selectStyles}
                             menuPortalTarget={document.body}
@@ -237,9 +203,7 @@ export default function SplitsModal({
                         </label>
                         <FilterSegment
                           value={form.platformsType}
-                          onChange={(v) =>
-                            updateForm(collaborator.id, "platformsType", v)
-                          }
+                          onChange={(v) => updateForm(collaborator.id, "platformsType", v)}
                           labels={{
                             all: "Todas",
                             except: "Excepto",
@@ -254,19 +218,13 @@ export default function SplitsModal({
                             options={platformOptions}
                             value={form.selectedPlatforms}
                             onChange={(selected) =>
-                              updateForm(
-                                collaborator.id,
-                                "selectedPlatforms",
-                                selected ?? [],
-                              )
+                              updateForm(collaborator.id, "selectedPlatforms", selected ?? [])
                             }
                             styles={selectStyles}
                             menuPortalTarget={document.body}
                             menuPosition="fixed"
                             placeholder="Seleccionar plataformas..."
-                            noOptionsMessage={() =>
-                              "No hay plataformas disponibles"
-                            }
+                            noOptionsMessage={() => "No hay plataformas disponibles"}
                           />
                         )}
                       </div>
@@ -290,10 +248,8 @@ export default function SplitsModal({
             <span className="text-xs text-gray-500">
               {configuredCount > 0 ? (
                 <>
-                  <span className="font-semibold text-gray-900">
-                    {configuredCount}
-                  </span>{" "}
-                  colaborador{configuredCount !== 1 ? "es" : ""} configurado
+                  <span className="font-semibold text-gray-900">{configuredCount}</span> colaborador
+                  {configuredCount !== 1 ? "es" : ""} configurado
                   {configuredCount !== 1 ? "s" : ""}
                 </>
               ) : (

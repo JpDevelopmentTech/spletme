@@ -36,8 +36,7 @@ const PaymentHistoryReceived = ({
   maxHeight = "400px",
   refreshTrigger,
 }: PaymentHistoryReceivedProps) => {
-  const { payments, loading, error, loadPayments, getTotalAmount } =
-    usePayments();
+  const { payments, loading, error, loadPayments, getTotalAmount } = usePayments();
 
   // Obtener el usuario actual del store de Redux
   const user = useSelector((state: AuthState) => state.auth.user);
@@ -82,9 +81,7 @@ const PaymentHistoryReceived = ({
       <div className="w-full rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
         <div className="flex items-center justify-center py-8">
           <Loader2 className="h-8 w-8 animate-spin text-green-600" />
-          <span className="ml-2 text-gray-600">
-            Cargando pagos recibidos...
-          </span>
+          <span className="ml-2 text-gray-600">Cargando pagos recibidos...</span>
         </div>
       </div>
     );
@@ -128,8 +125,7 @@ const PaymentHistoryReceived = ({
             <div>
               <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
               <p className="text-sm text-gray-500">
-                {payments.length} pagos recibidos • Total:{" "}
-                {formatCurrency(getTotalAmount())}
+                {payments.length} pagos recibidos • Total: {formatCurrency(getTotalAmount())}
               </p>
             </div>
           </div>
@@ -140,9 +136,7 @@ const PaymentHistoryReceived = ({
         {payments.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-gray-500">
             <ArrowDownLeft className="mb-4 h-12 w-12 text-gray-300" />
-            <h3 className="mb-2 text-lg font-medium text-gray-900">
-              No has recibido pagos
-            </h3>
+            <h3 className="mb-2 text-lg font-medium text-gray-900">No has recibido pagos</h3>
             <p className="max-w-sm text-center text-sm">
               Los pagos que recibas como colaborador aparecerán aquí.
             </p>
@@ -165,15 +159,11 @@ const PaymentHistoryReceived = ({
 
                     <div className="min-w-0 flex-1">
                       <div className="mb-1 flex items-center space-x-2">
-                        <p className="text-sm font-medium text-gray-900">
-                          Pago recibido
-                        </p>
+                        <p className="text-sm font-medium text-gray-900">Pago recibido</p>
                         {getStatusBadge()}
                       </div>
 
-                      <p className="mb-2 text-xs text-gray-500">
-                        De usuario: {payment.owner}
-                      </p>
+                      <p className="mb-2 text-xs text-gray-500">De usuario: {payment.owner}</p>
 
                       {payment.description && (
                         <div className="mb-2 flex items-center text-sm text-gray-600">
@@ -209,8 +199,8 @@ const PaymentHistoryReceived = ({
         <div className="rounded-b-xl border-t border-gray-200 bg-green-50 px-6 py-4">
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-600">
-              Mostrando {payments.length} pago{payments.length !== 1 ? "s" : ""}{" "}
-              recibido{payments.length !== 1 ? "s" : ""}
+              Mostrando {payments.length} pago{payments.length !== 1 ? "s" : ""} recibido
+              {payments.length !== 1 ? "s" : ""}
             </span>
             <span className="font-semibold text-green-600">
               Total recibido: {formatCurrency(getTotalAmount())}

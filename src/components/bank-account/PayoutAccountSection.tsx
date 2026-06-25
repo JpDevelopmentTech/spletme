@@ -51,11 +51,8 @@ export default function PayoutAccountSection() {
 
   const renderField = (group: PayoutFieldGroup) => {
     const value = values[group.key] ?? "";
-    const onChange = (v: string) =>
-      setField(group.key, v, group.refreshRequirementsOnChange);
-    const isSelect =
-      (group.type === "select" || group.type === "radio") &&
-      group.valuesAllowed;
+    const onChange = (v: string) => setField(group.key, v, group.refreshRequirementsOnChange);
+    const isSelect = (group.type === "select" || group.type === "radio") && group.valuesAllowed;
 
     return (
       <div key={group.key} className="flex flex-col gap-1">
@@ -64,11 +61,7 @@ export default function PayoutAccountSection() {
           {group.required && <span className="text-red-400"> *</span>}
         </label>
         {isSelect ? (
-          <select
-            className={inputClass}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-          >
+          <select className={inputClass} value={value} onChange={(e) => onChange(e.target.value)}>
             <option value="">Seleccionar…</option>
             {group.valuesAllowed!.map((opt) => (
               <option key={opt.key} value={opt.key}>
@@ -96,12 +89,9 @@ export default function PayoutAccountSection() {
             <Banknote className="h-5 w-5 text-emerald-500" />
           </div>
           <div className="flex flex-col">
-            <span className="text-[15px] font-bold text-gray-900">
-              Cuenta para recibir pagos
-            </span>
+            <span className="text-[15px] font-bold text-gray-900">Cuenta para recibir pagos</span>
             <span className="text-xs text-gray-500">
-              Registra dónde quieres recibir tu dinero. Los pagos se envían vía
-              Wise.
+              Registra dónde quieres recibir tu dinero. Los pagos se envían vía Wise.
             </span>
           </div>
         </div>
@@ -128,11 +118,8 @@ export default function PayoutAccountSection() {
                     {status.account.last4 ? ` ····${status.account.last4}` : ""}
                   </span>
                   <span className="text-xs text-gray-500">
-                    {status.account.accountHolderName || "—"} ·{" "}
-                    {status.account.currency}
-                    {status.account.accountType
-                      ? ` · ${status.account.accountType}`
-                      : ""}
+                    {status.account.accountHolderName || "—"} · {status.account.currency}
+                    {status.account.accountType ? ` · ${status.account.accountType}` : ""}
                   </span>
                 </div>
               </div>
@@ -192,9 +179,7 @@ export default function PayoutAccountSection() {
             <div className="flex flex-col gap-3">
               {requirements.length > 1 && (
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-medium text-gray-500">
-                    Tipo de cuenta
-                  </label>
+                  <label className="text-xs font-medium text-gray-500">Tipo de cuenta</label>
                   <select
                     className={inputClass}
                     value={selectedType}
@@ -222,9 +207,7 @@ export default function PayoutAccountSection() {
               </div>
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                {current.fields
-                  .flatMap((f) => f.group.slice(0, 1))
-                  .map(renderField)}
+                {current.fields.flatMap((f) => f.group.slice(0, 1)).map(renderField)}
               </div>
 
               <button
@@ -245,9 +228,7 @@ export default function PayoutAccountSection() {
       )}
 
       {feedback && (
-        <p
-          className={`text-xs ${FEEDBACK_COLOR[feedback.type] ?? "text-gray-500"}`}
-        >
+        <p className={`text-xs ${FEEDBACK_COLOR[feedback.type] ?? "text-gray-500"}`}>
           {feedback.text}
         </p>
       )}

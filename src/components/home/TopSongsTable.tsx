@@ -18,12 +18,9 @@ export function TopSongsTable({ songs }: TopSongsTableProps) {
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-100">
           <Music className="h-7 w-7 text-gray-400" />
         </div>
-        <h3 className="text-sm font-semibold text-gray-700">
-          Sin canciones aún
-        </h3>
+        <h3 className="text-sm font-semibold text-gray-700">Sin canciones aún</h3>
         <p className="max-w-xs text-center text-xs text-gray-400">
-          Sube tu primera canción para comenzar a ver el rendimiento de tu
-          música
+          Sube tu primera canción para comenzar a ver el rendimiento de tu música
         </p>
         <Link
           to="/panel/music"
@@ -40,24 +37,16 @@ export function TopSongsTable({ songs }: TopSongsTableProps) {
     <div className="flex flex-col">
       <div className="flex items-center border-b border-gray-100 py-2.5">
         <div className="flex-1">
-          <span className="text-[11px] font-semibold uppercase text-gray-400">
-            Canción
-          </span>
+          <span className="text-[11px] font-semibold uppercase text-gray-400">Canción</span>
         </div>
         <div className="w-[100px]">
-          <span className="text-[11px] font-semibold uppercase text-gray-400">
-            Streams
-          </span>
+          <span className="text-[11px] font-semibold uppercase text-gray-400">Streams</span>
         </div>
         <div className="w-[100px]">
-          <span className="text-[11px] font-semibold uppercase text-gray-400">
-            Ingresos
-          </span>
+          <span className="text-[11px] font-semibold uppercase text-gray-400">Ingresos</span>
         </div>
         <div className="w-[80px]">
-          <span className="text-[11px] font-semibold uppercase text-gray-400">
-            Estado
-          </span>
+          <span className="text-[11px] font-semibold uppercase text-gray-400">Estado</span>
         </div>
       </div>
 
@@ -85,9 +74,7 @@ export function TopSongsTable({ songs }: TopSongsTableProps) {
             <span className="truncate text-[13px] font-semibold text-gray-900 transition-colors group-hover:text-[#F97316]">
               {song.trackTitle || `Canción ${index + 1}`}
             </span>
-            <span className="truncate text-[11px] text-gray-400">
-              {song.artistName ?? ""}
-            </span>
+            <span className="truncate text-[11px] text-gray-400">{song.artistName ?? ""}</span>
           </div>
 
           <div className="w-[100px]">
@@ -103,9 +90,7 @@ export function TopSongsTable({ songs }: TopSongsTableProps) {
           <div className="w-[80px]">
             <span
               className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                index === 0
-                  ? "bg-amber-100 text-amber-700"
-                  : "bg-gray-100 text-gray-500"
+                index === 0 ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-500"
               }`}
             >
               {index === 0 ? "Tendencia" : "Estable"}

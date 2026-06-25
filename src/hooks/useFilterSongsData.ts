@@ -13,12 +13,7 @@ const UseFilterSongsData = () => {
     totalStreams: 0,
   });
   const getDataSongs = useCallback(async () => {
-    const response = await songs.getSongsByFilter(
-      country,
-      platform,
-      startDate,
-      endDate,
-    );
+    const response = await songs.getSongsByFilter(country, platform, startDate, endDate);
     setSummary(response.data.summary);
   }, [country, platform, startDate, endDate]);
 

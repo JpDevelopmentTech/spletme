@@ -48,8 +48,7 @@ export const useDashboardTour = (): UseDashboardTourReturn => {
 
   useEffect(() => {
     const userTourCompleted = readTourCompletionFromUser();
-    const storageTourCompleted =
-      localStorage.getItem(TOUR_STORAGE_KEY) === "true";
+    const storageTourCompleted = localStorage.getItem(TOUR_STORAGE_KEY) === "true";
     const tourCompleted = userTourCompleted ?? storageTourCompleted;
 
     setHasCompletedTour(Boolean(tourCompleted));

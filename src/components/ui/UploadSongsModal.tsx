@@ -1,12 +1,5 @@
 import { useState, useRef } from "react";
-import {
-  X,
-  Upload,
-  FileText,
-  AlertCircle,
-  CheckCircle2,
-  Music2,
-} from "lucide-react";
+import { X, Upload, FileText, AlertCircle, CheckCircle2, Music2 } from "lucide-react";
 import type { Quarter } from "../../types/distributor.types";
 import type { UploadSongsResult } from "../../services/distributorsService";
 
@@ -52,12 +45,8 @@ export default function UploadSongsModal({
 
   const loading = phase === "uploading" || phase === "processing";
 
-  const isDuplicate = existingUploads.some(
-    (u) => u.quarter === quarter && u.year === year,
-  );
-  const usedQuartersForYear = existingUploads
-    .filter((u) => u.year === year)
-    .map((u) => u.quarter);
+  const isDuplicate = existingUploads.some((u) => u.quarter === quarter && u.year === year);
+  const usedQuartersForYear = existingUploads.filter((u) => u.year === year).map((u) => u.quarter);
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0] ?? null;
@@ -96,12 +85,9 @@ export default function UploadSongsModal({
       setResult(res ?? null);
       setPhase("done");
     } catch (err) {
-      const apiMessage = (err as { response?: { data?: { message?: string } } })
-        .response?.data?.message;
-      setError(
-        apiMessage ||
-          "Error al subir el archivo. Verifica el formato e intenta de nuevo.",
-      );
+      const apiMessage = (err as { response?: { data?: { message?: string } } }).response?.data
+        ?.message;
+      setError(apiMessage || "Error al subir el archivo. Verifica el formato e intenta de nuevo.");
       setPhase("idle");
       setProgress(0);
     }
@@ -139,14 +125,9 @@ export default function UploadSongsModal({
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-base font-bold text-[#111827]">
-              Subir canciones
-            </h2>
+            <h2 className="text-base font-bold text-[#111827]">Subir canciones</h2>
             <p className="mt-0.5 text-xs text-[#6B7280]">
-              Distribuidor:{" "}
-              <span className="font-semibold text-[#F97316]">
-                {distributorName}
-              </span>
+              Distribuidor: <span className="font-semibold text-[#F97316]">{distributorName}</span>
             </p>
           </div>
           <button
@@ -172,9 +153,7 @@ export default function UploadSongsModal({
                     type="button"
                     onClick={() => !isUsed && setQuarter(q)}
                     disabled={isUsed}
-                    title={
-                      isUsed ? `Ya existe una carga ${q} ${year}` : undefined
-                    }
+                    title={isUsed ? `Ya existe una carga ${q} ${year}` : undefined}
                     className={`flex items-center gap-2 rounded-lg border px-3 py-2.5 text-left text-xs font-medium transition-colors ${
                       isUsed
                         ? "cursor-not-allowed border-gray-100 bg-gray-50 text-gray-300 line-through"
@@ -184,9 +163,7 @@ export default function UploadSongsModal({
                     }`}
                   >
                     <span className="w-7 text-sm font-bold">{q}</span>
-                    <span className="text-[11px]">
-                      {QUARTER_LABELS[q].split("—")[1]?.trim()}
-                    </span>
+                    <span className="text-[11px]">{QUARTER_LABELS[q].split("—")[1]?.trim()}</span>
                   </button>
                 );
               })}
@@ -228,9 +205,7 @@ export default function UploadSongsModal({
               {file ? (
                 <>
                   <FileText className="h-6 w-6 text-green-500" />
-                  <span className="text-sm font-semibold text-green-600">
-                    {file.name}
-                  </span>
+                  <span className="text-sm font-semibold text-green-600">{file.name}</span>
                   <span className="text-xs text-green-500">
                     {(file.size / 1024).toFixed(1)} KB — click para cambiar
                   </span>
@@ -241,9 +216,7 @@ export default function UploadSongsModal({
                   <span className="text-sm font-medium text-[#6B7280]">
                     Click para seleccionar archivo
                   </span>
-                  <span className="text-xs text-[#9CA3AF]">
-                    CSV, XLSX o XLS
-                  </span>
+                  <span className="text-xs text-[#9CA3AF]">CSV, XLSX o XLS</span>
                 </>
               )}
             </button>
@@ -264,10 +237,7 @@ export default function UploadSongsModal({
               <span className="font-semibold text-[#111827]">
                 {quarter} {year}
               </span>{" "}
-              para{" "}
-              <span className="font-semibold text-[#111827]">
-                {distributorName}
-              </span>
+              para <span className="font-semibold text-[#111827]">{distributorName}</span>
             </span>
           </div>
 
@@ -419,18 +389,12 @@ function UploadProgressView({
               <span className="text-2xl font-bold text-green-600">
                 {result?.songsProcessed ?? 0}
               </span>
-              <span className="text-[11px] font-medium text-green-700">
-                Canciones guardadas
-              </span>
+              <span className="text-[11px] font-medium text-green-700">Canciones guardadas</span>
             </div>
             {(result?.rejectedCount ?? 0) > 0 && (
               <div className="flex flex-1 flex-col items-center gap-1 rounded-xl border border-amber-100 bg-amber-50 py-3">
-                <span className="text-2xl font-bold text-amber-600">
-                  {result?.rejectedCount}
-                </span>
-                <span className="text-[11px] font-medium text-amber-700">
-                  Rechazadas
-                </span>
+                <span className="text-2xl font-bold text-amber-600">{result?.rejectedCount}</span>
+                <span className="text-[11px] font-medium text-amber-700">Rechazadas</span>
               </div>
             )}
           </div>

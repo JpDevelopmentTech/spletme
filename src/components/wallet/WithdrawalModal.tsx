@@ -1,13 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  X,
-  Wallet,
-  DollarSign,
-  AlertTriangle,
-  CheckCircle,
-  ArrowDownToLine,
-} from "lucide-react";
+import { X, Wallet, DollarSign, AlertTriangle, CheckCircle, ArrowDownToLine } from "lucide-react";
 import WalletService from "@/services/wallet";
 
 interface WithdrawalModalProps {
@@ -59,8 +52,7 @@ export default function WithdrawalModal({
         setError(response.message || "Error loading payout methods");
       }
     } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Error loading payout methods";
+      const errorMessage = err instanceof Error ? err.message : "Error loading payout methods";
       setError(errorMessage);
     } finally {
       setLoadingMethods(false);
@@ -72,8 +64,7 @@ export default function WithdrawalModal({
     setError(null);
     setRequiredFields([]);
     try {
-      const response =
-        await WalletService.getRequiredFieldsForPayoutMethod(payoutMethodType);
+      const response = await WalletService.getRequiredFieldsForPayoutMethod(payoutMethodType);
       console.log("Required fields response:", response);
 
       if (!response.error && response.data) {
@@ -86,8 +77,7 @@ export default function WithdrawalModal({
         setError(response.message || "Error loading required fields");
       }
     } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Error loading required fields";
+      const errorMessage = err instanceof Error ? err.message : "Error loading required fields";
       setError(errorMessage);
     } finally {
       setLoadingFields(false);
@@ -150,8 +140,7 @@ export default function WithdrawalModal({
         setError(response.message || "Error requesting withdrawal");
       }
     } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Error requesting withdrawal";
+      const errorMessage = err instanceof Error ? err.message : "Error requesting withdrawal";
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -208,12 +197,8 @@ export default function WithdrawalModal({
                     <ArrowDownToLine className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold text-white">
-                      Withdraw Funds
-                    </h2>
-                    <p className="text-sm text-green-100">
-                      Transfer money to your bank account
-                    </p>
+                    <h2 className="text-2xl font-bold text-white">Withdraw Funds</h2>
+                    <p className="text-sm text-green-100">Transfer money to your bank account</p>
                   </div>
                 </div>
                 <button
@@ -253,9 +238,7 @@ export default function WithdrawalModal({
                 >
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
-                    <p className="text-sm font-medium text-red-600 dark:text-red-400">
-                      {error}
-                    </p>
+                    <p className="text-sm font-medium text-red-600 dark:text-red-400">{error}</p>
                   </div>
                 </motion.div>
               )}
@@ -289,9 +272,7 @@ export default function WithdrawalModal({
                   type="number"
                   step="0.01"
                   value={formData.amount}
-                  onChange={(e) =>
-                    setFormData({ ...formData, amount: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                   required
                   className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 transition-all focus:border-transparent focus:ring-2 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                   placeholder="0.00"
@@ -323,14 +304,8 @@ export default function WithdrawalModal({
                         name?: string;
                       };
                       return (
-                        <option
-                          key={m.payout_method_type}
-                          value={m.payout_method_type}
-                        >
-                          {m.name ||
-                            m.payout_method_type
-                              .replace(/_/g, " ")
-                              .toUpperCase()}
+                        <option key={m.payout_method_type} value={m.payout_method_type}>
+                          {m.name || m.payout_method_type.replace(/_/g, " ").toUpperCase()}
                         </option>
                       );
                     })}
@@ -369,9 +344,7 @@ export default function WithdrawalModal({
                           {f.name
                             .replace(/_/g, " ")
                             .replace(/\b\w/g, (l: string) => l.toUpperCase())}
-                          {f.is_required && (
-                            <span className="ml-1 text-red-500">*</span>
-                          )}
+                          {f.is_required && <span className="ml-1 text-red-500">*</span>}
                         </label>
                         {f.instructions && (
                           <p className="mb-1 text-xs italic text-gray-500 dark:text-gray-400">
@@ -381,15 +354,11 @@ export default function WithdrawalModal({
                         <input
                           type={f.type === "number" ? "number" : "text"}
                           value={formData.beneficiaryDetails[f.name] || ""}
-                          onChange={(e) =>
-                            handleBeneficiaryFieldChange(f.name, e.target.value)
-                          }
+                          onChange={(e) => handleBeneficiaryFieldChange(f.name, e.target.value)}
                           required={f.is_required}
                           pattern={f.regex || undefined}
                           className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 transition-all focus:border-transparent focus:ring-2 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                          placeholder={
-                            f.instructions || f.name.replace(/_/g, " ")
-                          }
+                          placeholder={f.instructions || f.name.replace(/_/g, " ")}
                           disabled={loading || success}
                         />
                       </div>
@@ -417,11 +386,7 @@ export default function WithdrawalModal({
                   whileTap={{ scale: 0.98 }}
                   className="flex-1 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-3 font-semibold text-white transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {loading
-                    ? "Processing..."
-                    : success
-                      ? "Success!"
-                      : "Submit Withdrawal"}
+                  {loading ? "Processing..." : success ? "Success!" : "Submit Withdrawal"}
                 </motion.button>
               </div>
             </form>

@@ -15,25 +15,14 @@ import Loading from "../../../components/loading/loading";
 export default function CustomLabelDetail() {
   const { label } = useParams<{ label: string }>();
   const navigate = useNavigate();
-  const { songs, customLabel, loading, error } = useCustomLabelSongs(
-    label || "",
-  );
+  const { songs, customLabel, loading, error } = useCustomLabelSongs(label || "");
 
   const decodedLabel = decodeURIComponent(label || "");
   const artisticLabels = customLabel?.artisticLabels ?? [];
 
-  const totalNetIncome = songs.reduce(
-    (sum, song) => sum + (song.totalNetIncome || 0),
-    0,
-  );
-  const totalStreams = songs.reduce(
-    (sum, song) => sum + (song.totalStreams || 0),
-    0,
-  );
-  const totalOwnerEarnings = songs.reduce(
-    (sum, song) => sum + (song.ownerEarnings || 0),
-    0,
-  );
+  const totalNetIncome = songs.reduce((sum, song) => sum + (song.totalNetIncome || 0), 0);
+  const totalStreams = songs.reduce((sum, song) => sum + (song.totalStreams || 0), 0);
+  const totalOwnerEarnings = songs.reduce((sum, song) => sum + (song.ownerEarnings || 0), 0);
 
   const formatStreams = (val: number) => {
     if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M`;
@@ -59,9 +48,7 @@ export default function CustomLabelDetail() {
             Regresar
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Detalle del Sello Personalizado
-            </h1>
+            <h1 className="text-2xl font-bold text-gray-900">Detalle del Sello Personalizado</h1>
             <p className="mt-0.5 text-sm text-gray-500">
               Sellos artísticos que conforman este sello
             </p>
@@ -70,16 +57,11 @@ export default function CustomLabelDetail() {
 
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm">
-          <Link
-            to="/panel/labels"
-            className="text-gray-400 hover:text-gray-600"
-          >
+          <Link to="/panel/labels" className="text-gray-400 hover:text-gray-600">
             Labels
           </Link>
           <span className="text-gray-300">/</span>
-          <span className="max-w-[180px] truncate font-medium text-gray-900">
-            {decodedLabel}
-          </span>
+          <span className="max-w-[180px] truncate font-medium text-gray-900">{decodedLabel}</span>
         </div>
       </div>
 
@@ -94,14 +76,10 @@ export default function CustomLabelDetail() {
           </div>
         </div>
         <div>
-          <h2 className="text-xl font-bold text-gray-900">
-            {decodedLabel || "Sin Label"}
-          </h2>
+          <h2 className="text-xl font-bold text-gray-900">{decodedLabel || "Sin Label"}</h2>
           <p className="mt-0.5 text-sm text-gray-500">
             {artisticLabels.length}{" "}
-            {artisticLabels.length === 1
-              ? "sello artístico"
-              : "sellos artísticos"}
+            {artisticLabels.length === 1 ? "sello artístico" : "sellos artísticos"}
           </p>
         </div>
       </div>
@@ -123,13 +101,9 @@ export default function CustomLabelDetail() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50">
               <DollarSign className="h-4 w-4 text-green-600" />
             </div>
-            <span className="text-xs font-medium text-gray-500">
-              Ingresos Total
-            </span>
+            <span className="text-xs font-medium text-gray-500">Ingresos Total</span>
           </div>
-          <p className="text-2xl font-bold text-green-600">
-            {formatCurrency(totalNetIncome)}
-          </p>
+          <p className="text-2xl font-bold text-green-600">{formatCurrency(totalNetIncome)}</p>
         </div>
 
         <div className="rounded-xl border border-gray-200 bg-white p-5">
@@ -137,13 +111,9 @@ export default function CustomLabelDetail() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50">
               <Play className="h-4 w-4 text-purple-600" />
             </div>
-            <span className="text-xs font-medium text-gray-500">
-              Total Streams
-            </span>
+            <span className="text-xs font-medium text-gray-500">Total Streams</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">
-            {formatStreams(totalStreams)}
-          </p>
+          <p className="text-2xl font-bold text-gray-900">{formatStreams(totalStreams)}</p>
         </div>
 
         <div className="rounded-xl border border-gray-200 bg-white p-5">
@@ -151,13 +121,9 @@ export default function CustomLabelDetail() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50">
               <DollarSign className="h-4 w-4 text-[#F97316]" />
             </div>
-            <span className="text-xs font-medium text-gray-500">
-              Ganancias del Owner
-            </span>
+            <span className="text-xs font-medium text-gray-500">Ganancias del Owner</span>
           </div>
-          <p className="text-2xl font-bold text-[#F97316]">
-            {formatCurrency(totalOwnerEarnings)}
-          </p>
+          <p className="text-2xl font-bold text-[#F97316]">{formatCurrency(totalOwnerEarnings)}</p>
         </div>
       </div>
 
@@ -173,9 +139,7 @@ export default function CustomLabelDetail() {
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
         <div className="flex items-center gap-2 border-b border-gray-100 px-6 py-4">
           <Tag className="h-4 w-4 text-gray-400" />
-          <span className="text-sm font-semibold text-gray-900">
-            Sellos incluidos
-          </span>
+          <span className="text-sm font-semibold text-gray-900">Sellos incluidos</span>
           <span className="ml-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-600">
             {artisticLabels.length}
           </span>
@@ -186,9 +150,7 @@ export default function CustomLabelDetail() {
             {artisticLabels.map((artisticLabel) => (
               <li
                 key={artisticLabel}
-                onClick={() =>
-                  navigate(`/panel/labels/${encodeURIComponent(artisticLabel)}`)
-                }
+                onClick={() => navigate(`/panel/labels/${encodeURIComponent(artisticLabel)}`)}
                 className="flex cursor-pointer items-center gap-3 px-6 py-4 transition-colors hover:bg-gray-50"
               >
                 <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-orange-50">
@@ -205,9 +167,7 @@ export default function CustomLabelDetail() {
             <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100">
               <Tag className="h-6 w-6 text-gray-400" />
             </div>
-            <p className="mb-1 text-sm font-semibold text-gray-700">
-              Sin sellos asociados
-            </p>
+            <p className="mb-1 text-sm font-semibold text-gray-700">Sin sellos asociados</p>
             <p className="max-w-xs text-xs text-gray-400">
               Este sello personalizado todavía no agrupa ningún sello artístico
             </p>

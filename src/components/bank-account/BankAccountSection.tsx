@@ -1,10 +1,4 @@
-import {
-  Landmark,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
-  Loader2,
-} from "lucide-react";
+import { Landmark, CheckCircle2, Clock, AlertCircle, Loader2 } from "lucide-react";
 import { useOwnerBankAccount } from "@/hooks/useOwnerBankAccount";
 import type { BankAccountStatusData } from "@/types/bank-account.types";
 
@@ -38,14 +32,8 @@ const FEEDBACK_COLOR: Record<string, string> = {
  * US vía ACH (Stripe Financial Connections) y consulte su estado.
  */
 export default function BankAccountSection() {
-  const {
-    status,
-    accounts,
-    loadingStatus,
-    linking,
-    feedback,
-    linkBankAccount,
-  } = useOwnerBankAccount();
+  const { status, accounts, loadingStatus, linking, feedback, linkBankAccount } =
+    useOwnerBankAccount();
 
   const hasBankAccount = Boolean(status?.hasBankAccount);
   const cfg = status ? STATUS_CONFIG[status.status] : STATUS_CONFIG.pending;
@@ -59,12 +47,9 @@ export default function BankAccountSection() {
             <Landmark className="h-5 w-5 text-orange-500" />
           </div>
           <div className="flex flex-col">
-            <span className="text-[15px] font-bold text-gray-900">
-              Cuenta bancaria (ACH)
-            </span>
+            <span className="text-[15px] font-bold text-gray-900">Cuenta bancaria (ACH)</span>
             <span className="text-xs text-gray-500">
-              Vincula tu cuenta bancaria de EE. UU. para pagar regalías por
-              débito ACH.
+              Vincula tu cuenta bancaria de EE. UU. para pagar regalías por débito ACH.
             </span>
           </div>
         </div>
@@ -149,9 +134,7 @@ export default function BankAccountSection() {
       )}
 
       {feedback && (
-        <p
-          className={`text-xs ${FEEDBACK_COLOR[feedback.type] ?? "text-gray-500"}`}
-        >
+        <p className={`text-xs ${FEEDBACK_COLOR[feedback.type] ?? "text-gray-500"}`}>
           {feedback.text}
         </p>
       )}

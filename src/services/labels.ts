@@ -85,8 +85,7 @@ export interface LabelSplitPayload {
 }
 
 const errMsg = (error: unknown, fallback: string): string => {
-  if (axios.isAxiosError(error))
-    return error.response?.data?.message ?? fallback;
+  if (axios.isAxiosError(error)) return error.response?.data?.message ?? fallback;
   return fallback;
 };
 
@@ -101,7 +100,7 @@ class LabelsService {
   }> {
     try {
       const response = await apiClient.get(`${this.BASE}?t=${Date.now()}`, {
-        headers: { "Cache-Control": "no-cache", Pragma: "no-cache" },
+        headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" },
       });
       return response.data;
     } catch {
@@ -114,9 +113,7 @@ class LabelsService {
     label: string,
   ): Promise<{ error: boolean; data?: LabelSong[]; message?: string }> {
     try {
-      const response = await apiClient.get(
-        `${this.BASE}/${encodeURIComponent(label)}`,
-      );
+      const response = await apiClient.get(`${this.BASE}/${encodeURIComponent(label)}`);
       return response.data;
     } catch {
       return { error: true, message: "Error getting songs by label" };
@@ -182,9 +179,7 @@ class LabelsService {
     message?: string;
   }> {
     try {
-      const response = await apiClient.get(
-        `${this.BASE}/custom/${encodeURIComponent(labelName)}`,
-      );
+      const response = await apiClient.get(`${this.BASE}/custom/${encodeURIComponent(labelName)}`);
       return response.data;
     } catch {
       return { error: true, message: "Error getting songs by custom label" };
@@ -196,10 +191,7 @@ class LabelsService {
     data: LabelSplitPayload & { label: string },
   ): Promise<{ error: boolean; data?: unknown; message?: string }> {
     try {
-      const response = await apiClient.post(
-        `${this.BASE}/create-split-by-label`,
-        data,
-      );
+      const response = await apiClient.post(`${this.BASE}/create-split-by-label`, data);
       return response.data;
     } catch (error) {
       return {
@@ -214,10 +206,7 @@ class LabelsService {
     data: LabelSplitPayload & { labelName: string },
   ): Promise<{ error: boolean; data?: unknown; message?: string }> {
     try {
-      const response = await apiClient.post(
-        `${this.BASE}/create-split-by-custom-label`,
-        data,
-      );
+      const response = await apiClient.post(`${this.BASE}/create-split-by-custom-label`, data);
       return response.data;
     } catch (error) {
       return {
@@ -253,10 +242,7 @@ class LabelsService {
     message?: string;
   }> {
     try {
-      const response = await apiClient.put(
-        `${this.BASE}/custom/${labelId}`,
-        data,
-      );
+      const response = await apiClient.put(`${this.BASE}/custom/${labelId}`, data);
       return response.data;
     } catch (error) {
       return { error: true, message: errMsg(error, "Error updating label") };
@@ -264,9 +250,7 @@ class LabelsService {
   }
 
   /** Elimina un label personalizado */
-  async deleteLabel(
-    labelId: string,
-  ): Promise<{ error: boolean; message?: string }> {
+  async deleteLabel(labelId: string): Promise<{ error: boolean; message?: string }> {
     try {
       const response = await apiClient.delete(`${this.BASE}/custom/${labelId}`);
       return response.data;
@@ -296,10 +280,7 @@ class LabelsService {
     message?: string;
   }> {
     try {
-      const response = await apiClient.post(
-        `${this.BASE}/invite-collaborator`,
-        data,
-      );
+      const response = await apiClient.post(`${this.BASE}/invite-collaborator`, data);
       return response.data;
     } catch (error) {
       return {
@@ -358,9 +339,7 @@ class LabelsService {
   }
 
   /** Rechaza una invitación a un label */
-  async rejectLabelInvitation(
-    token: string,
-  ): Promise<{ error: boolean; message?: string }> {
+  async rejectLabelInvitation(token: string): Promise<{ error: boolean; message?: string }> {
     try {
       const response = await apiClient.post(`${this.BASE}/reject-invitation`, {
         token,
@@ -411,13 +390,9 @@ class LabelsService {
   }
 
   /** Cancela una invitación enviada */
-  async cancelInvitation(
-    invitationId: string,
-  ): Promise<{ error: boolean; message?: string }> {
+  async cancelInvitation(invitationId: string): Promise<{ error: boolean; message?: string }> {
     try {
-      const response = await apiClient.delete(
-        `${this.BASE}/invitations/${invitationId}/cancel`,
-      );
+      const response = await apiClient.delete(`${this.BASE}/invitations/${invitationId}/cancel`);
       return response.data;
     } catch (error) {
       return {
@@ -428,14 +403,9 @@ class LabelsService {
   }
 
   /** Rechaza una invitación recibida */
-  async rejectInvitation(
-    invitationId: string,
-  ): Promise<{ error: boolean; message?: string }> {
+  async rejectInvitation(invitationId: string): Promise<{ error: boolean; message?: string }> {
     try {
-      const response = await apiClient.post(
-        `${this.BASE}/invitations/${invitationId}/reject`,
-        {},
-      );
+      const response = await apiClient.post(`${this.BASE}/invitations/${invitationId}/reject`, {});
       return response.data;
     } catch (error) {
       return {

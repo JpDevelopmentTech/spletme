@@ -26,9 +26,7 @@ function toParams(filters: object): Record<string, string> {
 
 export const analyticsService = {
   getKpis(filters: AnalyticsFilters): Promise<AnalyticsKpis> {
-    return apiClient
-      .get("/analytics/kpis", { params: toParams(filters) })
-      .then((r) => r.data.data);
+    return apiClient.get("/analytics/kpis", { params: toParams(filters) }).then((r) => r.data.data);
   },
 
   getTransactions(
@@ -43,9 +41,7 @@ export const analyticsService = {
       .then((r) => r.data.data);
   },
 
-  getRevenueByPlatform(
-    filters: AnalyticsFilters,
-  ): Promise<RevenueByPlatformData> {
+  getRevenueByPlatform(filters: AnalyticsFilters): Promise<RevenueByPlatformData> {
     return apiClient
       .get("/analytics/revenue-by-platform", { params: toParams(filters) })
       .then((r) => r.data.data);
@@ -82,14 +78,10 @@ export const analyticsService = {
   },
 
   getHistoricalTotal(): Promise<HistoricalTotal> {
-    return apiClient
-      .get("/analytics/historical-total")
-      .then((r) => r.data.data);
+    return apiClient.get("/analytics/historical-total").then((r) => r.data.data);
   },
 
-  getPlatformCountrySummary(
-    filters: AnalyticsFilters,
-  ): Promise<PlatformCountryRow[]> {
+  getPlatformCountrySummary(filters: AnalyticsFilters): Promise<PlatformCountryRow[]> {
     return apiClient
       .get("/analytics/platform-country-summary", { params: toParams(filters) })
       .then((r) => r.data.data);
@@ -108,9 +100,7 @@ export const analyticsService = {
   },
 
   getSplitOwnerInfo(): Promise<SplitOwnerInfo> {
-    return apiClient
-      .get("/analytics/split-owner-info")
-      .then((r) => r.data.data);
+    return apiClient.get("/analytics/split-owner-info").then((r) => r.data.data);
   },
 
   getFilterOptions(): Promise<FilterOptions> {

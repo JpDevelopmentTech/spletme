@@ -92,17 +92,13 @@ export default function Register() {
 
         {/* Encabezado */}
         <div className="flex flex-col gap-4">
-          <h1
-            className="font-bold text-white"
-            style={{ fontSize: 42, lineHeight: 1.2 }}
-          >
+          <h1 className="font-bold text-white" style={{ fontSize: 42, lineHeight: 1.2 }}>
             Gestiona tus
             <br />
             regalías musicales.
           </h1>
           <p className="text-sm text-[#94A3B8]" style={{ lineHeight: 1.6 }}>
-            Rastrea streams, divide pagos y gestiona colaboradores en un solo
-            lugar.
+            Rastrea streams, divide pagos y gestiona colaboradores en un solo lugar.
           </p>
         </div>
 
@@ -161,9 +157,7 @@ export default function Register() {
 
           {/* Encabezado */}
           <div className="flex flex-col gap-1">
-            <h2 className="text-[26px] font-bold text-[#111827]">
-              Crea tu cuenta
-            </h2>
+            <h2 className="text-[26px] font-bold text-[#111827]">Crea tu cuenta</h2>
             <p className="text-sm text-[#6B7280]">
               Únete a SplitMe y comienza a gestionar tus regalías
             </p>
@@ -200,9 +194,7 @@ export default function Register() {
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {/* Usuario */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-[#374151]">
-                Nombre de usuario
-              </label>
+              <label className="text-sm font-medium text-[#374151]">Nombre de usuario</label>
               <div className="relative">
                 <AtSign
                   size={16}
@@ -224,9 +216,7 @@ export default function Register() {
             {/* Nombre + Apellido */}
             <div className="flex gap-3">
               <div className="flex flex-1 flex-col gap-1.5">
-                <label className="text-sm font-medium text-[#374151]">
-                  Nombre
-                </label>
+                <label className="text-sm font-medium text-[#374151]">Nombre</label>
                 <div className="relative">
                   <User
                     size={16}
@@ -245,9 +235,7 @@ export default function Register() {
                 </div>
               </div>
               <div className="flex flex-1 flex-col gap-1.5">
-                <label className="text-sm font-medium text-[#374151]">
-                  Apellido
-                </label>
+                <label className="text-sm font-medium text-[#374151]">Apellido</label>
                 <div className="relative">
                   <User
                     size={16}
@@ -269,9 +257,7 @@ export default function Register() {
 
             {/* Correo */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-[#374151]">
-                Correo electrónico
-              </label>
+              <label className="text-sm font-medium text-[#374151]">Correo electrónico</label>
               <div className="relative">
                 <Mail
                   size={16}
@@ -292,9 +278,7 @@ export default function Register() {
 
             {/* Contraseña */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-[#374151]">
-                Contraseña
-              </label>
+              <label className="text-sm font-medium text-[#374151]">Contraseña</label>
               <div className="relative">
                 <Lock
                   size={16}
@@ -322,9 +306,7 @@ export default function Register() {
 
             {/* Confirmar contraseña */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-[#374151]">
-                Confirmar contraseña
-              </label>
+              <label className="text-sm font-medium text-[#374151]">Confirmar contraseña</label>
               <div className="relative">
                 <Lock
                   size={16}

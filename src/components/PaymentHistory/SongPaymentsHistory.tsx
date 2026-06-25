@@ -1,12 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  DollarSign,
-  Loader2,
-  ChevronDown,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
-} from "lucide-react";
+import { DollarSign, Loader2, ChevronDown, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 import PaymentsService from "@/services/payments";
 import type { RoyaltyPayment, RoyaltyBreakdownItem } from "@/services/payments";
 
@@ -50,8 +43,7 @@ const formatDate = (iso: string) =>
   });
 
 const getCollaboratorName = (id: RoyaltyBreakdownItem["collaboratorId"]) => {
-  if (id && typeof id === "object")
-    return id.name || id.username || id.email || "Colaborador";
+  if (id && typeof id === "object") return id.name || id.username || id.email || "Colaborador";
   return "Colaborador";
 };
 
@@ -73,9 +65,7 @@ export default function SongPaymentsHistory({ songId, refreshTrigger }: Props) {
     });
   }, [songId, refreshTrigger]);
 
-  const total = payments
-    .filter((p) => p.status !== "failed")
-    .reduce((sum, p) => sum + p.amount, 0);
+  const total = payments.filter((p) => p.status !== "failed").reduce((sum, p) => sum + p.amount, 0);
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
@@ -85,12 +75,10 @@ export default function SongPaymentsHistory({ songId, refreshTrigger }: Props) {
             <DollarSign className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">
-              Historial de Pagos Realizados
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-900">Historial de Pagos Realizados</h3>
             <p className="text-sm text-gray-500">
-              {payments.length} cobro{payments.length !== 1 ? "s" : ""} · Total
-              ${total.toLocaleString("en-US", { minimumFractionDigits: 2 })} USD
+              {payments.length} cobro{payments.length !== 1 ? "s" : ""} · Total $
+              {total.toLocaleString("en-US", { minimumFractionDigits: 2 })} USD
             </p>
           </div>
         </div>
@@ -104,9 +92,7 @@ export default function SongPaymentsHistory({ songId, refreshTrigger }: Props) {
       ) : payments.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-gray-400">
           <DollarSign className="mb-3 h-10 w-10 text-gray-300" />
-          <p className="text-sm">
-            Aún no se han realizado pagos de esta canción.
-          </p>
+          <p className="text-sm">Aún no se han realizado pagos de esta canción.</p>
         </div>
       ) : (
         <div className="max-h-[400px] divide-y divide-gray-100 overflow-y-auto">
@@ -129,9 +115,7 @@ export default function SongPaymentsHistory({ songId, refreshTrigger }: Props) {
                       })}{" "}
                       USD
                     </span>
-                    <span className="text-xs text-gray-400">
-                      {formatDate(p.createdAt)}
-                    </span>
+                    <span className="text-xs text-gray-400">{formatDate(p.createdAt)}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <span
@@ -155,10 +139,7 @@ export default function SongPaymentsHistory({ songId, refreshTrigger }: Props) {
                     <div className="mt-2 flex flex-col gap-1.5">
                       {recipients.length > 0 ? (
                         recipients.map((b, i) => (
-                          <div
-                            key={i}
-                            className="flex items-center justify-between text-xs"
-                          >
+                          <div key={i} className="flex items-center justify-between text-xs">
                             <span className="font-medium text-gray-700">
                               {getCollaboratorName(b.collaboratorId)}
                             </span>
@@ -171,9 +152,7 @@ export default function SongPaymentsHistory({ songId, refreshTrigger }: Props) {
                           </div>
                         ))
                       ) : (
-                        <span className="text-xs text-gray-400">
-                          Sin desglose.
-                        </span>
+                        <span className="text-xs text-gray-400">Sin desglose.</span>
                       )}
                     </div>
                   </div>

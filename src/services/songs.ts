@@ -6,11 +6,7 @@ import type { ReleaseFiltersOptions, SelectOption } from "@/types";
 const toSelectOptions = (values: string[]): SelectOption[] =>
   (values ?? []).map((value) => ({ value, label: value }));
 
-export type PaymentValidationSeverity =
-  | "success"
-  | "info"
-  | "warning"
-  | "error";
+export type PaymentValidationSeverity = "success" | "info" | "warning" | "error";
 
 export interface PaymentValidationIssue {
   code: string;
@@ -38,38 +34,22 @@ export interface PaymentValidationResult {
 
 // ── Helpers de validación de pagos (sin dependencias de red) ──────────────────
 
-const getPercentageFromSplitConditions = (
-  collaborator: Record<string, unknown>,
-): number => {
-  const conditions = collaborator?.split as
-    | { conditions?: unknown[] }
-    | undefined;
-  if (
-    !Array.isArray(conditions?.conditions) ||
-    conditions.conditions.length === 0
-  )
-    return 0;
+const getPercentageFromSplitConditions = (collaborator: Record<string, unknown>): number => {
+  const conditions = collaborator?.split as { conditions?: unknown[] } | undefined;
+  if (!Array.isArray(conditions?.conditions) || conditions.conditions.length === 0) return 0;
   const cond = conditions.conditions.find((c: unknown) => {
     const co = c as Record<string, unknown>;
-    return (
-      co?.type === "percentage" ||
-      co?.percentage !== undefined ||
-      co?.value !== undefined
-    );
+    return co?.type === "percentage" || co?.percentage !== undefined || co?.value !== undefined;
   }) as Record<string, unknown> | undefined;
   return Number(cond?.percentage ?? cond?.value ?? 0);
 };
 
-const getCollaboratorPercentage = (
-  collaborator: Record<string, unknown>,
-): number => {
+const getCollaboratorPercentage = (collaborator: Record<string, unknown>): number => {
   const direct = Number(collaborator?.percentage ?? 0);
   return direct > 0 ? direct : getPercentageFromSplitConditions(collaborator);
 };
 
-const getCollaboratorAmountToPay = (
-  collaborator: Record<string, unknown>,
-): number => {
+const getCollaboratorAmountToPay = (collaborator: Record<string, unknown>): number => {
   const direct = Number(collaborator?.amountToPay ?? 0);
   if (direct > 0) return direct;
   const splits = collaborator?.splitPayment as
@@ -80,27 +60,21 @@ const getCollaboratorAmountToPay = (
 
 const hasActiveWallet = (collaborator: Record<string, unknown>): boolean => {
   const wallet = collaborator?.wallet as Record<string, unknown> | undefined;
-  const status = String(
-    wallet?.status ?? collaborator?.walletStatus ?? "",
-  ).toLowerCase();
+  const status = String(wallet?.status ?? collaborator?.walletStatus ?? "").toLowerCase();
   return Boolean(
     collaborator?.hasWallet === true ||
     collaborator?.walletActive === true ||
     wallet?.isActive === true ||
     collaborator?.stripeConnected === true ||
     collaborator?.stripeAccountConnected === true ||
-    (collaborator?.stripeConnect as Record<string, unknown>)?.isLoggedIn ===
-      true ||
+    (collaborator?.stripeConnect as Record<string, unknown>)?.isLoggedIn === true ||
     status === "active" ||
     status === "enabled" ||
     status === "verified",
   );
 };
 
-const getDisplayName = (
-  collaborator: Record<string, unknown>,
-  idx: number,
-): string =>
+const getDisplayName = (collaborator: Record<string, unknown>, idx: number): string =>
   String(
     collaborator?.name ??
       collaborator?.username ??
@@ -134,8 +108,7 @@ export const validatePayAllPayment = ({
     issues.push({
       code: "song-not-found",
       severity: "error",
-      message:
-        "No se pudo cargar la canción. Recarga la página e inténtalo de nuevo.",
+      message: "No se pudo cargar la canción. Recarga la página e inténtalo de nuevo.",
     });
     return {
       canProceed: false,
@@ -222,12 +195,7 @@ export const validatePayAllPayment = ({
       collaboratorIssues.push(issue);
     }
 
-    if (
-      incomeExceedsCosts &&
-      percentage > 0 &&
-      amountToPay > 0 &&
-      walletActive
-    ) {
+    if (incomeExceedsCosts && percentage > 0 && amountToPay > 0 && walletActive) {
       payableCollaborators++;
       const issue = {
         code: "all-valid",
@@ -244,16 +212,14 @@ export const validatePayAllPayment = ({
       id: String(collaborator?.id ?? collaborator?._id ?? email ?? name ?? idx),
       name,
       email,
-      canPay:
-        incomeExceedsCosts && percentage > 0 && amountToPay > 0 && walletActive,
+      canPay: incomeExceedsCosts && percentage > 0 && amountToPay > 0 && walletActive,
       reasons: collaboratorIssues.filter((issue) => issue.code !== "all-valid"),
     });
   });
 
   const hasBlockingIssues = issues.some((i) => i.code !== "all-valid");
   return {
-    canProceed:
-      !hasBlockingIssues && isStripeConnected && payableCollaborators > 0,
+    canProceed: !hasBlockingIssues && isStripeConnected && payableCollaborators > 0,
     totalCollaborators,
     payableCollaborators,
     issues,
@@ -269,9 +235,7 @@ class SongService {
   /** Obtiene canciones del usuario con paginación */
   async getSongs(page: number, limit: number) {
     try {
-      const response = await apiClient.get(
-        `${this.BASE}/by-user?page=${page}&limit=${limit}`,
-      );
+      const response = await apiClient.get(`${this.BASE}/by-user?page=${page}&limit=${limit}`);
       return response.data;
     } catch {
       return null;
@@ -309,17 +273,12 @@ class SongService {
     songId: string;
     collaboratorEmail?: string;
     collaboratorId?: string;
-  }): Promise<
-    { success: true; data: unknown } | { success: false; message: string }
-  > {
+  }): Promise<{ success: true; data: unknown } | { success: false; message: string }> {
     try {
-      const response = await apiClient.post(
-        `${this.BASE}/${songId}/add-collaborator`,
-        {
-          collaboratorEmail,
-          collaboratorId,
-        },
-      );
+      const response = await apiClient.post(`${this.BASE}/${songId}/add-collaborator`, {
+        collaboratorEmail,
+        collaboratorId,
+      });
       return { success: true, data: response.data };
     } catch (err: unknown) {
       const axiosErr = err as {
@@ -349,9 +308,7 @@ class SongService {
   /** Obtiene una canción por su ISRC */
   async getSongByIsrc(isrc: string) {
     try {
-      const response = await apiClient.get(
-        `${this.BASE}/by-isrc/${encodeURIComponent(isrc)}`,
-      );
+      const response = await apiClient.get(`${this.BASE}/by-isrc/${encodeURIComponent(isrc)}`);
       return response.data;
     } catch {
       return null;
@@ -359,12 +316,7 @@ class SongService {
   }
 
   /** Obtiene canciones filtradas por país, plataforma y fechas */
-  async getSongsByFilter(
-    country: string,
-    platform: string,
-    startDate: string,
-    endDate: string,
-  ) {
+  async getSongsByFilter(country: string, platform: string, startDate: string, endDate: string) {
     try {
       const response = await apiClient.get(`${this.BASE}/by-params`, {
         params: { country, platform, startDate, endDate },
@@ -397,9 +349,7 @@ class SongService {
   /** Obtiene métricas de pagos de una canción por período */
   async getMetricPayments(songId: string, date: "month" | "day" | "year") {
     try {
-      const response = await apiClient.get(
-        `${this.BASE}/get-metric-payments/${songId}/${date}`,
-      );
+      const response = await apiClient.get(`${this.BASE}/get-metric-payments/${songId}/${date}`);
       return response.data;
     } catch {
       return null;
@@ -443,9 +393,7 @@ class SongService {
   /** Obtiene estadísticas por plataforma de todas las canciones */
   async getStadisticsByPlatformAll() {
     try {
-      const response = await apiClient.get(
-        `${this.BASE}/getStadisticsByPlatformAll`,
-      );
+      const response = await apiClient.get(`${this.BASE}/getStadisticsByPlatformAll`);
       return response.data;
     } catch {
       return null;
@@ -454,9 +402,7 @@ class SongService {
 
   async getBalanceBySongId(songId: string): Promise<SongBalance | null> {
     try {
-      const response = await apiClient.get(
-        `/accounting/balance/song/${songId}`,
-      );
+      const response = await apiClient.get(`/accounting/balance/song/${songId}`);
       return response.data?.data ?? response.data;
     } catch {
       return null;
@@ -471,9 +417,7 @@ class SongService {
    */
   async getReleaseFilters(songId: string): Promise<ReleaseFiltersOptions> {
     try {
-      const response = await apiClient.get(
-        `${this.BASE}/${songId}/release-filters`,
-      );
+      const response = await apiClient.get(`${this.BASE}/${songId}/release-filters`);
       const data = (response.data?.data ?? {
         countries: [],
         platforms: [],

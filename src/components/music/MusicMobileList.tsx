@@ -48,21 +48,13 @@ export function MusicMobileList({
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-gray-900">
-                  {song.trackTitle}
-                </p>
+                <p className="truncate text-sm font-semibold text-gray-900">{song.trackTitle}</p>
                 <p className="truncate text-xs text-gray-500">
                   {song?.artistName ?? "Unknown Artist"}
                 </p>
                 <span className="mt-0.5 flex items-center gap-1 text-[11px] text-gray-400">
                   <span className="truncate">ISRC: {song?.isrc ?? "N/A"}</span>
-                  {song?.isrc && (
-                    <CopyButton
-                      value={song.isrc}
-                      size={11}
-                      title="Copiar ISRC"
-                    />
-                  )}
+                  {song?.isrc && <CopyButton value={song.isrc} size={11} title="Copiar ISRC" />}
                 </span>
                 <p className="truncate text-[11px] text-gray-400">
                   {Number(song?.totalStreams ?? 0).toLocaleString()} streams ·{" "}
@@ -93,11 +85,7 @@ export function MusicMobileList({
               )),
             ])
           : albums.map((album) => (
-              <AlbumMobileRow
-                key={album.upc}
-                album={album}
-                onOwnerSplitModal={onOwnerSplitModal}
-              />
+              <AlbumMobileRow key={album.upc} album={album} onOwnerSplitModal={onOwnerSplitModal} />
             ))}
     </div>
   );
@@ -111,8 +99,7 @@ function AlbumMobileRow({
   onOwnerSplitModal: (a: AlbumItem) => void;
 }) {
   const coverUrl =
-    album?.coverImage?.[0]?.[0]?.url ??
-    album?.tracks?.[0]?.spotifyData?.album?.images?.[0]?.url;
+    album?.coverImage?.[0]?.[0]?.url ?? album?.tracks?.[0]?.spotifyData?.album?.images?.[0]?.url;
 
   return (
     <div className="flex items-center gap-3 p-4 transition-colors hover:bg-gray-50">
@@ -136,9 +123,7 @@ function AlbumMobileRow({
         >
           {album.albumTitle}
         </Link>
-        <p className="text-xs text-gray-400">
-          {album.artistName ?? "Unknown Artist"}
-        </p>
+        <p className="text-xs text-gray-400">{album.artistName ?? "Unknown Artist"}</p>
       </div>
       <button
         onClick={(e) => {

@@ -1,14 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import {
-  ArrowLeft,
-  Music2,
-  Disc3,
-  Clock,
-  Users,
-  AlertCircle,
-} from "lucide-react";
+import { ArrowLeft, Music2, Disc3, Clock, Users, AlertCircle } from "lucide-react";
 import { SpotifyService } from "../../../../services/spotify";
 import Loading from "../../../../components/loading/loading";
 
@@ -45,10 +38,7 @@ const Album = () => {
   };
 
   const totalDurationMs =
-    album?.tracks?.items?.reduce(
-      (sum: number, t: any) => sum + (t.duration_ms || 0),
-      0,
-    ) ?? 0;
+    album?.tracks?.items?.reduce((sum: number, t: any) => sum + (t.duration_ms || 0), 0) ?? 0;
 
   if (loading) return <Loading />;
 
@@ -58,12 +48,8 @@ const Album = () => {
         <div className="flex max-w-lg items-start gap-2 rounded-xl border border-red-100 bg-red-50 p-4">
           <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />
           <div>
-            <p className="mb-1 text-sm font-semibold text-red-700">
-              Error al cargar el álbum
-            </p>
-            <p className="text-xs text-red-600">
-              {error || "Álbum no encontrado"}
-            </p>
+            <p className="mb-1 text-sm font-semibold text-red-700">Error al cargar el álbum</p>
+            <p className="text-xs text-red-600">{error || "Álbum no encontrado"}</p>
           </div>
         </div>
       </div>
@@ -85,12 +71,8 @@ const Album = () => {
             Regresar
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Detalle del Álbum
-            </h1>
-            <p className="mt-0.5 text-sm text-gray-500">
-              Información y pistas del álbum
-            </p>
+            <h1 className="text-2xl font-bold text-gray-900">Detalle del Álbum</h1>
+            <p className="mt-0.5 text-sm text-gray-500">Información y pistas del álbum</p>
           </div>
         </div>
 
@@ -100,9 +82,7 @@ const Album = () => {
             Música
           </Link>
           <span className="text-gray-300">/</span>
-          <span className="max-w-[180px] truncate font-medium text-gray-900">
-            {album.name}
-          </span>
+          <span className="max-w-[180px] truncate font-medium text-gray-900">{album.name}</span>
         </div>
       </div>
 
@@ -127,9 +107,7 @@ const Album = () => {
             <span className="text-xs font-semibold uppercase tracking-wide text-[#F97316]">
               Álbum
             </span>
-            <h2 className="mt-1 text-2xl font-bold text-gray-900">
-              {album.name}
-            </h2>
+            <h2 className="mt-1 text-2xl font-bold text-gray-900">{album.name}</h2>
             <p className="mt-1 flex items-center gap-1.5 text-sm text-gray-500">
               <Users className="h-3.5 w-3.5" />
               {artistNames}
@@ -145,13 +123,9 @@ const Album = () => {
                 <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-50">
                   <Music2 className="h-3.5 w-3.5 text-[#F97316]" />
                 </div>
-                <span className="text-xs font-medium text-gray-500">
-                  Pistas
-                </span>
+                <span className="text-xs font-medium text-gray-500">Pistas</span>
               </div>
-              <p className="text-xl font-bold text-gray-900">
-                {album.total_tracks}
-              </p>
+              <p className="text-xl font-bold text-gray-900">{album.total_tracks}</p>
             </div>
 
             <div className="rounded-xl bg-[#F7F8FA] p-4">
@@ -159,13 +133,9 @@ const Album = () => {
                 <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50">
                   <Clock className="h-3.5 w-3.5 text-blue-600" />
                 </div>
-                <span className="text-xs font-medium text-gray-500">
-                  Duración
-                </span>
+                <span className="text-xs font-medium text-gray-500">Duración</span>
               </div>
-              <p className="text-xl font-bold text-gray-900">
-                {formatDuration(totalDurationMs)}
-              </p>
+              <p className="text-xl font-bold text-gray-900">{formatDuration(totalDurationMs)}</p>
             </div>
 
             <div className="rounded-xl bg-[#F7F8FA] p-4">
@@ -173,13 +143,9 @@ const Album = () => {
                 <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-purple-50">
                   <Users className="h-3.5 w-3.5 text-purple-600" />
                 </div>
-                <span className="text-xs font-medium text-gray-500">
-                  Artistas
-                </span>
+                <span className="text-xs font-medium text-gray-500">Artistas</span>
               </div>
-              <p className="text-xl font-bold text-gray-900">
-                {album.artists?.length ?? 1}
-              </p>
+              <p className="text-xl font-bold text-gray-900">{album.artists?.length ?? 1}</p>
             </div>
 
             {album?.ownerEarnings && (
@@ -188,9 +154,7 @@ const Album = () => {
                   <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-green-100">
                     <span className="text-xs font-bold text-green-600">$</span>
                   </div>
-                  <span className="text-xs font-medium text-gray-500">
-                    Ganancias
-                  </span>
+                  <span className="text-xs font-medium text-gray-500">Ganancias</span>
                 </div>
                 <p className="text-xl font-bold text-green-600">
                   $
@@ -243,15 +207,10 @@ const Album = () => {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {album.tracks.items.map((track: any, index: number) => (
-                <tr
-                  key={track.id || index}
-                  className="transition-colors hover:bg-gray-50"
-                >
+                <tr key={track.id || index} className="transition-colors hover:bg-gray-50">
                   {/* # */}
                   <td className="px-6 py-4">
-                    <span className="text-sm font-medium text-gray-400">
-                      {index + 1}
-                    </span>
+                    <span className="text-sm font-medium text-gray-400">{index + 1}</span>
                   </td>
 
                   {/* Title */}
@@ -295,12 +254,8 @@ const Album = () => {
             <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100">
               <Music2 className="h-6 w-6 text-gray-400" />
             </div>
-            <p className="mb-1 text-sm font-semibold text-gray-700">
-              Sin pistas
-            </p>
-            <p className="text-xs text-gray-400">
-              Este álbum no tiene pistas disponibles
-            </p>
+            <p className="mb-1 text-sm font-semibold text-gray-700">Sin pistas</p>
+            <p className="text-xs text-gray-400">Este álbum no tiene pistas disponibles</p>
           </div>
         )}
       </div>

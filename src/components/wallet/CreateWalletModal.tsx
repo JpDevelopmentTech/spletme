@@ -1,15 +1,6 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import {
-  X,
-  Wallet,
-  Mail,
-  User,
-  Phone,
-  Globe,
-  AlertCircle,
-  Building2,
-} from "lucide-react";
+import { X, Wallet, Mail, User, Phone, Globe, AlertCircle, Building2 } from "lucide-react";
 
 interface CreateWalletModalProps {
   isOpen: boolean;
@@ -35,11 +26,7 @@ const inputClass =
 const labelClass =
   "flex items-center gap-1.5 text-xs font-semibold text-gray-700 uppercase tracking-wide mb-1.5";
 
-export default function CreateWalletModal({
-  isOpen,
-  onClose,
-  onSubmit,
-}: CreateWalletModalProps) {
+export default function CreateWalletModal({ isOpen, onClose, onSubmit }: CreateWalletModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -70,9 +57,7 @@ export default function CreateWalletModal({
     });
   }, [isOpen]);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -112,12 +97,8 @@ export default function CreateWalletModal({
               <Wallet className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h2 className="text-base font-semibold leading-tight text-white">
-                Crear Wallet
-              </h2>
-              <p className="mt-0.5 text-xs text-white/80">
-                Configura tu wallet de pagos
-              </p>
+              <h2 className="text-base font-semibold leading-tight text-white">Crear Wallet</h2>
+              <p className="mt-0.5 text-xs text-white/80">Configura tu wallet de pagos</p>
             </div>
           </div>
           <button
@@ -232,9 +213,7 @@ export default function CreateWalletModal({
                 <button
                   key={type}
                   type="button"
-                  onClick={() =>
-                    setFormData((prev) => ({ ...prev, contact_type: type }))
-                  }
+                  onClick={() => setFormData((prev) => ({ ...prev, contact_type: type }))}
                   className={`flex-1 rounded-md py-2 text-xs font-medium transition-colors ${
                     formData.contact_type === type
                       ? "bg-[#F97316] text-white"

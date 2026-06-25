@@ -116,8 +116,8 @@ export const AlbumsUsageExample: React.FC = () => {
         <div className="mb-6 text-sm text-gray-600">
           <p>
             Showing {pagination.skip + 1} -{" "}
-            {Math.min(pagination.skip + pagination.limit, pagination.total)} of{" "}
-            {pagination.total} albums
+            {Math.min(pagination.skip + pagination.limit, pagination.total)} of {pagination.total}{" "}
+            albums
           </p>
         </div>
       )}
@@ -130,16 +130,12 @@ export const AlbumsUsageExample: React.FC = () => {
             <div>
               <h3 className="font-bold">{selectedAlbum.albumTitle}</h3>
               <p>Artist: {selectedAlbum.artistName}</p>
-              {selectedAlbum.artisticLabel && (
-                <p>Label: {selectedAlbum.artisticLabel}</p>
-              )}
+              {selectedAlbum.artisticLabel && <p>Label: {selectedAlbum.artisticLabel}</p>}
               <p>UPC: {selectedAlbum.upc}</p>
             </div>
             <div>
               <p>Total Tracks: {selectedAlbum.totalTracks}</p>
-              <p>
-                Total Streams: {selectedAlbum.totalStreams.toLocaleString()}
-              </p>
+              <p>Total Streams: {selectedAlbum.totalStreams.toLocaleString()}</p>
               <p>Gross Income: ${selectedAlbum.totalGrossIncome.toFixed(2)}</p>
               <p>Net Income: ${selectedAlbum.totalNetIncome.toFixed(2)}</p>
             </div>
@@ -149,14 +145,10 @@ export const AlbumsUsageExample: React.FC = () => {
             <h4 className="mb-2 font-semibold">Tracks:</h4>
             <div className="space-y-2">
               {selectedAlbum.tracks.map((track) => (
-                <div
-                  key={track.isrc}
-                  className="border-l-2 border-blue-200 pl-3 text-sm"
-                >
+                <div key={track.isrc} className="border-l-2 border-blue-200 pl-3 text-sm">
                   <p className="font-medium">{track.trackTitle}</p>
                   <p className="text-gray-600">
-                    ISRC: {track.isrc} | Streams:{" "}
-                    {track.totalStreams.toLocaleString()} | Net: $
+                    ISRC: {track.isrc} | Streams: {track.totalStreams.toLocaleString()} | Net: $
                     {track.totalNetIncome.toFixed(2)}
                   </p>
                 </div>

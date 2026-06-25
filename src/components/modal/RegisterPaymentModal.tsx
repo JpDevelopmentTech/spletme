@@ -1,15 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  X,
-  DollarSign,
-  Calendar,
-  Globe,
-  Music,
-  AlertCircle,
-  Check,
-  Loader2,
-} from "lucide-react";
+import { X, DollarSign, Calendar, Globe, Music, AlertCircle, Check, Loader2 } from "lucide-react";
 import { useSplits } from "../../hooks/useSplits";
 
 interface RegisterPaymentModalProps {
@@ -27,9 +18,7 @@ const RegisterPaymentModal = ({
   songTitle,
 }: RegisterPaymentModalProps) => {
   const [amount, setAmount] = useState<number>(0);
-  const [date, setDate] = useState<string>(
-    new Date().toISOString().split("T")[0],
-  );
+  const [date, setDate] = useState<string>(new Date().toISOString().split("T")[0]);
   const [platform, setPlatform] = useState<string>("");
   const [country, setCountry] = useState<string>("");
   const [preview, setPreview] = useState<any>(null);
@@ -37,11 +26,7 @@ const RegisterPaymentModal = ({
   const [paymentLoading] = useState(false);
   const [calculationLoading] = useState(false);
 
-  const {
-    loading: splitsLoading,
-    error: splitsError,
-    getSplitsBySong,
-  } = useSplits();
+  const { loading: splitsLoading, error: splitsError, getSplitsBySong } = useSplits();
 
   const platforms = [
     "Spotify",
@@ -215,8 +200,7 @@ const RegisterPaymentModal = ({
                       </p>
                     )}
                     <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                      Ingresa el monto total a distribuir entre los
-                      participantes
+                      Ingresa el monto total a distribuir entre los participantes
                     </p>
                   </div>
 
@@ -270,8 +254,7 @@ const RegisterPaymentModal = ({
                       ))}
                     </select>
                     <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                      Especifica la plataforma si el pago proviene de una fuente
-                      específica
+                      Especifica la plataforma si el pago proviene de una fuente específica
                     </p>
                   </div>
 
@@ -295,8 +278,7 @@ const RegisterPaymentModal = ({
                       ))}
                     </select>
                     <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                      Especifica el país si el pago tiene restricciones
-                      geográficas
+                      Especifica el país si el pago tiene restricciones geográficas
                     </p>
                   </div>
                 </div>
@@ -358,44 +340,39 @@ const RegisterPaymentModal = ({
 
                     {/* Participants */}
                     <div className="space-y-3">
-                      {preview.participants.map(
-                        (participant: any, index: number) => (
-                          <div
-                            key={index}
-                            className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800/50"
-                          >
-                            <div className="mb-2 flex items-center justify-between">
-                              <span className="font-medium text-gray-900 dark:text-white">
-                                {participant.name}
-                              </span>
-                              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                {participant.percentage}%
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <div>
-                                {participant.appliedConditions.length > 0 && (
-                                  <div className="mb-2 flex flex-wrap gap-1">
-                                    {participant.appliedConditions.map(
-                                      (condition: any, condIndex: number) => (
-                                        <span
-                                          key={condIndex}
-                                          className="rounded-full bg-yellow-100 px-2 py-1 text-xs text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
-                                        >
-                                          {condition}
-                                        </span>
-                                      ),
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                              <span className="text-lg font-bold text-gray-800 dark:text-gray-200">
-                                {formatCurrency(participant.amount)}
-                              </span>
-                            </div>
+                      {preview.participants.map((participant: any, index: number) => (
+                        <div key={index} className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800/50">
+                          <div className="mb-2 flex items-center justify-between">
+                            <span className="font-medium text-gray-900 dark:text-white">
+                              {participant.name}
+                            </span>
+                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                              {participant.percentage}%
+                            </span>
                           </div>
-                        ),
-                      )}
+                          <div className="flex items-center justify-between">
+                            <div>
+                              {participant.appliedConditions.length > 0 && (
+                                <div className="mb-2 flex flex-wrap gap-1">
+                                  {participant.appliedConditions.map(
+                                    (condition: any, condIndex: number) => (
+                                      <span
+                                        key={condIndex}
+                                        className="rounded-full bg-yellow-100 px-2 py-1 text-xs text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
+                                      >
+                                        {condition}
+                                      </span>
+                                    ),
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                            <span className="text-lg font-bold text-gray-800 dark:text-gray-200">
+                              {formatCurrency(participant.amount)}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
                     </div>
 
                     {/* Total */}

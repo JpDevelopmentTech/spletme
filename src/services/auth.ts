@@ -16,11 +16,7 @@ import type {
   SwitchAccountResponse,
 } from "../types";
 
-export type {
-  UpdateUserSchema,
-  UpdateProfileInfoSchema,
-  RegisterSubuserSchema,
-};
+export type { UpdateUserSchema, UpdateProfileInfoSchema, RegisterSubuserSchema };
 export type { SwitchAccountResponse, UnlinkSubuserResponse };
 
 const BASE = "/users";
@@ -92,9 +88,7 @@ export const AuthService = {
   },
 
   /** Cambia la cuenta activa al usuario especificado */
-  switchAccount: async (
-    targetUserId: string,
-  ): Promise<SwitchAccountResponse> => {
+  switchAccount: async (targetUserId: string): Promise<SwitchAccountResponse> => {
     if (!targetUserId.trim())
       return { success: false, message: "ID de usuario inválido", status: 400 };
     try {
@@ -102,17 +96,13 @@ export const AuthService = {
         `${BASE}/switch-account`,
         { targetUserId },
         {
-          validateStatus: (s) =>
-            (s >= 200 && s < 300) || [400, 401, 404, 409, 422].includes(s),
+          validateStatus: (s) => (s >= 200 && s < 300) || [400, 401, 404, 409, 422].includes(s),
         },
       );
       if (response.status < 200 || response.status >= 300) {
         return {
           success: false,
-          message: getMessageFromPayload(
-            response.data,
-            "No se pudo cambiar de cuenta",
-          ),
+          message: getMessageFromPayload(response.data, "No se pudo cambiar de cuenta"),
           status: response.status,
         };
       }
@@ -126,10 +116,7 @@ export const AuthService = {
       if (axios.isAxiosError(error)) {
         return {
           success: false,
-          message: getMessageFromPayload(
-            error.response?.data,
-            "No se pudo cambiar de cuenta",
-          ),
+          message: getMessageFromPayload(error.response?.data, "No se pudo cambiar de cuenta"),
           status: error.response?.status ?? 500,
         };
       }
@@ -148,16 +135,14 @@ export const AuthService = {
 
   /** Desvincula un subperfil del usuario actual */
   unlinkSubuser: async (subuserId: string): Promise<UnlinkSubuserResponse> => {
-    if (!subuserId.trim())
-      return { success: false, message: "ID de subperfil inválido" };
+    if (!subuserId.trim()) return { success: false, message: "ID de subperfil inválido" };
     try {
       const response = await apiClient.post(`${BASE}/subusers/unlink`, {
         subuserId,
       });
       return {
         success: true,
-        message:
-          response.data?.message ?? "Subperfil desvinculado correctamente",
+        message: response.data?.message ?? "Subperfil desvinculado correctamente",
       };
     } catch (error) {
       return {
@@ -174,15 +159,9 @@ export const AuthService = {
   updateUser: async (payload: UpdateUserSchema) => {
     try {
       const { userId: _id, email: _email, ...body } = payload;
-      const response = await apiClient.put(
-        `${BASE}/update/${payload.userId}`,
-        body,
-      );
+      const response = await apiClient.put(`${BASE}/update/${payload.userId}`, body);
       const currentUser = JSON.parse(localStorage.getItem("user") ?? "{}");
-      localStorage.setItem(
-        "user",
-        JSON.stringify({ ...currentUser, ...response.data.data }),
-      );
+      localStorage.setItem("user", JSON.stringify({ ...currentUser, ...response.data.data }));
       return response.data;
     } catch {
       return null;
@@ -194,10 +173,7 @@ export const AuthService = {
     try {
       const response = await apiClient.put(`${BASE}/profile-info`, payload);
       const updatedPayload =
-        response.data?.data?.user ??
-        response.data?.data ??
-        response.data?.user ??
-        {};
+        response.data?.data?.user ?? response.data?.data ?? response.data?.user ?? {};
       const currentUser = JSON.parse(localStorage.getItem("user") ?? "{}");
       const updatedUser = {
         ...currentUser,
@@ -205,14 +181,9 @@ export const AuthService = {
         onboardingData: {
           ...(currentUser.onboardingData ?? {}),
           ...(updatedPayload.onboardingData ?? {}),
-          country:
-            payload.country ?? currentUser.onboardingData?.country ?? null,
-          profession:
-            payload.profession ??
-            currentUser.onboardingData?.profession ??
-            null,
-          address:
-            payload.address ?? currentUser.onboardingData?.address ?? null,
+          country: payload.country ?? currentUser.onboardingData?.country ?? null,
+          profession: payload.profession ?? currentUser.onboardingData?.profession ?? null,
+          address: payload.address ?? currentUser.onboardingData?.address ?? null,
         },
       };
       localStorage.setItem("user", JSON.stringify(updatedUser));
@@ -223,16 +194,13 @@ export const AuthService = {
   },
 
   /** Envía el email de recuperación de contraseña */
-  sentPasswordRecoveryRequest: async (
-    email: string,
-  ): Promise<PasswordRecoveryResponse> => {
+  sentPasswordRecoveryRequest: async (email: string): Promise<PasswordRecoveryResponse> => {
     try {
       const response = await apiClient.post(
         `${BASE}/password-recovery/request`,
         { email },
         {
-          validateStatus: (s) =>
-            (s >= 200 && s < 300) || [404, 409].includes(s),
+          validateStatus: (s) => (s >= 200 && s < 300) || [404, 409].includes(s),
         },
       );
       if (response.status === 404 || response.status === 409) {
@@ -244,16 +212,11 @@ export const AuthService = {
       }
       return {
         success: true,
-        message:
-          response.data?.message ??
-          "If the email exists, the recovery code was sent",
+        message: response.data?.message ?? "If the email exists, the recovery code was sent",
         status: response.status,
       };
     } catch (error) {
-      if (
-        axios.isAxiosError(error) &&
-        [404, 409].includes(error.response?.status ?? 0)
-      ) {
+      if (axios.isAxiosError(error) && [404, 409].includes(error.response?.status ?? 0)) {
         return {
           success: false,
           message: "correo no encontrado",
@@ -274,10 +237,10 @@ export const AuthService = {
     code: string,
   ): Promise<CodeVerificationResponse> => {
     try {
-      const response = await apiClient.post(
-        `${BASE}/password-recovery/verify-code`,
-        { email, code },
-      );
+      const response = await apiClient.post(`${BASE}/password-recovery/verify-code`, {
+        email,
+        code,
+      });
       return {
         success: true,
         message: response.data?.message ?? "Código verificado correctamente",
@@ -305,24 +268,19 @@ export const AuthService = {
         `${BASE}/password-recovery/reset`,
         { email, code, newPassword, newPasswordConfirmation },
         {
-          validateStatus: (s) =>
-            (s >= 200 && s < 300) || [400, 401, 404, 409, 422].includes(s),
+          validateStatus: (s) => (s >= 200 && s < 300) || [400, 401, 404, 409, 422].includes(s),
         },
       );
       if (response.status < 200 || response.status >= 300) {
         return {
           success: false,
-          message: getMessageFromPayload(
-            response.data,
-            "Error al restablecer la contraseña",
-          ),
+          message: getMessageFromPayload(response.data, "Error al restablecer la contraseña"),
           status: response.status,
         };
       }
       return {
         success: true,
-        message:
-          response.data?.message ?? "Contraseña restablecida correctamente",
+        message: response.data?.message ?? "Contraseña restablecida correctamente",
         status: response.status,
       };
     } catch (error) {
@@ -368,21 +326,13 @@ export const AuthService = {
         token: authToken,
         ...(currentPassword ? { currentPassword } : {}),
       };
-      const response = await apiClient.post(
-        `${BASE}/password/change`,
-        payload,
-        {
-          validateStatus: (s) =>
-            (s >= 200 && s < 300) || [400, 401, 404, 409, 422].includes(s),
-        },
-      );
+      const response = await apiClient.post(`${BASE}/password/change`, payload, {
+        validateStatus: (s) => (s >= 200 && s < 300) || [400, 401, 404, 409, 422].includes(s),
+      });
       if (response.status < 200 || response.status >= 300) {
         return {
           success: false,
-          message: getMessageFromPayload(
-            response.data,
-            "Error al cambiar la contraseña",
-          ),
+          message: getMessageFromPayload(response.data, "Error al cambiar la contraseña"),
           status: response.status,
         };
       }
@@ -395,10 +345,7 @@ export const AuthService = {
       if (axios.isAxiosError(error)) {
         return {
           success: false,
-          message: getMessageFromPayload(
-            error.response?.data,
-            "Error al cambiar la contraseña",
-          ),
+          message: getMessageFromPayload(error.response?.data, "Error al cambiar la contraseña"),
           status: error.response?.status ?? 500,
         };
       }
@@ -411,25 +358,19 @@ export const AuthService = {
   },
 
   /** Marca el tour del dashboard como completado */
-  completeDashboardTour: async (
-    completed: boolean,
-  ): Promise<PlatformTourResponse> => {
+  completeDashboardTour: async (completed: boolean): Promise<PlatformTourResponse> => {
     try {
       const response = await apiClient.post(
         `${BASE}/dashboard-tour/complete`,
         { completed },
         {
-          validateStatus: (s) =>
-            (s >= 200 && s < 300) || [400, 401, 404, 409, 422].includes(s),
+          validateStatus: (s) => (s >= 200 && s < 300) || [400, 401, 404, 409, 422].includes(s),
         },
       );
       if (response.status < 200 || response.status >= 300) {
         return {
           success: false,
-          message: getMessageFromPayload(
-            response.data,
-            "Error al actualizar el tour",
-          ),
+          message: getMessageFromPayload(response.data, "Error al actualizar el tour"),
           status: response.status,
         };
       }
@@ -442,10 +383,7 @@ export const AuthService = {
       if (axios.isAxiosError(error)) {
         return {
           success: false,
-          message: getMessageFromPayload(
-            error.response?.data,
-            "Error al actualizar el tour",
-          ),
+          message: getMessageFromPayload(error.response?.data, "Error al actualizar el tour"),
           status: error.response?.status ?? 500,
         };
       }

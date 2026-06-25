@@ -31,9 +31,7 @@ const AcceptCollaboration = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [token, setToken] = useState("");
-  const [invitationData, setInvitationData] = useState<InvitationData | null>(
-    null,
-  );
+  const [invitationData, setInvitationData] = useState<InvitationData | null>(null);
   const [error, setError] = useState("");
 
   // Función para decodificar JWT manualmente (sin librería externa)
@@ -49,13 +47,10 @@ const AcceptCollaboration = () => {
       const payload = parts[1];
 
       // Añadir padding si es necesario para base64
-      const paddedPayload =
-        payload + "=".repeat((4 - (payload.length % 4)) % 4);
+      const paddedPayload = payload + "=".repeat((4 - (payload.length % 4)) % 4);
 
       // Decodificar de base64
-      const decodedPayload = atob(
-        paddedPayload.replace(/-/g, "+").replace(/_/g, "/"),
-      );
+      const decodedPayload = atob(paddedPayload.replace(/-/g, "+").replace(/_/g, "/"));
 
       // Parsear JSON
       return JSON.parse(decodedPayload) as JWTPayload;
@@ -181,9 +176,7 @@ const AcceptCollaboration = () => {
               />
             </svg>
           </div>
-          <h1 className="mb-4 text-2xl font-bold text-gray-900">
-            Error en la Invitación
-          </h1>
+          <h1 className="mb-4 text-2xl font-bold text-gray-900">Error en la Invitación</h1>
           <p className="mb-6 text-gray-600">{error}</p>
           <button
             onClick={() => navigate("/dashboard")}
@@ -216,12 +209,8 @@ const AcceptCollaboration = () => {
               />
             </svg>
           </div>
-          <h1 className="mb-2 text-3xl font-bold text-gray-900">
-            Invitación de Colaboración
-          </h1>
-          <p className="text-gray-600">
-            Te han invitado a colaborar en una nueva canción
-          </p>
+          <h1 className="mb-2 text-3xl font-bold text-gray-900">Invitación de Colaboración</h1>
+          <p className="text-gray-600">Te han invitado a colaborar en una nueva canción</p>
           {token && (
             <div className="mt-2 rounded-lg bg-green-50 p-2 text-xs text-green-600">
               ✓ Token de invitación verificado
@@ -245,12 +234,8 @@ const AcceptCollaboration = () => {
                 </span>
               </div>
               <div>
-                <p className="font-medium text-gray-900">
-                  {displayData.inviterName}
-                </p>
-                <p className="text-sm text-gray-600">
-                  {displayData.inviterEmail}
-                </p>
+                <p className="font-medium text-gray-900">{displayData.inviterName}</p>
+                <p className="text-sm text-gray-600">{displayData.inviterEmail}</p>
               </div>
             </div>
 
@@ -274,11 +259,7 @@ const AcceptCollaboration = () => {
           >
             {loading ? (
               <>
-                <svg
-                  className="h-5 w-5 animate-spin"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
                   <circle
                     className="opacity-25"
                     cx="12"
@@ -297,12 +278,7 @@ const AcceptCollaboration = () => {
               </>
             ) : (
               <>
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -322,11 +298,7 @@ const AcceptCollaboration = () => {
           >
             {loading ? (
               <>
-                <svg
-                  className="h-5 w-5 animate-spin"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
                   <circle
                     className="opacity-25"
                     cx="12"
@@ -345,12 +317,7 @@ const AcceptCollaboration = () => {
               </>
             ) : (
               <>
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -367,8 +334,7 @@ const AcceptCollaboration = () => {
         {/* Additional Info */}
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-500">
-            Una vez que respondas a esta invitación, no podrás cambiar tu
-            decisión.
+            Una vez que respondas a esta invitación, no podrás cambiar tu decisión.
           </p>
         </div>
       </div>

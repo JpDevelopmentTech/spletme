@@ -26,8 +26,7 @@ const OnboardingContainer = () => {
     const userStr = localStorage.getItem("user");
     if (userStr) {
       const user = JSON.parse(userStr);
-      const email =
-        typeof user.email === "string" ? user.email.trim().toLowerCase() : "";
+      const email = typeof user.email === "string" ? user.email.trim().toLowerCase() : "";
       const storedStep = Number(user.onboardingData?.currentStep || 1);
 
       if (email) {
@@ -83,22 +82,16 @@ const OnboardingContainer = () => {
       if (stepData) {
         if (nextStepNumber === 3) {
           if (!verificationEmail) {
-            setOnboardingError(
-              "No encontramos un correo para enviar el código de verificación.",
-            );
+            setOnboardingError("No encontramos un correo para enviar el código de verificación.");
             return;
           }
 
           try {
             const requestResponse =
-              await OnboardingService.requestAccountVerificationCode(
-                verificationEmail,
-              );
+              await OnboardingService.requestAccountVerificationCode(verificationEmail);
 
             if (!requestResponse.accepted) {
-              setOnboardingError(
-                "No fue posible enviar el código de verificación.",
-              );
+              setOnboardingError("No fue posible enviar el código de verificación.");
               return;
             }
           } catch (error) {
@@ -123,9 +116,7 @@ const OnboardingContainer = () => {
             }
           }
         } else {
-          setOnboardingError(
-            "No pudimos guardar tu progreso. Intenta nuevamente.",
-          );
+          setOnboardingError("No pudimos guardar tu progreso. Intenta nuevamente.");
         }
       } else {
         setCurrentStep(nextStepNumber);
@@ -143,9 +134,7 @@ const OnboardingContainer = () => {
       title: "Completa tu perfil",
       description: "Cuéntanos sobre tu profesión",
       icon: "👤",
-      component: (
-        <ProfessionStep nextStep={nextStep} initialData={onboardingData} />
-      ),
+      component: <ProfessionStep nextStep={nextStep} initialData={onboardingData} />,
     },
     {
       id: 2,
@@ -153,11 +142,7 @@ const OnboardingContainer = () => {
       description: "Configura tu información principal",
       icon: "🧾",
       component: (
-        <AccountDetailsStep
-          nextStep={nextStep}
-          prevStep={prevStep}
-          initialData={onboardingData}
-        />
+        <AccountDetailsStep nextStep={nextStep} prevStep={prevStep} initialData={onboardingData} />
       ),
     },
     {
@@ -202,10 +187,7 @@ const OnboardingContainer = () => {
           </div>
           <span className="text-lg font-bold text-[#111827]">SplitMe</span>
         </div>
-        <span
-          className="text-sm font-medium"
-          style={{ color: isLastStep ? "#22C55E" : "#9CA3AF" }}
-        >
+        <span className="text-sm font-medium" style={{ color: isLastStep ? "#22C55E" : "#9CA3AF" }}>
           Paso {currentStep} de {TOTAL_STEPS}
         </span>
       </div>

@@ -31,11 +31,8 @@ interface PlatformDataItem {
 
 type ChartView = "bar" | "donut" | "horizontal";
 
-const platformConfig: Record<
-  string,
-  { color: string; letter: string; logo?: string }
-> = {
-  Spotify: { color: "#22C55E", letter: "S", logo: spotifyLogo },
+const platformConfig: Record<string, { color: string; letter: string; logo?: string }> = {
+  "Spotify": { color: "#22C55E", letter: "S", logo: spotifyLogo },
   "Apple Music": { color: "#111827", letter: "A", logo: appleMusicLogo },
   "YouTube Official Content": {
     color: "#EF4444",
@@ -43,16 +40,16 @@ const platformConfig: Record<
     logo: youtubeLogo,
   },
   "YouTube UGC": { color: "#EF4444", letter: "Y", logo: youtubeLogo },
-  Deezer: { color: "#6B7280", letter: "D", logo: deezerLogo },
+  "Deezer": { color: "#6B7280", letter: "D", logo: deezerLogo },
   "Amazon Premium": { color: "#00C7F2", letter: "A", logo: amazonLogo },
   "Amazon Ad-Supported": { color: "#00A8E1", letter: "A", logo: amazonLogo },
   "Facebook / Instagram": { color: "#E4405F", letter: "F", logo: metaLogo },
-  iMusica: { color: "#FF6B35", letter: "I" },
-  Yandex: { color: "#FFCC00", letter: "Y" },
+  "iMusica": { color: "#FF6B35", letter: "I" },
+  "Yandex": { color: "#FFCC00", letter: "Y" },
   "iTunes Match": { color: "#FA243C", letter: "I" },
-  Audiomack: { color: "#FFA500", letter: "A" },
-  TikTok: { color: "#000000", letter: "T", logo: tiktokLogo },
-  Otros: { color: "#6366F1", letter: "O" },
+  "Audiomack": { color: "#FFA500", letter: "A" },
+  "TikTok": { color: "#000000", letter: "T", logo: tiktokLogo },
+  "Otros": { color: "#6366F1", letter: "O" },
 };
 
 const chartButtons: {
@@ -81,18 +78,13 @@ const PlatformsCard = () => {
         const response = await SongService.getStadisticsByPlatformAll();
         const stadistics: PlatformStadistic[] = response?.data || [];
 
-        const totalStreams = stadistics.reduce(
-          (sum, item) => sum + (item.totalStreams || 0),
-          0,
-        );
+        const totalStreams = stadistics.reduce((sum, item) => sum + (item.totalStreams || 0), 0);
 
         const mapped: PlatformDataItem[] = stadistics
           .map((item) => {
             const name = item._id || "Otros";
             const percentage =
-              totalStreams > 0
-                ? Math.round((item.totalStreams / totalStreams) * 100)
-                : 0;
+              totalStreams > 0 ? Math.round((item.totalStreams / totalStreams) * 100) : 0;
             const config = platformConfig[name] || platformConfig["Otros"];
 
             return {
@@ -127,9 +119,7 @@ const PlatformsCard = () => {
           };
 
           if (totalStreams > 0) {
-            othersData.percentage = Math.round(
-              (othersData.streams / totalStreams) * 100,
-            );
+            othersData.percentage = Math.round((othersData.streams / totalStreams) * 100);
           }
 
           if (othersData.streams > 0 || platformsWithZero.length > 0) {
@@ -230,10 +220,7 @@ const PlatformsCard = () => {
     [visibleData],
   );
 
-  const donutSeries = useMemo(
-    () => visibleData.map((p) => p.streams),
-    [visibleData],
-  );
+  const donutSeries = useMemo(() => visibleData.map((p) => p.streams), [visibleData]);
 
   const horizontalOptions: ApexOptions = useMemo(
     () => ({
@@ -369,18 +356,14 @@ const PlatformsCard = () => {
                 <div
                   key={platform.name}
                   className={`flex items-center justify-between py-2.5 ${
-                    index < visibleData.length - 1
-                      ? "border-b border-gray-100"
-                      : ""
+                    index < visibleData.length - 1 ? "border-b border-gray-100" : ""
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div
                       className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-lg"
                       style={{
-                        backgroundColor: platform.logo
-                          ? "#F3F4F6"
-                          : platform.color,
+                        backgroundColor: platform.logo ? "#F3F4F6" : platform.color,
                       }}
                     >
                       {platform.logo ? (
@@ -390,9 +373,7 @@ const PlatformsCard = () => {
                           className="h-full w-full object-contain"
                         />
                       ) : (
-                        <span className="text-xs font-bold text-white">
-                          {platform.letter}
-                        </span>
+                        <span className="text-xs font-bold text-white">{platform.letter}</span>
                       )}
                     </div>
                     <div className="flex flex-col gap-0.5">

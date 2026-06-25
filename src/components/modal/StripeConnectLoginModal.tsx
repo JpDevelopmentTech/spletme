@@ -1,14 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  X,
-  Eye,
-  EyeOff,
-  CreditCard,
-  Lock,
-  User,
-  CheckCircle,
-} from "lucide-react";
+import { X, Eye, EyeOff, CreditCard, Lock, User, CheckCircle } from "lucide-react";
 import LocalStorageService from "../../services/localstorage";
 
 interface StripeConnectLoginModalProps {
@@ -64,10 +56,7 @@ const StripeConnectLoginModal = ({
         provider: "stripe_connect",
       };
 
-      LocalStorageService.setItem(
-        "stripe_connect_auth",
-        JSON.stringify(loginData),
-      );
+      LocalStorageService.setItem("stripe_connect_auth", JSON.stringify(loginData));
 
       setIsLoading(false);
       setIsSuccess(true);
@@ -305,8 +294,8 @@ const StripeConnectLoginModal = ({
             {/* Footer */}
             <div className="border-t border-gray-200 bg-gray-50 p-6 dark:border-gray-700 dark:bg-gray-800">
               <p className="text-center text-xs text-gray-500 dark:text-gray-400">
-                🔒 Esta es una demostración. En un entorno real, Stripe Connect
-                manejaría la autenticación de forma segura.
+                🔒 Esta es una demostración. En un entorno real, Stripe Connect manejaría la
+                autenticación de forma segura.
               </p>
             </div>
           </motion.div>

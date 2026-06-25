@@ -58,15 +58,10 @@ const UseSongs = (page: number, limit: number) => {
       const data = Array.isArray(response?.data) ? response.data : [];
       setSongs(data);
 
-      const rawPagination =
-        response?.pagination ?? response?.meta?.pagination ?? null;
+      const rawPagination = response?.pagination ?? response?.meta?.pagination ?? null;
 
-      const resolvedPage = Number(
-        rawPagination?.page ?? response?.page ?? page,
-      );
-      const resolvedLimit = Number(
-        rawPagination?.limit ?? response?.limit ?? limit,
-      );
+      const resolvedPage = Number(rawPagination?.page ?? response?.page ?? page);
+      const resolvedLimit = Number(rawPagination?.limit ?? response?.limit ?? limit);
 
       const rawTotal =
         rawPagination?.total ??

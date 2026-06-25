@@ -1,23 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import {
-  Music as MusicIcon,
-  Disc,
-  Crown,
-  Info,
-  Tags,
-  ArrowUpDown,
-  Check,
-} from "lucide-react";
+import { Music as MusicIcon, Disc, Crown, Info, Tags, ArrowUpDown, Check } from "lucide-react";
 import { hasAnySplit } from "@/utils/music.utils";
 import { CopyButton } from "@/components/ui/CopyButton";
-import type {
-  MusicMode,
-  SongItem,
-  AlbumItem,
-  SortBy,
-  SplitFilter,
-} from "@/types/music.types";
+import type { MusicMode, SongItem, AlbumItem, SortBy, SplitFilter } from "@/types/music.types";
 
 /** Formatea un monto en USD para las columnas de ingresos. */
 function formatIncome(value?: number): string {
@@ -30,41 +16,40 @@ const SPLIT_FILTER_OPTIONS: { value: SplitFilter; label: string }[] = [
   { value: "without_split", label: "Sin split" },
 ];
 
-const COLUMN_SORT_OPTIONS: Record<string, { value: SortBy; label: string }[]> =
-  {
-    track: [
-      { value: "alpha", label: "A → Z" },
-      { value: "title_desc", label: "Z → A" },
-    ],
-    percentage: [
-      { value: "percentage_desc", label: "Mayor %" },
-      { value: "percentage_asc", label: "Menor %" },
-    ],
-    collaborators: [
-      { value: "collaborators_desc", label: "Más colaboradores" },
-      { value: "collaborators_asc", label: "Menos colaboradores" },
-    ],
-    label: [
-      { value: "label_asc", label: "A → Z" },
-      { value: "label_desc", label: "Z → A" },
-    ],
-    album: [
-      { value: "alpha", label: "A → Z" },
-      { value: "title_desc", label: "Z → A" },
-    ],
-    artist: [
-      { value: "artist_asc", label: "A → Z" },
-      { value: "artist_desc", label: "Z → A" },
-    ],
-    date: [
-      { value: "date_desc", label: "Más reciente" },
-      { value: "date_asc", label: "Más antiguo" },
-    ],
-    revenue: [
-      { value: "revenue", label: "Mayor ganancia" },
-      { value: "streams", label: "Más streams" },
-    ],
-  };
+const COLUMN_SORT_OPTIONS: Record<string, { value: SortBy; label: string }[]> = {
+  track: [
+    { value: "alpha", label: "A → Z" },
+    { value: "title_desc", label: "Z → A" },
+  ],
+  percentage: [
+    { value: "percentage_desc", label: "Mayor %" },
+    { value: "percentage_asc", label: "Menor %" },
+  ],
+  collaborators: [
+    { value: "collaborators_desc", label: "Más colaboradores" },
+    { value: "collaborators_asc", label: "Menos colaboradores" },
+  ],
+  label: [
+    { value: "label_asc", label: "A → Z" },
+    { value: "label_desc", label: "Z → A" },
+  ],
+  album: [
+    { value: "alpha", label: "A → Z" },
+    { value: "title_desc", label: "Z → A" },
+  ],
+  artist: [
+    { value: "artist_asc", label: "A → Z" },
+    { value: "artist_desc", label: "Z → A" },
+  ],
+  date: [
+    { value: "date_desc", label: "Más reciente" },
+    { value: "date_asc", label: "Más antiguo" },
+  ],
+  revenue: [
+    { value: "revenue", label: "Mayor ganancia" },
+    { value: "streams", label: "Más streams" },
+  ],
+};
 
 const COLLAB_COLORS = [
   { bg: "#DBEAFE", color: "#1E40AF" },
@@ -113,16 +98,9 @@ interface MusicTableProps {
   onNextPage: () => void;
 }
 
-function AlbumCover({
-  album,
-  size = "9",
-}: {
-  album: AlbumItem;
-  size?: string;
-}) {
+function AlbumCover({ album, size = "9" }: { album: AlbumItem; size?: string }) {
   const url =
-    album?.coverImage?.[0]?.[0]?.url ??
-    album?.tracks?.[0]?.spotifyData?.album?.images?.[0]?.url;
+    album?.coverImage?.[0]?.[0]?.url ?? album?.tracks?.[0]?.spotifyData?.album?.images?.[0]?.url;
   if (url)
     return (
       <img
@@ -176,10 +154,7 @@ export function MusicTable({
   useEffect(() => {
     if (!sortPopover) return;
     const handler = (e: MouseEvent) => {
-      if (
-        popoverRef.current &&
-        !popoverRef.current.contains(e.target as Node)
-      ) {
+      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
         setSortPopover(null);
       }
     };
@@ -187,10 +162,7 @@ export function MusicTable({
     return () => document.removeEventListener("mousedown", handler);
   }, [sortPopover]);
 
-  const handleSortIconClick = (
-    e: React.MouseEvent<HTMLButtonElement>,
-    column: string,
-  ) => {
+  const handleSortIconClick = (e: React.MouseEvent<HTMLButtonElement>, column: string) => {
     e.stopPropagation();
     if (sortPopover?.column === column) {
       setSortPopover(null);
@@ -240,34 +212,26 @@ export function MusicTable({
                 >
                   <span className="flex-1 text-left">{label}</span>
                   {splitFilter === value && (
-                    <Check
-                      size={13}
-                      className="flex-shrink-0 text-orange-500"
-                    />
+                    <Check size={13} className="flex-shrink-0 text-orange-500" />
                   )}
                 </button>
               ))
-            : (COLUMN_SORT_OPTIONS[sortPopover.column] ?? []).map(
-                ({ value, label }) => (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => {
-                      onSortChange(value);
-                      setSortPopover(null);
-                    }}
-                    className={`flex w-full items-center gap-2 px-3.5 py-2 text-sm transition-colors ${sortBy === value ? "bg-orange-50 font-semibold text-orange-600" : "text-gray-700 hover:bg-gray-50"}`}
-                  >
-                    <span className="flex-1 text-left">{label}</span>
-                    {sortBy === value && (
-                      <Check
-                        size={13}
-                        className="flex-shrink-0 text-orange-500"
-                      />
-                    )}
-                  </button>
-                ),
-              )}
+            : (COLUMN_SORT_OPTIONS[sortPopover.column] ?? []).map(({ value, label }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => {
+                    onSortChange(value);
+                    setSortPopover(null);
+                  }}
+                  className={`flex w-full items-center gap-2 px-3.5 py-2 text-sm transition-colors ${sortBy === value ? "bg-orange-50 font-semibold text-orange-600" : "text-gray-700 hover:bg-gray-50"}`}
+                >
+                  <span className="flex-1 text-left">{label}</span>
+                  {sortBy === value && (
+                    <Check size={13} className="flex-shrink-0 text-orange-500" />
+                  )}
+                </button>
+              ))}
         </div>
       )}
       <div className="hidden lg:block">
@@ -368,10 +332,7 @@ export function MusicTable({
                               />
                             ) : (
                               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-100">
-                                <MusicIcon
-                                  size={16}
-                                  className="text-orange-500"
-                                />
+                                <MusicIcon size={16} className="text-orange-500" />
                               </div>
                             )}
                           </div>
@@ -391,9 +352,7 @@ export function MusicTable({
                       <td className="px-6 py-3">
                         {song?.isrc ? (
                           <div className="flex items-center gap-1.5">
-                            <span className="font-mono text-[12px] text-gray-700">
-                              {song.isrc}
-                            </span>
+                            <span className="font-mono text-[12px] text-gray-700">{song.isrc}</span>
                             <CopyButton value={song.isrc} title="Copiar ISRC" />
                           </div>
                         ) : (
@@ -415,8 +374,7 @@ export function MusicTable({
                           {song?.collaborators?.length ? (
                             <>
                               {song.collaborators.slice(0, 3).map((c, idx) => {
-                                const palette =
-                                  COLLAB_COLORS[idx % COLLAB_COLORS.length];
+                                const palette = COLLAB_COLORS[idx % COLLAB_COLORS.length];
                                 return c.image ? (
                                   <img
                                     key={idx}
@@ -490,14 +448,8 @@ export function MusicTable({
                 })
               : groupAlbumsByTrackCount
                 ? groupedAlbums.flatMap(([trackCount, albumsInGroup]) => [
-                    <tr
-                      key={`group-${trackCount}`}
-                      className="border-b border-gray-100 bg-gray-50"
-                    >
-                      <td
-                        colSpan={6}
-                        className="px-6 py-2 text-xs font-semibold text-gray-600"
-                      >
+                    <tr key={`group-${trackCount}`} className="border-b border-gray-100 bg-gray-50">
+                      <td colSpan={6} className="px-6 py-2 text-xs font-semibold text-gray-600">
                         {trackCount} canciones
                       </td>
                     </tr>,
@@ -510,11 +462,7 @@ export function MusicTable({
                     )),
                   ])
                 : albums.map((album) => (
-                    <AlbumRow
-                      key={album.upc}
-                      album={album}
-                      onOwnerSplitModal={onOwnerSplitModal}
-                    />
+                    <AlbumRow key={album.upc} album={album} onOwnerSplitModal={onOwnerSplitModal} />
                   ))}
           </tbody>
         </table>
@@ -524,8 +472,7 @@ export function MusicTable({
       <div className="flex items-center justify-between border-t border-gray-200 px-6 py-3.5">
         <span className="text-[13px] text-gray-500">
           Showing {totalItemsForDisplay === 0 ? 0 : pageStart + 1}–
-          {Math.min(pageEnd, totalItemsForDisplay)} of {totalItemsForDisplay}{" "}
-          {mode}
+          {Math.min(pageEnd, totalItemsForDisplay)} of {totalItemsForDisplay} {mode}
         </span>
         <div className="flex items-center gap-2">
           <span className="text-[13px] text-gray-500">Show:</span>
@@ -597,22 +544,16 @@ function AlbumRow({
       <td className="px-6 py-3">
         {album.upc ? (
           <div className="flex items-center gap-1.5">
-            <span className="font-mono text-[13px] text-gray-900">
-              {album.upc}
-            </span>
+            <span className="font-mono text-[13px] text-gray-900">{album.upc}</span>
             <CopyButton value={album.upc} title="Copiar UPC" />
           </div>
         ) : (
           <span className="text-[13px] text-gray-400">N/A</span>
         )}
       </td>
+      <td className="px-6 py-3 text-[13px] text-gray-900">{album.artisticLabel ?? "Unknown"}</td>
       <td className="px-6 py-3 text-[13px] text-gray-900">
-        {album.artisticLabel ?? "Unknown"}
-      </td>
-      <td className="px-6 py-3 text-[13px] text-gray-900">
-        {album.releaseDate
-          ? new Date(album.releaseDate).toLocaleDateString()
-          : "N/A"}
+        {album.releaseDate ? new Date(album.releaseDate).toLocaleDateString() : "N/A"}
       </td>
       <td className="px-6 py-3 text-[13px] font-semibold text-gray-900">
         {formatIncome(album.totalNetIncome)}

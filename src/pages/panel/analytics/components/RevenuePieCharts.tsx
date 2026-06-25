@@ -57,8 +57,7 @@ function PieSection({ title, subtitle, data, loading }: PieProps) {
     plotOptions: { pie: { donut: { size: "55%" } } },
     tooltip: {
       y: {
-        formatter: (v: number) =>
-          `$${v.toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
+        formatter: (v: number) => `$${v.toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
       },
     },
     stroke: { width: 2, colors: ["#fff"] },
@@ -86,11 +85,7 @@ interface Props {
   loading: boolean;
 }
 
-export default function RevenuePieCharts({
-  storeData,
-  countryData,
-  loading,
-}: Props) {
+export default function RevenuePieCharts({ storeData, countryData, loading }: Props) {
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       <PieSection

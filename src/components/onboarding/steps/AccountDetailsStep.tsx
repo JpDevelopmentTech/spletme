@@ -32,11 +32,7 @@ const inputStyle = (hasError: boolean): React.CSSProperties => ({
   outline: "none",
 });
 
-const AccountDetailsStep = ({
-  nextStep,
-  prevStep,
-  initialData,
-}: AccountDetailsStepProps) => {
+const AccountDetailsStep = ({ nextStep, prevStep, initialData }: AccountDetailsStepProps) => {
   const [formData, setFormData] = useState({
     country: "",
     phone: "",
@@ -65,13 +61,10 @@ const AccountDetailsStep = ({
     const e: Record<string, string> = {};
     if (!formData.country) e.country = "Selecciona tu país";
     if (!formData.phone) e.phone = "El teléfono es requerido";
-    else if (!/^\+?[\d\s\-()]{10,}$/.test(formData.phone))
-      e.phone = "Ingresa un teléfono válido";
+    else if (!/^\+?[\d\s\-()]{10,}$/.test(formData.phone)) e.phone = "Ingresa un teléfono válido";
     if (!formData.address) e.address = "La dirección es requerida";
-    else if (formData.address.length < 10)
-      e.address = "Ingresa una dirección más específica";
-    if (!formData.identification)
-      e.identification = "La identificación es requerida";
+    else if (formData.address.length < 10) e.address = "Ingresa una dirección más específica";
+    if (!formData.identification) e.identification = "La identificación es requerida";
     else if (!/^\d{6,}$/.test(formData.identification))
       e.identification = "Ingresa un número válido";
     setErrors(e);
@@ -93,12 +86,8 @@ const AccountDetailsStep = ({
     <div className="flex flex-col gap-5">
       {/* Header */}
       <div className="flex flex-col gap-1">
-        <h2 className="text-[22px] font-bold text-[#111827]">
-          Tus datos personales
-        </h2>
-        <p className="text-sm text-[#6B7280]">
-          Completa tu información para configurar tu cuenta
-        </p>
+        <h2 className="text-[22px] font-bold text-[#111827]">Tus datos personales</h2>
+        <p className="text-sm text-[#6B7280]">Completa tu información para configurar tu cuenta</p>
       </div>
 
       {/* Fields */}
@@ -120,9 +109,7 @@ const AccountDetailsStep = ({
               </option>
             ))}
           </select>
-          {errors.country && (
-            <p className="text-xs text-red-500">{errors.country}</p>
-          )}
+          {errors.country && <p className="text-xs text-red-500">{errors.country}</p>}
         </div>
 
         {/* Phone */}
@@ -137,9 +124,7 @@ const AccountDetailsStep = ({
             placeholder="+57 300 123 4567"
             style={inputStyle(!!errors.phone)}
           />
-          {errors.phone && (
-            <p className="text-xs text-red-500">{errors.phone}</p>
-          )}
+          {errors.phone && <p className="text-xs text-red-500">{errors.phone}</p>}
         </div>
 
         {/* Address */}
@@ -154,9 +139,7 @@ const AccountDetailsStep = ({
             placeholder="Calle 123 #45-67, Bogotá"
             style={inputStyle(!!errors.address)}
           />
-          {errors.address && (
-            <p className="text-xs text-red-500">{errors.address}</p>
-          )}
+          {errors.address && <p className="text-xs text-red-500">{errors.address}</p>}
         </div>
 
         {/* Identification */}
@@ -171,9 +154,7 @@ const AccountDetailsStep = ({
             placeholder="1234567890"
             style={inputStyle(!!errors.identification)}
           />
-          {errors.identification && (
-            <p className="text-xs text-red-500">{errors.identification}</p>
-          )}
+          {errors.identification && <p className="text-xs text-red-500">{errors.identification}</p>}
         </div>
       </div>
 
@@ -189,9 +170,7 @@ const AccountDetailsStep = ({
       >
         <span className="text-lg">🔒</span>
         <div>
-          <p className="text-sm font-semibold text-[#111827]">
-            Tu información está segura
-          </p>
+          <p className="text-sm font-semibold text-[#111827]">Tu información está segura</p>
           <p className="mt-0.5 text-xs text-[#6B7280]">
             Utilizamos encriptación de nivel bancario para proteger tus datos.
           </p>

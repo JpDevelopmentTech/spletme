@@ -8,28 +8,20 @@ interface Props {
 }
 
 const PLATFORM_COLORS: Record<string, string> = {
-  Spotify: "#1DB954",
+  "Spotify": "#1DB954",
   "Apple Music": "#FC3C44",
-  YouTube: "#FF0000",
+  "YouTube": "#FF0000",
   "YouTube Music": "#FF0000",
-  TikTok: "#69C9D0",
-  Amazon: "#FF9900",
+  "TikTok": "#69C9D0",
+  "Amazon": "#FF9900",
   "Amazon Music": "#FF9900",
-  Deezer: "#EF5466",
+  "Deezer": "#EF5466",
 };
 
 function colorFor(name: string, idx: number) {
   return (
     PLATFORM_COLORS[name] ||
-    [
-      "#2563EB",
-      "#F97316",
-      "#8B5CF6",
-      "#10B981",
-      "#F59E0B",
-      "#EF4444",
-      "#06B6D4",
-    ][idx % 7]
+    ["#2563EB", "#F97316", "#8B5CF6", "#10B981", "#F59E0B", "#EF4444", "#06B6D4"][idx % 7]
   );
 }
 
@@ -38,9 +30,7 @@ export default function RevenueByPlatformChart({ data, loading }: Props) {
     return (
       <div className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-6">
         <div>
-          <h2 className="text-sm font-semibold text-[#111827]">
-            Ingresos por Plataforma / Mes
-          </h2>
+          <h2 className="text-sm font-semibold text-[#111827]">Ingresos por Plataforma / Mes</h2>
           <p className="mt-0.5 text-xs text-[#6B7280]">
             Barras apiladas — YT, Spotify, Apple y más
           </p>
@@ -85,8 +75,7 @@ export default function RevenueByPlatformChart({ data, loading }: Props) {
     yaxis: {
       labels: {
         style: { colors: "#9CA3AF", fontSize: "11px" },
-        formatter: (v: number) =>
-          v >= 1000 ? `$${(v / 1000).toFixed(0)}K` : `$${v}`,
+        formatter: (v: number) => (v >= 1000 ? `$${(v / 1000).toFixed(0)}K` : `$${v}`),
       },
     },
     grid: {
@@ -105,8 +94,7 @@ export default function RevenueByPlatformChart({ data, loading }: Props) {
     tooltip: {
       theme: "light",
       y: {
-        formatter: (v: number) =>
-          `$${v.toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
+        formatter: (v: number) => `$${v.toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
       },
     },
     fill: { opacity: 1 },
@@ -115,19 +103,10 @@ export default function RevenueByPlatformChart({ data, loading }: Props) {
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-6">
       <div>
-        <h2 className="text-sm font-semibold text-[#111827]">
-          Ingresos por Plataforma / Mes
-        </h2>
-        <p className="mt-0.5 text-xs text-[#6B7280]">
-          Barras apiladas — YT, Spotify, Apple y más
-        </p>
+        <h2 className="text-sm font-semibold text-[#111827]">Ingresos por Plataforma / Mes</h2>
+        <p className="mt-0.5 text-xs text-[#6B7280]">Barras apiladas — YT, Spotify, Apple y más</p>
       </div>
-      <ReactApexChart
-        options={options}
-        series={series}
-        type="bar"
-        height={280}
-      />
+      <ReactApexChart options={options} series={series} type="bar" height={280} />
     </div>
   );
 }

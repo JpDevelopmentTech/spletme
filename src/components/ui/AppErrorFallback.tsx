@@ -20,8 +20,7 @@ export function AppErrorFallback({ error, onReset }: AppErrorFallbackProps) {
         <div className="flex flex-col gap-1.5">
           <h2 className="text-lg font-bold text-[#111827]">Algo salió mal</h2>
           <p className="text-sm text-[#6B7280]">
-            Ocurrió un error inesperado en la aplicación. Tu sesión sigue
-            activa.
+            Ocurrió un error inesperado en la aplicación. Tu sesión sigue activa.
           </p>
         </div>
 

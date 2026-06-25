@@ -1,10 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  Music as MusicIcon,
-  Search,
-  SlidersHorizontal,
-  AlertCircle,
-} from "lucide-react";
+import { Music as MusicIcon, Search, SlidersHorizontal, AlertCircle } from "lucide-react";
 import UploadModal from "./components/UploadModal";
 import AlbumOwnerSplitModal from "./album/components/AlbumOwnerSplitModal";
 import Loading from "@/components/loading/loading";
@@ -16,19 +11,14 @@ import { useMusicLibrary } from "@/hooks/useMusicLibrary";
 import songService from "@/services/songs";
 
 export default function Music() {
-  const [songsWithoutSplits, setSongsWithoutSplits] = useState<number | null>(
-    null,
-  );
+  const [songsWithoutSplits, setSongsWithoutSplits] = useState<number | null>(null);
 
   useEffect(() => {
     songService
       .filterSongs({ hasSplits: false, page: 1, limit: 1 })
       .then((res) => {
         const total =
-          res?.data?.pagination?.total ??
-          res?.pagination?.total ??
-          res?.data?.total ??
-          null;
+          res?.data?.pagination?.total ?? res?.pagination?.total ?? res?.data?.total ?? null;
         setSongsWithoutSplits(total);
       })
       .catch(() => setSongsWithoutSplits(null));
@@ -110,9 +100,7 @@ export default function Music() {
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Music Library</h1>
-            <p className="mt-1 text-sm text-gray-500">
-              Manage your songs and albums
-            </p>
+            <p className="mt-1 text-sm text-gray-500">Manage your songs and albums</p>
           </div>
           {/* Stat card — songs without splits */}
           {songsWithoutSplits !== null && songsWithoutSplits > 0 && (
@@ -126,8 +114,7 @@ export default function Music() {
                     {songsWithoutSplits}
                   </p>
                   <p className="mt-0.5 text-sm text-gray-500">
-                    {songsWithoutSplits === 1 ? "canción sin" : "canciones sin"}{" "}
-                    splits asignados
+                    {songsWithoutSplits === 1 ? "canción sin" : "canciones sin"} splits asignados
                   </p>
                 </div>
               </div>
@@ -165,8 +152,7 @@ export default function Music() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full rounded-[10px] border border-gray-200 bg-white py-2.5 pl-9 pr-10 text-sm text-gray-900 placeholder-gray-400 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
-              {(isSearching && mode === "songs") ||
-              (isAlbumSearching && mode === "albums") ? (
+              {(isSearching && mode === "songs") || (isAlbumSearching && mode === "albums") ? (
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
                   <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-orange-500" />
                 </div>
@@ -242,9 +228,7 @@ export default function Music() {
               onLimitChange={setLimit}
               onPrevPage={() => setPage((p) => Math.max(1, p - 1))}
               onNextPage={() =>
-                setPage((p) =>
-                  knownTotalPages ? Math.min(knownTotalPages, p + 1) : p + 1,
-                )
+                setPage((p) => (knownTotalPages ? Math.min(knownTotalPages, p + 1) : p + 1))
               }
             />
           </>

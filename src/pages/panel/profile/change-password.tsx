@@ -9,10 +9,7 @@ const ChangePasswordPage = () => {
   const navigate = useNavigate();
   const userFromStorage = LocalStorageService.getItem("user");
   const authToken = (localStorage.getItem("token") || "").trim();
-  const userEmail = (userFromStorage.email || "")
-    .toString()
-    .trim()
-    .toLowerCase();
+  const userEmail = (userFromStorage.email || "").toString().trim().toLowerCase();
 
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -86,9 +83,7 @@ const ChangePasswordPage = () => {
         newPassword: "",
         confirmPassword: "",
       });
-      setSuccessMessage(
-        response.message || "Contraseña actualizada correctamente",
-      );
+      setSuccessMessage(response.message || "Contraseña actualizada correctamente");
     } catch {
       setPasswordError("Error al cambiar la contraseña");
     } finally {
@@ -116,9 +111,7 @@ const ChangePasswordPage = () => {
             <div className="rounded-lg bg-indigo-100 p-3 dark:bg-indigo-900/30">
               <Lock className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Cambiar Contraseña
-            </h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Cambiar Contraseña</h1>
           </div>
 
           <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
@@ -143,11 +136,7 @@ const ChangePasswordPage = () => {
                 disabled={isSubmitting}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               >
-                {showCurrentPassword ? (
-                  <EyeOff className="h-5 w-5" />
-                ) : (
-                  <Eye className="h-5 w-5" />
-                )}
+                {showCurrentPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
 
@@ -169,11 +158,7 @@ const ChangePasswordPage = () => {
                 disabled={isSubmitting}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               >
-                {showNewPassword ? (
-                  <EyeOff className="h-5 w-5" />
-                ) : (
-                  <Eye className="h-5 w-5" />
-                )}
+                {showNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
 
@@ -195,11 +180,7 @@ const ChangePasswordPage = () => {
                 disabled={isSubmitting}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               >
-                {showConfirmPassword ? (
-                  <EyeOff className="h-5 w-5" />
-                ) : (
-                  <Eye className="h-5 w-5" />
-                )}
+                {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
 

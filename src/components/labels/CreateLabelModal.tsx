@@ -1,16 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  X,
-  Tag,
-  Search,
-  Check,
-  Plus,
-  Sparkles,
-  Music2,
-  AlertCircle,
-  Loader2,
-} from "lucide-react";
+import { X, Tag, Search, Check, Plus, Sparkles, Music2, AlertCircle, Loader2 } from "lucide-react";
 import LabelsService from "../../services/labels";
 
 interface Label {
@@ -59,18 +49,14 @@ export default function CreateLabelModal({
   // Toggle label selection
   const toggleLabel = (labelName: string) => {
     setSelectedLabels((prev) =>
-      prev.includes(labelName)
-        ? prev.filter((l) => l !== labelName)
-        : [...prev, labelName],
+      prev.includes(labelName) ? prev.filter((l) => l !== labelName) : [...prev, labelName],
     );
     setError(null);
   };
 
   // Select all visible labels
   const selectAll = () => {
-    const visibleLabelNames = filteredLabels
-      .map((l) => l.label)
-      .filter(Boolean) as string[];
+    const visibleLabelNames = filteredLabels.map((l) => l.label).filter(Boolean) as string[];
     setSelectedLabels((prev) => {
       const allSelected = visibleLabelNames.every((l) => prev.includes(l));
       if (allSelected) {
@@ -156,12 +142,8 @@ export default function CreateLabelModal({
                   <Tag className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-white">
-                    Crear Nuevo Label
-                  </h2>
-                  <p className="text-sm text-white/80">
-                    Agrupa tus labels artísticos
-                  </p>
+                  <h2 className="text-xl font-bold text-white">Crear Nuevo Label</h2>
+                  <p className="text-sm text-white/80">Agrupa tus labels artísticos</p>
                 </div>
               </div>
               <button
@@ -186,9 +168,7 @@ export default function CreateLabelModal({
               <h3 className="mb-2 text-xl font-bold text-gray-900 dark:text-white">
                 ¡Label creado exitosamente!
               </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Tu nuevo label ha sido guardado
-              </p>
+              <p className="text-gray-600 dark:text-gray-400">Tu nuevo label ha sido guardado</p>
             </motion.div>
           ) : (
             <div className="space-y-6 p-6">
@@ -222,9 +202,7 @@ export default function CreateLabelModal({
                     onClick={selectAll}
                     className="text-xs font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
                   >
-                    {filteredLabels.every((l) =>
-                      selectedLabels.includes(l.label),
-                    )
+                    {filteredLabels.every((l) => selectedLabels.includes(l.label))
                       ? "Deseleccionar todos"
                       : "Seleccionar todos"}
                   </button>
@@ -286,8 +264,7 @@ export default function CreateLabelModal({
                               {label.label || "Sin nombre"}
                             </p>
                             <p className="text-xs text-gray-500 dark:text-gray-400">
-                              {label.count} canciones •{" "}
-                              {label.totalStreams?.toLocaleString() || 0}{" "}
+                              {label.count} canciones • {label.totalStreams?.toLocaleString() || 0}{" "}
                               streams
                             </p>
                           </div>
@@ -318,9 +295,7 @@ export default function CreateLabelModal({
                       <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
                         {selectedStats.songs}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Canciones
-                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Canciones</p>
                     </div>
                     <div className="text-center">
                       <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
@@ -330,17 +305,13 @@ export default function CreateLabelModal({
                             ? `${(selectedStats.streams / 1000).toFixed(1)}K`
                             : selectedStats.streams.toLocaleString()}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Streams
-                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Streams</p>
                     </div>
                     <div className="text-center">
                       <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                         ${selectedStats.income.toFixed(2)}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Ingresos
-                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Ingresos</p>
                     </div>
                   </div>
                 </motion.div>
@@ -354,9 +325,7 @@ export default function CreateLabelModal({
                   className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20"
                 >
                   <AlertCircle className="h-5 w-5 flex-shrink-0 text-red-500" />
-                  <p className="text-sm text-red-600 dark:text-red-400">
-                    {error}
-                  </p>
+                  <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
                 </motion.div>
               )}
 
@@ -371,9 +340,7 @@ export default function CreateLabelModal({
                 </button>
                 <button
                   onClick={handleSubmit}
-                  disabled={
-                    isSubmitting || !name.trim() || selectedLabels.length === 0
-                  }
+                  disabled={isSubmitting || !name.trim() || selectedLabels.length === 0}
                   className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-3 font-medium text-white shadow-lg transition-all hover:from-indigo-600 hover:to-purple-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isSubmitting ? (

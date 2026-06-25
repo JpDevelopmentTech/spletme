@@ -35,11 +35,7 @@ export function CopyButton({
       aria-label={title}
       className={`inline-flex items-center justify-center rounded p-0.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-orange-500 ${className}`}
     >
-      {copied ? (
-        <Check size={size} className="text-green-500" />
-      ) : (
-        <Copy size={size} />
-      )}
+      {copied ? <Check size={size} className="text-green-500" /> : <Copy size={size} />}
     </button>
   );
 }

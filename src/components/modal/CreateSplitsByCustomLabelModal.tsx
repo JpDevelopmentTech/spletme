@@ -58,8 +58,10 @@ export default function CreateSplitsByCustomLabelModal({
   const [mounted, setMounted] = useState(false);
   const [result, setResult] = useState<any>(null);
 
-  const { countryOptions, platformOptions, isLoadingFilters } =
-    useReleaseFiltersForSongs(songIds, isOpen);
+  const { countryOptions, platformOptions, isLoadingFilters } = useReleaseFiltersForSongs(
+    songIds,
+    isOpen,
+  );
 
   useEffect(() => {
     setMounted(true);
@@ -115,9 +117,7 @@ export default function CreateSplitsByCustomLabelModal({
       }
       setResult(response.data);
     } catch (err: any) {
-      setErrorMessage(
-        err?.response?.data?.message ?? "Error al crear los splits",
-      );
+      setErrorMessage(err?.response?.data?.message ?? "Error al crear los splits");
     } finally {
       setIsLoading(false);
     }
@@ -152,8 +152,7 @@ export default function CreateSplitsByCustomLabelModal({
               </h2>
               <p className="mt-0.5 flex items-center gap-1.5 text-xs text-white/80">
                 <Tag className="h-3 w-3" />
-                {labelName} · {songCount}{" "}
-                {songCount === 1 ? "canción" : "canciones"}
+                {labelName} · {songCount} {songCount === 1 ? "canción" : "canciones"}
               </p>
             </div>
           </div>
@@ -173,9 +172,7 @@ export default function CreateSplitsByCustomLabelModal({
                 <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl border border-green-100 bg-green-50">
                   <CheckCircle className="h-7 w-7 text-green-600" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900">
-                  Splits Guardados
-                </h3>
+                <h3 className="text-lg font-bold text-gray-900">Splits Guardados</h3>
               </div>
 
               <div className="grid grid-cols-4 gap-3">
@@ -205,9 +202,7 @@ export default function CreateSplitsByCustomLabelModal({
                     key={s.label}
                     className={`bg-${s.color}-50 border border-${s.color}-100 rounded-xl p-3 text-center`}
                   >
-                    <p className={`text-xl font-bold text-${s.color}-600`}>
-                      {s.value}
-                    </p>
+                    <p className={`text-xl font-bold text-${s.color}-600`}>{s.value}</p>
                     <p className="mt-0.5 text-xs text-gray-500">{s.label}</p>
                   </div>
                 ))}
@@ -220,13 +215,8 @@ export default function CreateSplitsByCustomLabelModal({
                   </p>
                   <div className="max-h-40 space-y-1.5 overflow-y-auto">
                     {result.failed.map((item: any, i: number) => (
-                      <div
-                        key={i}
-                        className="rounded-lg border border-red-100 bg-red-50 p-2.5"
-                      >
-                        <p className="text-sm font-medium text-gray-900">
-                          {item.trackTitle}
-                        </p>
+                      <div key={i} className="rounded-lg border border-red-100 bg-red-50 p-2.5">
+                        <p className="text-sm font-medium text-gray-900">{item.trackTitle}</p>
                         <p className="text-xs text-red-600">{item.reason}</p>
                       </div>
                     ))}
@@ -239,9 +229,8 @@ export default function CreateSplitsByCustomLabelModal({
               <div className="flex items-start gap-2 rounded-xl border border-blue-100 bg-blue-50 p-3">
                 <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-500" />
                 <p className="text-xs text-blue-700">
-                  La configuración se aplicará a las{" "}
-                  <strong>{songCount}</strong> canciones del label personalizado{" "}
-                  <strong>{labelName}</strong> ({artisticLabels.join(", ")}).
+                  La configuración se aplicará a las <strong>{songCount}</strong> canciones del
+                  label personalizado <strong>{labelName}</strong> ({artisticLabels.join(", ")}).
                 </p>
               </div>
 
@@ -251,9 +240,7 @@ export default function CreateSplitsByCustomLabelModal({
                     <Settings className="h-4 w-4 text-[#F97316]" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-gray-900">
-                      Configuración del Split
-                    </p>
+                    <p className="text-sm font-semibold text-gray-900">Configuración del Split</p>
                     <p className="mt-0.5 text-xs text-gray-500">
                       Porcentaje del owner y filtros opcionales
                     </p>

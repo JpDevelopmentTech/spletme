@@ -6,9 +6,7 @@ interface UseCurrentCollaboratorProps {
   collaborators: any[];
 }
 
-const useCurrentCollaborator = ({
-  collaborators,
-}: UseCurrentCollaboratorProps) => {
+const useCurrentCollaborator = ({ collaborators }: UseCurrentCollaboratorProps) => {
   const currentCollaborator = useMemo(() => {
     if (!collaborators || collaborators.length === 0) {
       return null;

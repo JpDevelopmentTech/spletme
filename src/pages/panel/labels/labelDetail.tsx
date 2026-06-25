@@ -30,21 +30,12 @@ export default function LabelDetail() {
 
   const decodedLabel = decodeURIComponent(label || "");
 
-  const totalNetIncome = songs.reduce(
-    (sum, song) => sum + (song.totalNetIncome || 0),
-    0,
-  );
-  const totalStreams = songs.reduce(
-    (sum, song) => sum + (song.totalStreams || 0),
-    0,
-  );
+  const totalNetIncome = songs.reduce((sum, song) => sum + (song.totalNetIncome || 0), 0);
+  const totalStreams = songs.reduce((sum, song) => sum + (song.totalStreams || 0), 0);
 
   // Ganancia del owner: viene precalculada por canción desde el backend
   // (totalNetIncome * % general del ownerSplit). Aquí solo se totaliza.
-  const totalOwnerEarnings = songs.reduce(
-    (sum, song) => sum + (song.ownerEarnings || 0),
-    0,
-  );
+  const totalOwnerEarnings = songs.reduce((sum, song) => sum + (song.ownerEarnings || 0), 0);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -91,8 +82,7 @@ export default function LabelDetail() {
     `$${val.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field)
-      return <ArrowUpDown className="h-3.5 w-3.5 text-gray-300" />;
+    if (sortField !== field) return <ArrowUpDown className="h-3.5 w-3.5 text-gray-300" />;
     return sortDir === "asc" ? (
       <ChevronUp className="h-3.5 w-3.5 text-[#F97316]" />
     ) : (
@@ -115,27 +105,18 @@ export default function LabelDetail() {
             Regresar
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Detalle del Sello
-            </h1>
-            <p className="mt-0.5 text-sm text-gray-500">
-              Canciones y métricas del sello
-            </p>
+            <h1 className="text-2xl font-bold text-gray-900">Detalle del Sello</h1>
+            <p className="mt-0.5 text-sm text-gray-500">Canciones y métricas del sello</p>
           </div>
         </div>
 
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm">
-          <Link
-            to="/panel/labels"
-            className="text-gray-400 hover:text-gray-600"
-          >
+          <Link to="/panel/labels" className="text-gray-400 hover:text-gray-600">
             Labels
           </Link>
           <span className="text-gray-300">/</span>
-          <span className="max-w-[180px] truncate font-medium text-gray-900">
-            {decodedLabel}
-          </span>
+          <span className="max-w-[180px] truncate font-medium text-gray-900">{decodedLabel}</span>
         </div>
       </div>
 
@@ -145,12 +126,9 @@ export default function LabelDetail() {
           <Tag className="h-7 w-7 text-[#F97316]" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-gray-900">
-            {decodedLabel || "Sin Label"}
-          </h2>
+          <h2 className="text-xl font-bold text-gray-900">{decodedLabel || "Sin Label"}</h2>
           <p className="mt-0.5 text-sm text-gray-500">
-            {songs.length} {songs.length === 1 ? "canción" : "canciones"}{" "}
-            registradas
+            {songs.length} {songs.length === 1 ? "canción" : "canciones"} registradas
           </p>
         </div>
       </div>
@@ -172,13 +150,9 @@ export default function LabelDetail() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50">
               <DollarSign className="h-4 w-4 text-green-600" />
             </div>
-            <span className="text-xs font-medium text-gray-500">
-              Ingresos Total
-            </span>
+            <span className="text-xs font-medium text-gray-500">Ingresos Total</span>
           </div>
-          <p className="text-2xl font-bold text-green-600">
-            {formatCurrency(totalNetIncome)}
-          </p>
+          <p className="text-2xl font-bold text-green-600">{formatCurrency(totalNetIncome)}</p>
         </div>
 
         <div className="rounded-xl border border-gray-200 bg-white p-5">
@@ -186,13 +160,9 @@ export default function LabelDetail() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50">
               <Play className="h-4 w-4 text-purple-600" />
             </div>
-            <span className="text-xs font-medium text-gray-500">
-              Total Streams
-            </span>
+            <span className="text-xs font-medium text-gray-500">Total Streams</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">
-            {formatStreams(totalStreams)}
-          </p>
+          <p className="text-2xl font-bold text-gray-900">{formatStreams(totalStreams)}</p>
         </div>
 
         <div className="rounded-xl border border-gray-200 bg-white p-5">
@@ -200,13 +170,9 @@ export default function LabelDetail() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50">
               <DollarSign className="h-4 w-4 text-[#F97316]" />
             </div>
-            <span className="text-xs font-medium text-gray-500">
-              Ganancias del Owner
-            </span>
+            <span className="text-xs font-medium text-gray-500">Ganancias del Owner</span>
           </div>
-          <p className="text-2xl font-bold text-[#F97316]">
-            {formatCurrency(totalOwnerEarnings)}
-          </p>
+          <p className="text-2xl font-bold text-[#F97316]">{formatCurrency(totalOwnerEarnings)}</p>
         </div>
       </div>
 
@@ -224,9 +190,7 @@ export default function LabelDetail() {
         <div className="flex flex-col items-start justify-between gap-3 border-b border-gray-100 px-6 py-4 sm:flex-row sm:items-center">
           <div className="flex items-center gap-2">
             <Music2 className="h-4 w-4 text-gray-400" />
-            <span className="text-sm font-semibold text-gray-900">
-              Canciones
-            </span>
+            <span className="text-sm font-semibold text-gray-900">Canciones</span>
             <span className="ml-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-600">
               {filteredSongs.length}
             </span>
@@ -313,18 +277,14 @@ export default function LabelDetail() {
                           <p className="truncate text-sm font-semibold text-gray-900">
                             {song.trackTitle}
                           </p>
-                          <p className="truncate text-xs text-gray-500">
-                            {song.artistName}
-                          </p>
+                          <p className="truncate text-xs text-gray-500">{song.artistName}</p>
                         </div>
                       </div>
                     </td>
 
                     {/* ISRC */}
                     <td className="px-4 py-4">
-                      <span className="font-mono text-xs text-gray-500">
-                        {song.isrc || "—"}
-                      </span>
+                      <span className="font-mono text-xs text-gray-500">{song.isrc || "—"}</span>
                     </td>
 
                     {/* Streams */}

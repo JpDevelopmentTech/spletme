@@ -1,12 +1,4 @@
-import {
-  Crown,
-  X,
-  Globe,
-  Percent,
-  Music,
-  Save,
-  AlertCircle,
-} from "lucide-react";
+import { Crown, X, Globe, Percent, Music, Save, AlertCircle } from "lucide-react";
 import Select from "react-select";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
@@ -60,8 +52,7 @@ export default function OwnerSplitModal({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
-  const { countryOptions, platformOptions, isLoadingFilters } =
-    useReleaseFilters(songId, isOpen);
+  const { countryOptions, platformOptions, isLoadingFilters } = useReleaseFilters(songId, isOpen);
 
   useEffect(() => {
     setMounted(true);
@@ -73,8 +64,7 @@ export default function OwnerSplitModal({
     setErrorMessage(null);
 
     const ownerId = song?.ownerId;
-    const split =
-      ownerId && typeof ownerId === "object" ? (ownerId.split ?? null) : null;
+    const split = ownerId && typeof ownerId === "object" ? (ownerId.split ?? null) : null;
 
     if (!split) {
       setForm(defaultForm());
@@ -90,10 +80,7 @@ export default function OwnerSplitModal({
     });
   }, [isOpen, song]);
 
-  const updateForm = (
-    field: keyof OwnerFormData,
-    value: string | readonly SelectOption[],
-  ) => {
+  const updateForm = (field: keyof OwnerFormData, value: string | readonly SelectOption[]) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -137,10 +124,7 @@ export default function OwnerSplitModal({
         message?: string;
       };
       if (err.response?.data) {
-        const msg =
-          err.response.data.message ??
-          err.response.data.error ??
-          "Error del servidor.";
+        const msg = err.response.data.message ?? err.response.data.error ?? "Error del servidor.";
         setErrorMessage(`Error ${err.response.status}: ${msg}`);
       } else {
         setErrorMessage(err.message ?? "Error inesperado.");
@@ -169,9 +153,7 @@ export default function OwnerSplitModal({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-semibold leading-tight text-white">
-                  Owner Split
-                </h2>
+                <h2 className="text-base font-semibold leading-tight text-white">Owner Split</h2>
                 {hasExistingSplit && (
                   <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold text-white">
                     Editando
@@ -233,9 +215,7 @@ export default function OwnerSplitModal({
                   isLoading={isLoadingFilters}
                   options={countryOptions}
                   value={form.selectedCountries}
-                  onChange={(selected) =>
-                    updateForm("selectedCountries", selected ?? [])
-                  }
+                  onChange={(selected) => updateForm("selectedCountries", selected ?? [])}
                   styles={selectStyles}
                   placeholder="Seleccionar países..."
                   noOptionsMessage={() => "No hay países disponibles"}
@@ -260,9 +240,7 @@ export default function OwnerSplitModal({
                   isLoading={isLoadingFilters}
                   options={platformOptions}
                   value={form.selectedPlatforms}
-                  onChange={(selected) =>
-                    updateForm("selectedPlatforms", selected ?? [])
-                  }
+                  onChange={(selected) => updateForm("selectedPlatforms", selected ?? [])}
                   styles={selectStyles}
                   placeholder="Seleccionar plataformas..."
                   noOptionsMessage={() => "No hay plataformas disponibles"}
@@ -299,11 +277,7 @@ export default function OwnerSplitModal({
               ) : (
                 <Save className="h-4 w-4" />
               )}
-              {isLoading
-                ? "Guardando..."
-                : hasExistingSplit
-                  ? "Actualizar Split"
-                  : "Crear Split"}
+              {isLoading ? "Guardando..." : hasExistingSplit ? "Actualizar Split" : "Crear Split"}
             </button>
           </div>
         </div>

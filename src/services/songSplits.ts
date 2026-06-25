@@ -6,10 +6,7 @@ import type {
   SongSplitDistribution,
   ReleaseFiltersOptions,
 } from "@/types";
-import type {
-  SplitHistoryItem,
-  SplitHistoryResponse,
-} from "@/types/song-split.types";
+import type { SplitHistoryItem, SplitHistoryResponse } from "@/types/song-split.types";
 
 const toSelectOptions = (values: string[]) =>
   (values ?? []).map((value) => ({ value, label: value }));
@@ -22,9 +19,7 @@ class SongSplitsService {
     return response.data?.data ?? response.data;
   }
 
-  async createCollaboratorSplit(
-    payload: CreateCollaboratorSplitPayload,
-  ): Promise<SongSplit> {
+  async createCollaboratorSplit(payload: CreateCollaboratorSplitPayload): Promise<SongSplit> {
     const response = await apiClient.post(`${this.BASE}/collaborator`, payload);
     return response.data?.data ?? response.data;
   }
@@ -38,9 +33,7 @@ class SongSplitsService {
     await apiClient.delete(`${this.BASE}/${splitId}`);
   }
 
-  async getReleaseFiltersForSongs(
-    songIds: string[],
-  ): Promise<ReleaseFiltersOptions> {
+  async getReleaseFiltersForSongs(songIds: string[]): Promise<ReleaseFiltersOptions> {
     try {
       const response = await apiClient.post(`${this.BASE}/filter-options`, {
         songIds,
@@ -63,9 +56,7 @@ class SongSplitsService {
 
   async getSplitHistoryBySong(songId: string): Promise<SplitHistoryItem[]> {
     try {
-      const response = await apiClient.get(
-        `${this.BASE}/song/${songId}/history`,
-      );
+      const response = await apiClient.get(`${this.BASE}/song/${songId}/history`);
       const data = response.data?.data;
       if (Array.isArray(data)) return data as SplitHistoryItem[];
       if (

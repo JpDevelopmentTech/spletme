@@ -120,9 +120,7 @@ export default function Stripe() {
                 >
                   <DollarSign className="mx-auto mb-3 h-8 w-8 text-green-600" />
                   <h3 className="mb-2 font-semibold text-gray-800">Rentable</h3>
-                  <p className="text-sm text-gray-600">
-                    Tarifas competitivas y transparentes
-                  </p>
+                  <p className="text-sm text-gray-600">Tarifas competitivas y transparentes</p>
                 </motion.div>
               </div>
 
@@ -183,9 +181,7 @@ export default function Stripe() {
                 className="text-center"
               >
                 <h1 className="mb-2 text-3xl font-bold">Error de Conexión</h1>
-                <p className="text-lg text-red-100">
-                  No pudimos conectar tu cuenta de Stripe
-                </p>
+                <p className="text-lg text-red-100">No pudimos conectar tu cuenta de Stripe</p>
               </motion.div>
             </div>
 
@@ -199,15 +195,11 @@ export default function Stripe() {
                 <div className="flex items-start gap-3">
                   <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-500" />
                   <div>
-                    <h3 className="mb-2 font-semibold text-red-800">
-                      ¿Qué pasó?
-                    </h3>
+                    <h3 className="mb-2 font-semibold text-red-800">¿Qué pasó?</h3>
                     <ul className="space-y-1 text-sm text-red-700">
                       <li>• La conexión con Stripe fue interrumpida</li>
                       <li>• Es posible que hayas cancelado el proceso</li>
-                      <li>
-                        • Puede haber un problema temporal con el servicio
-                      </li>
+                      <li>• Puede haber un problema temporal con el servicio</li>
                     </ul>
                   </div>
                 </div>
@@ -254,11 +246,7 @@ export default function Stripe() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
       <div className="mx-auto max-w-4xl">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-6"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
           <Title
             title="Configuración de Pagos"
             subtitle="Conecta tu cuenta de Stripe para recibir pagos"
@@ -288,12 +276,10 @@ export default function Stripe() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
               >
-                <h2 className="mb-3 text-2xl font-bold text-gray-800">
-                  Conectar con Stripe
-                </h2>
+                <h2 className="mb-3 text-2xl font-bold text-gray-800">Conectar con Stripe</h2>
                 <p className="mb-6 text-gray-600">
-                  Stripe es la plataforma de pagos más segura y confiable del
-                  mundo. Conecta tu cuenta para comenzar a recibir pagos.
+                  Stripe es la plataforma de pagos más segura y confiable del mundo. Conecta tu
+                  cuenta para comenzar a recibir pagos.
                 </p>
               </motion.div>
 
@@ -377,9 +363,7 @@ export default function Stripe() {
                       <benefit.icon className="h-4 w-4 text-gray-600" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-800">
-                        {benefit.title}
-                      </h4>
+                      <h4 className="font-medium text-gray-800">{benefit.title}</h4>
                       <p className="text-sm text-gray-600">{benefit.desc}</p>
                     </div>
                   </motion.div>
@@ -398,9 +382,7 @@ export default function Stripe() {
                 onClick={() => setShowDetails(!showDetails)}
                 className="flex w-full items-center justify-between text-left"
               >
-                <h3 className="text-lg font-semibold text-gray-800">
-                  ¿Cómo funciona?
-                </h3>
+                <h3 className="text-lg font-semibold text-gray-800">¿Cómo funciona?</h3>
                 <motion.div
                   animate={{ rotate: showDetails ? 180 : 0 }}
                   transition={{ duration: 0.2 }}
@@ -423,18 +405,13 @@ export default function Stripe() {
                         <div className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-tertiary text-xs font-bold text-white">
                           1
                         </div>
-                        <p>
-                          Haz clic en "Conectar Cuenta" para iniciar el proceso
-                        </p>
+                        <p>Haz clic en "Conectar Cuenta" para iniciar el proceso</p>
                       </div>
                       <div className="flex gap-3">
                         <div className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-tertiary text-xs font-bold text-white">
                           2
                         </div>
-                        <p>
-                          Serás redirigido a Stripe para crear o conectar tu
-                          cuenta
-                        </p>
+                        <p>Serás redirigido a Stripe para crear o conectar tu cuenta</p>
                       </div>
                       <div className="flex gap-3">
                         <div className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-tertiary text-xs font-bold text-white">

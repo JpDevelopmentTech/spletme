@@ -15,9 +15,7 @@ export default function SplitOwnerModule({ data, loading }: Props) {
         </div>
         <div>
           <h2 className="text-sm font-semibold text-[#111827]">Split Owner</h2>
-          <p className="text-xs text-[#6B7280]">
-            Resumen de tu catálogo como owner
-          </p>
+          <p className="text-xs text-[#6B7280]">Resumen de tu catálogo como owner</p>
         </div>
       </div>
 
@@ -37,9 +35,7 @@ export default function SplitOwnerModule({ data, loading }: Props) {
             </div>
             <div>
               <p className="text-[11px] text-[#6B7280]">Canciones</p>
-              <p className="text-[18px] font-bold leading-tight text-[#111827]">
-                {data.songCount}
-              </p>
+              <p className="text-[18px] font-bold leading-tight text-[#111827]">{data.songCount}</p>
             </div>
           </div>
 

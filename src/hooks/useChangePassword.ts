@@ -54,9 +54,7 @@ export function useChangePassword(onSuccess: () => void) {
         setPwdError(response.message ?? "Error al cambiar la contraseña");
         return;
       }
-      setPwdSuccess(
-        response.message ?? "Contraseña actualizada correctamente.",
-      );
+      setPwdSuccess(response.message ?? "Contraseña actualizada correctamente.");
       setPwdForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
       setTimeout(() => {
         setPwdSuccess("");

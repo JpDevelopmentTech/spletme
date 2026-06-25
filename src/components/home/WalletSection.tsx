@@ -1,11 +1,4 @@
-import {
-  Wallet,
-  Plus,
-  Send,
-  DollarSign,
-  History,
-  ChevronRight,
-} from "lucide-react";
+import { Wallet, Plus, Send, DollarSign, History, ChevronRight } from "lucide-react";
 
 interface WalletSectionProps {
   walletLoading: boolean;
@@ -78,9 +71,7 @@ export function WalletSection({
             >
               <div className="flex items-center gap-2.5">
                 <DollarSign className="h-4 w-4 text-gray-500" />
-                <span className="text-[13px] font-medium text-gray-700">
-                  Retirar fondos
-                </span>
+                <span className="text-[13px] font-medium text-gray-700">Retirar fondos</span>
               </div>
               <ChevronRight className="h-4 w-4 text-gray-400" />
             </button>
@@ -88,9 +79,7 @@ export function WalletSection({
             <button className="flex w-full items-center justify-between rounded-[10px] border border-gray-200 bg-[#F7F8FA] px-4 py-3 transition-colors hover:bg-gray-100">
               <div className="flex items-center gap-2.5">
                 <History className="h-4 w-4 text-gray-500" />
-                <span className="text-[13px] font-medium text-gray-700">
-                  Ver historial
-                </span>
+                <span className="text-[13px] font-medium text-gray-700">Ver historial</span>
               </div>
               <ChevronRight className="h-4 w-4 text-gray-400" />
             </button>
@@ -105,9 +94,7 @@ export function WalletSection({
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500">
               <Wallet className="h-6 w-6 text-white" />
             </div>
-            <h3 className="text-sm font-semibold text-gray-900">
-              Sin billetera conectada
-            </h3>
+            <h3 className="text-sm font-semibold text-gray-900">Sin billetera conectada</h3>
             <p className="text-xs text-gray-500">
               Crea tu billetera de pago para comenzar a recibir pagos
             </p>

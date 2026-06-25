@@ -66,10 +66,7 @@ const Activity = () => {
   return (
     <div className="col-span-6 flex flex-col rounded-2xl p-6 shadow-lg">
       <div className="flex items-center justify-between">
-        <Title
-          title="Actividad"
-          subtitle="Escoge el año y analiza la actividad"
-        ></Title>
+        <Title title="Actividad" subtitle="Escoge el año y analiza la actividad"></Title>
         <div>
           <Select
             options={[
@@ -86,12 +83,7 @@ const Activity = () => {
         </div>
       </div>
       <div className="mt-3">
-        <ReactApexChart
-          options={options}
-          type="bar"
-          series={series}
-          height={200}
-        />
+        <ReactApexChart options={options} type="bar" series={series} height={200} />
       </div>
     </div>
   );

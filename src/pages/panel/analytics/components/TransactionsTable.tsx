@@ -12,9 +12,7 @@ interface Props {
 }
 
 export default function TransactionsTable({ filters }: Props) {
-  const [result, setResult] = useState<PaginatedResult<Transaction> | null>(
-    null,
-  );
+  const [result, setResult] = useState<PaginatedResult<Transaction> | null>(null);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
@@ -35,9 +33,7 @@ export default function TransactionsTable({ filters }: Props) {
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
       <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
         <div className="flex items-center gap-2.5">
-          <span className="text-sm font-semibold text-[#111827]">
-            Transacciones
-          </span>
+          <span className="text-sm font-semibold text-[#111827]">Transacciones</span>
           {result && (
             <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[11px] font-bold text-[#6B7280]">
               {result.total}
@@ -123,9 +119,7 @@ export default function TransactionsTable({ filters }: Props) {
                       {tx.platform || "—"}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-[12px] text-[#6B7280]">
-                    {tx.country || "—"}
-                  </td>
+                  <td className="px-4 py-3 text-[12px] text-[#6B7280]">{tx.country || "—"}</td>
                   <td className="px-4 py-3 text-[12px] text-[#6B7280]">
                     {tx.reportMonth?.slice(0, 7) || "—"}
                   </td>

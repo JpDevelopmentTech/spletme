@@ -38,9 +38,7 @@ export function useProfileEdit(
     setEditSuccess(false);
     try {
       const finalProfession =
-        editForm.profession === "otro"
-          ? editForm.otherProfession
-          : editForm.profession;
+        editForm.profession === "otro" ? editForm.otherProfession : editForm.profession;
       const payload = {
         country: editForm.country || null,
         profession: finalProfession || null,
@@ -64,9 +62,7 @@ export function useProfileEdit(
       setEditSuccess(true);
       setTimeout(() => setEditSuccess(false), 1500);
     } catch {
-      setEditError(
-        "No se pudo guardar. Verifica tu conexión e intenta de nuevo.",
-      );
+      setEditError("No se pudo guardar. Verifica tu conexión e intenta de nuevo.");
     } finally {
       setEditLoading(false);
     }

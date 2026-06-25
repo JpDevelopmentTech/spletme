@@ -10,12 +10,7 @@ interface PaymentHistoryModalProps {
   songTitle?: string;
 }
 
-const PaymentHistoryModal = ({
-  isOpen,
-  onClose,
-  splitId,
-  songTitle,
-}: PaymentHistoryModalProps) => {
+const PaymentHistoryModal = ({ isOpen, onClose, splitId, songTitle }: PaymentHistoryModalProps) => {
   const { loading, error, getSplitsBySong, clearError } = useSplits();
   const [splits, setSplits] = useState<any[]>([]);
   const [selectedSplit, setSelectedSplit] = useState<any>(null);
@@ -45,9 +40,7 @@ const PaymentHistoryModal = ({
   const filteredSplits = splits.filter((split) => {
     const matchesSearch =
       !searchTerm ||
-      split.collaborator?.name
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
+      split.collaborator?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       split.id?.toLowerCase().includes(searchTerm.toLowerCase());
 
     return matchesSearch;
@@ -57,8 +50,7 @@ const PaymentHistoryModal = ({
     (sum, split) => sum + (split.generalCondition?.percentage || 0),
     0,
   );
-  const averagePercentage =
-    splits.length > 0 ? totalPercentage / splits.length : 0;
+  const averagePercentage = splits.length > 0 ? totalPercentage / splits.length : 0;
 
   return (
     <AnimatePresence>
@@ -88,8 +80,7 @@ const PaymentHistoryModal = ({
                     Historial de Pagos
                   </h2>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {songTitle || "Canción"} - {splits.length} splits
-                    registrados
+                    {songTitle || "Canción"} - {splits.length} splits registrados
                   </p>
                 </div>
               </div>
@@ -133,25 +124,19 @@ const PaymentHistoryModal = ({
                       <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                         {totalPercentage.toFixed(1)}%
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Total Porcentaje
-                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Total Porcentaje</p>
                     </div>
                     <div className="text-center">
                       <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                         {splits.length}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Splits
-                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Splits</p>
                     </div>
                     <div className="text-center">
                       <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                         {averagePercentage.toFixed(1)}%
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Promedio
-                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Promedio</p>
                     </div>
                   </div>
                 </div>
@@ -225,33 +210,25 @@ const PaymentHistoryModal = ({
                       </h3>
                       <div className="mb-4 grid grid-cols-2 gap-4">
                         <div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            ID del Split
-                          </p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">ID del Split</p>
                           <p className="font-medium text-gray-900 dark:text-white">
                             {selectedSplit.id}
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            Estado
-                          </p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">Estado</p>
                           <p className="font-medium text-gray-900 dark:text-white">
                             {selectedSplit.isActive ? "Activo" : "Inactivo"}
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            Porcentaje
-                          </p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">Porcentaje</p>
                           <p className="text-lg font-medium text-gray-900 dark:text-white">
                             {selectedSplit.generalCondition?.percentage || 0}%
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            Colaborador
-                          </p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">Colaborador</p>
                           <p className="font-medium text-gray-900 dark:text-white">
                             {selectedSplit.collaborator?.name || "N/A"}
                           </p>
@@ -288,15 +265,9 @@ const PaymentHistoryModal = ({
                         </div>
                         <div className="text-sm text-indigo-700 dark:text-indigo-300">
                           <p>
-                            Plataformas:{" "}
-                            {selectedSplit.generalCondition?.platformsType ||
-                              "N/A"}
+                            Plataformas: {selectedSplit.generalCondition?.platformsType || "N/A"}
                           </p>
-                          <p>
-                            Países:{" "}
-                            {selectedSplit.generalCondition?.countriesType ||
-                              "N/A"}
-                          </p>
+                          <p>Países: {selectedSplit.generalCondition?.countriesType || "N/A"}</p>
                         </div>
                       </div>
 
@@ -307,32 +278,26 @@ const PaymentHistoryModal = ({
                             <h5 className="text-sm font-semibold text-gray-900 dark:text-white">
                               Condiciones Específicas
                             </h5>
-                            {selectedSplit.splitConditions.map(
-                              (condition: any, index: number) => (
-                                <div
-                                  key={index}
-                                  className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800/50"
-                                >
-                                  <div className="mb-2 flex items-center justify-between">
-                                    <span className="font-medium text-gray-900 dark:text-white">
-                                      Condición {index + 1}
-                                    </span>
-                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                      {condition.percentage}%
-                                    </span>
-                                  </div>
-                                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                                    <p>Tipo: {condition.type}</p>
-                                    {condition.fromDate && (
-                                      <p>Desde: {condition.fromDate}</p>
-                                    )}
-                                    {condition.toDate && (
-                                      <p>Hasta: {condition.toDate}</p>
-                                    )}
-                                  </div>
+                            {selectedSplit.splitConditions.map((condition: any, index: number) => (
+                              <div
+                                key={index}
+                                className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800/50"
+                              >
+                                <div className="mb-2 flex items-center justify-between">
+                                  <span className="font-medium text-gray-900 dark:text-white">
+                                    Condición {index + 1}
+                                  </span>
+                                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    {condition.percentage}%
+                                  </span>
                                 </div>
-                              ),
-                            )}
+                                <div className="text-sm text-gray-600 dark:text-gray-400">
+                                  <p>Tipo: {condition.type}</p>
+                                  {condition.fromDate && <p>Desde: {condition.fromDate}</p>}
+                                  {condition.toDate && <p>Hasta: {condition.toDate}</p>}
+                                </div>
+                              </div>
+                            ))}
                           </div>
                         )}
                     </div>

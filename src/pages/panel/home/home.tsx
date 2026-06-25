@@ -54,9 +54,7 @@ export default function Home() {
           <div className="col-span-9 flex-1 rounded-xl border border-gray-200 bg-white p-6">
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-base font-semibold text-gray-900">
-                  Canciones Principales
-                </h2>
+                <h2 className="text-base font-semibold text-gray-900">Canciones Principales</h2>
                 <a
                   href="/panel/music"
                   className="text-xs font-medium text-orange-500 transition-colors hover:text-orange-600"

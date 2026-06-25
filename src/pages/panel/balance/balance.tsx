@@ -15,11 +15,7 @@ const Balance = () => {
     endDate,
     setEndDate,
   } = UseFilterSongsData();
-  const {
-    payments,
-    isLoading: paymentsLoading,
-    totalAmount,
-  } = useSplitPayments();
+  const { payments, isLoading: paymentsLoading, totalAmount } = useSplitPayments();
 
   const handleClearFilters = () => {
     setCountry("");
@@ -49,10 +45,7 @@ const Balance = () => {
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
             <div>
-              <label
-                htmlFor="platform"
-                className="mb-1 block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="platform" className="mb-1 block text-sm font-medium text-gray-700">
                 Plataforma
               </label>
               <select
@@ -70,10 +63,7 @@ const Balance = () => {
             </div>
 
             <div>
-              <label
-                htmlFor="country"
-                className="mb-1 block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="country" className="mb-1 block text-sm font-medium text-gray-700">
                 País
               </label>
               <select
@@ -91,10 +81,7 @@ const Balance = () => {
             </div>
 
             <div>
-              <label
-                htmlFor="startDate"
-                className="mb-1 block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="startDate" className="mb-1 block text-sm font-medium text-gray-700">
                 Fecha Inicio
               </label>
               <input
@@ -108,10 +95,7 @@ const Balance = () => {
             </div>
 
             <div>
-              <label
-                htmlFor="endDate"
-                className="mb-1 block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="endDate" className="mb-1 block text-sm font-medium text-gray-700">
                 Fecha Fin
               </label>
               <input
@@ -150,9 +134,7 @@ const Balance = () => {
             </div>
             <div>
               <h3 className="text-lg font-medium text-indigo-900">Streams</h3>
-              <p className="text-2xl font-bold text-indigo-600">
-                {summary.totalStreams}
-              </p>
+              <p className="text-2xl font-bold text-indigo-600">{summary.totalStreams}</p>
             </div>
           </div>
         </motion.div>
@@ -204,9 +186,7 @@ const Balance = () => {
 
       {/* Sección de Movimientos */}
       <div className="mt-8">
-        <h2 className="mb-6 text-xl font-semibold text-indigo-900">
-          Movimientos
-        </h2>
+        <h2 className="mb-6 text-xl font-semibold text-indigo-900">Movimientos</h2>
 
         <div className="grid grid-cols-1 gap-6">
           {/* Egresos - Split Payments */}
@@ -250,14 +230,11 @@ const Balance = () => {
                               `Pago a Colaborador - ${payment.idCollaborator}`}
                           </p>
                           <p className="text-sm text-gray-500">
-                            {new Date(payment.createdAt).toLocaleDateString(
-                              "es-ES",
-                              {
-                                day: "numeric",
-                                month: "short",
-                                year: "numeric",
-                              },
-                            )}
+                            {new Date(payment.createdAt).toLocaleDateString("es-ES", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            })}
                           </p>
                         </div>
                       </div>

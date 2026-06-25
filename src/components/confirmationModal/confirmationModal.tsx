@@ -63,9 +63,7 @@ export default function ConfirmationModal({
             </div>
             <div className="p-6">
               <div className="space-y-4">
-                <p className="text-sm leading-relaxed text-gray-600">
-                  {message}
-                </p>
+                <p className="text-sm leading-relaxed text-gray-600">{message}</p>
               </div>
             </div>
             <div className="flex justify-end gap-3 bg-gray-50 px-6 py-4">

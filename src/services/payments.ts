@@ -21,9 +21,7 @@ export interface Payment {
 
 /** Un destinatario del reparto de un cobro de regalías. */
 export interface RoyaltyBreakdownItem {
-  collaboratorId:
-    | { _id: string; name?: string; email?: string; username?: string }
-    | string;
+  collaboratorId: { _id: string; name?: string; email?: string; username?: string } | string;
   amount: number;
   percentage: number;
 }
@@ -85,10 +83,9 @@ class PaymentsService {
   /** Procesa el pago de un split a un colaborador */
   async createPayment(collaboratorId: string, splitId: string) {
     try {
-      const response = await apiClient.post(
-        `${this.BASE}/split/${splitId}/process-payment`,
-        { recipientId: collaboratorId },
-      );
+      const response = await apiClient.post(`${this.BASE}/split/${splitId}/process-payment`, {
+        recipientId: collaboratorId,
+      });
       return response.data;
     } catch {
       return { error: true, message: "Error creating payment" };
@@ -171,9 +168,7 @@ class PaymentsService {
     idCollaborator: string,
   ): Promise<{ error: boolean; data?: Payment[]; message?: string }> {
     try {
-      const response = await apiClient.get(
-        `${this.BASE}/by-collaborator/${idCollaborator}`,
-      );
+      const response = await apiClient.get(`${this.BASE}/by-collaborator/${idCollaborator}`);
       return response.data;
     } catch {
       return { error: true, message: "Error getting payments by collaborator" };
@@ -212,17 +207,12 @@ class PaymentsService {
     message?: string;
   }> {
     try {
-      const response = await apiClient.get(
-        `/payments/readiness/collaborator/${collaboratorId}`,
-      );
+      const response = await apiClient.get(`/payments/readiness/collaborator/${collaboratorId}`);
       return response.data;
     } catch (error) {
       return {
         error: true,
-        message: extractErrorMessage(
-          error,
-          "Error checking collaborator readiness",
-        ),
+        message: extractErrorMessage(error, "Error checking collaborator readiness"),
       };
     }
   }
@@ -254,14 +244,11 @@ class PaymentsService {
     description?: string,
   ): Promise<{ error: boolean; data?: unknown; message?: string }> {
     try {
-      const response = await apiClient.post(
-        `${this.BASE}/song/${songId}/register-payment`,
-        {
-          amount,
-          description,
-          paymentDate: new Date().toISOString(),
-        },
-      );
+      const response = await apiClient.post(`${this.BASE}/song/${songId}/register-payment`, {
+        amount,
+        description,
+        paymentDate: new Date().toISOString(),
+      });
       return response.data;
     } catch {
       return { error: true, message: "Error registering song payment" };

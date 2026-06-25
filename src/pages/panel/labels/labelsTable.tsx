@@ -37,8 +37,7 @@ interface ExtendedLabel extends Label {
 }
 
 export default function LabelsTable() {
-  const { labels, allLabels, customLabels, loading, error, refreshLabels } =
-    useLabels();
+  const { labels, allLabels, customLabels, loading, error, refreshLabels } = useLabels();
   const navigate = useNavigate();
   const [sortField, setSortField] = useState<SortField>("count");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
@@ -87,13 +86,7 @@ export default function LabelsTable() {
     if (sortField === "label") {
       aValue = (a.label || "").toLowerCase();
       bValue = (b.label || "").toLowerCase();
-      return sortOrder === "asc"
-        ? aValue > bValue
-          ? 1
-          : -1
-        : aValue < bValue
-          ? 1
-          : -1;
+      return sortOrder === "asc" ? (aValue > bValue ? 1 : -1) : aValue < bValue ? 1 : -1;
     }
 
     return sortOrder === "asc"
@@ -143,11 +136,7 @@ export default function LabelsTable() {
     refreshLabels();
   };
 
-  const handleOpenEditModal = (
-    id: string,
-    name: string,
-    artisticLabels: string[],
-  ) => {
+  const handleOpenEditModal = (id: string, name: string, artisticLabels: string[]) => {
     setLabelToEdit({ id, name, artisticLabels });
     setEditModalOpen(true);
   };
@@ -182,8 +171,7 @@ export default function LabelsTable() {
   };
 
   const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field)
-      return <ArrowUpDown className="h-3.5 w-3.5 text-gray-300" />;
+    if (sortField !== field) return <ArrowUpDown className="h-3.5 w-3.5 text-gray-300" />;
     return sortOrder === "asc" ? (
       <ChevronUp className="h-3.5 w-3.5 text-[#F97316]" />
     ) : (
@@ -219,9 +207,7 @@ export default function LabelsTable() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50">
               <Tag className="h-4 w-4 text-[#F97316]" />
             </div>
-            <span className="text-xs font-medium text-gray-500">
-              Total Labels
-            </span>
+            <span className="text-xs font-medium text-gray-500">Total Labels</span>
           </div>
           <p className="text-2xl font-bold text-gray-900">{allLabels.length}</p>
           <p className="mt-1 text-xs text-gray-400">
@@ -234,9 +220,7 @@ export default function LabelsTable() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50">
               <Music2 className="h-4 w-4 text-blue-600" />
             </div>
-            <span className="text-xs font-medium text-gray-500">
-              Total Canciones
-            </span>
+            <span className="text-xs font-medium text-gray-500">Total Canciones</span>
           </div>
           <p className="text-2xl font-bold text-gray-900">{totalSongs}</p>
         </div>
@@ -246,13 +230,9 @@ export default function LabelsTable() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50">
               <Play className="h-4 w-4 text-purple-600" />
             </div>
-            <span className="text-xs font-medium text-gray-500">
-              Total Streams
-            </span>
+            <span className="text-xs font-medium text-gray-500">Total Streams</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">
-            {formatStreams(totalStreams)}
-          </p>
+          <p className="text-2xl font-bold text-gray-900">{formatStreams(totalStreams)}</p>
         </div>
 
         <div className="rounded-xl border border-gray-200 bg-white p-5">
@@ -260,13 +240,9 @@ export default function LabelsTable() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50">
               <DollarSign className="h-4 w-4 text-green-600" />
             </div>
-            <span className="text-xs font-medium text-gray-500">
-              Total Ingresos
-            </span>
+            <span className="text-xs font-medium text-gray-500">Total Ingresos</span>
           </div>
-          <p className="text-2xl font-bold text-green-600">
-            {formatCurrency(totalIncome)}
-          </p>
+          <p className="text-2xl font-bold text-green-600">{formatCurrency(totalIncome)}</p>
         </div>
       </div>
 
@@ -285,9 +261,7 @@ export default function LabelsTable() {
             <Disc3 className="h-6 w-6 text-gray-400" />
           </div>
           <p className="mb-1 text-sm font-semibold text-gray-700">Sin labels</p>
-          <p className="mb-4 text-xs text-gray-400">
-            Aún no tienes canciones con labels asignados
-          </p>
+          <p className="mb-4 text-xs text-gray-400">Aún no tienes canciones con labels asignados</p>
           <button
             onClick={() => setIsCreateLabelModalOpen(true)}
             className="flex items-center gap-2 rounded-lg bg-[#F97316] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-orange-600"
@@ -349,17 +323,11 @@ export default function LabelsTable() {
               <tbody className="divide-y divide-gray-100">
                 {sortedLabels.map((label, index) => (
                   <tr
-                    key={
-                      label.isCustom ? `custom-${index}` : `artistic-${index}`
-                    }
+                    key={label.isCustom ? `custom-${index}` : `artistic-${index}`}
                     className={`cursor-pointer transition-colors ${
-                      label.isCustom
-                        ? "bg-orange-50/40 hover:bg-orange-50"
-                        : "hover:bg-gray-50"
+                      label.isCustom ? "bg-orange-50/40 hover:bg-orange-50" : "hover:bg-gray-50"
                     }`}
-                    onClick={() =>
-                      handleLabelClick(label.label, label.isCustom)
-                    }
+                    onClick={() => handleLabelClick(label.label, label.isCustom)}
                   >
                     {/* Label name */}
                     <td className="px-6 py-4">
@@ -384,15 +352,11 @@ export default function LabelsTable() {
                               </span>
                             )}
                           </div>
-                          {label.isCustom &&
-                          (label as ExtendedLabel).artisticLabels?.length ? (
+                          {label.isCustom && (label as ExtendedLabel).artisticLabels?.length ? (
                             <p className="mt-0.5 truncate text-xs text-gray-400">
                               Incluye:{" "}
-                              {(label as ExtendedLabel)
-                                .artisticLabels!.slice(0, 2)
-                                .join(", ")}
-                              {(label as ExtendedLabel).artisticLabels!.length >
-                                2 &&
+                              {(label as ExtendedLabel).artisticLabels!.slice(0, 2).join(", ")}
+                              {(label as ExtendedLabel).artisticLabels!.length > 2 &&
                                 ` +${(label as ExtendedLabel).artisticLabels!.length - 2} más`}
                             </p>
                           ) : null}
@@ -403,8 +367,7 @@ export default function LabelsTable() {
                     {/* Count */}
                     <td className="px-4 py-4">
                       <span className="inline-flex rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-700">
-                        {label.count}{" "}
-                        {label.count === 1 ? "canción" : "canciones"}
+                        {label.count} {label.count === 1 ? "canción" : "canciones"}
                       </span>
                     </td>
 
@@ -423,10 +386,7 @@ export default function LabelsTable() {
                     </td>
 
                     {/* Actions */}
-                    <td
-                      className="px-6 py-4"
-                      onClick={(e) => e.stopPropagation()}
-                    >
+                    <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-2">
                         {label.isCustom ? (
                           <>
@@ -473,9 +433,7 @@ export default function LabelsTable() {
                               className="flex items-center gap-1.5 rounded-lg bg-[#F97316] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-orange-600"
                             >
                               <Plus className="h-3.5 w-3.5" />
-                              <span className="hidden md:inline">
-                                Crear Splits
-                              </span>
+                              <span className="hidden md:inline">Crear Splits</span>
                             </button>
                             <button
                               onClick={(e) => {
@@ -510,9 +468,7 @@ export default function LabelsTable() {
                             {label.splitProgress?.hasAllSplits ? (
                               <div className="flex items-center gap-1.5 rounded-lg border border-green-100 bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700">
                                 <CheckCircle className="h-3.5 w-3.5" />
-                                <span className="hidden lg:inline">
-                                  Splits Creados
-                                </span>
+                                <span className="hidden lg:inline">Splits Creados</span>
                               </div>
                             ) : (
                               <>
@@ -529,9 +485,7 @@ export default function LabelsTable() {
                                   className="flex items-center gap-1.5 rounded-lg bg-[#F97316] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-orange-600"
                                 >
                                   <Plus className="h-3.5 w-3.5" />
-                                  <span className="hidden md:inline">
-                                    Crear Splits
-                                  </span>
+                                  <span className="hidden md:inline">Crear Splits</span>
                                 </button>
                               </>
                             )}

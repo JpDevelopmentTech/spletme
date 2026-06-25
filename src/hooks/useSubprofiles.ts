@@ -23,9 +23,7 @@ export function useSubprofiles(parentUserId: string) {
     name: "",
     lastName: "",
   });
-  const [createErrors, setCreateErrors] = useState<
-    Partial<RegisterSubuserSchema>
-  >({});
+  const [createErrors, setCreateErrors] = useState<Partial<RegisterSubuserSchema>>({});
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState("");
   const [createSuccess, setCreateSuccess] = useState(false);
@@ -44,9 +42,7 @@ export function useSubprofiles(parentUserId: string) {
       const currentEmail = (currentUser?.email ?? "").toLowerCase();
       const all = extractSubprofiles(response);
       setSubprofiles(
-        all.filter(
-          (s) => s.id !== currentId && s.email.toLowerCase() !== currentEmail,
-        ),
+        all.filter((s) => s.id !== currentId && s.email.toLowerCase() !== currentEmail),
       );
     } catch {
       setSubError("Error al cargar los subperfiles.");
@@ -86,16 +82,12 @@ export function useSubprofiles(parentUserId: string) {
     if (!createForm.name.trim()) errs.name = "Requerido";
     if (!createForm.lastName.trim()) errs.lastName = "Requerido";
     if (!createForm.email.trim()) errs.email = "Requerido";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(createForm.email))
-      errs.email = "Correo inválido";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(createForm.email)) errs.email = "Correo inválido";
     setCreateErrors(errs);
     return Object.keys(errs).length === 0;
   };
 
-  const handleCreateSubprofile = async (
-    e: React.FormEvent,
-    onDone: () => void,
-  ) => {
+  const handleCreateSubprofile = async (e: React.FormEvent, onDone: () => void) => {
     e.preventDefault();
     if (!validateCreate()) return;
     setCreateLoading(true);
@@ -118,8 +110,7 @@ export function useSubprofiles(parentUserId: string) {
         void loadSubprofiles();
       }, 1500);
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })
-        ?.response?.data?.message;
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
       setCreateError(msg ?? "Error al crear el subperfil.");
     } finally {
       setCreateLoading(false);

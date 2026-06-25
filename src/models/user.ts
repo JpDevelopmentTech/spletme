@@ -9,8 +9,4 @@ export type {
   UpdateSubuserSchema,
 } from "../types/user.types";
 
-export type {
-  PaymentRequest,
-  PaymentHistory,
-  PayoneerAccount,
-} from "../types/payment.types";
+export type { PaymentRequest, PaymentHistory, PayoneerAccount } from "../types/payment.types";

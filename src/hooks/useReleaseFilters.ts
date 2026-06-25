@@ -13,10 +13,7 @@ interface UseReleaseFiltersResult {
  * poblar los selects de configuración de splits con valores reales de la BD.
  * Solo dispara la petición cuando `enabled` es true (p. ej. al abrir el modal).
  */
-export function useReleaseFilters(
-  songId: string,
-  enabled: boolean,
-): UseReleaseFiltersResult {
+export function useReleaseFilters(songId: string, enabled: boolean): UseReleaseFiltersResult {
   const [countryOptions, setCountryOptions] = useState<SelectOption[]>([]);
   const [platformOptions, setPlatformOptions] = useState<SelectOption[]>([]);
   const [isLoadingFilters, setIsLoadingFilters] = useState(false);

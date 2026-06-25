@@ -34,13 +34,8 @@ export const distributorsService = {
     return apiClient.post("/distributors", payload).then((r) => r.data.data);
   },
 
-  update(
-    id: string,
-    payload: Partial<CreateDistributorPayload>,
-  ): Promise<Distributor> {
-    return apiClient
-      .put(`/distributors/${id}`, payload)
-      .then((r) => r.data.data);
+  update(id: string, payload: Partial<CreateDistributorPayload>): Promise<Distributor> {
+    return apiClient.put(`/distributors/${id}`, payload).then((r) => r.data.data);
   },
 
   remove(id: string): Promise<void> {
@@ -48,9 +43,7 @@ export const distributorsService = {
   },
 
   getUploads(distributorId: string): Promise<DistributorUpload[]> {
-    return apiClient
-      .get(`/distributors/${distributorId}/uploads`)
-      .then((r) => r.data.data);
+    return apiClient.get(`/distributors/${distributorId}/uploads`).then((r) => r.data.data);
   },
 
   uploadSongs(
@@ -82,8 +75,6 @@ export const distributorsService = {
   },
 
   getDashboard(distributorId: string): Promise<DistributorDashboard> {
-    return apiClient
-      .get(`/distributors/${distributorId}/dashboard`)
-      .then((r) => r.data.data);
+    return apiClient.get(`/distributors/${distributorId}/dashboard`).then((r) => r.data.data);
   },
 };

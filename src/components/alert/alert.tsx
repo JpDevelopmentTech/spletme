@@ -1,12 +1,6 @@
 import { Alert } from "flowbite-react";
 
-const AlertComponent = ({
-  message,
-  type,
-}: {
-  message: string;
-  type: string;
-}) => {
+const AlertComponent = ({ message, type }: { message: string; type: string }) => {
   return (
     <>
       {message && (

@@ -166,10 +166,7 @@ class SplitsService {
   async createSplit(data: CreateSplitRequest[]): Promise<Split[]> {
     const results: Split[] = [];
     for (const splitRequest of data) {
-      const response = await apiClient.post(
-        `${this.BASE}/collaborator`,
-        splitRequest,
-      );
+      const response = await apiClient.post(`${this.BASE}/collaborator`, splitRequest);
       results.push(response.data);
     }
     return results;
@@ -194,9 +191,7 @@ class SplitsService {
 
   /** Obtiene los splits de una canción */
   async getSplitsBySong(songId: string): Promise<Split[]> {
-    const response = await apiClient.get<SplitsResponse>(
-      `${this.BASE}/song/${songId}`,
-    );
+    const response = await apiClient.get<SplitsResponse>(`${this.BASE}/song/${songId}`);
     return this.normalizeSplitArray(response.data.data);
   }
 
@@ -212,17 +207,13 @@ class SplitsService {
 
   /** Obtiene el historial de splits de una canción */
   async getSongSplitHistory(songId: string): Promise<Split[]> {
-    const response = await apiClient.get<SplitsResponse>(
-      `${this.BASE}/song/${songId}/history`,
-    );
+    const response = await apiClient.get<SplitsResponse>(`${this.BASE}/song/${songId}/history`);
     return this.normalizeSplitArray(response.data.data);
   }
 
   /** Obtiene los splits de un owner */
   async getSplitByOwner(ownerId: string): Promise<Split[]> {
-    const response = await apiClient.get<SplitsResponse>(
-      `${this.BASE}/owner/${ownerId}`,
-    );
+    const response = await apiClient.get<SplitsResponse>(`${this.BASE}/owner/${ownerId}`);
     return response.data.data as Split[];
   }
 
@@ -236,36 +227,25 @@ class SplitsService {
 
   /** Obtiene un split por ID */
   async getSplitById(splitId: string): Promise<Split> {
-    const response = await apiClient.get<SplitsResponse>(
-      `${this.BASE}/${splitId}`,
-    );
+    const response = await apiClient.get<SplitsResponse>(`${this.BASE}/${splitId}`);
     return response.data.data as Split;
   }
 
   /** Actualiza un split existente */
   async updateSplit(splitId: string, data: UpdateSplitRequest): Promise<Split> {
-    const response = await apiClient.put<SplitsResponse>(
-      `${this.BASE}/${splitId}`,
-      data,
-    );
+    const response = await apiClient.put<SplitsResponse>(`${this.BASE}/${splitId}`, data);
     return response.data.data as Split;
   }
 
   /** Elimina un split (soft delete) */
   async deleteSplit(splitId: string): Promise<Split> {
-    const response = await apiClient.delete<SplitsResponse>(
-      `${this.BASE}/${splitId}`,
-    );
+    const response = await apiClient.delete<SplitsResponse>(`${this.BASE}/${splitId}`);
     return response.data.data as Split;
   }
 
   /** Obtiene estadísticas de splits */
-  async getSplitsStats(
-    type: "owner" | "collaborator" = "owner",
-  ): Promise<SplitsStats> {
-    const response = await apiClient.get<SplitsResponse>(
-      `${this.BASE}/stats?type=${type}`,
-    );
+  async getSplitsStats(type: "owner" | "collaborator" = "owner"): Promise<SplitsStats> {
+    const response = await apiClient.get<SplitsResponse>(`${this.BASE}/stats?type=${type}`);
     return response.data.data as SplitsStats;
   }
 
@@ -276,8 +256,7 @@ class SplitsService {
     additionalPercentage = 0,
   ): Promise<number> {
     const params = new URLSearchParams();
-    if (excludeCollaboratorId)
-      params.append("excludeCollaboratorId", excludeCollaboratorId);
+    if (excludeCollaboratorId) params.append("excludeCollaboratorId", excludeCollaboratorId);
     if (additionalPercentage > 0)
       params.append("additionalPercentage", additionalPercentage.toString());
     const response = await apiClient.get<SplitsResponse>(
@@ -287,11 +266,7 @@ class SplitsService {
   }
 
   /** Obtiene los splits propios con paginación */
-  async getMySplits(
-    type: "owner" | "collaborator" = "owner",
-    page = 1,
-    limit = 10,
-  ) {
+  async getMySplits(type: "owner" | "collaborator" = "owner", page = 1, limit = 10) {
     const response = await apiClient.get<SplitsResponse>(
       `${this.BASE}/my-splits?${new URLSearchParams({ type, page: String(page), limit: String(limit) })}`,
     );

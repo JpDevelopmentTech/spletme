@@ -1,8 +1,5 @@
 import { ArrowRight } from "lucide-react";
-import {
-  formatCurrency,
-  getPaymentStatusBadge,
-} from "@/utils/collaborators.utils";
+import { formatCurrency, getPaymentStatusBadge } from "@/utils/collaborators.utils";
 import type { CollaboratorPayment } from "@/types";
 
 interface RecentPaymentsSectionProps {
@@ -12,16 +9,12 @@ interface RecentPaymentsSectionProps {
 /**
  * Sección de pagos recientes con lista de transacciones enviadas a colaboradores.
  */
-export function RecentPaymentsSection({
-  payments,
-}: RecentPaymentsSectionProps) {
+export function RecentPaymentsSection({ payments }: RecentPaymentsSectionProps) {
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
       <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
         <div className="flex flex-col gap-0.5">
-          <span className="text-sm font-semibold text-[#111827]">
-            Pagos Recientes
-          </span>
+          <span className="text-sm font-semibold text-[#111827]">Pagos Recientes</span>
           <span className="text-xs text-[#6B7280]">
             Últimos splits enviados a tus colaboradores
           </span>
@@ -44,10 +37,7 @@ export function RecentPaymentsSection({
                 className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full"
                 style={{ backgroundColor: payment.avatarBg }}
               >
-                <span
-                  className="text-[11px] font-bold"
-                  style={{ color: payment.avatarText }}
-                >
+                <span className="text-[11px] font-bold" style={{ color: payment.avatarText }}>
                   {payment.initials}
                 </span>
               </div>
@@ -60,12 +50,8 @@ export function RecentPaymentsSection({
                 </span>
               </div>
               <div className="hidden w-28 flex-col items-end gap-0.5 md:flex">
-                <span className="text-[11px] text-[#6B7280]">
-                  {payment.relativeDate}
-                </span>
-                <span className="text-[10px] text-[#9CA3AF]">
-                  {payment.date}
-                </span>
+                <span className="text-[11px] text-[#6B7280]">{payment.relativeDate}</span>
+                <span className="text-[10px] text-[#9CA3AF]">{payment.date}</span>
               </div>
               <span
                 className={`text-[13px] font-bold ${payment.status === "processing" ? "text-[#F97316]" : "text-green-500"}`}

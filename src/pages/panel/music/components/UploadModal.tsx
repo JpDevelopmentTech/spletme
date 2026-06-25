@@ -8,11 +8,7 @@ interface UploadModalProps {
   onFileSelect: (file: File) => void;
 }
 
-export default function UploadModal({
-  isOpen,
-  onClose,
-  onFileSelect,
-}: UploadModalProps) {
+export default function UploadModal({ isOpen, onClose, onFileSelect }: UploadModalProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,9 +35,7 @@ export default function UploadModal({
             className="w-full max-w-md rounded-lg bg-white p-6 dark:bg-gray-800"
           >
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Upload Song
-              </h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Upload Song</h3>
               <motion.button
                 whileHover={{ scale: 1.1, rotate: 90 }}
                 whileTap={{ scale: 0.9 }}

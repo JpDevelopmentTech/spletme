@@ -31,10 +31,7 @@ export function FeaturedCollaboratorCard({
             className="flex h-full w-full items-center justify-center rounded-full"
             style={{ backgroundColor: collaborator.avatarBg }}
           >
-            <span
-              className="text-[28px] font-bold"
-              style={{ color: collaborator.avatarText }}
-            >
+            <span className="text-[28px] font-bold" style={{ color: collaborator.avatarText }}>
               {collaborator.initials}
             </span>
           </div>
@@ -43,9 +40,7 @@ export function FeaturedCollaboratorCard({
 
       <div className="flex flex-col items-center gap-4 px-6 pb-6 pt-16">
         <div className="flex flex-col items-center gap-1">
-          <h3 className="text-lg font-bold text-[#111827]">
-            {collaborator.name}
-          </h3>
+          <h3 className="text-lg font-bold text-[#111827]">{collaborator.name}</h3>
           <p className="text-xs text-[#6B7280]">{collaborator.email}</p>
         </div>
 
@@ -60,25 +55,19 @@ export function FeaturedCollaboratorCard({
 
         <div className="grid w-full grid-cols-3 border-y border-gray-100">
           <div className="flex flex-col items-center gap-1 py-3">
-            <span className="text-xl font-bold text-[#111827]">
-              {collaborator.songs}
-            </span>
+            <span className="text-xl font-bold text-[#111827]">{collaborator.songs}</span>
             <span className="text-[10px] text-[#6B7280]">Canciones</span>
           </div>
           <div className="flex flex-col items-center gap-1 border-x border-gray-100 py-3">
             <span className="text-xl font-bold text-[#F97316]">
-              {collaborator.splitPercentage != null
-                ? `${collaborator.splitPercentage}%`
-                : "—"}
+              {collaborator.splitPercentage != null ? `${collaborator.splitPercentage}%` : "—"}
             </span>
             <span className="text-[10px] text-[#6B7280]">Split avg</span>
           </div>
           <div className="flex flex-col items-center gap-1 py-3">
             <span
               className={`text-xl font-bold ${
-                collaborator.amountPending > 0
-                  ? "text-[#F43F5E]"
-                  : "text-[#9CA3AF]"
+                collaborator.amountPending > 0 ? "text-[#F43F5E]" : "text-[#9CA3AF]"
               }`}
             >
               {formatCompactCurrency(collaborator.amountPending)}
@@ -105,13 +94,9 @@ export function FeaturedCollaboratorCard({
                     <span className="truncate text-xs font-semibold text-[#111827]">
                       {song.title}
                     </span>
-                    <span className="text-[10px] text-[#9CA3AF]">
-                      {song.streams}
-                    </span>
+                    <span className="text-[10px] text-[#9CA3AF]">{song.streams}</span>
                   </div>
-                  <span className="text-xs font-bold text-[#F97316]">
-                    {song.percentage}%
-                  </span>
+                  <span className="text-xs font-bold text-[#F97316]">{song.percentage}%</span>
                 </div>
               ))}
             </div>

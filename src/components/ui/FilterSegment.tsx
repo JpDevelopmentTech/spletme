@@ -11,12 +11,7 @@ interface FilterSegmentProps {
  * Selector de 3 opciones (Todos / Excepto / Solo) reutilizable para
  * filtros de países y plataformas en formularios de splits.
  */
-export function FilterSegment({
-  value,
-  onChange,
-  labels,
-  name,
-}: FilterSegmentProps) {
+export function FilterSegment({ value, onChange, labels, name }: FilterSegmentProps) {
   const options: { val: FilterType; label: string }[] = [
     { val: "all", label: labels.all },
     { val: "except", label: labels.except },

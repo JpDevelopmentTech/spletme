@@ -27,8 +27,7 @@ const PaymentHistory = ({
   collaboratorId,
   refreshTrigger,
 }: PaymentHistoryProps) => {
-  const { payments, loading, error, loadPayments, getTotalAmount } =
-    usePayments();
+  const { payments, loading, error, loadPayments, getTotalAmount } = usePayments();
   const [viewData, setViewData] = useState(true);
 
   useEffect(() => {
@@ -68,9 +67,7 @@ const PaymentHistory = ({
       <div className="w-full rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
         <div className="flex items-center justify-center py-8">
           <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
-          <span className="ml-2 text-gray-600">
-            Cargando historial de pagos...
-          </span>
+          <span className="ml-2 text-gray-600">Cargando historial de pagos...</span>
         </div>
       </div>
     );
@@ -103,8 +100,7 @@ const PaymentHistory = ({
             <div>
               <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
               <p className="text-sm text-gray-500">
-                {payments.length} pagos realizados • Total:{" "}
-                {formatCurrency(getTotalAmount())}
+                {payments.length} pagos realizados • Total: {formatCurrency(getTotalAmount())}
               </p>
             </div>
           </div>
@@ -123,9 +119,7 @@ const PaymentHistory = ({
           {payments.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-gray-500">
               <DollarSign className="mb-4 h-12 w-12 text-gray-300" />
-              <h3 className="mb-2 text-lg font-medium text-gray-900">
-                No hay pagos registrados
-              </h3>
+              <h3 className="mb-2 text-lg font-medium text-gray-900">No hay pagos registrados</h3>
               <p className="max-w-sm text-center text-sm">
                 Los pagos que realices aparecerán aquí con todos los detalles.
               </p>
@@ -148,15 +142,11 @@ const PaymentHistory = ({
 
                       <div className="min-w-0 flex-1">
                         <div className="mb-1 flex items-center space-x-2">
-                          <p className="text-sm font-medium text-gray-900">
-                            Pago a colaborador
-                          </p>
+                          <p className="text-sm font-medium text-gray-900">Pago a colaborador</p>
                           {getStatusBadge()}
                         </div>
 
-                        <p className="mb-2 text-xs text-gray-500">
-                          ID: {payment.idCollaborator}
-                        </p>
+                        <p className="mb-2 text-xs text-gray-500">ID: {payment.idCollaborator}</p>
 
                         {payment.description && (
                           <div className="mb-2 flex items-center text-sm text-gray-600">

@@ -61,8 +61,7 @@ const ProfessionStep = ({ nextStep, initialData }: ProfessionStepProps) => {
 
   useEffect(() => {
     if (initialData?.profession) setSelectedProfession(initialData.profession);
-    if (initialData?.otherProfession)
-      setSelectedOtherProfession(initialData.otherProfession);
+    if (initialData?.otherProfession) setSelectedOtherProfession(initialData.otherProfession);
   }, [initialData]);
 
   const handleSelect = (id: string) => {
@@ -71,15 +70,13 @@ const ProfessionStep = ({ nextStep, initialData }: ProfessionStepProps) => {
   };
 
   const canContinue =
-    selectedProfession &&
-    (selectedProfession !== "otro" || selectedOtherProfession);
+    selectedProfession && (selectedProfession !== "otro" || selectedOtherProfession);
 
   const handleSubmit = () => {
     if (!canContinue) return;
     nextStep({
       profession: selectedProfession,
-      otherProfession:
-        selectedProfession === "otro" ? selectedOtherProfession : undefined,
+      otherProfession: selectedProfession === "otro" ? selectedOtherProfession : undefined,
     });
   };
 
@@ -88,9 +85,7 @@ const ProfessionStep = ({ nextStep, initialData }: ProfessionStepProps) => {
       {/* Header */}
       <div className="flex flex-col items-center gap-2 text-center">
         <Mic size={40} color="#F97316" />
-        <h2 className="text-[22px] font-bold text-[#111827]">
-          ¿Cuál es tu profesión?
-        </h2>
+        <h2 className="text-[22px] font-bold text-[#111827]">¿Cuál es tu profesión?</h2>
         <p className="text-sm text-[#6B7280]">
           Cuéntanos sobre ti para personalizar tu experiencia
         </p>
@@ -111,19 +106,12 @@ const ProfessionStep = ({ nextStep, initialData }: ProfessionStepProps) => {
                     padding: 20,
                     borderRadius: 12,
                     backgroundColor: isSelected ? "#FFF7ED" : "#FFFFFF",
-                    border: isSelected
-                      ? "2px solid #F97316"
-                      : "1px solid #E5E7EB",
+                    border: isSelected ? "2px solid #F97316" : "1px solid #E5E7EB",
                   }}
                 >
                   <Icon size={28} color={isSelected ? "#F97316" : "#9CA3AF"} />
-                  <span className="text-[15px] font-semibold text-[#111827]">
-                    {name}
-                  </span>
-                  <span
-                    className="text-xs"
-                    style={{ color: isSelected ? "#C2410C" : "#9CA3AF" }}
-                  >
+                  <span className="text-[15px] font-semibold text-[#111827]">{name}</span>
+                  <span className="text-xs" style={{ color: isSelected ? "#C2410C" : "#9CA3AF" }}>
                     {description}
                   </span>
                 </button>
@@ -136,9 +124,7 @@ const ProfessionStep = ({ nextStep, initialData }: ProfessionStepProps) => {
       {/* Other profession picker */}
       {selectedProfession === "otro" && (
         <div className="flex flex-col gap-3">
-          <p className="text-sm font-medium text-[#374151]">
-            ¿Cuál es tu profesión específica?
-          </p>
+          <p className="text-sm font-medium text-[#374151]">¿Cuál es tu profesión específica?</p>
           <div className="grid max-h-48 grid-cols-2 gap-2 overflow-y-auto">
             {OTHER_PROFESSIONS.map((prof) => {
               const isSelected = selectedOtherProfession === prof;
@@ -150,9 +136,7 @@ const ProfessionStep = ({ nextStep, initialData }: ProfessionStepProps) => {
                   style={{
                     borderRadius: 8,
                     backgroundColor: isSelected ? "#FFF7ED" : "#FFFFFF",
-                    border: isSelected
-                      ? "2px solid #F97316"
-                      : "1px solid #E5E7EB",
+                    border: isSelected ? "2px solid #F97316" : "1px solid #E5E7EB",
                     color: isSelected ? "#C2410C" : "#374151",
                   }}
                 >

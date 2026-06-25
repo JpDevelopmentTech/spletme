@@ -1,11 +1,7 @@
 import { useState, useEffect } from "react";
 import { songSplitsService } from "@/services/songSplits";
 import { useReleaseFilters } from "@/hooks/useReleaseFilters";
-import type {
-  CollaboratorFormData,
-  CollaboratorWithSplit,
-  SelectOption,
-} from "@/types";
+import type { CollaboratorFormData, CollaboratorWithSplit, SelectOption } from "@/types";
 
 interface UseSplitsModalParams {
   isOpen: boolean;
@@ -30,23 +26,16 @@ const defaultFormData = (): CollaboratorFormData => ({
  * colaborador. Cada colaborador tiene una sola regla: un porcentaje obligatorio
  * y filtros opcionales de país y plataforma.
  */
-export function useSplitsModal({
-  isOpen,
-  collaborators,
-  songId,
-}: UseSplitsModalParams) {
-  const [collaboratorForms, setCollaboratorForms] = useState<
-    Record<string, CollaboratorFormData>
-  >({});
-  const [expandedCollaborators, setExpandedCollaborators] = useState<
-    Record<string, boolean>
-  >({});
+export function useSplitsModal({ isOpen, collaborators, songId }: UseSplitsModalParams) {
+  const [collaboratorForms, setCollaboratorForms] = useState<Record<string, CollaboratorFormData>>(
+    {},
+  );
+  const [expandedCollaborators, setExpandedCollaborators] = useState<Record<string, boolean>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
-  const { countryOptions, platformOptions, isLoadingFilters } =
-    useReleaseFilters(songId, isOpen);
+  const { countryOptions, platformOptions, isLoadingFilters } = useReleaseFilters(songId, isOpen);
 
   useEffect(() => {
     setMounted(true);
@@ -106,9 +95,7 @@ export function useSplitsModal({
       );
 
       if (pending.length === 0) {
-        setErrorMessage(
-          "Configura al menos un colaborador con un porcentaje válido.",
-        );
+        setErrorMessage("Configura al menos un colaborador con un porcentaje válido.");
         return;
       }
 
@@ -134,10 +121,7 @@ export function useSplitsModal({
         message?: string;
       };
       if (err.response?.data) {
-        const msg =
-          err.response.data.message ??
-          err.response.data.error ??
-          "Error del servidor.";
+        const msg = err.response.data.message ?? err.response.data.error ?? "Error del servidor.";
         setErrorMessage(`Error ${err.response.status}: ${msg}`);
       } else {
         setErrorMessage(err.message ?? "Error inesperado.");

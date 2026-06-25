@@ -1,16 +1,10 @@
 import { useState, useEffect } from "react";
 import { PayoneerService } from "../services/payoneer";
-import {
-  PaymentRequest,
-  PaymentHistory,
-  PayoneerAccount,
-} from "../models/user";
+import { PaymentRequest, PaymentHistory, PayoneerAccount } from "../models/user";
 
 export const usePayoneer = () => {
   const [account, setAccount] = useState<PayoneerAccount | null>(null);
-  const [balance, setBalance] = useState<
-    { amount: number; currency: string }[]
-  >([]);
+  const [balance, setBalance] = useState<{ amount: number; currency: string }[]>([]);
   const [paymentHistory, setPaymentHistory] = useState<PaymentHistory[]>([]);
   const [pendingRequests, setPendingRequests] = useState<PaymentRequest[]>([]);
   const [loading, setLoading] = useState(false);
@@ -24,13 +18,12 @@ export const usePayoneer = () => {
   const loadInitialData = async () => {
     setLoading(true);
     try {
-      const [accountData, balanceData, historyData, requestsData] =
-        await Promise.all([
-          PayoneerService.getPayoneerAccount(),
-          PayoneerService.getBalance(),
-          PayoneerService.getPaymentHistory(),
-          PayoneerService.getPendingRequests(),
-        ]);
+      const [accountData, balanceData, historyData, requestsData] = await Promise.all([
+        PayoneerService.getPayoneerAccount(),
+        PayoneerService.getBalance(),
+        PayoneerService.getPaymentHistory(),
+        PayoneerService.getPendingRequests(),
+      ]);
 
       setAccount(accountData);
       setBalance(balanceData);
@@ -44,10 +37,7 @@ export const usePayoneer = () => {
     }
   };
 
-  const linkAccount = async (
-    payoneerEmail: string,
-    payoneerAccountId?: string,
-  ) => {
+  const linkAccount = async (payoneerEmail: string, payoneerAccountId?: string) => {
     setLoading(true);
     setError(null);
     try {
@@ -62,9 +52,7 @@ export const usePayoneer = () => {
 
       return result;
     } catch (error: any) {
-      setError(
-        error.response?.data?.message || "Error linking Payoneer account",
-      );
+      setError(error.response?.data?.message || "Error linking Payoneer account");
       throw error;
     } finally {
       setLoading(false);

@@ -31,9 +31,7 @@ export default function NavBar() {
         >
           <div className="absolute inset-0 bg-white opacity-0 transition-opacity duration-300 group-hover:opacity-10" />
           <FiActivity className="mb-4 text-3xl text-white" />
-          <span className="mb-2 text-xl font-bold text-white">
-            Comportamiento
-          </span>
+          <span className="mb-2 text-xl font-bold text-white">Comportamiento</span>
           <span className="mb-4 text-sm text-white/90">Status general</span>
           <span className="mt-auto transform rounded-xl bg-white/90 px-4 py-2 text-sm font-medium text-[#91CDE9] backdrop-blur-sm transition-transform duration-300 group-hover:translate-y-1">
             Ver detalles

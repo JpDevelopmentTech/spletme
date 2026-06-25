@@ -36,8 +36,7 @@ export default function PaymentConfirmationModal({
       await onConfirm();
       onClose();
     } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Error al procesar el pago";
+      const errorMessage = err instanceof Error ? err.message : "Error al procesar el pago";
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -70,12 +69,8 @@ export default function PaymentConfirmationModal({
                     <DollarSign className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold text-white">
-                      Confirmar Pago
-                    </h2>
-                    <p className="text-sm text-blue-100">
-                      Revisa los detalles antes de continuar
-                    </p>
+                    <h2 className="text-2xl font-bold text-white">Confirmar Pago</h2>
+                    <p className="text-sm text-blue-100">Revisa los detalles antes de continuar</p>
                   </div>
                 </div>
                 <button
@@ -98,9 +93,7 @@ export default function PaymentConfirmationModal({
                 >
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
-                    <p className="text-sm font-medium text-red-600 dark:text-red-400">
-                      {error}
-                    </p>
+                    <p className="text-sm font-medium text-red-600 dark:text-red-400">{error}</p>
                   </div>
                 </motion.div>
               )}
@@ -118,9 +111,7 @@ export default function PaymentConfirmationModal({
                     <p className="text-base font-bold text-gray-900 dark:text-white">
                       {collaboratorName}
                     </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {collaboratorEmail}
-                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{collaboratorEmail}</p>
                   </div>
                 </div>
               </div>
@@ -138,9 +129,7 @@ export default function PaymentConfirmationModal({
                       maximumFractionDigits: 2,
                     })}
                   </span>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {currency}
-                  </span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">{currency}</span>
                 </div>
               </div>
 
@@ -148,9 +137,8 @@ export default function PaymentConfirmationModal({
               <div className="flex items-start gap-2 rounded-xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
                 <Landmark className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-600 dark:text-blue-400" />
                 <p className="text-sm text-blue-900 dark:text-blue-200">
-                  Se cobrará este monto desde tu cuenta bancaria por débito ACH
-                  y se enviará al colaborador vía Wise. El ACH puede tardar unos
-                  días en liquidar.
+                  Se cobrará este monto desde tu cuenta bancaria por débito ACH y se enviará al
+                  colaborador vía Wise. El ACH puede tardar unos días en liquidar.
                 </p>
               </div>
 

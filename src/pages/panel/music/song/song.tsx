@@ -35,15 +35,12 @@ import { CopyButton } from "@/components/ui/CopyButton";
 export default function Song() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const {
-    song,
-    loading,
-    getCollaboratorsInfo,
-    getOwnerPercentage,
-    getOwnerTotalOwed,
-  } = useSong({ id: id || "" });
-  const { getCurrentUserPercentage, getCurrentUserAmount } =
-    useCurrentCollaborator({ collaborators: song?.collaborators || [] });
+  const { song, loading, getCollaboratorsInfo, getOwnerPercentage, getOwnerTotalOwed } = useSong({
+    id: id || "",
+  });
+  const { getCurrentUserPercentage, getCurrentUserAmount } = useCurrentCollaborator({
+    collaborators: song?.collaborators || [],
+  });
   const [showStripeLoginModal, setShowStripeLoginModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [toasts, setToasts] = useState<ValidationToastItem[]>([]);
@@ -133,11 +130,7 @@ export default function Song() {
     String(value || "")
       .trim()
       .toLowerCase();
-  const currentUserIds = [
-    currentUser?.id,
-    currentUser?._id,
-    currentUser?.userId,
-  ]
+  const currentUserIds = [currentUser?.id, currentUser?._id, currentUser?.userId]
     .filter(Boolean)
     .map((value) => String(value));
   const currentUserEmail = normalizeIdentity(currentUser?.email);
@@ -158,13 +151,11 @@ export default function Song() {
     .filter(Boolean)
     .map((value) => normalizeIdentity(value));
   const hasOwnerIdentity = ownerEmails.length > 0 || ownerUsernames.length > 0;
-  const emailMatchesOwner =
-    currentUserEmail !== "" && ownerEmails.includes(currentUserEmail);
+  const emailMatchesOwner = currentUserEmail !== "" && ownerEmails.includes(currentUserEmail);
   const usernameMatchesOwner =
     currentUserUsername !== "" && ownerUsernames.includes(currentUserUsername);
   const idMatchesOwner =
-    ownerIds.length > 0 &&
-    currentUserIds.some((currentId) => ownerIds.includes(currentId));
+    ownerIds.length > 0 && currentUserIds.some((currentId) => ownerIds.includes(currentId));
   const isSubuserSession = Boolean(currentUser?.parentUserId);
   const isOwnerUser =
     emailMatchesOwner ||
@@ -173,9 +164,7 @@ export default function Song() {
 
   // El owner ve el Net Income completo. Un colaborador (no-owner) lo ve ya
   // descontado por la parte que le corresponde al split del owner.
-  const displayNetIncome = isOwnerUser
-    ? totalNetIncome
-    : Math.max(0, totalNetIncome - ownerAmount);
+  const displayNetIncome = isOwnerUser ? totalNetIncome : Math.max(0, totalNetIncome - ownerAmount);
 
   if (loading) return <Loading />;
 
@@ -208,28 +197,18 @@ export default function Song() {
               Regresar
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Detalle de Canción
-              </h1>
-              <p className="mt-0.5 text-sm text-gray-500">
-                Información de la pista y regalías
-              </p>
+              <h1 className="text-2xl font-bold text-gray-900">Detalle de Canción</h1>
+              <p className="mt-0.5 text-sm text-gray-500">Información de la pista y regalías</p>
             </div>
           </div>
 
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-sm">
-            <span className="cursor-pointer text-gray-400 hover:text-gray-600">
-              Inicio
-            </span>
+            <span className="cursor-pointer text-gray-400 hover:text-gray-600">Inicio</span>
             <span className="text-gray-300">/</span>
-            <span className="cursor-pointer text-gray-400 hover:text-gray-600">
-              Música
-            </span>
+            <span className="cursor-pointer text-gray-400 hover:text-gray-600">Música</span>
             <span className="text-gray-300">/</span>
-            <span className="font-semibold text-gray-900">
-              Detalle de Canción
-            </span>
+            <span className="font-semibold text-gray-900">Detalle de Canción</span>
           </div>
         </div>
         <div className="grid grid-cols-4 gap-4">
@@ -257,9 +236,7 @@ export default function Song() {
               {/* Title row */}
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1.5">
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    {song?.trackTitle || "—"}
-                  </h2>
+                  <h2 className="text-2xl font-bold text-gray-900">{song?.trackTitle || "—"}</h2>
                   <p className="flex items-center gap-2 text-sm text-gray-500">
                     <Users className="h-4 w-4" />
                     {song?.artistName || "—"}
@@ -278,18 +255,14 @@ export default function Song() {
               </div>
 
               {/* Stat Cards */}
-              <div
-                className={`grid gap-2 ${isOwnerUser ? "grid-cols-3" : "grid-cols-2"}`}
-              >
+              <div className={`grid gap-2 ${isOwnerUser ? "grid-cols-3" : "grid-cols-2"}`}>
                 {/* Streams */}
                 <div className="space-y-2 rounded-xl bg-blue-50 p-4">
                   <div className="flex items-center gap-2">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100">
                       <BarChart3 className="h-4 w-4 text-blue-600" />
                     </div>
-                    <span className="text-xs font-medium text-gray-500">
-                      Total Streams
-                    </span>
+                    <span className="text-xs font-medium text-gray-500">Total Streams</span>
                   </div>
                   <p className="text-xl font-bold text-gray-900">
                     {song?.totalStreams?.toLocaleString() || "0"}
@@ -302,9 +275,7 @@ export default function Song() {
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-100">
                       <DollarSign className="h-4 w-4 text-green-600" />
                     </div>
-                    <span className="text-xs font-medium text-gray-500">
-                      Net Income
-                    </span>
+                    <span className="text-xs font-medium text-gray-500">Net Income</span>
                   </div>
                   <p className="text-xl font-bold text-green-600">
                     $
@@ -322,17 +293,11 @@ export default function Song() {
                       <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100">
                         <Award className="h-4 w-4 text-purple-600" />
                       </div>
-                      <span className="text-xs font-medium text-gray-500">
-                        Mi porcentaje
-                      </span>
+                      <span className="text-xs font-medium text-gray-500">Mi porcentaje</span>
                     </div>
                     <div className="flex items-baseline gap-1.5">
-                      <p className="text-xl font-bold text-purple-600">
-                        ${getUserDisplayAmount()}
-                      </p>
-                      <span className="text-xs text-gray-400">
-                        {getUserDisplayPercentage()}%
-                      </span>
+                      <p className="text-xl font-bold text-purple-600">${getUserDisplayAmount()}</p>
+                      <span className="text-xs text-gray-400">{getUserDisplayPercentage()}%</span>
                     </div>
                   </div>
                 )}
@@ -357,9 +322,7 @@ export default function Song() {
                     Próxima liquidación
                   </span>
                 </div>
-                <p className="pl-10 text-base font-semibold text-white">
-                  10 Julio 2024
-                </p>
+                <p className="pl-10 text-base font-semibold text-white">10 Julio 2024</p>
               </div>
 
               <div className="relative z-10 my-5 border-t border-white/20" />
@@ -391,10 +354,7 @@ export default function Song() {
                     </p>
                     <ul className="list-inside list-disc space-y-1">
                       {readiness.issues.map((issue) => (
-                        <li
-                          key={issue.code}
-                          className="text-[11px] leading-snug text-white/85"
-                        >
+                        <li key={issue.code} className="text-[11px] leading-snug text-white/85">
                           {issue.message}
                         </li>
                       ))}
@@ -410,9 +370,7 @@ export default function Song() {
           <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
             <div className="flex items-center gap-2.5">
               <Users className="h-5 w-5 text-gray-900" />
-              <h3 className="text-base font-bold text-gray-900">
-                Colaboradores
-              </h3>
+              <h3 className="text-base font-bold text-gray-900">Colaboradores</h3>
             </div>
             <AddCollaborator compact isOwner={isOwnerUser} />
           </div>
@@ -431,10 +389,7 @@ export default function Song() {
         </div>
         {/* Payment History + Platforms */}
 
-        <SongPaymentsHistory
-          songId={id}
-          refreshTrigger={paymentHistoryRefresh}
-        />
+        <SongPaymentsHistory songId={id} refreshTrigger={paymentHistoryRefresh} />
 
         <div className="grid grid-cols-4 gap-4">
           {/* History of Splits */}

@@ -105,9 +105,7 @@ export function MusicFilterDrawer({
 }: MusicFilterDrawerProps) {
   return (
     <>
-      {isOpen && (
-        <div className="fixed inset-0 z-40 bg-black/20" onClick={onClose} />
-      )}
+      {isOpen && <div className="fixed inset-0 z-40 bg-black/20" onClick={onClose} />}
       <div
         className={`fixed right-0 top-0 z-50 flex h-full w-80 flex-col bg-white shadow-2xl transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "translate-x-full"}`}
       >
@@ -272,9 +270,7 @@ export function MusicFilterDrawer({
                 Álbumes
               </p>
               <button
-                onClick={() =>
-                  onGroupByTrackCountChange(!groupAlbumsByTrackCount)
-                }
+                onClick={() => onGroupByTrackCountChange(!groupAlbumsByTrackCount)}
                 className={`flex w-full items-center justify-between rounded-lg border px-3.5 py-2.5 text-sm transition-colors ${groupAlbumsByTrackCount ? "border-orange-200 bg-orange-50 text-orange-700" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}
               >
                 <span>Agrupar por nº canciones</span>

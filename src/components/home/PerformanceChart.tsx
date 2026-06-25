@@ -32,12 +32,8 @@ export function PerformanceChart({
       <div className="flex flex-col gap-5">
         <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
           <div className="flex flex-col gap-0.5">
-            <h2 className="text-base font-semibold text-gray-900">
-              Rendimiento
-            </h2>
-            <p className="text-xs text-gray-400">
-              Streams e ingresos en el tiempo
-            </p>
+            <h2 className="text-base font-semibold text-gray-900">Rendimiento</h2>
+            <p className="text-xs text-gray-400">Streams e ingresos en el tiempo</p>
           </div>
           <div className="flex items-center rounded-lg bg-gray-100 p-0.5">
             {TIMEFRAME_OPTIONS.map((option) => (

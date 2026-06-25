@@ -63,9 +63,7 @@ export default function AlbumDetail() {
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [monthlyMetrics, setMonthlyMetrics] = useState<MonthlyMetric[]>([]);
   const [metricsLoading, setMetricsLoading] = useState(false);
-  const [albumReproductions, setAlbumReproductions] = useState<
-    ReproductionData[]
-  >([]);
+  const [albumReproductions, setAlbumReproductions] = useState<ReproductionData[]>([]);
 
   const loadAlbum = useCallback(async () => {
     if (!upc) return;
@@ -100,9 +98,7 @@ export default function AlbumDetail() {
   useEffect(() => {
     if (!album || album.tracks.length === 0) return;
     const fetchReproductions = async () => {
-      const results = await Promise.allSettled(
-        album.tracks.map((t) => SongService.getSong(t._id)),
-      );
+      const results = await Promise.allSettled(album.tracks.map((t) => SongService.getSong(t._id)));
       const map = new Map<string, ReproductionData>();
       for (const result of results) {
         if (result.status !== "fulfilled" || !result.value) continue;
@@ -115,8 +111,7 @@ export default function AlbumDetail() {
               ...existing,
               totalStreams: existing.totalStreams + (repro.totalStreams || 0),
               totalIncome: existing.totalIncome + (repro.totalIncome || 0),
-              releasesCount:
-                existing.releasesCount + (repro.releasesCount || 0),
+              releasesCount: existing.releasesCount + (repro.releasesCount || 0),
             });
           } else {
             map.set(repro.platform, { ...repro });
@@ -151,9 +146,7 @@ export default function AlbumDetail() {
     const q = search.trim().toLowerCase();
     const filtered = q
       ? album.tracks.filter(
-          (t) =>
-            t.trackTitle?.toLowerCase().includes(q) ||
-            t.isrc?.toLowerCase().includes(q),
+          (t) => t.trackTitle?.toLowerCase().includes(q) || t.isrc?.toLowerCase().includes(q),
         )
       : [...album.tracks];
 
@@ -204,9 +197,7 @@ export default function AlbumDetail() {
   ];
 
   const getAvatarColor = (name?: string) => {
-    const code = (name ?? "")
-      .split("")
-      .reduce((acc, c) => acc + c.charCodeAt(0), 0);
+    const code = (name ?? "").split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
     return avatarColors[code % avatarColors.length];
   };
 
@@ -294,8 +285,7 @@ export default function AlbumDetail() {
       y: [
         {
           formatter: (val: number) => {
-            if (val >= 1_000_000)
-              return `${(val / 1_000_000).toFixed(1)}M streams`;
+            if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M streams`;
             if (val >= 1_000) return `${(val / 1_000).toFixed(1)}K streams`;
             return `${Math.round(val)} streams`;
           },
@@ -307,8 +297,7 @@ export default function AlbumDetail() {
   };
 
   const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field)
-      return <ArrowUpDown className="h-3.5 w-3.5 text-gray-300" />;
+    if (sortField !== field) return <ArrowUpDown className="h-3.5 w-3.5 text-gray-300" />;
     return sortDir === "asc" ? (
       <ChevronUp className="h-3.5 w-3.5 text-[#F97316]" />
     ) : (
@@ -332,9 +321,7 @@ export default function AlbumDetail() {
         </div>
         <div className="flex max-w-lg items-start gap-2 rounded-xl border border-red-100 bg-red-50 p-4">
           <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />
-          <p className="text-sm text-red-700">
-            {error || "Álbum no encontrado"}
-          </p>
+          <p className="text-sm text-red-700">{error || "Álbum no encontrado"}</p>
         </div>
       </div>
     );
@@ -353,22 +340,15 @@ export default function AlbumDetail() {
             Regresar
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Detalle del Álbum
-            </h1>
-            <p className="mt-0.5 text-sm text-gray-500">
-              Pistas y métricas del álbum
-            </p>
+            <h1 className="text-2xl font-bold text-gray-900">Detalle del Álbum</h1>
+            <p className="mt-0.5 text-sm text-gray-500">Pistas y métricas del álbum</p>
           </div>
         </div>
 
         {/* Breadcrumb + action */}
         <div className="flex items-center gap-4">
           <div className="hidden items-center gap-2 text-sm sm:flex">
-            <Link
-              to="/panel/music"
-              className="text-gray-400 hover:text-gray-600"
-            >
+            <Link to="/panel/music" className="text-gray-400 hover:text-gray-600">
               Música
             </Link>
             <span className="text-gray-300">/</span>
@@ -412,9 +392,7 @@ export default function AlbumDetail() {
             </h2>
             <p className="mt-1 text-sm text-gray-500">{album.artistName}</p>
             {album.artisticLabel && (
-              <p className="mt-0.5 text-xs text-gray-400">
-                {album.artisticLabel}
-              </p>
+              <p className="mt-0.5 text-xs text-gray-400">{album.artisticLabel}</p>
             )}
           </div>
 
@@ -436,9 +414,7 @@ export default function AlbumDetail() {
             </div>
             <span className="text-xs font-medium text-gray-500">Pistas</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">
-            {album.totalTracks}
-          </p>
+          <p className="text-2xl font-bold text-gray-900">{album.totalTracks}</p>
         </div>
 
         <div className="rounded-xl border border-gray-200 bg-white p-5">
@@ -446,13 +422,9 @@ export default function AlbumDetail() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50">
               <Play className="h-4 w-4 text-blue-600" />
             </div>
-            <span className="text-xs font-medium text-gray-500">
-              Total Streams
-            </span>
+            <span className="text-xs font-medium text-gray-500">Total Streams</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">
-            {formatStreams(album.totalStreams)}
-          </p>
+          <p className="text-2xl font-bold text-gray-900">{formatStreams(album.totalStreams)}</p>
         </div>
 
         <div className="rounded-xl border border-gray-200 bg-white p-5">
@@ -460,9 +432,7 @@ export default function AlbumDetail() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50">
               <DollarSign className="h-4 w-4 text-green-600" />
             </div>
-            <span className="text-xs font-medium text-gray-500">
-              Ingresos Netos
-            </span>
+            <span className="text-xs font-medium text-gray-500">Ingresos Netos</span>
           </div>
           <p className="text-2xl font-bold text-green-600">
             {formatCurrency(album.totalNetIncome)}
@@ -474,14 +444,10 @@ export default function AlbumDetail() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50">
               <DollarSign className="h-4 w-4 text-fuchsia-600" />
             </div>
-            <span className="text-xs font-medium text-gray-500">
-              Owner revenue
-            </span>
+            <span className="text-xs font-medium text-gray-500">Owner revenue</span>
           </div>
           <p className="text-2xl font-bold text-fuchsia-600">
-            {formatCurrency(
-              album.ownerEarnings ? parseFloat(album.ownerEarnings) : 0,
-            )}
+            {formatCurrency(album.ownerEarnings ? parseFloat(album.ownerEarnings) : 0)}
           </p>
         </div>
       </div>
@@ -491,12 +457,8 @@ export default function AlbumDetail() {
         <div className="flex flex-col gap-5 rounded-xl border border-gray-200 bg-white p-6">
           <div className="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-center">
             <div className="flex flex-col gap-0.5">
-              <h2 className="text-base font-semibold text-gray-900">
-                Rendimiento del álbum
-              </h2>
-              <p className="text-xs text-gray-400">
-                Streams e ingresos por mes
-              </p>
+              <h2 className="text-base font-semibold text-gray-900">Rendimiento del álbum</h2>
+              <p className="text-xs text-gray-400">Streams e ingresos por mes</p>
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1.5">
@@ -612,9 +574,7 @@ export default function AlbumDetail() {
                 >
                   {/* # */}
                   <td className="px-6 py-4">
-                    <span className="text-sm font-medium text-gray-400">
-                      {index + 1}
-                    </span>
+                    <span className="text-sm font-medium text-gray-400">{index + 1}</span>
                   </td>
 
                   {/* Title */}
@@ -633,9 +593,7 @@ export default function AlbumDetail() {
                   <td className="hidden px-4 py-4 lg:table-cell">
                     <span className="inline-flex items-center gap-1.5 font-mono text-xs text-gray-500">
                       {track.isrc || "—"}
-                      {track.isrc && (
-                        <CopyButton value={track.isrc} title="Copiar ISRC" />
-                      )}
+                      {track.isrc && <CopyButton value={track.isrc} title="Copiar ISRC" />}
                     </span>
                   </td>
 
@@ -657,11 +615,7 @@ export default function AlbumDetail() {
                   <td className="hidden px-4 py-4 md:table-cell">
                     <div className="flex items-center gap-1.5">
                       <span
-                        title={
-                          hasOwnerSplit(track)
-                            ? "Owner split creado"
-                            : "Sin owner split"
-                        }
+                        title={hasOwnerSplit(track) ? "Owner split creado" : "Sin owner split"}
                         className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold ${
                           hasOwnerSplit(track)
                             ? "bg-orange-50 text-[#F97316]"
@@ -707,27 +661,25 @@ export default function AlbumDetail() {
                         }}
                         className="flex -space-x-2 transition-opacity hover:opacity-80"
                       >
-                        {track
-                          .collaborators!.slice(0, 4)
-                          .map((collaborator, idx) =>
-                            collaborator?.image ? (
-                              <img
-                                key={collaborator._id || idx}
-                                src={collaborator.image}
-                                alt={collaborator.name || ""}
-                                title={collaborator.name}
-                                className="h-7 w-7 rounded-full border-2 border-white object-cover"
-                              />
-                            ) : (
-                              <div
-                                key={collaborator._id || idx}
-                                title={collaborator.name}
-                                className={`flex h-7 w-7 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold ${getAvatarColor(collaborator.name)}`}
-                              >
-                                {getInitials(collaborator.name)}
-                              </div>
-                            ),
-                          )}
+                        {track.collaborators!.slice(0, 4).map((collaborator, idx) =>
+                          collaborator?.image ? (
+                            <img
+                              key={collaborator._id || idx}
+                              src={collaborator.image}
+                              alt={collaborator.name || ""}
+                              title={collaborator.name}
+                              className="h-7 w-7 rounded-full border-2 border-white object-cover"
+                            />
+                          ) : (
+                            <div
+                              key={collaborator._id || idx}
+                              title={collaborator.name}
+                              className={`flex h-7 w-7 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold ${getAvatarColor(collaborator.name)}`}
+                            >
+                              {getInitials(collaborator.name)}
+                            </div>
+                          ),
+                        )}
                         {collaboratorsCount(track) > 4 && (
                           <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-gray-100">
                             <span className="text-[10px] font-semibold text-gray-500">
@@ -809,10 +761,7 @@ export default function AlbumDetail() {
             </div>
             <ul className="max-h-72 divide-y divide-gray-50 overflow-y-auto">
               {collaboratorsModal.map((c, idx) => (
-                <li
-                  key={c._id || idx}
-                  className="flex items-center gap-3 px-6 py-3"
-                >
+                <li key={c._id || idx} className="flex items-center gap-3 px-6 py-3">
                   {c.image ? (
                     <img
                       src={c.image}
@@ -831,9 +780,7 @@ export default function AlbumDetail() {
                       {c.name || "Sin nombre"}
                     </p>
                     {c._id && (
-                      <p className="truncate font-mono text-[11px] text-gray-400">
-                        {c._id}
-                      </p>
+                      <p className="truncate font-mono text-[11px] text-gray-400">{c._id}</p>
                     )}
                   </div>
                 </li>

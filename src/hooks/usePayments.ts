@@ -13,8 +13,7 @@ export const usePayments = () => {
 
       let response;
       if (collaboratorId) {
-        response =
-          await PaymentsService.getPaymentsByCollaborator(collaboratorId);
+        response = await PaymentsService.getPaymentsByCollaborator(collaboratorId);
       } else {
         response = await PaymentsService.getPayments();
       }
@@ -42,10 +41,7 @@ export const usePayments = () => {
         setLoading(true);
         setError("");
 
-        const response = await PaymentsService.createPayment(
-          idCollaborator,
-          splitId,
-        );
+        const response = await PaymentsService.createPayment(idCollaborator, splitId);
 
         if (response.error) {
           setError(response.message || "Error al crear el pago");

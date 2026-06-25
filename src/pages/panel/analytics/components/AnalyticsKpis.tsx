@@ -1,8 +1,5 @@
 import { TrendingUp, DollarSign, TrendingDown, Clock } from "lucide-react";
-import type {
-  AnalyticsKpis,
-  HistoricalTotal,
-} from "../../../../types/analytics.types";
+import type { AnalyticsKpis, HistoricalTotal } from "../../../../types/analytics.types";
 
 interface Props {
   kpis: AnalyticsKpis | null;
@@ -22,11 +19,7 @@ function fmtStreams(n: number) {
   return String(n);
 }
 
-export default function AnalyticsKpisSection({
-  kpis,
-  historical,
-  loading,
-}: Props) {
+export default function AnalyticsKpisSection({ kpis, historical, loading }: Props) {
   const cards = [
     {
       label: "Total Streams",
@@ -58,9 +51,7 @@ export default function AnalyticsKpisSection({
     {
       label: "Histórico Total",
       value: loading ? "—" : fmt(historical?.totalNetIncome ?? 0),
-      sub: historical?.firstDate
-        ? `Desde ${historical.firstDate.slice(0, 7)}`
-        : "Todo el tiempo",
+      sub: historical?.firstDate ? `Desde ${historical.firstDate.slice(0, 7)}` : "Todo el tiempo",
       icon: Clock,
       iconBg: "bg-orange-50",
       iconColor: "text-[#F97316]",
@@ -70,31 +61,21 @@ export default function AnalyticsKpisSection({
 
   return (
     <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-      {cards.map(
-        ({ label, value, sub, icon: Icon, iconBg, iconColor, valueColor }) => (
-          <div
-            key={label}
-            className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-5"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-[#6B7280]">
-                {label}
-              </span>
-              <div
-                className={`h-7 w-7 ${iconBg} flex items-center justify-center rounded-md`}
-              >
-                <Icon className={`h-3.5 w-3.5 ${iconColor}`} />
-              </div>
+      {cards.map(({ label, value, sub, icon: Icon, iconBg, iconColor, valueColor }) => (
+        <div
+          key={label}
+          className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-5"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-[#6B7280]">{label}</span>
+            <div className={`h-7 w-7 ${iconBg} flex items-center justify-center rounded-md`}>
+              <Icon className={`h-3.5 w-3.5 ${iconColor}`} />
             </div>
-            <p className={`text-[26px] font-bold leading-none ${valueColor}`}>
-              {value}
-            </p>
-            <span className="text-[11px] font-medium text-[#9CA3AF]">
-              {sub}
-            </span>
           </div>
-        ),
-      )}
+          <p className={`text-[26px] font-bold leading-none ${valueColor}`}>{value}</p>
+          <span className="text-[11px] font-medium text-[#9CA3AF]">{sub}</span>
+        </div>
+      ))}
     </div>
   );
 }

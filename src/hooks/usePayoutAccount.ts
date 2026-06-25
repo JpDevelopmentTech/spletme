@@ -1,9 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import payoutAccountService from "@/services/payoutAccount";
-import type {
-  PayoutAccountStatus,
-  PayoutRequirement,
-} from "@/types/payout-account.types";
+import type { PayoutAccountStatus, PayoutRequirement } from "@/types/payout-account.types";
 
 type FeedbackType = "success" | "error" | "info";
 interface Feedback {
@@ -25,10 +22,7 @@ const setDeep = (obj: Record<string, unknown>, path: string, value: string) => {
 };
 
 /** Construye el objeto `details` para Wise a partir de los valores del formulario. */
-const buildDetails = (
-  requirement: PayoutRequirement | null,
-  values: Record<string, string>,
-) => {
+const buildDetails = (requirement: PayoutRequirement | null, values: Record<string, string>) => {
   const details: Record<string, unknown> = {};
   if (!requirement) return details;
   requirement.fields.forEach((field) =>

@@ -61,8 +61,7 @@ export const useAlbums = (page: number, limit: number): UseAlbumsReturn => {
           setError(response.message);
         }
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Error loading albums";
+        const errorMessage = err instanceof Error ? err.message : "Error loading albums";
         setError(errorMessage);
       } finally {
         setLoading(false);
@@ -72,33 +71,29 @@ export const useAlbums = (page: number, limit: number): UseAlbumsReturn => {
   );
 
   // Get specific album by UPC
-  const getAlbumByUPC = useCallback(
-    async (upc: string): Promise<Album | null> => {
-      setLoading(true);
-      setError(null);
+  const getAlbumByUPC = useCallback(async (upc: string): Promise<Album | null> => {
+    setLoading(true);
+    setError(null);
 
-      try {
-        const response = await AlbumService.getAlbumByUPC(upc);
+    try {
+      const response = await AlbumService.getAlbumByUPC(upc);
 
-        if (response.success && "data" in response) {
-          return response.data;
-        } else if ("message" in response) {
-          setError(response.message);
-          return null;
-        }
-
+      if (response.success && "data" in response) {
+        return response.data;
+      } else if ("message" in response) {
+        setError(response.message);
         return null;
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Error loading album";
-        setError(errorMessage);
-        return null;
-      } finally {
-        setLoading(false);
       }
-    },
-    [],
-  );
+
+      return null;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Error loading album";
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   // Load more albums (pagination)
   const loadMoreAlbums = useCallback(async () => {

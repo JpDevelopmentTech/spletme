@@ -28,10 +28,7 @@ export function CollaboratorTableRow({
             className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full"
             style={{ backgroundColor: collaborator.avatarBg }}
           >
-            <span
-              className="text-[12px] font-bold"
-              style={{ color: collaborator.avatarText }}
-            >
+            <span className="text-[12px] font-bold" style={{ color: collaborator.avatarText }}>
               {collaborator.initials}
             </span>
           </div>
@@ -39,9 +36,7 @@ export function CollaboratorTableRow({
             <span className="truncate text-[13px] font-semibold text-[#111827]">
               {collaborator.name}
             </span>
-            <span className="truncate text-[11px] text-[#9CA3AF]">
-              {collaborator.email}
-            </span>
+            <span className="truncate text-[11px] text-[#9CA3AF]">{collaborator.email}</span>
           </div>
         </div>
       </td>
@@ -49,9 +44,7 @@ export function CollaboratorTableRow({
         {collaborator.songs}
       </td>
       <td className="px-3 py-4 text-center text-[13px] font-semibold text-[#F97316]">
-        {collaborator.splitPercentage != null
-          ? `${collaborator.splitPercentage}%`
-          : "—"}
+        {collaborator.splitPercentage != null ? `${collaborator.splitPercentage}%` : "—"}
       </td>
       <td className="px-3 py-4 text-center">
         {collaborator.roles && collaborator.roles.length > 0 ? (

@@ -40,9 +40,7 @@ const StripePaymentModal = ({
   collaborators = [],
   onPaymentSuccess,
 }: StripePaymentModalProps) => {
-  const [step, setStep] = useState<"confirm" | "processing" | "success">(
-    "confirm",
-  );
+  const [step, setStep] = useState<"confirm" | "processing" | "success">("confirm");
   const [amount, setAmount] = useState<number>(totalAmount);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -127,14 +125,10 @@ const StripePaymentModal = ({
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Canción</p>
-            <p className="font-medium text-gray-900 dark:text-white">
-              {songTitle}
-            </p>
+            <p className="font-medium text-gray-900 dark:text-white">{songTitle}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Monto Total
-            </p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Monto Total</p>
             <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
               {formatCurrency(amount)}
             </p>
@@ -145,11 +139,9 @@ const StripePaymentModal = ({
       {/* Info del cobro */}
       <div className="rounded-lg border border-indigo-100 bg-indigo-50/50 p-4 dark:bg-indigo-900/10">
         <p className="text-sm text-gray-700 dark:text-gray-300">
-          Se cobrará{" "}
-          <span className="font-semibold">{formatCurrency(amount)}</span> desde
-          tu cuenta bancaria por débito ACH y se repartirá automáticamente a los
-          colaboradores según sus splits. El monto lo calcula el sistema a
-          partir de los splits de la canción.
+          Se cobrará <span className="font-semibold">{formatCurrency(amount)}</span> desde tu cuenta
+          bancaria por débito ACH y se repartirá automáticamente a los colaboradores según sus
+          splits. El monto lo calcula el sistema a partir de los splits de la canción.
         </p>
       </div>
 
@@ -160,28 +152,17 @@ const StripePaymentModal = ({
             Colaboradores ({collaborators.length})
           </h4>
           <div className="max-h-32 space-y-2 overflow-y-auto rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
-            {collaborators
-              .slice(0, 3)
-              .map((collaborator: Collaborator, index: number) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between text-sm"
-                >
-                  <span className="text-gray-700 dark:text-gray-300">
-                    {collaborator.name ||
-                      collaborator.email ||
-                      `Colaborador ${index + 1}`}
-                  </span>
-                  <span className="text-gray-500 dark:text-gray-400">
-                    {collaborator.percentage
-                      ? `${collaborator.percentage}%`
-                      : "0%"}
-                    {collaborator.amountToPay
-                      ? ` · $${collaborator.amountToPay}`
-                      : ""}
-                  </span>
-                </div>
-              ))}
+            {collaborators.slice(0, 3).map((collaborator: Collaborator, index: number) => (
+              <div key={index} className="flex items-center justify-between text-sm">
+                <span className="text-gray-700 dark:text-gray-300">
+                  {collaborator.name || collaborator.email || `Colaborador ${index + 1}`}
+                </span>
+                <span className="text-gray-500 dark:text-gray-400">
+                  {collaborator.percentage ? `${collaborator.percentage}%` : "0%"}
+                  {collaborator.amountToPay ? ` · $${collaborator.amountToPay}` : ""}
+                </span>
+              </div>
+            ))}
             {collaborators.length > 3 && (
               <p className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
                 +{collaborators.length - 3} colaboradores más...
@@ -230,9 +211,7 @@ const StripePaymentModal = ({
       />
 
       <div>
-        <h3 className="mb-2 text-xl font-bold text-gray-900 dark:text-white">
-          Procesando pago
-        </h3>
+        <h3 className="mb-2 text-xl font-bold text-gray-900 dark:text-white">Procesando pago</h3>
         <p className="text-gray-600 dark:text-gray-400">
           Iniciando el cobro de {formatCurrency(amount)} por débito ACH...
         </p>
@@ -267,26 +246,19 @@ const StripePaymentModal = ({
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <h3 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
-          ¡Pago iniciado!
-        </h3>
+        <h3 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">¡Pago iniciado!</h3>
         <p className="mb-6 text-gray-600 dark:text-gray-400">
           El cobro por {formatCurrency(amount)} se está procesando por ACH
         </p>
 
         <div className="space-y-3 rounded-lg border border-green-200 bg-green-50 p-6 text-left dark:border-green-800 dark:bg-green-900/20">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600 dark:text-gray-400">
-              Estado:
-            </span>
-            <span className="font-medium text-green-600 dark:text-green-400">
-              En proceso
-            </span>
+            <span className="text-sm text-gray-600 dark:text-gray-400">Estado:</span>
+            <span className="font-medium text-green-600 dark:text-green-400">En proceso</span>
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            El débito ACH puede tardar algunos días en liquidar. Cuando se
-            confirme, los colaboradores recibirán automáticamente su parte vía
-            Wise.
+            El débito ACH puede tardar algunos días en liquidar. Cuando se confirme, los
+            colaboradores recibirán automáticamente su parte vía Wise.
           </p>
         </div>
       </motion.div>
@@ -348,9 +320,7 @@ const StripePaymentModal = ({
                   <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                     {getModalTitle()}
                   </h2>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {songTitle}
-                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{songTitle}</p>
                 </div>
               </div>
               {step === "confirm" && (

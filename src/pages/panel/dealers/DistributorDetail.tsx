@@ -13,10 +13,7 @@ import {
   FileText,
   AlertCircle,
 } from "lucide-react";
-import type {
-  DistributorDashboard,
-  Quarter,
-} from "../../../types/distributor.types";
+import type { DistributorDashboard, Quarter } from "../../../types/distributor.types";
 import { distributorsService } from "../../../services/distributorsService";
 import type { RejectedSong } from "../../../services/distributorsService";
 import UploadSongsModal from "../../../components/ui/UploadSongsModal";
@@ -72,12 +69,7 @@ export default function DistributorDetail() {
 
   async function handleUpload(file: File, quarter: Quarter, year: number) {
     if (!id) return;
-    const result = await distributorsService.uploadSongs(
-      id,
-      file,
-      quarter,
-      year,
-    );
+    const result = await distributorsService.uploadSongs(id, file, quarter, year);
     setUploadResult({
       songsProcessed: result.songsProcessed,
       rejected: result.rejected,
@@ -97,9 +89,7 @@ export default function DistributorDetail() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-[#F7F8FA]">
         <AlertCircle className="h-8 w-8 text-red-400" />
-        <p className="text-sm text-[#6B7280]">
-          No se pudo cargar el distribuidor
-        </p>
+        <p className="text-sm text-[#6B7280]">No se pudo cargar el distribuidor</p>
         <button
           onClick={() => navigate("/panel/dealers")}
           className="text-sm font-medium text-[#F97316]"
@@ -110,8 +100,7 @@ export default function DistributorDetail() {
     );
   }
 
-  const { distributor, totals, revenueByQuarter, topSongs, uploads } =
-    dashboard;
+  const { distributor, totals, revenueByQuarter, topSongs, uploads } = dashboard;
   const initials = distributor.name.slice(0, 2).toUpperCase();
 
   // Chart: revenue by quarter
@@ -136,8 +125,7 @@ export default function DistributorDetail() {
     yaxis: {
       labels: {
         style: { colors: "#9CA3AF", fontSize: "11px" },
-        formatter: (v: number) =>
-          v >= 1000 ? `$${(v / 1000).toFixed(0)}K` : `$${v}`,
+        formatter: (v: number) => (v >= 1000 ? `$${(v / 1000).toFixed(0)}K` : `$${v}`),
       },
     },
     grid: {
@@ -176,17 +164,13 @@ export default function DistributorDetail() {
           >
             <AlertCircle
               className={`h-5 w-5 flex-shrink-0 ${
-                uploadResult.rejected.length > 0
-                  ? "text-yellow-600"
-                  : "text-green-600"
+                uploadResult.rejected.length > 0 ? "text-yellow-600" : "text-green-600"
               }`}
             />
             <div className="min-w-0 flex-1">
               <p
                 className={`text-sm font-semibold ${
-                  uploadResult.rejected.length > 0
-                    ? "text-yellow-800"
-                    : "text-green-800"
+                  uploadResult.rejected.length > 0 ? "text-yellow-800" : "text-green-800"
                 }`}
               >
                 {uploadResult.songsProcessed} canción
@@ -198,8 +182,7 @@ export default function DistributorDetail() {
               {uploadResult.rejected.length > 0 && (
                 <div className="mt-2">
                   <p className="mb-1.5 text-xs text-yellow-700">
-                    Los siguientes ISRC ya pertenecen a otro usuario y fueron
-                    omitidos:
+                    Los siguientes ISRC ya pertenecen a otro usuario y fueron omitidos:
                   </p>
                   <div className="flex flex-wrap gap-1.5">
                     {uploadResult.rejected.map((r) => (
@@ -233,17 +216,13 @@ export default function DistributorDetail() {
               <ArrowLeft className="h-4 w-4 text-[#6B7280]" />
             </button>
             <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-orange-100">
-              <span className="text-sm font-bold text-[#F97316]">
-                {initials}
-              </span>
+              <span className="text-sm font-bold text-[#F97316]">{initials}</span>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-[#111827]">
-                {distributor.name}
-              </h1>
+              <h1 className="text-xl font-bold text-[#111827]">{distributor.name}</h1>
               <span className="text-xs text-[#6B7280]">
-                {distributor.currency === "USD" ? "$ Dólar" : "€ Euro"} ·{" "}
-                {totals.uploadCount} cargas
+                {distributor.currency === "USD" ? "$ Dólar" : "€ Euro"} · {totals.uploadCount}{" "}
+                cargas
               </span>
             </div>
           </div>
@@ -291,35 +270,25 @@ export default function DistributorDetail() {
               iconColor: "text-[#F97316]",
               valueColor: "text-[#111827]",
             },
-          ].map(
-            ({ label, value, icon: Icon, iconBg, iconColor, valueColor }) => (
-              <div
-                key={label}
-                className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-5"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-[#6B7280]">
-                    {label}
-                  </span>
-                  <div
-                    className={`h-7 w-7 ${iconBg} flex items-center justify-center rounded-md`}
-                  >
-                    <Icon className={`h-3.5 w-3.5 ${iconColor}`} />
-                  </div>
+          ].map(({ label, value, icon: Icon, iconBg, iconColor, valueColor }) => (
+            <div
+              key={label}
+              className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-5"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-[#6B7280]">{label}</span>
+                <div className={`h-7 w-7 ${iconBg} flex items-center justify-center rounded-md`}>
+                  <Icon className={`h-3.5 w-3.5 ${iconColor}`} />
                 </div>
-                <p className={`text-2xl font-bold leading-none ${valueColor}`}>
-                  {value}
-                </p>
               </div>
-            ),
-          )}
+              <p className={`text-2xl font-bold leading-none ${valueColor}`}>{value}</p>
+            </div>
+          ))}
         </div>
 
         {/* Revenue by quarter chart */}
         <div className="rounded-xl border border-gray-200 bg-white p-6">
-          <h2 className="text-sm font-semibold text-[#111827]">
-            Ingresos por Quarter
-          </h2>
+          <h2 className="text-sm font-semibold text-[#111827]">Ingresos por Quarter</h2>
           <p className="mb-4 mt-0.5 text-xs text-[#6B7280]">
             Evolución de ingresos netos por temporada
           </p>
@@ -348,9 +317,7 @@ export default function DistributorDetail() {
           <div className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-6">
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 text-[#F97316]" />
-              <h2 className="text-sm font-semibold text-[#111827]">
-                Historial de Cargas
-              </h2>
+              <h2 className="text-sm font-semibold text-[#111827]">Historial de Cargas</h2>
             </div>
             {uploads.length === 0 ? (
               <div className="flex h-32 flex-col items-center justify-center gap-2 text-center">
@@ -411,9 +378,7 @@ export default function DistributorDetail() {
           <div className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-6">
             <div className="flex items-center gap-2">
               <Music className="h-4 w-4 text-[#F97316]" />
-              <h2 className="text-sm font-semibold text-[#111827]">
-                Top 5 Canciones
-              </h2>
+              <h2 className="text-sm font-semibold text-[#111827]">Top 5 Canciones</h2>
             </div>
             {topSongs.length === 0 ? (
               <div className="flex h-32 items-center justify-center text-sm text-[#9CA3AF]">
@@ -440,9 +405,7 @@ export default function DistributorDetail() {
                       <p className="truncate text-[13px] font-semibold text-[#111827]">
                         {s.trackTitle}
                       </p>
-                      <p className="truncate text-[11px] text-[#9CA3AF]">
-                        {s.artistName}
-                      </p>
+                      <p className="truncate text-[11px] text-[#9CA3AF]">{s.artistName}</p>
                     </div>
                     <div className="flex flex-shrink-0 flex-col items-end gap-0.5">
                       <span className="text-[12px] font-bold text-green-500">

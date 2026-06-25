@@ -50,12 +50,10 @@ export default function CollaboratorPaymentHistoryModal({
   useEffect(() => {
     if (!isOpen || !songId || !collaboratorId) return;
     setLoading(true);
-    PaymentsService.getCollaboratorHistory(songId, collaboratorId).then(
-      (res) => {
-        if (!res.error && res.data) setItems(res.data);
-        setLoading(false);
-      },
-    );
+    PaymentsService.getCollaboratorHistory(songId, collaboratorId).then((res) => {
+      if (!res.error && res.data) setItems(res.data);
+      setLoading(false);
+    });
   }, [isOpen, songId, collaboratorId]);
 
   if (!isOpen) return null;
@@ -77,14 +75,10 @@ export default function CollaboratorPaymentHistoryModal({
           <div className="flex items-center gap-2">
             <History className="h-4 w-4 text-gray-500" />
             <span className="text-[15px] font-bold text-gray-900">
-              Historial de pagos{" "}
-              {collaboratorName ? `· ${collaboratorName}` : ""}
+              Historial de pagos {collaboratorName ? `· ${collaboratorName}` : ""}
             </span>
           </div>
-          <button
-            onClick={onClose}
-            className="rounded-md p-1.5 hover:bg-gray-100"
-          >
+          <button onClick={onClose} className="rounded-md p-1.5 hover:bg-gray-100">
             <X className="h-4 w-4 text-gray-500" />
           </button>
         </div>
@@ -114,20 +108,15 @@ export default function CollaboratorPaymentHistoryModal({
                       })}{" "}
                       USD
                     </span>
-                    <span className="text-xs text-gray-400">
-                      {formatDate(it.date)}
-                    </span>
+                    <span className="text-xs text-gray-400">{formatDate(it.date)}</span>
                   </div>
                   <div className="flex flex-col items-end gap-0.5">
                     <span className="text-xs font-medium text-gray-600">
-                      Cobro:{" "}
-                      {PAYMENT_LABEL[it.paymentStatus] ?? it.paymentStatus}
+                      Cobro: {PAYMENT_LABEL[it.paymentStatus] ?? it.paymentStatus}
                     </span>
                     <span className="text-[11px] text-gray-400">
                       Envío:{" "}
-                      {it.payoutStatus
-                        ? (PAYOUT_LABEL[it.payoutStatus] ?? it.payoutStatus)
-                        : "—"}
+                      {it.payoutStatus ? (PAYOUT_LABEL[it.payoutStatus] ?? it.payoutStatus) : "—"}
                     </span>
                   </div>
                 </div>
@@ -140,8 +129,7 @@ export default function CollaboratorPaymentHistoryModal({
           <div className="flex items-center justify-between border-t border-gray-100 px-5 py-3">
             <span className="text-xs text-gray-500">Total pagado</span>
             <span className="text-sm font-bold text-gray-900">
-              ${totalPaid.toLocaleString("en-US", { minimumFractionDigits: 2 })}{" "}
-              USD
+              ${totalPaid.toLocaleString("en-US", { minimumFractionDigits: 2 })} USD
             </span>
           </div>
         )}

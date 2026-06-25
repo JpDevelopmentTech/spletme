@@ -130,12 +130,7 @@ export default function HigherPerformance() {
       className="col-span-6 rounded-2xl p-6 shadow-lg duration-200 hover:scale-[1.01]"
     >
       <Title title="Rendimiento" subtitle="Distribuidores" />
-      <ReactApexChart
-        options={options}
-        series={series}
-        height={350}
-        type="bar"
-      />
+      <ReactApexChart options={options} series={series} height={350} type="bar" />
     </div>
   );
 }

@@ -64,11 +64,7 @@ export default function Sidebar() {
   const displayEmail = userData?.email || user?.email || "";
   const initials =
     (displayName.charAt(0) || "U").toUpperCase() +
-    (
-      userData?.lastName?.charAt(0) ||
-      displayName.split(" ")[1]?.charAt(0) ||
-      ""
-    ).toUpperCase();
+    (userData?.lastName?.charAt(0) || displayName.split(" ")[1]?.charAt(0) || "").toUpperCase();
 
   return (
     <>
@@ -92,9 +88,7 @@ export default function Sidebar() {
       {/* Sidebar */}
       <div
         className={`fixed left-0 top-0 z-30 flex h-full w-[260px] flex-col transition-transform duration-300 ${
-          isMobileMenuOpen
-            ? "translate-x-0"
-            : "-translate-x-full lg:translate-x-0"
+          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
         style={{ backgroundColor: "#0F172A", borderRight: "1px solid #1E293B" }}
       >
@@ -138,9 +132,7 @@ export default function Sidebar() {
                 }`
               }
               style={({ isActive }) => ({
-                backgroundColor: isActive
-                  ? "rgba(249,115,22,0.12)"
-                  : "transparent",
+                backgroundColor: isActive ? "rgba(249,115,22,0.12)" : "transparent",
                 color: isActive ? "#F97316" : "#94A3B8",
               })}
               onMouseEnter={(e) => {
@@ -180,9 +172,7 @@ export default function Sidebar() {
               }`
             }
             style={({ isActive }) => ({
-              backgroundColor: isActive
-                ? "rgba(249,115,22,0.12)"
-                : "transparent",
+              backgroundColor: isActive ? "rgba(249,115,22,0.12)" : "transparent",
               color: isActive ? "#F97316" : "#94A3B8",
             })}
             onMouseEnter={(e) => {
@@ -218,19 +208,15 @@ export default function Sidebar() {
           className="mx-3 mb-3 flex w-[calc(100%-24px)] items-center gap-3 rounded-xl p-3 transition-colors"
           style={{
             backgroundColor: showSwitchUserModal ? "#263548" : "#1E293B",
-            border: showSwitchUserModal
-              ? "1px solid #334155"
-              : "1px solid transparent",
+            border: showSwitchUserModal ? "1px solid #334155" : "1px solid transparent",
           }}
           onMouseEnter={(e) => {
             if (!showSwitchUserModal)
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                "#1a2d42";
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#1a2d42";
           }}
           onMouseLeave={(e) => {
             if (!showSwitchUserModal)
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                "#1E293B";
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#1E293B";
           }}
         >
           <div
@@ -240,10 +226,7 @@ export default function Sidebar() {
             <span className="text-xs font-bold text-white">{initials}</span>
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-            <span
-              className="truncate text-[13px] font-semibold"
-              style={{ color: "#F1F5F9" }}
-            >
+            <span className="truncate text-[13px] font-semibold" style={{ color: "#F1F5F9" }}>
               {displayName}
             </span>
             <span className="truncate text-[11px]" style={{ color: "#475569" }}>
@@ -254,9 +237,7 @@ export default function Sidebar() {
             className="h-4 w-4 flex-shrink-0 transition-transform duration-200"
             style={{
               color: "#94A3B8",
-              transform: showSwitchUserModal
-                ? "rotate(180deg)"
-                : "rotate(0deg)",
+              transform: showSwitchUserModal ? "rotate(180deg)" : "rotate(0deg)",
             }}
           />
         </button>
@@ -268,13 +249,11 @@ export default function Sidebar() {
             className="flex items-center gap-2.5 rounded-[8px] px-3 py-2.5 text-sm font-medium transition-colors"
             style={{ color: "#94A3B8" }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                "rgba(239,68,68,0.1)";
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = "rgba(239,68,68,0.1)";
               (e.currentTarget as HTMLButtonElement).style.color = "#F87171";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                "transparent";
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent";
               (e.currentTarget as HTMLButtonElement).style.color = "#94A3B8";
             }}
           >

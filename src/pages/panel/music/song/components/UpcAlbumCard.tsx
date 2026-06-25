@@ -64,9 +64,7 @@ const UpcAlbumCard = ({ album, index }: UpcAlbumCardProps) => {
                 {album.artistName}
               </p>
               {album.artisticLabel && (
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {album.artisticLabel}
-                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{album.artisticLabel}</p>
               )}
             </div>
 
@@ -74,9 +72,7 @@ const UpcAlbumCard = ({ album, index }: UpcAlbumCardProps) => {
             <div className="mb-6 flex justify-center">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-gradient-to-r from-gray-100 to-gray-200 px-4 py-2 text-xs font-semibold text-gray-700 dark:border-gray-600 dark:from-gray-700 dark:to-gray-600 dark:text-gray-300">
                 UPC: {album.upc}
-                {album.upc && (
-                  <CopyButton value={album.upc} title="Copiar UPC" />
-                )}
+                {album.upc && <CopyButton value={album.upc} title="Copiar UPC" />}
               </span>
             </div>
 
@@ -86,25 +82,17 @@ const UpcAlbumCard = ({ album, index }: UpcAlbumCardProps) => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50 to-indigo-100 p-4 text-center dark:border-indigo-800/30 dark:from-indigo-900/20 dark:to-indigo-800/20">
                   <div className="mb-2 flex items-center justify-center">
-                    <Music
-                      size={20}
-                      className="text-indigo-600 dark:text-indigo-400"
-                    />
+                    <Music size={20} className="text-indigo-600 dark:text-indigo-400" />
                   </div>
                   <div className="mb-1 text-2xl font-bold text-gray-900 dark:text-white">
                     {album.totalTracks}
                   </div>
-                  <div className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                    Tracks
-                  </div>
+                  <div className="text-sm font-medium text-gray-600 dark:text-gray-300">Tracks</div>
                 </div>
 
                 <div className="rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-emerald-100 p-4 text-center dark:border-emerald-800/30 dark:from-emerald-900/20 dark:to-emerald-800/20">
                   <div className="mb-2 flex items-center justify-center">
-                    <TrendingUp
-                      size={20}
-                      className="text-emerald-600 dark:text-emerald-400"
-                    />
+                    <TrendingUp size={20} className="text-emerald-600 dark:text-emerald-400" />
                   </div>
                   <div className="mb-1 text-2xl font-bold text-gray-900 dark:text-white">
                     {formatNumber(album.totalStreams)}
@@ -119,10 +107,7 @@ const UpcAlbumCard = ({ album, index }: UpcAlbumCardProps) => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-blue-100 p-4 text-center dark:border-blue-800/30 dark:from-blue-900/20 dark:to-blue-800/20">
                   <div className="mb-2 flex items-center justify-center">
-                    <DollarSign
-                      size={20}
-                      className="text-blue-600 dark:text-blue-400"
-                    />
+                    <DollarSign size={20} className="text-blue-600 dark:text-blue-400" />
                   </div>
                   <div className="mb-1 text-lg font-bold text-gray-900 dark:text-white">
                     {formatCurrency(album.totalGrossIncome)}
@@ -134,10 +119,7 @@ const UpcAlbumCard = ({ album, index }: UpcAlbumCardProps) => {
 
                 <div className="rounded-2xl border border-purple-100 bg-gradient-to-br from-purple-50 to-purple-100 p-4 text-center dark:border-purple-800/30 dark:from-purple-900/20 dark:to-purple-800/20">
                   <div className="mb-2 flex items-center justify-center">
-                    <DollarSign
-                      size={20}
-                      className="text-purple-600 dark:text-purple-400"
-                    />
+                    <DollarSign size={20} className="text-purple-600 dark:text-purple-400" />
                   </div>
                   <div className="mb-1 text-lg font-bold text-gray-900 dark:text-white">
                     {formatCurrency(album.totalNetIncome)}

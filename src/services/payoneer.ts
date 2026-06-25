@@ -1,9 +1,5 @@
 import { apiClient } from "@/infrastructure/http/axiosClient";
-import type {
-  PaymentRequest,
-  PaymentHistory,
-  PayoneerAccount,
-} from "../models/user";
+import type { PaymentRequest, PaymentHistory, PayoneerAccount } from "../models/user";
 
 export interface PayoneerPaymentRequest {
   toUserEmail: string;
@@ -38,21 +34,14 @@ export const PayoneerService = {
   },
 
   /** Envía un pago a otro usuario de Payoneer */
-  sendPayment: async (
-    paymentData: PayoneerPaymentRequest,
-  ): Promise<PaymentRequest> => {
+  sendPayment: async (paymentData: PayoneerPaymentRequest): Promise<PaymentRequest> => {
     const response = await apiClient.post(`${BASE}/send-payment`, paymentData);
     return response.data.payment;
   },
 
   /** Solicita un pago a otro usuario */
-  requestPayment: async (
-    requestData: PayoneerPaymentRequest,
-  ): Promise<PaymentRequest> => {
-    const response = await apiClient.post(
-      `${BASE}/request-payment`,
-      requestData,
-    );
+  requestPayment: async (requestData: PayoneerPaymentRequest): Promise<PaymentRequest> => {
+    const response = await apiClient.post(`${BASE}/request-payment`, requestData);
     return response.data.request;
   },
 
@@ -78,10 +67,7 @@ export const PayoneerService = {
 
   /** Aprueba una solicitud de pago */
   approvePaymentRequest: async (requestId: string): Promise<PaymentRequest> => {
-    const response = await apiClient.post(
-      `${BASE}/approve-request/${requestId}`,
-      {},
-    );
+    const response = await apiClient.post(`${BASE}/approve-request/${requestId}`, {});
     return response.data.payment;
   },
 

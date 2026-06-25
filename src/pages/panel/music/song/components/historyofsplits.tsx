@@ -30,8 +30,7 @@ const formatDateTime = (dateValue?: string) => {
   return `${formatDate(dateValue)} ${formatTime(dateValue)}`;
 };
 
-const getSplitDate = (split: SplitHistoryItem) =>
-  split.updatedAt || split.createdAt;
+const getSplitDate = (split: SplitHistoryItem) => split.updatedAt || split.createdAt;
 
 const getActionLabel = (action?: string) => {
   const actions: Record<string, string> = {
@@ -95,8 +94,7 @@ const Historyofsplits = ({ songId }: HistoryOfSplitsProps) => {
     if (!selectedSplitKey) return null;
     return (
       allSplits.find(
-        (split, index) =>
-          (split._id || `split-history-${index}`) === selectedSplitKey,
+        (split, index) => (split._id || `split-history-${index}`) === selectedSplitKey,
       ) || null
     );
   }, [allSplits, selectedSplitKey]);
@@ -140,9 +138,7 @@ const Historyofsplits = ({ songId }: HistoryOfSplitsProps) => {
                       className="flex w-full items-center justify-between rounded-lg border border-gray-200 px-4 py-3 text-sm transition-colors hover:bg-gray-50"
                     >
                       <div className="flex items-center gap-3">
-                        <span className="font-medium text-gray-700">
-                          {formatDate(splitDate)}
-                        </span>
+                        <span className="font-medium text-gray-700">{formatDate(splitDate)}</span>
                         {splitData.action && (
                           <span
                             className={`rounded-full px-2 py-0.5 text-xs font-medium ${getActionColor(splitData.action)}`}
@@ -151,9 +147,7 @@ const Historyofsplits = ({ songId }: HistoryOfSplitsProps) => {
                           </span>
                         )}
                       </div>
-                      <span className="text-xs font-semibold text-orange-500">
-                        Ver detalle
-                      </span>
+                      <span className="text-xs font-semibold text-orange-500">Ver detalle</span>
                     </button>
                   );
                 })}
@@ -181,9 +175,7 @@ const Historyofsplits = ({ songId }: HistoryOfSplitsProps) => {
                 <p className="text-lg font-medium text-gray-900 dark:text-white">
                   {collaboratorName}
                 </p>
-                <p className="mt-0.5 text-[13px] text-gray-400">
-                  {collaboratorEmail}
-                </p>
+                <p className="mt-0.5 text-[13px] text-gray-400">{collaboratorEmail}</p>
               </div>
               <button
                 onClick={() => setSelectedSplitKey(null)}
@@ -242,9 +234,7 @@ const Historyofsplits = ({ songId }: HistoryOfSplitsProps) => {
                 {
                   label: "Versión",
                   value:
-                    selectedSplitData.version != null
-                      ? String(selectedSplitData.version)
-                      : "—",
+                    selectedSplitData.version != null ? String(selectedSplitData.version) : "—",
                 },
                 {
                   label: "Modificado por",
@@ -255,10 +245,7 @@ const Historyofsplits = ({ songId }: HistoryOfSplitsProps) => {
                   value: formatDateTime(selectedSplitData.updatedAt),
                 },
               ].map(({ label, value }) => (
-                <div
-                  key={label}
-                  className="flex items-center justify-between py-2.5"
-                >
+                <div key={label} className="flex items-center justify-between py-2.5">
                   <span className="text-gray-400">{label}</span>
                   <span className="max-w-[60%] text-right font-medium text-gray-900 dark:text-white">
                     {value}

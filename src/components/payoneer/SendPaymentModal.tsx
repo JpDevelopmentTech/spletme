@@ -8,14 +8,11 @@ interface SendPaymentModalProps {
   onClose: () => void;
 }
 
-const SendPaymentModal: React.FC<SendPaymentModalProps> = ({
-  isOpen,
-  onClose,
-}) => {
+const SendPaymentModal: React.FC<SendPaymentModalProps> = ({ isOpen, onClose }) => {
   const { sendPayment, findUser, loading, error, clearError } = usePayoneer();
-  const [step, setStep] = useState<
-    "find-user" | "payment-details" | "confirm" | "success"
-  >("find-user");
+  const [step, setStep] = useState<"find-user" | "payment-details" | "confirm" | "success">(
+    "find-user",
+  );
 
   // Form states
   const [email, setEmail] = useState("");
@@ -41,12 +38,7 @@ const SendPaymentModal: React.FC<SendPaymentModalProps> = ({
   const handleSendPayment = async () => {
     clearError();
     try {
-      const result = await sendPayment(
-        email,
-        parseFloat(amount),
-        currency,
-        description,
-      );
+      const result = await sendPayment(email, parseFloat(amount), currency, description);
       setPaymentResult(result);
       setStep("success");
     } catch (error) {
@@ -78,12 +70,9 @@ const SendPaymentModal: React.FC<SendPaymentModalProps> = ({
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
                 <User className="h-6 w-6 text-blue-600" />
               </div>
-              <h3 className="mb-2 text-lg font-semibold text-gray-900">
-                Buscar Usuario
-              </h3>
+              <h3 className="mb-2 text-lg font-semibold text-gray-900">Buscar Usuario</h3>
               <p className="text-sm text-gray-600">
-                Ingresa el email de Payoneer del usuario al que quieres enviar
-                dinero
+                Ingresa el email de Payoneer del usuario al que quieres enviar dinero
               </p>
             </div>
 
@@ -126,9 +115,7 @@ const SendPaymentModal: React.FC<SendPaymentModalProps> = ({
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
                 <CheckCircle className="h-6 w-6 text-green-600" />
               </div>
-              <h3 className="mb-2 text-lg font-semibold text-gray-900">
-                Usuario Encontrado
-              </h3>
+              <h3 className="mb-2 text-lg font-semibold text-gray-900">Usuario Encontrado</h3>
               <div className="rounded-lg bg-gray-50 p-3">
                 <p className="font-medium text-gray-900">{foundUser?.name}</p>
                 <p className="text-sm text-gray-600">{email}</p>
@@ -138,9 +125,7 @@ const SendPaymentModal: React.FC<SendPaymentModalProps> = ({
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
-                    Cantidad
-                  </label>
+                  <label className="mb-2 block text-sm font-medium text-gray-700">Cantidad</label>
                   <input
                     type="number"
                     value={amount}
@@ -152,9 +137,7 @@ const SendPaymentModal: React.FC<SendPaymentModalProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
-                    Moneda
-                  </label>
+                  <label className="mb-2 block text-sm font-medium text-gray-700">Moneda</label>
                   <select
                     value={currency}
                     onChange={(e) => setCurrency(e.target.value)}
@@ -168,9 +151,7 @@ const SendPaymentModal: React.FC<SendPaymentModalProps> = ({
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">
-                  Descripción
-                </label>
+                <label className="mb-2 block text-sm font-medium text-gray-700">Descripción</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -214,9 +195,7 @@ const SendPaymentModal: React.FC<SendPaymentModalProps> = ({
               <CheckCircle className="h-6 w-6 text-green-600" />
             </div>
             <div>
-              <h3 className="mb-2 text-lg font-semibold text-gray-900">
-                ¡Pago Enviado con Éxito!
-              </h3>
+              <h3 className="mb-2 text-lg font-semibold text-gray-900">¡Pago Enviado con Éxito!</h3>
               <p className="mb-4 text-sm text-gray-600">
                 Tu pago ha sido procesado y enviado a {foundUser?.name}
               </p>
@@ -233,9 +212,7 @@ const SendPaymentModal: React.FC<SendPaymentModalProps> = ({
                   <span className="font-medium">{foundUser?.name}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">
-                    ID de Transacción:
-                  </span>
+                  <span className="text-sm text-gray-600">ID de Transacción:</span>
                   <span className="font-mono text-xs">{paymentResult?.id}</span>
                 </div>
               </div>
@@ -275,13 +252,8 @@ const SendPaymentModal: React.FC<SendPaymentModalProps> = ({
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-200 p-6">
-              <h2 className="text-xl font-semibold text-gray-900">
-                Enviar Pago
-              </h2>
-              <button
-                onClick={handleClose}
-                className="rounded-lg p-2 hover:bg-gray-100"
-              >
+              <h2 className="text-xl font-semibold text-gray-900">Enviar Pago</h2>
+              <button onClick={handleClose} className="rounded-lg p-2 hover:bg-gray-100">
                 <X className="h-5 w-5 text-gray-400" />
               </button>
             </div>

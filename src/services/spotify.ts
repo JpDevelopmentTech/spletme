@@ -21,10 +21,7 @@ export const SpotifyService = {
         };
         const response = await axios.post(uri, data, { headers });
 
-        localStorage.setItem(
-          "access_token_spotify",
-          response.data.access_token,
-        );
+        localStorage.setItem("access_token_spotify", response.data.access_token);
         localStorage.setItem(
           "expire",
           JSON.stringify(Date.now() + response.data.expires_in * 1000),
@@ -38,8 +35,7 @@ export const SpotifyService = {
   getTopTracks: async (id = "4vofRTVBI4bh7P0HQGddgm") => {
     try {
       await SpotifyService.getAccessToken();
-      const uri =
-        "https://api.spotify.com/v1/artists/" + id + "/top-tracks?market=US";
+      const uri = "https://api.spotify.com/v1/artists/" + id + "/top-tracks?market=US";
       const headers = {
         Authorization: `Bearer ${localStorage.getItem("access_token_spotify")}`,
       };
@@ -95,8 +91,7 @@ export const SpotifyService = {
   getTopAlbums: async (id = "4vofRTVBI4bh7P0HQGddgm") => {
     try {
       await SpotifyService.getAccessToken();
-      const uri =
-        "https://api.spotify.com/v1/artists/" + id + "/albums?market=US";
+      const uri = "https://api.spotify.com/v1/artists/" + id + "/albums?market=US";
       const headers = {
         Authorization: `Bearer ${localStorage.getItem("access_token_spotify")}`,
       };

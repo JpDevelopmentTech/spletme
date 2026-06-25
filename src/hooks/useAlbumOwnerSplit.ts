@@ -3,10 +3,7 @@ import { songSplitsService } from "@/services/songSplits";
 import { useReleaseFiltersForSongs } from "@/hooks/useReleaseFiltersForSongs";
 import LocalStorageService from "@/services/localstorage";
 import type { Album } from "@/types";
-import type {
-  OwnerFormData,
-  CreationProgress,
-} from "@/types/album-owner-split.types";
+import type { OwnerFormData, CreationProgress } from "@/types/album-owner-split.types";
 
 const DEFAULT_FORM: OwnerFormData = {
   percentage: "",
@@ -33,15 +30,15 @@ export function useAlbumOwnerSplit(
   const [mounted, setMounted] = useState(false);
   const [progress, setProgress] = useState<CreationProgress | null>(null);
   const [showResults, setShowResults] = useState(false);
-  const [autoCloseCountdown, setAutoCloseCountdown] = useState<number | null>(
-    null,
-  );
+  const [autoCloseCountdown, setAutoCloseCountdown] = useState<number | null>(null);
 
   const currentUser = LocalStorageService.getItem("user");
 
   const songIds = (album?.tracks ?? []).map((t) => t._id);
-  const { countryOptions, platformOptions, isLoadingFilters } =
-    useReleaseFiltersForSongs(songIds, isOpen);
+  const { countryOptions, platformOptions, isLoadingFilters } = useReleaseFiltersForSongs(
+    songIds,
+    isOpen,
+  );
 
   useEffect(() => {
     setMounted(true);
@@ -63,10 +60,7 @@ export function useAlbumOwnerSplit(
       if (autoCloseCountdown === 0) closeWithReset();
       return;
     }
-    const timer = setTimeout(
-      () => setAutoCloseCountdown(autoCloseCountdown - 1),
-      1000,
-    );
+    const timer = setTimeout(() => setAutoCloseCountdown(autoCloseCountdown - 1), 1000);
     return () => clearTimeout(timer);
   }, [autoCloseCountdown]);
 
@@ -128,37 +122,27 @@ export function useAlbumOwnerSplit(
 
     try {
       for (const track of album.tracks) {
-        setProgress((prev) =>
-          prev ? { ...prev, current: track.trackTitle } : null,
-        );
+        setProgress((prev) => (prev ? { ...prev, current: track.trackTitle } : null));
 
         try {
           await songSplitsService.createOwnerSplit({
             songId: track._id,
             ...payloadBase,
           });
-          setProgress((prev) =>
-            prev ? { ...prev, completed: prev.completed + 1 } : null,
-          );
+          setProgress((prev) => (prev ? { ...prev, completed: prev.completed + 1 } : null));
         } catch (err: unknown) {
           const axiosErr = err as {
             response?: { data?: { message?: string } };
             message?: string;
           };
-          const msg =
-            axiosErr.response?.data?.message ??
-            axiosErr.message ??
-            "Error desconocido";
+          const msg = axiosErr.response?.data?.message ?? axiosErr.message ?? "Error desconocido";
           localFailed++;
           setProgress((prev) =>
             prev
               ? {
                   ...prev,
                   failed: prev.failed + 1,
-                  errors: [
-                    ...prev.errors,
-                    { songTitle: track.trackTitle, error: msg },
-                  ],
+                  errors: [...prev.errors, { songTitle: track.trackTitle, error: msg }],
                 }
               : null,
           );
@@ -168,8 +152,7 @@ export function useAlbumOwnerSplit(
       setShowResults(true);
       if (localFailed === 0) setAutoCloseCountdown(3);
     } catch (err: unknown) {
-      const msg =
-        err instanceof Error ? err.message : "No se pudieron crear los splits";
+      const msg = err instanceof Error ? err.message : "No se pudieron crear los splits";
       alert(`Error: ${msg}`);
     } finally {
       setIsLoading(false);

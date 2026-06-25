@@ -12,9 +12,7 @@ export default function StreamRevenueChart({ songs, loading }: Props) {
     return (
       <div className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-6">
         <div>
-          <h2 className="text-sm font-semibold text-[#111827]">
-            Stream × Revenue
-          </h2>
+          <h2 className="text-sm font-semibold text-[#111827]">Stream × Revenue</h2>
           <p className="mt-0.5 text-xs text-[#6B7280]">
             Correlación de streams vs ingresos por canción
           </p>
@@ -75,8 +73,7 @@ export default function StreamRevenueChart({ songs, loading }: Props) {
       },
       labels: {
         style: { colors: "#9CA3AF", fontSize: "10px" },
-        formatter: (v: number) =>
-          v >= 1_000 ? `$${(v / 1_000).toFixed(0)}K` : `$${v}`,
+        formatter: (v: number) => (v >= 1_000 ? `$${(v / 1_000).toFixed(0)}K` : `$${v}`),
       },
     },
     grid: { borderColor: "#F3F4F6" },
@@ -90,8 +87,9 @@ export default function StreamRevenueChart({ songs, loading }: Props) {
         dataPointIndex: number;
         w: unknown;
       }) => {
-        const point = (w as { config: { series: typeof series } }).config
-          .series[seriesIndex].data[dataPointIndex] as {
+        const point = (w as { config: { series: typeof series } }).config.series[seriesIndex].data[
+          dataPointIndex
+        ] as {
           x: number;
           y: number;
           label: string;
@@ -108,19 +106,12 @@ export default function StreamRevenueChart({ songs, loading }: Props) {
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-6">
       <div>
-        <h2 className="text-sm font-semibold text-[#111827]">
-          Stream × Revenue
-        </h2>
+        <h2 className="text-sm font-semibold text-[#111827]">Stream × Revenue</h2>
         <p className="mt-0.5 text-xs text-[#6B7280]">
           Correlación de streams vs ingresos por canción
         </p>
       </div>
-      <ReactApexChart
-        options={options}
-        series={series}
-        type="scatter"
-        height={240}
-      />
+      <ReactApexChart options={options} series={series} type="scatter" height={240} />
     </div>
   );
 }

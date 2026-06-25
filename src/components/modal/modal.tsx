@@ -19,12 +19,7 @@ const ModalComponent = ({
         {textButton}
       </Button>
 
-      <Modal
-        size="6xl"
-        dismissible
-        show={openModal}
-        onClose={() => setOpenModal(false)}
-      >
+      <Modal size="6xl" dismissible show={openModal} onClose={() => setOpenModal(false)}>
         <Modal.Header>{title}</Modal.Header>
         <Modal.Body>
           <div className="space-y-6">{children}</div>

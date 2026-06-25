@@ -63,10 +63,7 @@ class WalletService {
     amount: number;
   }): Promise<WalletResponse> {
     try {
-      const response = await apiClient.post(
-        `${this.BASE}/pay-collaborator`,
-        data,
-      );
+      const response = await apiClient.post(`${this.BASE}/pay-collaborator`, data);
       return response.data;
     } catch (error) {
       return {
@@ -79,9 +76,7 @@ class WalletService {
   /** Obtiene los métodos de retiro disponibles */
   async getPayoutMethodTypes(): Promise<WalletResponse> {
     try {
-      const response = await apiClient.get(
-        `${this.BASE}/get-payout-method-types`,
-      );
+      const response = await apiClient.get(`${this.BASE}/get-payout-method-types`);
       return response.data;
     } catch (error) {
       return {
@@ -92,16 +87,11 @@ class WalletService {
   }
 
   /** Obtiene los campos requeridos para un método de retiro */
-  async getRequiredFieldsForPayoutMethod(
-    payoutMethodType: string,
-  ): Promise<WalletResponse> {
+  async getRequiredFieldsForPayoutMethod(payoutMethodType: string): Promise<WalletResponse> {
     try {
-      const response = await apiClient.get(
-        `${this.BASE}/get-required-fields-for-payout-method`,
-        {
-          params: { payoutMethodType },
-        },
-      );
+      const response = await apiClient.get(`${this.BASE}/get-required-fields-for-payout-method`, {
+        params: { payoutMethodType },
+      });
       return response.data;
     } catch (error) {
       return {
@@ -118,10 +108,7 @@ class WalletService {
     beneficiaryDetails: Record<string, unknown>;
   }): Promise<WalletResponse> {
     try {
-      const response = await apiClient.post(
-        `${this.BASE}/request-withdrawal`,
-        data,
-      );
+      const response = await apiClient.post(`${this.BASE}/request-withdrawal`, data);
       return response.data;
     } catch (error) {
       return {
@@ -132,16 +119,9 @@ class WalletService {
   }
 
   /** Crea un depósito */
-  async createDeposit(data: {
-    amount: number;
-    currency: string;
-    country: string;
-  }) {
+  async createDeposit(data: { amount: number; currency: string; country: string }) {
     try {
-      const response = await apiClient.post(
-        `${this.BASE}/create-deposit`,
-        data,
-      );
+      const response = await apiClient.post(`${this.BASE}/create-deposit`, data);
       return response.data;
     } catch {
       return { error: true, message: "Error creating deposit" };
@@ -167,10 +147,7 @@ class WalletService {
     note?: string;
   }): Promise<WalletResponse> {
     try {
-      const response = await apiClient.post(
-        `${this.BASE}/send-funds-to-user`,
-        data,
-      );
+      const response = await apiClient.post(`${this.BASE}/send-funds-to-user`, data);
       return response.data;
     } catch (error) {
       return {

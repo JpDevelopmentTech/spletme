@@ -67,9 +67,7 @@ export default function SelectUser({ onClose, onSelected }: SelectUserProps) {
       if (onSelected) onSelected(selected);
       if (onClose) onClose();
     } catch (e) {
-      setLoginError(
-        "No se pudo iniciar sesión con esa subcuenta. Verifica la contraseña.",
-      );
+      setLoginError("No se pudo iniciar sesión con esa subcuenta. Verifica la contraseña.");
     } finally {
       setSubmitting(false);
     }
@@ -79,9 +77,7 @@ export default function SelectUser({ onClose, onSelected }: SelectUserProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-gray-800">
         <div className="flex items-center justify-between border-b border-gray-200 bg-gradient-to-r from-indigo-500 to-indigo-600 p-5 dark:border-gray-700">
-          <h2 className="text-lg font-bold text-white md:text-xl">
-            Selecciona una subcuenta
-          </h2>
+          <h2 className="text-lg font-bold text-white md:text-xl">Selecciona una subcuenta</h2>
           <button
             aria-label="Cerrar"
             className="text-white/90 transition hover:text-white"
@@ -93,8 +89,7 @@ export default function SelectUser({ onClose, onSelected }: SelectUserProps) {
 
         <div className="p-5">
           <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
-            Elige con qué subcuenta quieres trabajar. Puedes cambiarla más
-            tarde.
+            Elige con qué subcuenta quieres trabajar. Puedes cambiarla más tarde.
           </p>
 
           {loading && (
@@ -105,9 +100,7 @@ export default function SelectUser({ onClose, onSelected }: SelectUserProps) {
 
           {!loading && error && (
             <div className="flex flex-col items-center gap-3 py-8">
-              <span className="text-sm text-red-600 dark:text-red-400">
-                {error}
-              </span>
+              <span className="text-sm text-red-600 dark:text-red-400">{error}</span>
               <button
                 className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm text-white hover:bg-indigo-500"
                 onClick={refetch}
@@ -161,9 +154,7 @@ export default function SelectUser({ onClose, onSelected }: SelectUserProps) {
                                 : "border-gray-300 dark:border-gray-600")
                             }
                           >
-                            {isSelected && (
-                              <div className="h-2.5 w-2.5 rounded-full bg-white" />
-                            )}
+                            {isSelected && <div className="h-2.5 w-2.5 rounded-full bg-white" />}
                           </div>
                         </div>
                       </div>
@@ -185,9 +176,7 @@ export default function SelectUser({ onClose, onSelected }: SelectUserProps) {
                     onChange={(e) => setPassword(e.target.value)}
                   />
                   {loginError && (
-                    <span className="text-xs text-red-600 dark:text-red-400">
-                      {loginError}
-                    </span>
+                    <span className="text-xs text-red-600 dark:text-red-400">{loginError}</span>
                   )}
                 </div>
               )}

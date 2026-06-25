@@ -1,14 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  X,
-  Music,
-  Search,
-  Mail,
-  Hash,
-  UserPlus,
-  ChevronRight,
-  Loader2,
-} from "lucide-react";
+import { X, Music, Search, Mail, Hash, UserPlus, ChevronRight, Loader2 } from "lucide-react";
 import SongService from "@/services/songs";
 import CollaboratorService from "@/services/collaborator";
 import LocalStorageService from "@/services/localstorage";
@@ -29,13 +20,7 @@ interface AddCollaboratorSidebarProps {
 
 // ── Invite modal (appears on top of the sidebar) ──────────────────────────────
 
-function InviteModal({
-  song,
-  onClose,
-}: {
-  song: SongOption;
-  onClose: () => void;
-}) {
+function InviteModal({ song, onClose }: { song: SongOption; onClose: () => void }) {
   const [method, setMethod] = useState<"email" | "code">("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -51,9 +36,7 @@ function InviteModal({
 
     const res = await SongService.addCollaborator({
       songId: song.id,
-      ...(method === "email"
-        ? { collaboratorEmail: email }
-        : { collaboratorId: code }),
+      ...(method === "email" ? { collaboratorEmail: email } : { collaboratorId: code }),
     });
 
     setSending(false);
@@ -84,9 +67,7 @@ function InviteModal({
               <Music className="h-3.5 w-3.5 text-white" />
             </div>
             <div className="min-w-0">
-              <p className="max-w-[240px] truncate text-xs font-bold text-white">
-                {song.title}
-              </p>
+              <p className="max-w-[240px] truncate text-xs font-bold text-white">{song.title}</p>
               <p className="truncate text-[10px] text-gray-400">
                 {song.artist} · {song.isrc}
               </p>
@@ -198,10 +179,7 @@ function InviteModal({
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 
-export function AddCollaboratorSidebar({
-  isOpen,
-  onClose,
-}: AddCollaboratorSidebarProps) {
+export function AddCollaboratorSidebar({ isOpen, onClose }: AddCollaboratorSidebarProps) {
   const [songs, setSongs] = useState<SongOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
@@ -282,9 +260,7 @@ export function AddCollaboratorSidebar({
   return (
     <>
       {/* Overlay behind sidebar */}
-      {isOpen && (
-        <div className="fixed inset-0 z-40 bg-black/30" onClick={handleClose} />
-      )}
+      {isOpen && <div className="fixed inset-0 z-40 bg-black/30" onClick={handleClose} />}
 
       {/* Sidebar panel */}
       <div
@@ -323,8 +299,7 @@ export function AddCollaboratorSidebar({
           </div>
           <p className="mt-2 text-[11px] text-gray-400">
             {isLabel ? "Canciones donde eres label" : "Todas tus canciones"}
-            {!loading &&
-              ` · ${filtered.length} resultado${filtered.length !== 1 ? "s" : ""}`}
+            {!loading && ` · ${filtered.length} resultado${filtered.length !== 1 ? "s" : ""}`}
           </p>
         </div>
 
@@ -339,9 +314,7 @@ export function AddCollaboratorSidebar({
             <div className="flex h-full flex-col items-center justify-center gap-2 text-gray-400">
               <Music className="h-8 w-8" />
               <p className="text-sm">
-                {search
-                  ? "Sin resultados para tu búsqueda"
-                  : "No hay canciones disponibles"}
+                {search ? "Sin resultados para tu búsqueda" : "No hay canciones disponibles"}
               </p>
             </div>
           ) : (
@@ -370,9 +343,7 @@ export function AddCollaboratorSidebar({
       </div>
 
       {/* Invitation modal — opens over the sidebar */}
-      {inviteSong && (
-        <InviteModal song={inviteSong} onClose={() => setInviteSong(null)} />
-      )}
+      {inviteSong && <InviteModal song={inviteSong} onClose={() => setInviteSong(null)} />}
     </>
   );
 }

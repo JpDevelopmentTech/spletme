@@ -14,14 +14,7 @@ const Button = ({
 }: {
   onClick: () => void;
   children: React.ReactNode;
-  type:
-    | "primary"
-    | "secondary"
-    | "tertiary"
-    | "quaternary"
-    | "quinary"
-    | "senary"
-    | "septenary";
+  type: "primary" | "secondary" | "tertiary" | "quaternary" | "quinary" | "senary" | "septenary";
 }) => {
   return (
     <button

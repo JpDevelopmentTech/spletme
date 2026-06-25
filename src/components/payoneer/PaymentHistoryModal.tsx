@@ -17,10 +17,7 @@ interface PaymentHistoryModalProps {
   onClose: () => void;
 }
 
-const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({
-  isOpen,
-  onClose,
-}) => {
+const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({ isOpen, onClose }) => {
   const { paymentHistory, loading } = usePayoneer();
   const [filter, setFilter] = useState<"all" | "sent" | "received">("all");
 
@@ -62,9 +59,7 @@ const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({
   };
 
   const getTypeColor = (type: string) => {
-    return type === "sent"
-      ? "text-red-600 bg-red-100"
-      : "text-green-600 bg-green-100";
+    return type === "sent" ? "text-red-600 bg-red-100" : "text-green-600 bg-green-100";
   };
 
   return (
@@ -92,18 +87,11 @@ const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({
                   <History className="h-5 w-5 text-purple-600" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-900">
-                    Historial de Pagos
-                  </h2>
-                  <p className="text-sm text-gray-600">
-                    Todas tus transacciones de Payoneer
-                  </p>
+                  <h2 className="text-xl font-semibold text-gray-900">Historial de Pagos</h2>
+                  <p className="text-sm text-gray-600">Todas tus transacciones de Payoneer</p>
                 </div>
               </div>
-              <button
-                onClick={onClose}
-                className="rounded-lg p-2 hover:bg-gray-100"
-              >
+              <button onClick={onClose} className="rounded-lg p-2 hover:bg-gray-100">
                 <X className="h-5 w-5 text-gray-400" />
               </button>
             </div>
@@ -155,9 +143,7 @@ const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({
                   <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
                     <History className="h-8 w-8 text-gray-400" />
                   </div>
-                  <h3 className="mb-2 text-lg font-medium text-gray-900">
-                    No hay transacciones
-                  </h3>
+                  <h3 className="mb-2 text-lg font-medium text-gray-900">No hay transacciones</h3>
                   <p className="text-gray-600">
                     {filter === "all"
                       ? "Aún no tienes transacciones en tu historial"
@@ -191,8 +177,7 @@ const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({
                             <div>
                               <div className="flex items-center space-x-2">
                                 <h4 className="font-medium text-gray-900">
-                                  ${payment.amount.toFixed(2)}{" "}
-                                  {payment.currency}
+                                  ${payment.amount.toFixed(2)} {payment.currency}
                                 </h4>
                                 <span
                                   className={`rounded-full px-2 py-1 text-xs font-medium ${statusClasses}`}
@@ -201,22 +186,14 @@ const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({
                                   {payment.status}
                                 </span>
                               </div>
-                              <p className="mt-1 text-sm text-gray-600">
-                                {payment.description}
-                              </p>
+                              <p className="mt-1 text-sm text-gray-600">{payment.description}</p>
                               <div className="mt-2 flex items-center space-x-4">
                                 <div className="flex items-center space-x-1 text-xs text-gray-500">
                                   <Calendar className="h-3 w-3" />
-                                  <span>
-                                    {new Date(
-                                      payment.createdAt,
-                                    ).toLocaleDateString()}
-                                  </span>
+                                  <span>{new Date(payment.createdAt).toLocaleDateString()}</span>
                                 </div>
                                 <div className="flex items-center space-x-1 text-xs text-gray-500">
-                                  <span>
-                                    ID: {payment.payoneerTransactionId}
-                                  </span>
+                                  <span>ID: {payment.payoneerTransactionId}</span>
                                 </div>
                               </div>
                             </div>
@@ -225,13 +202,10 @@ const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({
                           <div className="text-right">
                             <p
                               className={`font-semibold ${
-                                payment.type === "received"
-                                  ? "text-green-600"
-                                  : "text-red-600"
+                                payment.type === "received" ? "text-green-600" : "text-red-600"
                               }`}
                             >
-                              {payment.type === "received" ? "+" : "-"}$
-                              {payment.amount.toFixed(2)}
+                              {payment.type === "received" ? "+" : "-"}${payment.amount.toFixed(2)}
                             </p>
                             <p className="mt-1 text-xs capitalize text-gray-500">
                               {payment.type === "sent" ? "Enviado" : "Recibido"}
@@ -251,18 +225,14 @@ const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
                     <p className="text-sm text-gray-600">Total Transacciones</p>
-                    <p className="text-lg font-semibold text-gray-900">
-                      {filteredHistory.length}
-                    </p>
+                    <p className="text-lg font-semibold text-gray-900">{filteredHistory.length}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Enviado</p>
                     <p className="text-lg font-semibold text-red-600">
                       $
                       {filteredHistory
-                        .filter(
-                          (p) => p.type === "sent" && p.status === "completed",
-                        )
+                        .filter((p) => p.type === "sent" && p.status === "completed")
                         .reduce((sum, p) => sum + p.amount, 0)
                         .toFixed(2)}
                     </p>
@@ -272,10 +242,7 @@ const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({
                     <p className="text-lg font-semibold text-green-600">
                       $
                       {filteredHistory
-                        .filter(
-                          (p) =>
-                            p.type === "received" && p.status === "completed",
-                        )
+                        .filter((p) => p.type === "received" && p.status === "completed")
                         .reduce((sum, p) => sum + p.amount, 0)
                         .toFixed(2)}
                     </p>

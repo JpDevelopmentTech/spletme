@@ -71,16 +71,9 @@ function getSongTitle(songId: RoyaltyPayment["songId"]) {
 }
 
 /** Devuelve el nombre del colaborador destinatario (poblado o id). */
-function getCollaboratorName(
-  collaboratorId: RoyaltyBreakdownItem["collaboratorId"],
-) {
+function getCollaboratorName(collaboratorId: RoyaltyBreakdownItem["collaboratorId"]) {
   if (collaboratorId && typeof collaboratorId === "object")
-    return (
-      collaboratorId.name ||
-      collaboratorId.username ||
-      collaboratorId.email ||
-      "Colaborador"
-    );
+    return collaboratorId.name || collaboratorId.username || collaboratorId.email || "Colaborador";
   return "Colaborador";
 }
 
@@ -118,9 +111,7 @@ export default function WalletPage() {
     const matchesSearch =
       !search ||
       title.includes(search.toLowerCase()) ||
-      (p.stripePaymentIntentId ?? "")
-        .toLowerCase()
-        .includes(search.toLowerCase());
+      (p.stripePaymentIntentId ?? "").toLowerCase().includes(search.toLowerCase());
     return matchesStatus && matchesSearch;
   });
 
@@ -164,9 +155,7 @@ export default function WalletPage() {
               <Wallet className="h-4 w-4 text-orange-400" />
             </div>
             <span className="text-xl font-bold text-gray-900">0.00</span>
-            <span className="text-xs text-gray-400">
-              No funds deposited yet
-            </span>
+            <span className="text-xs text-gray-400">No funds deposited yet</span>
           </div>
         ) : (
           accounts.map((acc) => (
@@ -205,9 +194,7 @@ export default function WalletPage() {
       <div className="flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white">
         {/* Table Header */}
         <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
-          <span className="text-[15px] font-bold text-gray-900">
-            Transaction History
-          </span>
+          <span className="text-[15px] font-bold text-gray-900">Transaction History</span>
           <div className="flex items-center gap-2">
             <div className="flex w-48 items-center gap-2 rounded-lg border border-gray-200 bg-[#F7F8FA] px-3 py-2">
               <Search className="h-3.5 w-3.5 flex-shrink-0 text-gray-400" />
@@ -267,24 +254,17 @@ export default function WalletPage() {
             return (
               <div
                 key={p._id}
-                className={
-                  idx < paginated.length - 1 ? "border-b border-gray-50" : ""
-                }
+                className={idx < paginated.length - 1 ? "border-b border-gray-50" : ""}
               >
                 <div
                   onClick={() => setExpandedId(isOpen ? null : p._id)}
                   className="grid cursor-pointer grid-cols-[120px_1fr_220px_140px_120px] items-center gap-0 px-5 py-3.5 transition-colors hover:bg-gray-50"
                 >
-                  <span className="text-xs text-gray-500">
-                    {formatDate(p.createdAt)}
-                  </span>
+                  <span className="text-xs text-gray-500">{formatDate(p.createdAt)}</span>
                   <span className="truncate pr-4 text-xs font-medium text-gray-700">
                     {getSongTitle(p.songId)}
                   </span>
-                  <span
-                    className="truncate pr-4 text-xs text-gray-500"
-                    title={ref}
-                  >
+                  <span className="truncate pr-4 text-xs text-gray-500" title={ref}>
                     {ref}
                   </span>
                   <div className="flex items-center">
@@ -318,10 +298,7 @@ export default function WalletPage() {
                     <div className="mt-2 flex flex-col gap-1.5">
                       {recipients.length > 0 ? (
                         recipients.map((b, i) => (
-                          <div
-                            key={i}
-                            className="flex items-center justify-between text-xs"
-                          >
+                          <div key={i} className="flex items-center justify-between text-xs">
                             <span className="font-medium text-gray-700">
                               {getCollaboratorName(b.collaboratorId)}
                             </span>
@@ -334,9 +311,7 @@ export default function WalletPage() {
                           </div>
                         ))
                       ) : (
-                        <span className="text-xs text-gray-400">
-                          Sin desglose disponible.
-                        </span>
+                        <span className="text-xs text-gray-400">Sin desglose disponible.</span>
                       )}
                     </div>
                   </div>
@@ -362,9 +337,7 @@ export default function WalletPage() {
                 <ChevronLeft className="h-3.5 w-3.5" />
               </button>
               {Array.from({ length: totalPages }, (_, i) => i + 1)
-                .filter(
-                  (p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1,
-                )
+                .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
                 .map((p, i, arr) => (
                   <span key={p} className="flex items-center gap-1.5">
                     {i > 0 && arr[i - 1] !== p - 1 && (

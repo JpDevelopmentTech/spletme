@@ -16,14 +16,7 @@ interface InfoRowProps {
   hasBorder?: boolean;
 }
 
-function InfoRow({
-  icon,
-  label,
-  value,
-  accent,
-  action,
-  hasBorder = true,
-}: InfoRowProps) {
+function InfoRow({ icon, label, value, accent, action, hasBorder = true }: InfoRowProps) {
   return (
     <div
       className="flex items-center gap-3 px-5"
@@ -62,11 +55,7 @@ function InfoRow({
 /**
  * Tarjeta de información de cuenta: ID, nombre, email y username.
  */
-export function ProfileInfoCard({
-  userData,
-  copied,
-  onCopyId,
-}: ProfileInfoCardProps) {
+export function ProfileInfoCard({ userData, copied, onCopyId }: ProfileInfoCardProps) {
   return (
     <div className="overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white">
       <InfoRow
@@ -85,11 +74,7 @@ export function ProfileInfoCard({
               backgroundColor: "#F97316",
             }}
           >
-            {copied ? (
-              <Check size={14} color="#FFFFFF" />
-            ) : (
-              <Copy size={14} color="#FFFFFF" />
-            )}
+            {copied ? <Check size={14} color="#FFFFFF" /> : <Copy size={14} color="#FFFFFF" />}
           </button>
         }
       />

@@ -101,17 +101,9 @@ export default function Income() {
       className="col-span-6 rounded-2xl p-6 shadow-lg duration-200 hover:scale-[1.01]"
     >
       <div className="flex flex-col justify-between">
-        <Title
-          title="Ingresos"
-          subtitle="Mide el comportamiento por distribuidor"
-        />
+        <Title title="Ingresos" subtitle="Mide el comportamiento por distribuidor" />
         <div>
-          <ReactApexChart
-            series={series}
-            type="bar"
-            options={options}
-            height={350}
-          />
+          <ReactApexChart series={series} type="bar" options={options} height={350} />
         </div>
       </div>
     </div>

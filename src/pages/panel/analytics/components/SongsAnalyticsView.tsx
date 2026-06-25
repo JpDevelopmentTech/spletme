@@ -12,9 +12,7 @@ interface Props {
 }
 
 export default function SongsAnalyticsView({ filters }: Props) {
-  const [result, setResult] = useState<PaginatedResult<AnalyticsSong> | null>(
-    null,
-  );
+  const [result, setResult] = useState<PaginatedResult<AnalyticsSong> | null>(null);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
@@ -36,9 +34,7 @@ export default function SongsAnalyticsView({ filters }: Props) {
       <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
         <div className="flex items-center gap-2.5">
           <Music className="h-4 w-4 text-[#F97316]" />
-          <span className="text-sm font-semibold text-[#111827]">
-            Canciones en Analytics
-          </span>
+          <span className="text-sm font-semibold text-[#111827]">Canciones en Analytics</span>
           {result && (
             <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[11px] font-bold text-[#6B7280]">
               {result.total}

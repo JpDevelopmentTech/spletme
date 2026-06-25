@@ -35,9 +35,7 @@ export default function EditLabelModal({
   onDelete,
 }: EditLabelModalProps) {
   const [name, setName] = useState(currentName);
-  const [selectedLabels, setSelectedLabels] = useState<string[]>(
-    currentArtisticLabels,
-  );
+  const [selectedLabels, setSelectedLabels] = useState<string[]>(currentArtisticLabels);
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
@@ -58,9 +56,7 @@ export default function EditLabelModal({
   }, [isOpen, currentName, currentArtisticLabels]);
 
   const filteredAvailableLabels = availableLabels.filter((label) =>
-    (label.label || "Sin Label")
-      .toLowerCase()
-      .includes(searchQuery.trim().toLowerCase()),
+    (label.label || "Sin Label").toLowerCase().includes(searchQuery.trim().toLowerCase()),
   );
 
   const toggleLabel = (label: string) => {
@@ -83,8 +79,7 @@ export default function EditLabelModal({
     // Verificar si hay cambios
     const nameChanged = name.trim() !== currentName;
     const labelsChanged =
-      JSON.stringify(selectedLabels.sort()) !==
-      JSON.stringify(currentArtisticLabels.sort());
+      JSON.stringify(selectedLabels.sort()) !== JSON.stringify(currentArtisticLabels.sort());
 
     if (!nameChanged && !labelsChanged) {
       setError("No hay cambios para guardar");
@@ -243,8 +238,8 @@ export default function EditLabelModal({
                       ¿Eliminar Label?
                     </h3>
                     <p className="mb-6 text-gray-600 dark:text-gray-400">
-                      Esta acción no se puede deshacer. El label "{currentName}"
-                      será eliminado permanentemente.
+                      Esta acción no se puede deshacer. El label "{currentName}" será eliminado
+                      permanentemente.
                     </p>
                     <div className="flex items-center justify-center gap-3">
                       <button
@@ -389,25 +384,19 @@ export default function EditLabelModal({
                             <p className="text-2xl font-bold text-gray-900 dark:text-white">
                               {selectedStats.songs}
                             </p>
-                            <p className="text-xs text-gray-600 dark:text-gray-400">
-                              Canciones
-                            </p>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">Canciones</p>
                           </div>
                           <div>
                             <p className="text-2xl font-bold text-gray-900 dark:text-white">
                               {selectedStats.streams.toLocaleString()}
                             </p>
-                            <p className="text-xs text-gray-600 dark:text-gray-400">
-                              Streams
-                            </p>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">Streams</p>
                           </div>
                           <div>
                             <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                               ${selectedStats.income.toFixed(2)}
                             </p>
-                            <p className="text-xs text-gray-600 dark:text-gray-400">
-                              Ingresos
-                            </p>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">Ingresos</p>
                           </div>
                         </div>
                       </motion.div>
@@ -421,9 +410,7 @@ export default function EditLabelModal({
                         className="mt-4 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20"
                       >
                         <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600 dark:text-red-400" />
-                        <p className="text-sm text-red-600 dark:text-red-400">
-                          {error}
-                        </p>
+                        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
                       </motion.div>
                     )}
                   </>
@@ -452,9 +439,7 @@ export default function EditLabelModal({
                     </button>
                     <button
                       onClick={handleSubmit}
-                      disabled={
-                        loading || !name.trim() || selectedLabels.length === 0
-                      }
+                      disabled={loading || !name.trim() || selectedLabels.length === 0}
                       className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-2.5 text-white shadow-md transition-colors hover:from-amber-600 hover:to-orange-600 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {loading ? (

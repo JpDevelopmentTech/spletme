@@ -9,11 +9,11 @@ export const selectStyles = {
   menuPortal: (base: Record<string, unknown>) => ({ ...base, zIndex: 10000 }),
   control: (base: Record<string, unknown>) => ({
     ...base,
-    border: "1px solid #e5e7eb",
-    borderRadius: "8px",
-    padding: "2px",
-    boxShadow: "none",
-    backgroundColor: "white",
+    "border": "1px solid #e5e7eb",
+    "borderRadius": "8px",
+    "padding": "2px",
+    "boxShadow": "none",
+    "backgroundColor": "white",
     "&:hover": { border: "1px solid #F97316" },
     "&:focus-within": { border: "1px solid #F97316" },
   }),
@@ -39,7 +39,7 @@ export const selectStyles = {
   }),
   multiValueRemove: (base: Record<string, unknown>) => ({
     ...base,
-    color: "#c2410c",
+    "color": "#c2410c",
     "&:hover": { backgroundColor: "#F97316", color: "white" },
   }),
   placeholder: (base: Record<string, unknown>) => ({
@@ -53,10 +53,10 @@ export const amberSelectStyles = {
   menuPortal: (base: Record<string, unknown>) => ({ ...base, zIndex: 10000 }),
   control: (base: Record<string, unknown>) => ({
     ...base,
-    border: "1px solid #e5e7eb",
-    borderRadius: "12px",
-    padding: "4px",
-    boxShadow: "none",
+    "border": "1px solid #e5e7eb",
+    "borderRadius": "12px",
+    "padding": "4px",
+    "boxShadow": "none",
     "&:hover": { border: "1px solid #f59e0b" },
     "&:focus-within": {
       border: "1px solid #f59e0b",
@@ -83,7 +83,7 @@ export const amberSelectStyles = {
   }),
   multiValueRemove: (base: Record<string, unknown>) => ({
     ...base,
-    color: "#92400e",
+    "color": "#92400e",
     "&:hover": { backgroundColor: "#f59e0b", color: "white" },
   }),
 };

@@ -70,21 +70,13 @@ function getInitials(name: string) {
     .toUpperCase();
 }
 
-export default function Table({
-  collaborators,
-  songId,
-  song,
-  isOwner = false,
-}: TableProps) {
+export default function Table({ collaborators, songId, song, isOwner = false }: TableProps) {
   const [isSplitsModalOpen, setIsSplitsModalOpen] = useState(false);
-  const [isPaymentHistoryModalOpen, setIsPaymentHistoryModalOpen] =
-    useState(false);
-  const [isRegisterPaymentModalOpen, setIsRegisterPaymentModalOpen] =
-    useState(false);
+  const [isPaymentHistoryModalOpen, setIsPaymentHistoryModalOpen] = useState(false);
+  const [isRegisterPaymentModalOpen, setIsRegisterPaymentModalOpen] = useState(false);
   const [currentSplitId, setCurrentSplitId] = useState<string>("");
   const [isOwnerSplitModalOpen, setIsOwnerSplitModalOpen] = useState(false);
-  const [isPaymentConfirmationOpen, setIsPaymentConfirmationOpen] =
-    useState(false);
+  const [isPaymentConfirmationOpen, setIsPaymentConfirmationOpen] = useState(false);
   const [historyModal, setHistoryModal] = useState<{
     open: boolean;
     id: string;
@@ -110,9 +102,7 @@ export default function Table({
   ).toLowerCase();
   const isLabelUser = rawUserType.includes("label");
   const hasOwnerSplit = Boolean(
-    (song as any)?.ownerId?.split ||
-    (song as any)?.owner?.split ||
-    (song as any)?.ownerSplit,
+    (song as any)?.ownerId?.split || (song as any)?.owner?.split || (song as any)?.ownerSplit,
   );
 
   const addToast = (type: ValidationToastType, message: string) => {
@@ -128,10 +118,7 @@ export default function Table({
 
   const handleOpenSplitsModal = () => {
     if (isLabelUser && !hasOwnerSplit) {
-      addToast(
-        "error",
-        "Error al crear split: el owner de la cancion a un no crea su split",
-      );
+      addToast("error", "Error al crear split: el owner de la cancion a un no crea su split");
       return;
     }
     setIsSplitsModalOpen(true);
@@ -325,15 +312,11 @@ export default function Table({
           <tbody className="divide-y divide-gray-100">
             {collaborators.map((collaborator, idx) => {
               const hasActiveSplit =
-                collaborator.percentage &&
-                parseFloat(String(collaborator.percentage)) > 0;
+                collaborator.percentage && parseFloat(String(collaborator.percentage)) > 0;
               const avatarColor = AVATAR_COLORS[idx % AVATAR_COLORS.length];
 
               return (
-                <tr
-                  key={collaborator.id}
-                  className="transition-colors hover:bg-gray-50"
-                >
+                <tr key={collaborator.id} className="transition-colors hover:bg-gray-50">
                   {/* Name */}
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -352,17 +335,13 @@ export default function Table({
 
                   {/* Email */}
                   <td className="px-6 py-4">
-                    <span className="text-sm text-gray-500">
-                      {collaborator.email}
-                    </span>
+                    <span className="text-sm text-gray-500">{collaborator.email}</span>
                   </td>
 
                   {/* Split % */}
                   <td className="px-4 py-4">
                     <span className="text-sm font-semibold text-gray-900">
-                      {collaborator.percentage
-                        ? `${collaborator.percentage}%`
-                        : "—"}
+                      {collaborator.percentage ? `${collaborator.percentage}%` : "—"}
                     </span>
                   </td>
 
@@ -378,9 +357,7 @@ export default function Table({
                   {/* Pendiente */}
                   <td className="px-4 py-4">
                     <span className="text-sm font-semibold text-gray-900">
-                      {collaborator.amountToPay
-                        ? `$${collaborator.amountToPay}`
-                        : "—"}
+                      {collaborator.amountToPay ? `$${collaborator.amountToPay}` : "—"}
                     </span>
                   </td>
 
@@ -404,11 +381,7 @@ export default function Table({
                         onClick={() =>
                           setHistoryModal({
                             open: true,
-                            id: String(
-                              (collaborator as any)._id ||
-                                collaborator.id ||
-                                "",
-                            ),
+                            id: String((collaborator as any)._id || collaborator.id || ""),
                             name: collaborator.name || "",
                           })
                         }
@@ -422,11 +395,7 @@ export default function Table({
                         <button
                           onClick={() =>
                             openPaymentConfirmation(
-                              String(
-                                (collaborator as any)._id ||
-                                  collaborator.id ||
-                                  "",
-                              ),
+                              String((collaborator as any)._id || collaborator.id || ""),
                               collaborator.name,
                               collaborator.email,
                               Number(collaborator.amountToPay) || 0,
@@ -456,9 +425,7 @@ export default function Table({
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100">
             <Users className="h-6 w-6 text-gray-400" />
           </div>
-          <h3 className="mb-1 text-sm font-semibold text-gray-900">
-            Sin colaboradores
-          </h3>
+          <h3 className="mb-1 text-sm font-semibold text-gray-900">Sin colaboradores</h3>
           <p className="mb-5 max-w-xs text-sm text-gray-500">
             Agrega colaboradores para gestionar splits y pagos de esta canción.
           </p>

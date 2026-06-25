@@ -49,14 +49,9 @@ const toastStyles: Record<
   },
 };
 
-const ValidationPopupQueue = ({
-  toasts,
-  onDequeue,
-  onClearAll,
-}: ValidationPopupQueueProps) => {
+const ValidationPopupQueue = ({ toasts, onDequeue, onClearAll }: ValidationPopupQueueProps) => {
   const isOpen = toasts.length > 0;
-  const clearAll =
-    onClearAll ?? (() => toasts.forEach((toast) => onDequeue(toast.id)));
+  const clearAll = onClearAll ?? (() => toasts.forEach((toast) => onDequeue(toast.id)));
 
   return (
     <AnimatePresence>
@@ -85,8 +80,7 @@ const ValidationPopupQueue = ({
               {/* Header */}
               <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-4 dark:border-zinc-700">
                 <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">
-                  {toasts.length}{" "}
-                  {toasts.length === 1 ? "validación" : "validaciones"}
+                  {toasts.length} {toasts.length === 1 ? "validación" : "validaciones"}
                 </span>
                 <button
                   type="button"

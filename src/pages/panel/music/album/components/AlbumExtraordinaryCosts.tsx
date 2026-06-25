@@ -123,12 +123,8 @@ const StatPill = ({
 
   return (
     <div className="flex flex-col gap-0.5 rounded-xl bg-gray-50 p-3">
-      <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">
-        {label}
-      </p>
-      <p className={`text-base font-bold leading-tight ${valueClass}`}>
-        {value}
-      </p>
+      <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">{label}</p>
+      <p className={`text-base font-bold leading-tight ${valueClass}`}>{value}</p>
     </div>
   );
 };
@@ -177,17 +173,11 @@ const BalanceFace = ({
   }, [albumId, balanceKey]);
 
   const localIngresos = useMemo(
-    () =>
-      costs
-        .filter((c) => c.concept === "Ingreso")
-        .reduce((s, c) => s + toNum(c.amount), 0),
+    () => costs.filter((c) => c.concept === "Ingreso").reduce((s, c) => s + toNum(c.amount), 0),
     [costs],
   );
   const localEgresos = useMemo(
-    () =>
-      costs
-        .filter((c) => c.concept !== "Ingreso")
-        .reduce((s, c) => s + toNum(c.amount), 0),
+    () => costs.filter((c) => c.concept !== "Ingreso").reduce((s, c) => s + toNum(c.amount), 0),
     [costs],
   );
 
@@ -219,15 +209,11 @@ const BalanceFace = ({
     <div className="flex h-full flex-col gap-4 p-5">
       <div className="flex shrink-0 items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-base font-semibold text-gray-900">
-            Balance del Álbum
-          </span>
+          <span className="text-base font-semibold text-gray-900">Balance del Álbum</span>
           <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
             {totalEntries} mov.
           </span>
-          {loadingBalance && (
-            <RefreshCw className="h-3 w-3 animate-spin text-gray-400" />
-          )}
+          {loadingBalance && <RefreshCw className="h-3 w-3 animate-spin text-gray-400" />}
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -246,16 +232,13 @@ const BalanceFace = ({
 
       {balanceError && (
         <p className="shrink-0 rounded-lg bg-yellow-50 px-3 py-2 text-xs text-yellow-600">
-          No se pudo actualizar el balance desde el servidor. Mostrando datos
-          locales.
+          No se pudo actualizar el balance desde el servidor. Mostrando datos locales.
         </p>
       )}
 
       <div
         className={`flex shrink-0 items-center justify-between rounded-xl px-4 py-3 ${
-          isPositive
-            ? "border border-green-100 bg-green-50"
-            : "border border-red-100 bg-red-50"
+          isPositive ? "border border-green-100 bg-green-50" : "border border-red-100 bg-red-50"
         }`}
       >
         <div>
@@ -270,9 +253,7 @@ const BalanceFace = ({
         </div>
         <span
           className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-            isPositive
-              ? "bg-green-100 text-green-700"
-              : "bg-red-100 text-red-700"
+            isPositive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
           }`}
         >
           {isPositive ? "Superávit" : "Déficit"}
@@ -287,32 +268,22 @@ const BalanceFace = ({
               Ingresos
             </p>
           </div>
-          <p className="text-base font-bold text-gray-900">
-            ${fmt(totalIngresos)}
-          </p>
+          <p className="text-base font-bold text-gray-900">${fmt(totalIngresos)}</p>
           {/* {albumNetIncome > 0 && (
             <p className="text-[11px] text-blue-600 mt-0.5">Incl. ${fmt(albumNetIncome)} ganancia álbum</p>
           )} */}
           {pendingIngresos > 0 && (
-            <p className="mt-0.5 text-[11px] text-yellow-600">
-              ${fmt(pendingIngresos)} pendiente
-            </p>
+            <p className="mt-0.5 text-[11px] text-yellow-600">${fmt(pendingIngresos)} pendiente</p>
           )}
         </div>
         <div className="rounded-xl bg-gray-50 p-3">
           <div className="mb-2 flex items-center gap-1.5">
             <ArrowDownCircle className="h-3.5 w-3.5 text-orange-500" />
-            <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">
-              Egresos
-            </p>
+            <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Egresos</p>
           </div>
-          <p className="text-base font-bold text-gray-900">
-            ${fmt(totalEgresos)}
-          </p>
+          <p className="text-base font-bold text-gray-900">${fmt(totalEgresos)}</p>
           {pendingEgresos > 0 && (
-            <p className="mt-0.5 text-[11px] text-yellow-600">
-              ${fmt(pendingEgresos)} pendiente
-            </p>
+            <p className="mt-0.5 text-[11px] text-yellow-600">${fmt(pendingEgresos)} pendiente</p>
           )}
         </div>
       </div>
@@ -363,14 +334,8 @@ const BalanceFace = ({
 
 // ─── Main Component ─────────────────────────────────────────────────────────────
 
-const AlbumExtraordinaryCosts = ({
-  albumId,
-  tracks,
-}: AlbumExtraordinaryCostsProps) => {
-  const trackMap = useMemo(
-    () => new Map(tracks.map((t) => [t._id, t.trackTitle])),
-    [tracks],
-  );
+const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsProps) => {
+  const trackMap = useMemo(() => new Map(tracks.map((t) => [t._id, t.trackTitle])), [tracks]);
 
   const [isFlipped, setIsFlipped] = useState(false);
   const [expanded, setExpanded] = useState(true);
@@ -381,9 +346,7 @@ const AlbumExtraordinaryCosts = ({
   const [markingPaid, setMarkingPaid] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState<FormState>(() =>
-    initialForm(tracks[0]?._id ?? ""),
-  );
+  const [form, setForm] = useState<FormState>(() => initialForm(tracks[0]?._id ?? ""));
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [balanceKey, setBalanceKey] = useState(0);
   const bumpBalance = useCallback(() => setBalanceKey((k) => k + 1), []);
@@ -401,13 +364,9 @@ const AlbumExtraordinaryCosts = ({
         if (!active) return;
         const all: Accounting[] = [];
         for (const r of results) {
-          if (r.status === "fulfilled" && Array.isArray(r.value))
-            all.push(...r.value);
+          if (r.status === "fulfilled" && Array.isArray(r.value)) all.push(...r.value);
         }
-        all.sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-        );
+        all.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         setCosts(all);
         setSelectedIds([]);
       } catch {
@@ -422,10 +381,7 @@ const AlbumExtraordinaryCosts = ({
     };
   }, [tracks]);
 
-  const pendingCosts = useMemo(
-    () => costs.filter((i) => i.status === "pending"),
-    [costs],
-  );
+  const pendingCosts = useMemo(() => costs.filter((i) => i.status === "pending"), [costs]);
   const selectedCosts = useMemo(
     () => pendingCosts.filter((i) => selectedIds.includes(i._id)),
     [pendingCosts, selectedIds],
@@ -435,34 +391,24 @@ const AlbumExtraordinaryCosts = ({
     [selectedCosts],
   );
   const tableIngresos = useMemo(
-    () =>
-      costs
-        .filter((c) => c.concept === "Ingreso")
-        .reduce((s, c) => s + toNum(c.amount), 0) + 0,
+    () => costs.filter((c) => c.concept === "Ingreso").reduce((s, c) => s + toNum(c.amount), 0) + 0,
     [costs],
   );
   const tableEgresos = useMemo(
-    () =>
-      costs
-        .filter((c) => c.concept !== "Ingreso")
-        .reduce((s, c) => s + toNum(c.amount), 0),
+    () => costs.filter((c) => c.concept !== "Ingreso").reduce((s, c) => s + toNum(c.amount), 0),
     [costs],
   );
   const tableBalance = tableIngresos - tableEgresos;
   const tableBalancePositive = tableBalance >= 0;
-  const allSelected =
-    pendingCosts.length > 0 && selectedIds.length === pendingCosts.length;
+  const allSelected = pendingCosts.length > 0 && selectedIds.length === pendingCosts.length;
 
   const toggleSelection = (id: string) => {
     const t = costs.find((i) => i._id === id);
     if (!t || t.status !== "pending") return;
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   };
 
-  const toggleSelectAll = () =>
-    setSelectedIds(allSelected ? [] : pendingCosts.map((i) => i._id));
+  const toggleSelectAll = () => setSelectedIds(allSelected ? [] : pendingCosts.map((i) => i._id));
 
   const resetForm = () => setForm(initialForm(tracks[0]?._id ?? ""));
 
@@ -524,15 +470,9 @@ const AlbumExtraordinaryCosts = ({
     setMarkingPaid(true);
     setError(null);
     try {
-      await Promise.all(
-        selectedCosts.map((i) =>
-          accountingApi.update(i._id, { status: "paid" }),
-        ),
-      );
+      await Promise.all(selectedCosts.map((i) => accountingApi.update(i._id, { status: "paid" })));
       setCosts((prev) =>
-        prev.map((i) =>
-          selectedIds.includes(i._id) ? { ...i, status: "paid" } : i,
-        ),
+        prev.map((i) => (selectedIds.includes(i._id) ? { ...i, status: "paid" } : i)),
       );
       setSelectedIds([]);
       bumpBalance();
@@ -548,17 +488,12 @@ const AlbumExtraordinaryCosts = ({
 
   return (
     <>
-      <div
-        className="col-span-12 md:col-span-2"
-        style={{ perspective: "1200px" }}
-      >
+      <div className="col-span-12 md:col-span-2" style={{ perspective: "1200px" }}>
         <div
           style={{
             position: "relative",
             transformStyle: "preserve-3d",
-            transition: suppressFlip
-              ? "none"
-              : "transform 0.5s cubic-bezier(0.4,0,0.2,1)",
+            transition: suppressFlip ? "none" : "transform 0.5s cubic-bezier(0.4,0,0.2,1)",
             transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
           }}
         >
@@ -613,9 +548,7 @@ const AlbumExtraordinaryCosts = ({
                             Ingresos
                           </p>
                         </div>
-                        <p className="text-sm font-bold text-green-600">
-                          ${fmt(tableIngresos)}
-                        </p>
+                        <p className="text-sm font-bold text-green-600">${fmt(tableIngresos)}</p>
                       </div>
                       <div className="rounded-xl bg-gray-50 p-3">
                         <div className="mb-0.5 flex items-center gap-1">
@@ -624,9 +557,7 @@ const AlbumExtraordinaryCosts = ({
                             Egresos
                           </p>
                         </div>
-                        <p className="text-sm font-bold text-orange-500">
-                          ${fmt(tableEgresos)}
-                        </p>
+                        <p className="text-sm font-bold text-orange-500">${fmt(tableEgresos)}</p>
                       </div>
                       <div
                         className={`rounded-xl p-3 ${tableBalancePositive ? "bg-green-50" : "bg-red-50"}`}
@@ -637,8 +568,7 @@ const AlbumExtraordinaryCosts = ({
                         <p
                           className={`text-sm font-bold ${tableBalancePositive ? "text-green-600" : "text-red-600"}`}
                         >
-                          {tableBalancePositive ? "+" : "-"}$
-                          {fmt(Math.abs(tableBalance))}
+                          {tableBalancePositive ? "+" : "-"}${fmt(Math.abs(tableBalance))}
                         </p>
                       </div>
                       <div className="rounded-xl bg-gray-50 p-3">
@@ -716,29 +646,21 @@ const AlbumExtraordinaryCosts = ({
                       <tbody className="divide-y divide-gray-100">
                         {loading && (
                           <tr>
-                            <td
-                              colSpan={8}
-                              className="px-4 py-8 text-center text-sm text-gray-400"
-                            >
+                            <td colSpan={8} className="px-4 py-8 text-center text-sm text-gray-400">
                               Cargando costos...
                             </td>
                           </tr>
                         )}
                         {!loading && costs.length === 0 && (
                           <tr>
-                            <td
-                              colSpan={8}
-                              className="px-4 py-8 text-center text-sm text-gray-400"
-                            >
+                            <td colSpan={8} className="px-4 py-8 text-center text-sm text-gray-400">
                               No hay costos registrados para este álbum.
                             </td>
                           </tr>
                         )}
                         {!loading &&
                           costs.map((item) => {
-                            const { date, time } = dateParts(
-                              item.date || item.createdAt,
-                            );
+                            const { date, time } = dateParts(item.date || item.createdAt);
                             const isSelected = selectedIds.includes(item._id);
                             const songTitle = trackMap.get(item.songId) ?? "—";
                             return (
@@ -756,9 +678,7 @@ const AlbumExtraordinaryCosts = ({
                                   />
                                 </td>
                                 <td className="px-3 py-3">
-                                  <p className="font-medium text-gray-900">
-                                    {item.concept}
-                                  </p>
+                                  <p className="font-medium text-gray-900">{item.concept}</p>
                                   {item.description && (
                                     <p className="mt-0.5 text-xs text-gray-500">
                                       {item.description}
@@ -785,12 +705,8 @@ const AlbumExtraordinaryCosts = ({
                                   </span>
                                 </td>
                                 <td className="whitespace-nowrap px-3 py-3 text-center">
-                                  <p className="text-xs text-gray-600">
-                                    {date}
-                                  </p>
-                                  <p className="text-xs text-gray-400">
-                                    {time}
-                                  </p>
+                                  <p className="text-xs text-gray-600">{date}</p>
+                                  <p className="text-xs text-gray-400">{time}</p>
                                 </td>
                                 <td className="whitespace-nowrap px-3 py-3 text-right font-semibold text-gray-900">
                                   ${fmt(item.amount)}
@@ -859,9 +775,7 @@ const AlbumExtraordinaryCosts = ({
             <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
               <div className="flex items-center gap-2">
                 <Plus className="h-4 w-4" />
-                <span className="text-sm font-semibold text-gray-900">
-                  Nuevo costo
-                </span>
+                <span className="text-sm font-semibold text-gray-900">Nuevo costo</span>
               </div>
               <button
                 type="button"
@@ -874,18 +788,14 @@ const AlbumExtraordinaryCosts = ({
 
             <div className="flex flex-col gap-3 px-5 py-4">
               {error && (
-                <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-500">
-                  {error}
-                </div>
+                <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-500">{error}</div>
               )}
 
               <div className="flex flex-col gap-1">
                 <label className="text-xs text-gray-500">Canción</label>
                 <select
                   value={form.songId}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, songId: e.target.value }))
-                  }
+                  onChange={(e) => setForm((p) => ({ ...p, songId: e.target.value }))}
                   className={inputClass}
                 >
                   {tracks.map((t) => (
@@ -901,9 +811,7 @@ const AlbumExtraordinaryCosts = ({
                   <label className="text-xs text-gray-500">Tipo</label>
                   <select
                     value={form.concept}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, concept: e.target.value }))
-                    }
+                    onChange={(e) => setForm((p) => ({ ...p, concept: e.target.value }))}
                     className={inputClass}
                   >
                     <option value="Ingreso">Ingreso</option>
@@ -955,9 +863,7 @@ const AlbumExtraordinaryCosts = ({
                 <input
                   type="date"
                   value={form.date}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, date: e.target.value }))
-                  }
+                  onChange={(e) => setForm((p) => ({ ...p, date: e.target.value }))}
                   className={inputClass}
                 />
               </div>
@@ -969,9 +875,7 @@ const AlbumExtraordinaryCosts = ({
                 <textarea
                   placeholder="Agrega una nota..."
                   value={form.description}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, description: e.target.value }))
-                  }
+                  onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
                   className={`${inputClass} resize-none`}
                   rows={2}
                 />

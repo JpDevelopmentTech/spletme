@@ -151,12 +151,8 @@ export default function TransferFundsModal({
                       <Send className="h-6 w-6 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-bold text-white">
-                        Send Money
-                      </h2>
-                      <p className="text-sm text-blue-100">
-                        Transfer funds to another user
-                      </p>
+                      <h2 className="text-2xl font-bold text-white">Send Money</h2>
+                      <p className="text-sm text-blue-100">Transfer funds to another user</p>
                     </div>
                   </div>
                   <button
@@ -179,9 +175,7 @@ export default function TransferFundsModal({
                   >
                     <div className="flex items-center gap-2">
                       <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
-                      <p className="text-sm font-medium text-red-600 dark:text-red-400">
-                        {error}
-                      </p>
+                      <p className="text-sm font-medium text-red-600 dark:text-red-400">{error}</p>
                     </div>
                   </motion.div>
                 )}
@@ -236,9 +230,7 @@ export default function TransferFundsModal({
                     type="number"
                     step="0.01"
                     value={formData.amount}
-                    onChange={(e) =>
-                      setFormData({ ...formData, amount: e.target.value })
-                    }
+                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                     required
                     className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 transition-all focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     placeholder="0.00"
@@ -253,9 +245,7 @@ export default function TransferFundsModal({
                   </label>
                   <textarea
                     value={formData.note}
-                    onChange={(e) =>
-                      setFormData({ ...formData, note: e.target.value })
-                    }
+                    onChange={(e) => setFormData({ ...formData, note: e.target.value })}
                     rows={3}
                     className="w-full resize-none rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 transition-all focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     placeholder="Add a message (optional)"
@@ -314,12 +304,8 @@ export default function TransferFundsModal({
                     <AlertTriangle className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-white">
-                      Confirm Transfer
-                    </h3>
-                    <p className="text-sm text-amber-100">
-                      Please review the details
-                    </p>
+                    <h3 className="text-xl font-bold text-white">Confirm Transfer</h3>
+                    <p className="text-sm text-amber-100">Please review the details</p>
                   </div>
                 </div>
               </div>
@@ -335,9 +321,7 @@ export default function TransferFundsModal({
                   >
                     <div className="flex items-center gap-2">
                       <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
-                      <p className="text-sm font-medium text-red-600 dark:text-red-400">
-                        {error}
-                      </p>
+                      <p className="text-sm font-medium text-red-600 dark:text-red-400">{error}</p>
                     </div>
                   </motion.div>
                 )}
@@ -379,33 +363,24 @@ export default function TransferFundsModal({
                     {/* Transfer Details */}
                     <div className="space-y-3 rounded-2xl bg-gray-50 p-4 dark:bg-gray-900/30">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                          Amount:
-                        </span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Amount:</span>
                         <span className="text-xl font-bold text-gray-900 dark:text-white">
                           $
-                          {parseFloat(formData.amount || "0").toLocaleString(
-                            "en-US",
-                            {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            },
-                          )}
+                          {parseFloat(formData.amount || "0").toLocaleString("en-US", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
                         </span>
                       </div>
                       <div className="border-t border-gray-200 pt-3 dark:border-gray-700">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                          To:
-                        </span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">To:</span>
                         <p className="mt-1 break-all text-base font-semibold text-gray-900 dark:text-white">
                           {formData.recipientEmail}
                         </p>
                       </div>
                       {formData.note && (
                         <div className="border-t border-gray-200 pt-3 dark:border-gray-700">
-                          <span className="text-sm text-gray-600 dark:text-gray-400">
-                            Note:
-                          </span>
+                          <span className="text-sm text-gray-600 dark:text-gray-400">Note:</span>
                           <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
                             {formData.note}
                           </p>
@@ -415,8 +390,7 @@ export default function TransferFundsModal({
 
                     <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
                       <p className="text-center text-xs text-amber-800 dark:text-amber-200">
-                        ⚠️ This action cannot be undone. Make sure the recipient
-                        email is correct.
+                        ⚠️ This action cannot be undone. Make sure the recipient email is correct.
                       </p>
                     </div>
                   </div>

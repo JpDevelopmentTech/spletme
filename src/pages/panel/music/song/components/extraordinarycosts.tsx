@@ -40,8 +40,7 @@ const STATUS_LABELS: Record<AccountingStatus, string> = {
 };
 
 const STATUS_CLASSES: Record<AccountingStatus, string> = {
-  pending:
-    "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/60 dark:text-yellow-300",
+  pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/60 dark:text-yellow-300",
   paid: "bg-green-100 text-green-800 dark:bg-green-900/60 dark:text-green-300",
   cancelled: "bg-red-100 text-red-800 dark:bg-red-900/60 dark:text-red-300",
 };
@@ -129,14 +128,8 @@ const StatPill = ({
       <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
         {label}
       </p>
-      <p className={`text-base font-bold leading-tight ${valueClass}`}>
-        {value}
-      </p>
-      {sub && (
-        <p className="text-[11px] text-yellow-600 dark:text-yellow-400">
-          {sub}
-        </p>
-      )}
+      <p className={`text-base font-bold leading-tight ${valueClass}`}>{value}</p>
+      {sub && <p className="text-[11px] text-yellow-600 dark:text-yellow-400">{sub}</p>}
     </div>
   );
 };
@@ -192,17 +185,11 @@ const BalanceFace = ({
 
   // ── Local fallback while loading / on error ──
   const localIngresos = useMemo(
-    () =>
-      costs
-        .filter((c) => c.concept === "Ingreso")
-        .reduce((s, c) => s + toNum(c.amount), 0),
+    () => costs.filter((c) => c.concept === "Ingreso").reduce((s, c) => s + toNum(c.amount), 0),
     [costs],
   );
   const localEgresos = useMemo(
-    () =>
-      costs
-        .filter((c) => c.concept !== "Ingreso")
-        .reduce((s, c) => s + toNum(c.amount), 0),
+    () => costs.filter((c) => c.concept !== "Ingreso").reduce((s, c) => s + toNum(c.amount), 0),
     [costs],
   );
 
@@ -237,15 +224,11 @@ const BalanceFace = ({
       {/* Header */}
       <div className="flex shrink-0 items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-base font-semibold text-gray-900 dark:text-white">
-            Balance
-          </span>
+          <span className="text-base font-semibold text-gray-900 dark:text-white">Balance</span>
           <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500 dark:bg-gray-700 dark:text-gray-400">
             {balance?.totalEntries ?? costs.length} mov.
           </span>
-          {loadingBalance && (
-            <RefreshCw className="h-3 w-3 animate-spin text-gray-400" />
-          )}
+          {loadingBalance && <RefreshCw className="h-3 w-3 animate-spin text-gray-400" />}
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -265,8 +248,7 @@ const BalanceFace = ({
       {/* Error notice */}
       {balanceError && (
         <p className="shrink-0 rounded-lg bg-yellow-50 px-3 py-2 text-xs text-yellow-600 dark:bg-yellow-900/20 dark:text-yellow-400">
-          No se pudo actualizar el balance desde el servidor. Mostrando datos
-          locales.
+          No se pudo actualizar el balance desde el servidor. Mostrando datos locales.
         </p>
       )}
 
@@ -284,9 +266,7 @@ const BalanceFace = ({
           </p>
           <p
             className={`text-2xl font-bold leading-tight ${
-              isPositive
-                ? "text-green-600 dark:text-green-400"
-                : "text-red-600 dark:text-red-400"
+              isPositive ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
             }`}
           >
             {isPositive ? "+" : "-"}${fmt(Math.abs(netBalance))}
@@ -312,9 +292,7 @@ const BalanceFace = ({
               Ingresos
             </p>
           </div>
-          <p className="text-base font-bold text-gray-900 dark:text-white">
-            ${fmt(totalIngresos)}
-          </p>
+          <p className="text-base font-bold text-gray-900 dark:text-white">${fmt(totalIngresos)}</p>
           {/* {songNetIncome > 0 && (
             <p className="text-[11px] text-blue-600 dark:text-blue-400 mt-0.5">
               Incl. ${fmt(songNetIncome)} ganancia canción
@@ -333,9 +311,7 @@ const BalanceFace = ({
               Egresos
             </p>
           </div>
-          <p className="text-base font-bold text-gray-900 dark:text-white">
-            ${fmt(totalEgresos)}
-          </p>
+          <p className="text-base font-bold text-gray-900 dark:text-white">${fmt(totalEgresos)}</p>
           {pendingEgresos > 0 && (
             <p className="mt-0.5 text-[11px] text-yellow-600 dark:text-yellow-400">
               ${fmt(pendingEgresos)} pendiente
@@ -440,10 +416,7 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
   }, [songId]);
 
   /* ── derived ── */
-  const pendingCosts = useMemo(
-    () => costs.filter((i) => i.status === "pending"),
-    [costs],
-  );
+  const pendingCosts = useMemo(() => costs.filter((i) => i.status === "pending"), [costs]);
   const selectedCosts = useMemo(
     () => pendingCosts.filter((i) => selectedIds.includes(i._id)),
     [pendingCosts, selectedIds],
@@ -454,35 +427,25 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
   );
   // Mirror the exact same formula used in BalanceFace
   const tableIngresos = useMemo(
-    () =>
-      costs
-        .filter((c) => c.concept === "Ingreso")
-        .reduce((s, c) => s + toNum(c.amount), 0),
+    () => costs.filter((c) => c.concept === "Ingreso").reduce((s, c) => s + toNum(c.amount), 0),
     [costs],
   );
   const tableEgresos = useMemo(
-    () =>
-      costs
-        .filter((c) => c.concept !== "Ingreso")
-        .reduce((s, c) => s + toNum(c.amount), 0),
+    () => costs.filter((c) => c.concept !== "Ingreso").reduce((s, c) => s + toNum(c.amount), 0),
     [costs],
   );
   const tableBalance = tableIngresos - tableEgresos;
   const tableBalancePositive = tableBalance >= 0;
-  const allSelected =
-    pendingCosts.length > 0 && selectedIds.length === pendingCosts.length;
+  const allSelected = pendingCosts.length > 0 && selectedIds.length === pendingCosts.length;
 
   /* ── handlers ── */
   const toggleSelection = (id: string) => {
     const t = costs.find((i) => i._id === id);
     if (!t || t.status !== "pending") return;
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   };
 
-  const toggleSelectAll = () =>
-    setSelectedIds(allSelected ? [] : pendingCosts.map((i) => i._id));
+  const toggleSelectAll = () => setSelectedIds(allSelected ? [] : pendingCosts.map((i) => i._id));
 
   const resetForm = () => setForm(initialForm());
 
@@ -549,15 +512,9 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
     setMarkingPaid(true);
     setError(null);
     try {
-      await Promise.all(
-        selectedCosts.map((i) =>
-          accountingApi.update(i._id, { status: "paid" }),
-        ),
-      );
+      await Promise.all(selectedCosts.map((i) => accountingApi.update(i._id, { status: "paid" })));
       setCosts((prev) =>
-        prev.map((i) =>
-          selectedIds.includes(i._id) ? { ...i, status: "paid" } : i,
-        ),
+        prev.map((i) => (selectedIds.includes(i._id) ? { ...i, status: "paid" } : i)),
       );
       setSelectedIds([]);
       bumpBalance();
@@ -574,17 +531,12 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
   return (
     <>
       {/* ── Flip container ── */}
-      <div
-        className="col-span-12 md:col-span-2"
-        style={{ perspective: "1200px" }}
-      >
+      <div className="col-span-12 md:col-span-2" style={{ perspective: "1200px" }}>
         <div
           style={{
             position: "relative",
             transformStyle: "preserve-3d",
-            transition: suppressFlip
-              ? "none"
-              : "transform 0.5s cubic-bezier(0.4,0,0.2,1)",
+            transition: suppressFlip ? "none" : "transform 0.5s cubic-bezier(0.4,0,0.2,1)",
             transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
           }}
         >
@@ -676,8 +628,7 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
                               : "text-red-600 dark:text-red-400"
                           }`}
                         >
-                          {tableBalancePositive ? "+" : "-"}$
-                          {fmt(Math.abs(tableBalance))}
+                          {tableBalancePositive ? "+" : "-"}${fmt(Math.abs(tableBalance))}
                         </p>
                       </div>
                       {/* Selection total */}
@@ -756,37 +707,27 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
                       <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                         {loading && (
                           <tr>
-                            <td
-                              colSpan={7}
-                              className="px-4 py-8 text-center text-sm text-gray-400"
-                            >
+                            <td colSpan={7} className="px-4 py-8 text-center text-sm text-gray-400">
                               Cargando costos...
                             </td>
                           </tr>
                         )}
                         {!loading && costs.length === 0 && (
                           <tr>
-                            <td
-                              colSpan={7}
-                              className="px-4 py-8 text-center text-sm text-gray-400"
-                            >
+                            <td colSpan={7} className="px-4 py-8 text-center text-sm text-gray-400">
                               No hay costos registrados para esta canción.
                             </td>
                           </tr>
                         )}
                         {!loading &&
                           costs.map((item) => {
-                            const { date, time } = dateParts(
-                              item.date || item.createdAt,
-                            );
+                            const { date, time } = dateParts(item.date || item.createdAt);
                             const isSelected = selectedIds.includes(item._id);
                             return (
                               <tr
                                 key={item._id}
                                 className={`transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50 ${
-                                  isSelected
-                                    ? "bg-primary-50/50 dark:bg-primary-900/10"
-                                    : ""
+                                  isSelected ? "bg-primary-50/50 dark:bg-primary-900/10" : ""
                                 }`}
                               >
                                 <td className="p-3">
@@ -821,12 +762,8 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
                                   </span>
                                 </td>
                                 <td className="whitespace-nowrap px-3 py-3 text-center">
-                                  <p className="text-xs text-gray-600 dark:text-gray-300">
-                                    {date}
-                                  </p>
-                                  <p className="text-xs text-gray-400 dark:text-gray-500">
-                                    {time}
-                                  </p>
+                                  <p className="text-xs text-gray-600 dark:text-gray-300">{date}</p>
+                                  <p className="text-xs text-gray-400 dark:text-gray-500">{time}</p>
                                 </td>
                                 {/* toNum ensures decimals always render correctly */}
                                 <td className="whitespace-nowrap px-3 py-3 text-right font-semibold text-gray-900 dark:text-white">
@@ -919,14 +856,10 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
               )}
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs text-gray-500 dark:text-gray-400">
-                    Tipo
-                  </label>
+                  <label className="text-xs text-gray-500 dark:text-gray-400">Tipo</label>
                   <select
                     value={form.concept}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, concept: e.target.value }))
-                    }
+                    onChange={(e) => setForm((p) => ({ ...p, concept: e.target.value }))}
                     className={inputClass}
                   >
                     <option value="Ingreso">Ingreso</option>
@@ -934,9 +867,7 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
                   </select>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs text-gray-500 dark:text-gray-400">
-                    Estado
-                  </label>
+                  <label className="text-xs text-gray-500 dark:text-gray-400">Estado</label>
                   <select
                     value={form.status}
                     onChange={(e) =>
@@ -953,9 +884,7 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
                 </div>
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-gray-500 dark:text-gray-400">
-                  Monto
-                </label>
+                <label className="text-xs text-gray-500 dark:text-gray-400">Monto</label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">
                     $
@@ -976,15 +905,11 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
                 </div>
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-gray-500 dark:text-gray-400">
-                  Fecha
-                </label>
+                <label className="text-xs text-gray-500 dark:text-gray-400">Fecha</label>
                 <input
                   type="date"
                   value={form.date}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, date: e.target.value }))
-                  }
+                  onChange={(e) => setForm((p) => ({ ...p, date: e.target.value }))}
                   className={inputClass}
                 />
               </div>
@@ -995,9 +920,7 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
                 <textarea
                   placeholder="Agrega una nota..."
                   value={form.description}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, description: e.target.value }))
-                  }
+                  onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
                   className={`${inputClass} resize-none`}
                   rows={2}
                 />

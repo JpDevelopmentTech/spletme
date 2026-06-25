@@ -33,9 +33,7 @@ export default function ImgTop({ activeImg }: { activeImg: string }) {
         );
 
         setPrimaryColorDominant(`rgb(${colorsSorted[0]})`);
-        setSecondaryColorDominant(
-          `rgb(${colorsSorted[colorsSorted.length - 1]})`,
-        );
+        setSecondaryColorDominant(`rgb(${colorsSorted[colorsSorted.length - 1]})`);
       };
     };
 
@@ -56,36 +54,24 @@ export default function ImgTop({ activeImg }: { activeImg: string }) {
             <span className="text-normal">Fecha de vinculacion + ID</span>
           </div>
           <div>
-            <button className="rounded-full bg-quinary px-5 py-1 text-normal">
-              Detalles
-            </button>
+            <button className="rounded-full bg-quinary px-5 py-1 text-normal">Detalles</button>
           </div>
         </div>
         <div className="flex justify-between">
           <div className="flex flex-col items-center border-r border-white p-3 text-center">
             <span className="text-title font-bold text-white">5</span>
-            <span className="text-subtitle font-bold text-white">
-              Canciones
-            </span>
-            <span className="text-normal text-white">
-              Proyectos en conjunto
-            </span>
+            <span className="text-subtitle font-bold text-white">Canciones</span>
+            <span className="text-normal text-white">Proyectos en conjunto</span>
           </div>
           <div className="flex flex-col items-center border-white p-3 text-center">
             <span className="text-title font-bold text-white">39%</span>
-            <span className="text-subtitle font-bold text-white">
-              Colaboracion
-            </span>
+            <span className="text-subtitle font-bold text-white">Colaboracion</span>
             <span className="text-normal text-white">Porcentaje general</span>
           </div>
           <div className="flex flex-col items-center border-l border-white p-3 text-center">
             <span className="text-title font-bold text-white">$5.892,00</span>
-            <span className="text-subtitle font-bold text-white">
-              Ganancias
-            </span>
-            <span className="text-normal text-white">
-              Desde la fecha de vinculacion
-            </span>
+            <span className="text-subtitle font-bold text-white">Ganancias</span>
+            <span className="text-normal text-white">Desde la fecha de vinculacion</span>
           </div>
         </div>
       </div>

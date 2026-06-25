@@ -6,15 +6,12 @@ interface Props {
 }
 
 export default function PlatformCountrySummary({ data, loading }: Props) {
-  const maxIncome =
-    data.length > 0 ? Math.max(...data.map((r) => r.netIncome)) : 1;
+  const maxIncome = data.length > 0 ? Math.max(...data.map((r) => r.netIncome)) : 1;
 
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-6">
       <div>
-        <h2 className="text-sm font-semibold text-[#111827]">
-          TOP 10 — Plataforma × País
-        </h2>
+        <h2 className="text-sm font-semibold text-[#111827]">TOP 10 — Plataforma × País</h2>
         <p className="mt-0.5 text-xs text-[#6B7280]">
           Ingresos y streams por combinación plataforma/país
         </p>
@@ -59,9 +56,7 @@ export default function PlatformCountrySummary({ data, loading }: Props) {
                     : row.netIncome.toFixed(2)}
                 </span>
                 <span className="text-[10px] text-[#9CA3AF]">
-                  {row.streams >= 1_000
-                    ? `${(row.streams / 1_000).toFixed(0)}K`
-                    : row.streams}{" "}
+                  {row.streams >= 1_000 ? `${(row.streams / 1_000).toFixed(0)}K` : row.streams}{" "}
                   streams
                 </span>
               </div>

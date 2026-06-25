@@ -39,9 +39,7 @@ const AcceptLabelCollaboration = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [token, setToken] = useState("");
-  const [invitationData, setInvitationData] = useState<InvitationData | null>(
-    null,
-  );
+  const [invitationData, setInvitationData] = useState<InvitationData | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [result, setResult] = useState<{
@@ -63,13 +61,10 @@ const AcceptLabelCollaboration = () => {
       const payload = parts[1];
 
       // Añadir padding si es necesario para base64
-      const paddedPayload =
-        payload + "=".repeat((4 - (payload.length % 4)) % 4);
+      const paddedPayload = payload + "=".repeat((4 - (payload.length % 4)) % 4);
 
       // Decodificar de base64
-      const decodedPayload = atob(
-        paddedPayload.replace(/-/g, "+").replace(/_/g, "/"),
-      );
+      const decodedPayload = atob(paddedPayload.replace(/-/g, "+").replace(/_/g, "/"));
 
       // Parsear JSON
       return JSON.parse(decodedPayload) as JWTPayload;
@@ -191,9 +186,7 @@ const AcceptLabelCollaboration = () => {
           >
             <Check className="h-10 w-10 text-white" />
           </div>
-          <h1 className="mb-2 text-2xl font-bold text-gray-900">
-            ¡Invitación Aceptada!
-          </h1>
+          <h1 className="mb-2 text-2xl font-bold text-gray-900">¡Invitación Aceptada!</h1>
           <p className="mb-6 text-gray-600">
             Ahora eres colaborador del label <strong>{result.labelName}</strong>
           </p>
@@ -203,13 +196,9 @@ const AcceptLabelCollaboration = () => {
               <Music2
                 className={`h-5 w-5 ${isCustomLabel ? "text-amber-500" : "text-indigo-500"}`}
               />
-              <span className="font-medium text-gray-700">
-                Canciones agregadas
-              </span>
+              <span className="font-medium text-gray-700">Canciones agregadas</span>
             </div>
-            <p className="text-3xl font-bold text-gray-900">
-              {result.songsAdded}
-            </p>
+            <p className="text-3xl font-bold text-gray-900">{result.songsAdded}</p>
             {result.alreadyCollaborator > 0 && (
               <p className="mt-2 text-sm text-gray-500">
                 ({result.alreadyCollaborator} canciones ya estaban en tu cuenta)
@@ -240,9 +229,7 @@ const AcceptLabelCollaboration = () => {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-500">
             <AlertTriangle className="h-8 w-8 text-white" />
           </div>
-          <h1 className="mb-4 text-2xl font-bold text-gray-900">
-            Error en la Invitación
-          </h1>
+          <h1 className="mb-4 text-2xl font-bold text-gray-900">Error en la Invitación</h1>
           <p className="mb-6 text-gray-600">{error}</p>
           <button
             onClick={() => window.location.reload()}
@@ -298,9 +285,7 @@ const AcceptLabelCollaboration = () => {
               </div>
             )}
           </div>
-          <h1 className="mb-2 text-3xl font-bold text-gray-900">
-            Invitación de Colaboración
-          </h1>
+          <h1 className="mb-2 text-3xl font-bold text-gray-900">Invitación de Colaboración</h1>
           <p className="text-gray-600">
             Te han invitado a colaborar en un{" "}
             {isCustomLabel ? "label personalizado" : "label artístico"}
@@ -308,9 +293,7 @@ const AcceptLabelCollaboration = () => {
           {token && (
             <div
               className={`mt-3 inline-block rounded-lg p-2 text-xs ${
-                isCustomLabel
-                  ? "bg-amber-50 text-amber-600"
-                  : "bg-green-50 text-green-600"
+                isCustomLabel ? "bg-amber-50 text-amber-600" : "bg-green-50 text-green-600"
               }`}
             >
               ✓ Token de invitación verificado
@@ -329,11 +312,7 @@ const AcceptLabelCollaboration = () => {
           <div className="space-y-4">
             {/* Label Name */}
             <div className="flex items-center gap-3">
-              <div
-                className={`rounded-lg p-2 ${
-                  isCustomLabel ? "bg-amber-100" : "bg-indigo-100"
-                }`}
-              >
+              <div className={`rounded-lg p-2 ${isCustomLabel ? "bg-amber-100" : "bg-indigo-100"}`}>
                 {isCustomLabel ? (
                   <Layers className={`h-5 w-5 text-amber-600`} />
                 ) : (
@@ -342,39 +321,27 @@ const AcceptLabelCollaboration = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-500">Label</p>
-                <h3 className="text-xl font-bold text-gray-900">
-                  {invitationData.labelName}
-                </h3>
+                <h3 className="text-xl font-bold text-gray-900">{invitationData.labelName}</h3>
               </div>
             </div>
 
             {/* Songs Count */}
             <div className="flex items-center gap-3">
-              <div
-                className={`rounded-lg p-2 ${
-                  isCustomLabel ? "bg-amber-100" : "bg-indigo-100"
-                }`}
-              >
+              <div className={`rounded-lg p-2 ${isCustomLabel ? "bg-amber-100" : "bg-indigo-100"}`}>
                 <Music2
-                  className={`h-5 w-5 ${
-                    isCustomLabel ? "text-amber-600" : "text-indigo-600"
-                  }`}
+                  className={`h-5 w-5 ${isCustomLabel ? "text-amber-600" : "text-indigo-600"}`}
                 />
               </div>
               <div>
                 <p className="text-sm text-gray-500">Canciones incluidas</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {invitationData.totalSongs}
-                </p>
+                <p className="text-2xl font-bold text-gray-900">{invitationData.totalSongs}</p>
               </div>
             </div>
 
             {/* Info Message */}
             <div
               className={`rounded-lg border p-4 ${
-                isCustomLabel
-                  ? "border-amber-200 bg-white"
-                  : "border-indigo-200 bg-white"
+                isCustomLabel ? "border-amber-200 bg-white" : "border-indigo-200 bg-white"
               }`}
             >
               <div className="flex items-start gap-3">
@@ -385,13 +352,11 @@ const AcceptLabelCollaboration = () => {
                 />
                 <div>
                   <p className="text-gray-700">
-                    Al aceptar esta invitación, serás agregado como colaborador
-                    a las <strong>{invitationData.totalSongs} canciones</strong>{" "}
-                    de este label.
+                    Al aceptar esta invitación, serás agregado como colaborador a las{" "}
+                    <strong>{invitationData.totalSongs} canciones</strong> de este label.
                   </p>
                   <p className="mt-2 text-sm text-gray-500">
-                    Podrás ver las métricas, estadísticas y datos de todas las
-                    canciones.
+                    Podrás ver las métricas, estadísticas y datos de todas las canciones.
                   </p>
                 </div>
               </div>
@@ -445,8 +410,7 @@ const AcceptLabelCollaboration = () => {
         {/* Additional Info */}
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-500">
-            Esta invitación expira en 7 días. Una vez que respondas, no podrás
-            cambiar tu decisión.
+            Esta invitación expira en 7 días. Una vez que respondas, no podrás cambiar tu decisión.
           </p>
         </div>
       </div>

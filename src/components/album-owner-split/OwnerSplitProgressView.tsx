@@ -9,9 +9,7 @@ interface OwnerSplitProgressViewProps {
 /**
  * Vista de progreso en tiempo real durante la creación masiva de owner splits.
  */
-export function OwnerSplitProgressView({
-  progress,
-}: OwnerSplitProgressViewProps) {
+export function OwnerSplitProgressView({ progress }: OwnerSplitProgressViewProps) {
   const processed = progress.completed + progress.failed;
   const pct = Math.round((processed / progress.total) * 100);
 
@@ -23,9 +21,7 @@ export function OwnerSplitProgressView({
     >
       <div className="rounded-2xl bg-white p-8 shadow-lg">
         <div className="mb-6 text-center">
-          <h3 className="mb-2 text-2xl font-bold text-gray-900">
-            Creando Splits...
-          </h3>
+          <h3 className="mb-2 text-2xl font-bold text-gray-900">Creando Splits...</h3>
           <p className="text-gray-600">
             {processed} de {progress.total} canciones procesadas
           </p>
@@ -56,24 +52,18 @@ export function OwnerSplitProgressView({
             </motion.div>
             <div>
               <div className="text-sm text-gray-600">Procesando:</div>
-              <div className="font-medium text-gray-900">
-                {progress.current}
-              </div>
+              <div className="font-medium text-gray-900">{progress.current}</div>
             </div>
           </div>
         )}
 
         <div className="mt-6 grid grid-cols-2 gap-4">
           <div className="rounded-xl bg-green-50 p-4 text-center">
-            <div className="text-2xl font-bold text-green-600">
-              {progress.completed}
-            </div>
+            <div className="text-2xl font-bold text-green-600">{progress.completed}</div>
             <div className="text-sm text-gray-600">Completados</div>
           </div>
           <div className="rounded-xl bg-red-50 p-4 text-center">
-            <div className="text-2xl font-bold text-red-600">
-              {progress.failed}
-            </div>
+            <div className="text-2xl font-bold text-red-600">{progress.failed}</div>
             <div className="text-sm text-gray-600">Fallidos</div>
           </div>
         </div>

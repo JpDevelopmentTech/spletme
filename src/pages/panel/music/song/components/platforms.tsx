@@ -1,12 +1,7 @@
 import { useMemo, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
-import {
-  BarChart2,
-  PieChart,
-  BarChartHorizontal,
-  RefreshCw,
-} from "lucide-react";
+import { BarChart2, PieChart, BarChartHorizontal, RefreshCw } from "lucide-react";
 import spotifyLogo from "@/assets/images/logo/spotify.svg";
 import youtubeLogo from "@/assets/images/logo/youtube.svg";
 import metaLogo from "@/assets/images/logo/meta.svg";
@@ -40,11 +35,8 @@ interface PlatformDataItem {
 
 type ChartView = "bar" | "donut" | "horizontal";
 
-const platformConfig: Record<
-  string,
-  { color: string; letter: string; logo?: string }
-> = {
-  Spotify: { color: "#22C55E", letter: "S", logo: spotifyLogo },
+const platformConfig: Record<string, { color: string; letter: string; logo?: string }> = {
+  "Spotify": { color: "#22C55E", letter: "S", logo: spotifyLogo },
   "Apple Music": { color: "#111827", letter: "A", logo: appleMusicLogo },
   "YouTube Official Content": {
     color: "#EF4444",
@@ -52,16 +44,16 @@ const platformConfig: Record<
     logo: youtubeLogo,
   },
   "YouTube UGC": { color: "#EF4444", letter: "Y", logo: youtubeLogo },
-  Deezer: { color: "#6B7280", letter: "D", logo: deezerLogo },
+  "Deezer": { color: "#6B7280", letter: "D", logo: deezerLogo },
   "Amazon Premium": { color: "#00C7F2", letter: "A", logo: amazonLogo },
   "Amazon Ad-Supported": { color: "#00A8E1", letter: "A", logo: amazonLogo },
   "Facebook / Instagram": { color: "#E4405F", letter: "F", logo: metaLogo },
-  iMusica: { color: "#FF6B35", letter: "I" },
-  Yandex: { color: "#FFCC00", letter: "Y" },
+  "iMusica": { color: "#FF6B35", letter: "I" },
+  "Yandex": { color: "#FFCC00", letter: "Y" },
   "iTunes Match": { color: "#FA243C", letter: "I" },
-  Audiomack: { color: "#FFA500", letter: "A" },
-  TikTok: { color: "#000000", letter: "T", logo: tiktokLogo },
-  Otros: { color: "#6366F1", letter: "O" },
+  "Audiomack": { color: "#FFA500", letter: "A" },
+  "TikTok": { color: "#000000", letter: "T", logo: tiktokLogo },
+  "Otros": { color: "#6366F1", letter: "O" },
 };
 
 const chartButtons: { view: ChartView; icon: JSX.Element; label: string }[] = [
@@ -106,14 +98,8 @@ const Platforms = ({ reproductions = [] }: PlatformsProps) => {
   const [isFlipped, setIsFlipped] = useState(false);
 
   const platformData = useMemo<PlatformDataItem[]>(() => {
-    const totalStreams = reproductions.reduce(
-      (sum, item) => sum + (item.totalStreams || 0),
-      0,
-    );
-    const totalIncome = reproductions.reduce(
-      (sum, item) => sum + (item.totalIncome || 0),
-      0,
-    );
+    const totalStreams = reproductions.reduce((sum, item) => sum + (item.totalStreams || 0), 0);
+    const totalIncome = reproductions.reduce((sum, item) => sum + (item.totalIncome || 0), 0);
 
     const mapped = reproductions
       .map((item) => {
@@ -121,14 +107,9 @@ const Platforms = ({ reproductions = [] }: PlatformsProps) => {
         const config = platformConfig[name] || platformConfig.Otros;
         return {
           name,
-          percentage:
-            totalStreams > 0
-              ? Math.round((item.totalStreams / totalStreams) * 100)
-              : 0,
+          percentage: totalStreams > 0 ? Math.round((item.totalStreams / totalStreams) * 100) : 0,
           incomePercentage:
-            totalIncome > 0
-              ? Math.round((item.totalIncome / totalIncome) * 100)
-              : 0,
+            totalIncome > 0 ? Math.round((item.totalIncome / totalIncome) * 100) : 0,
           color: config.color,
           letter: config.letter,
           logo: config.logo,
@@ -145,22 +126,12 @@ const Platforms = ({ reproductions = [] }: PlatformsProps) => {
 
     if (platformsWithZero.length > 0) {
       const othersConfig = platformConfig.Otros;
-      const othersStreams = platformsWithZero.reduce(
-        (sum, p) => sum + p.streams,
-        0,
-      );
-      const othersIncome = platformsWithZero.reduce(
-        (sum, p) => sum + p.income,
-        0,
-      );
+      const othersStreams = platformsWithZero.reduce((sum, p) => sum + p.streams, 0);
+      const othersIncome = platformsWithZero.reduce((sum, p) => sum + p.income, 0);
       const othersData: PlatformDataItem = {
         name: "Otros",
-        percentage:
-          totalStreams > 0
-            ? Math.round((othersStreams / totalStreams) * 100)
-            : 0,
-        incomePercentage:
-          totalIncome > 0 ? Math.round((othersIncome / totalIncome) * 100) : 0,
+        percentage: totalStreams > 0 ? Math.round((othersStreams / totalStreams) * 100) : 0,
+        incomePercentage: totalIncome > 0 ? Math.round((othersIncome / totalIncome) * 100) : 0,
         color: othersConfig.color,
         letter: othersConfig.letter,
         logo: othersConfig.logo,
@@ -168,8 +139,7 @@ const Platforms = ({ reproductions = [] }: PlatformsProps) => {
         income: othersIncome,
         releases: platformsWithZero.reduce((sum, p) => sum + p.releases, 0),
       };
-      if (othersData.streams > 0 || platformsWithZero.length > 0)
-        groupedData.push(othersData);
+      if (othersData.streams > 0 || platformsWithZero.length > 0) groupedData.push(othersData);
     }
 
     return groupedData;
@@ -416,16 +386,12 @@ const Platforms = ({ reproductions = [] }: PlatformsProps) => {
 
     const barOpts = isIncome ? incomeBarOptions : streamsBarOptions;
     const donutOpts = isIncome ? incomeDonutOptions : streamsDonutOptions;
-    const horizontalOpts = isIncome
-      ? incomeHorizontalOptions
-      : streamsHorizontalOptions;
+    const horizontalOpts = isIncome ? incomeHorizontalOptions : streamsHorizontalOptions;
 
     const barSeries = isIncome
       ? [{ name: "Ingresos", data: data.map((p) => p.income) }]
       : [{ name: "Streams", data: data.map((p) => p.streams) }];
-    const donutSeries = isIncome
-      ? data.map((p) => p.income)
-      : data.map((p) => p.streams);
+    const donutSeries = isIncome ? data.map((p) => p.income) : data.map((p) => p.streams);
     const horizontalSeries = isIncome
       ? [
           {
@@ -500,9 +466,7 @@ const Platforms = ({ reproductions = [] }: PlatformsProps) => {
                   <div
                     className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-lg"
                     style={{
-                      backgroundColor: platform.logo
-                        ? "#F3F4F6"
-                        : platform.color,
+                      backgroundColor: platform.logo ? "#F3F4F6" : platform.color,
                     }}
                   >
                     {platform.logo ? (
@@ -512,15 +476,11 @@ const Platforms = ({ reproductions = [] }: PlatformsProps) => {
                         className="h-full w-full object-contain"
                       />
                     ) : (
-                      <span className="text-xs font-bold text-white">
-                        {platform.letter}
-                      </span>
+                      <span className="text-xs font-bold text-white">{platform.letter}</span>
                     )}
                   </div>
                   <div className="flex flex-col gap-0.5">
-                    <span className="text-[12px] font-semibold text-gray-900">
-                      {platform.name}
-                    </span>
+                    <span className="text-[12px] font-semibold text-gray-900">{platform.name}</span>
                     <span className="text-[11px] text-gray-400">
                       {isIncome
                         ? formatCurrency(platform.income)
@@ -547,14 +507,10 @@ const Platforms = ({ reproductions = [] }: PlatformsProps) => {
           {/* ── HEADER FIJO: título + badge + botón flip ─────────────────────── */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-semibold text-gray-900">
-                Platforms
-              </h2>
+              <h2 className="text-base font-semibold text-gray-900">Platforms</h2>
               <span
                 className={`rounded-full px-2 py-0.5 text-[11px] font-medium transition-colors ${
-                  isFlipped
-                    ? "bg-indigo-50 text-indigo-600"
-                    : "bg-emerald-50 text-emerald-600"
+                  isFlipped ? "bg-indigo-50 text-indigo-600" : "bg-emerald-50 text-emerald-600"
                 }`}
               >
                 {isFlipped ? "Streams" : "Ingresos"}
@@ -597,13 +553,9 @@ const Platforms = ({ reproductions = [] }: PlatformsProps) => {
             <div className="flip-zone-wrapper">
               <div className={`flip-zone-inner ${isFlipped ? "flipped" : ""}`}>
                 {/* FRENTE — Ingresos */}
-                <div className="flip-zone-face front">
-                  {renderFace("income", false)}
-                </div>
+                <div className="flip-zone-face front">{renderFace("income", false)}</div>
                 {/* REVERSO — Streams */}
-                <div className="flip-zone-face back">
-                  {renderFace("streams", true)}
-                </div>
+                <div className="flip-zone-face back">{renderFace("streams", true)}</div>
               </div>
             </div>
           )}

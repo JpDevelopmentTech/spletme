@@ -1,9 +1,6 @@
 import { useState } from "react";
 import { X, Building2 } from "lucide-react";
-import type {
-  CreateDistributorPayload,
-  Currency,
-} from "../../types/distributor.types";
+import type { CreateDistributorPayload, Currency } from "../../types/distributor.types";
 
 interface Props {
   onClose: () => void;
@@ -43,16 +40,11 @@ export default function CreateDistributorModal({ onClose, onConfirm }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative mx-4 flex w-full max-w-md flex-col gap-5 rounded-2xl bg-white p-6 shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-[#111827]">
-            Nuevo Distribuidor
-          </h2>
+          <h2 className="text-base font-bold text-[#111827]">Nuevo Distribuidor</h2>
           <button
             onClick={onClose}
             className="rounded-lg p-1.5 transition-colors hover:bg-gray-100"
@@ -66,9 +58,7 @@ export default function CreateDistributorModal({ onClose, onConfirm }: Props) {
           <div className="flex items-center gap-4">
             <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-orange-100">
               {name.trim() ? (
-                <span className="text-xl font-bold text-[#F97316]">
-                  {initials}
-                </span>
+                <span className="text-xl font-bold text-[#F97316]">{initials}</span>
               ) : (
                 <Building2 className="h-6 w-6 text-[#F97316]" />
               )}
@@ -77,9 +67,7 @@ export default function CreateDistributorModal({ onClose, onConfirm }: Props) {
               <span className="text-sm font-semibold text-[#111827]">
                 {name.trim() || "Nombre del distribuidor"}
               </span>
-              <span className="text-xs text-[#9CA3AF]">
-                Vista previa del avatar
-              </span>
+              <span className="text-xs text-[#9CA3AF]">Vista previa del avatar</span>
             </div>
           </div>
 

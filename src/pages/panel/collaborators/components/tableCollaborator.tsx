@@ -5,10 +5,7 @@ const TableCollaborator = () => {
     <div className="col-span-6 row-span-2 rounded-2xl p-6 shadow-lg">
       <div>
         <div className="flex flex-col">
-          <Title
-            title="Canciones"
-            subtitle="Analisis de todas sus participaciones"
-          />
+          <Title title="Canciones" subtitle="Analisis de todas sus participaciones" />
         </div>
       </div>
       <table className="mt-3 w-full">

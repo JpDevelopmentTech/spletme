@@ -29,8 +29,7 @@ export default function EmailLogin() {
       if (response && response.data) {
         const serverUser = response.data.user;
         const serverStep = Number(serverUser?.onboardingData?.currentStep || 0);
-        const onboardingCompleted =
-          Boolean(serverUser.onboardingCompleted) || serverStep >= 4;
+        const onboardingCompleted = Boolean(serverUser.onboardingCompleted) || serverStep >= 4;
         const userToStore = {
           ...serverUser,
           onboardingCompleted,
@@ -94,17 +93,13 @@ export default function EmailLogin() {
 
         {/* Encabezado */}
         <div className="flex flex-col gap-4">
-          <h1
-            className="font-bold text-white"
-            style={{ fontSize: 42, lineHeight: 1.2 }}
-          >
+          <h1 className="font-bold text-white" style={{ fontSize: 42, lineHeight: 1.2 }}>
             Gestiona tus
             <br />
             regalías musicales.
           </h1>
           <p className="text-sm text-[#94A3B8]" style={{ lineHeight: 1.6 }}>
-            Rastrea streams, divide pagos y gestiona colaboradores en un solo
-            lugar.
+            Rastrea streams, divide pagos y gestiona colaboradores en un solo lugar.
           </p>
         </div>
 
@@ -163,20 +158,14 @@ export default function EmailLogin() {
 
           {/* Encabezado */}
           <div className="flex flex-col gap-1">
-            <h2 className="text-[26px] font-bold text-[#111827]">
-              Bienvenido de nuevo
-            </h2>
-            <p className="text-sm text-[#6B7280]">
-              Inicia sesión para continuar
-            </p>
+            <h2 className="text-[26px] font-bold text-[#111827]">Bienvenido de nuevo</h2>
+            <p className="text-sm text-[#6B7280]">Inicia sesión para continuar</p>
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {/* Correo */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-[#374151]">
-                Correo electrónico
-              </label>
+              <label className="text-sm font-medium text-[#374151]">Correo electrónico</label>
               <div className="relative">
                 <Mail
                   size={16}
@@ -196,9 +185,7 @@ export default function EmailLogin() {
 
             {/* Contraseña */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-[#374151]">
-                Contraseña
-              </label>
+              <label className="text-sm font-medium text-[#374151]">Contraseña</label>
               <div className="relative">
                 <Lock
                   size={16}
@@ -248,9 +235,7 @@ export default function EmailLogin() {
             </div>
 
             {/* Error */}
-            {error && (
-              <p className="text-center text-sm text-red-500">{error}</p>
-            )}
+            {error && <p className="text-center text-sm text-red-500">{error}</p>}
 
             {/* Botón iniciar sesión */}
             <button

@@ -1,13 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  X,
-  CreditCard,
-  Mail,
-  CheckCircle,
-  AlertCircle,
-  Link as LinkIcon,
-} from "lucide-react";
+import { X, CreditCard, Mail, CheckCircle, AlertCircle, Link as LinkIcon } from "lucide-react";
 import { usePayoneer } from "../../hooks/usePayoneer";
 
 interface LinkAccountModalProps {
@@ -15,10 +8,7 @@ interface LinkAccountModalProps {
   onClose: () => void;
 }
 
-const LinkAccountModal: React.FC<LinkAccountModalProps> = ({
-  isOpen,
-  onClose,
-}) => {
+const LinkAccountModal: React.FC<LinkAccountModalProps> = ({ isOpen, onClose }) => {
   const { linkAccount, loading, error, clearError } = usePayoneer();
   const [step, setStep] = useState<"form" | "success">("form");
 
@@ -68,8 +58,7 @@ const LinkAccountModal: React.FC<LinkAccountModalProps> = ({
                 Vincular Cuenta de Payoneer
               </h3>
               <p className="text-sm text-gray-600">
-                Conecta tu cuenta de Payoneer para enviar y recibir pagos de
-                forma gratuita
+                Conecta tu cuenta de Payoneer para enviar y recibir pagos de forma gratuita
               </p>
             </div>
 
@@ -92,8 +81,7 @@ const LinkAccountModal: React.FC<LinkAccountModalProps> = ({
                   />
                 </div>
                 <p className="mt-1 text-xs text-gray-500">
-                  Usa el mismo email que tienes registrado en tu cuenta de
-                  Payoneer
+                  Usa el mismo email que tienes registrado en tu cuenta de Payoneer
                 </p>
               </div>
 
@@ -119,16 +107,12 @@ const LinkAccountModal: React.FC<LinkAccountModalProps> = ({
                     <AlertCircle className="h-5 w-5 text-blue-400" />
                   </div>
                   <div className="ml-3">
-                    <h4 className="text-sm font-medium text-blue-800">
-                      ¿Cómo funciona?
-                    </h4>
+                    <h4 className="text-sm font-medium text-blue-800">¿Cómo funciona?</h4>
                     <div className="mt-2 text-sm text-blue-700">
                       <ul className="list-inside list-disc space-y-1">
                         <li>Vinculamos tu cuenta de forma segura</li>
                         <li>Verificamos tu identidad con Payoneer</li>
-                        <li>
-                          Una vez verificado, podrás enviar y recibir pagos
-                        </li>
+                        <li>Una vez verificado, podrás enviar y recibir pagos</li>
                         <li>Las transferencias entre usuarios son gratuitas</li>
                       </ul>
                     </div>
@@ -150,10 +134,7 @@ const LinkAccountModal: React.FC<LinkAccountModalProps> = ({
                     type="button"
                     className="text-indigo-600 underline hover:text-indigo-500"
                     onClick={() =>
-                      window.open(
-                        "https://www.payoneer.com/legal/terms-conditions/",
-                        "_blank",
-                      )
+                      window.open("https://www.payoneer.com/legal/terms-conditions/", "_blank")
                     }
                   >
                     términos y condiciones
@@ -188,9 +169,7 @@ const LinkAccountModal: React.FC<LinkAccountModalProps> = ({
               <CheckCircle className="h-6 w-6 text-green-600" />
             </div>
             <div>
-              <h3 className="mb-2 text-lg font-semibold text-gray-900">
-                ¡Cuenta Vinculada!
-              </h3>
+              <h3 className="mb-2 text-lg font-semibold text-gray-900">¡Cuenta Vinculada!</h3>
               <p className="mb-4 text-sm text-gray-600">
                 Tu cuenta de Payoneer ha sido vinculada exitosamente
               </p>
@@ -210,8 +189,8 @@ const LinkAccountModal: React.FC<LinkAccountModalProps> = ({
 
               <div className="rounded-lg bg-blue-50 p-3">
                 <p className="text-sm text-blue-800">
-                  <strong>Próximos pasos:</strong> Payoneer verificará tu
-                  cuenta. Recibirás un email cuando el proceso esté completo.
+                  <strong>Próximos pasos:</strong> Payoneer verificará tu cuenta. Recibirás un email
+                  cuando el proceso esté completo.
                 </p>
               </div>
             </div>
@@ -250,13 +229,8 @@ const LinkAccountModal: React.FC<LinkAccountModalProps> = ({
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-200 p-6">
-              <h2 className="text-xl font-semibold text-gray-900">
-                Vincular Payoneer
-              </h2>
-              <button
-                onClick={handleClose}
-                className="rounded-lg p-2 hover:bg-gray-100"
-              >
+              <h2 className="text-xl font-semibold text-gray-900">Vincular Payoneer</h2>
+              <button onClick={handleClose} className="rounded-lg p-2 hover:bg-gray-100">
                 <X className="h-5 w-5 text-gray-400" />
               </button>
             </div>

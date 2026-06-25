@@ -9,8 +9,7 @@ interface DashboardTourProps {
 }
 
 const DashboardTour: React.FC<DashboardTourProps> = ({ onTourComplete }) => {
-  const { isFirstTime, hasCompletedTour, completeTour, resetTour } =
-    useDashboardTour();
+  const { isFirstTime, hasCompletedTour, completeTour, resetTour } = useDashboardTour();
   const [runTour, setRunTour] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
 
@@ -52,16 +51,11 @@ const DashboardTour: React.FC<DashboardTourProps> = ({ onTourComplete }) => {
           >
             <Sparkles className="h-8 w-8 text-white" />
           </motion.div>
-          <h3 className="mb-2 text-xl font-bold text-gray-900">
-            ¡Bienvenido a tu Dashboard!
-          </h3>
+          <h3 className="mb-2 text-xl font-bold text-gray-900">¡Bienvenido a tu Dashboard!</h3>
           <p className="text-gray-600">
-            Te guiaré a través de las principales funciones de tu panel de
-            música.
+            Te guiaré a través de las principales funciones de tu panel de música.
             <br />
-            <span className="text-sm text-purple-600">
-              ¡Vamos a explorar juntos!
-            </span>
+            <span className="text-sm text-purple-600">¡Vamos a explorar juntos!</span>
           </p>
         </div>
       ),
@@ -77,12 +71,10 @@ const DashboardTour: React.FC<DashboardTourProps> = ({ onTourComplete }) => {
       target: '[data-tour="hero-header"]',
       content: (
         <div>
-          <h3 className="mb-2 text-lg font-bold text-gray-900">
-            📊 Dashboard Analytics
-          </h3>
+          <h3 className="mb-2 text-lg font-bold text-gray-900">📊 Dashboard Analytics</h3>
           <p className="text-gray-600">
-            Aquí tienes una vista general de tu rendimiento musical. El
-            dashboard te muestra métricas clave y tendencias importantes.
+            Aquí tienes una vista general de tu rendimiento musical. El dashboard te muestra
+            métricas clave y tendencias importantes.
           </p>
         </div>
       ),
@@ -93,12 +85,8 @@ const DashboardTour: React.FC<DashboardTourProps> = ({ onTourComplete }) => {
       target: '[data-tour="stats-cards"]',
       content: (
         <div>
-          <h3 className="mb-2 text-lg font-bold text-gray-900">
-            📈 Métricas Principales
-          </h3>
-          <p className="text-gray-600">
-            Estas tarjetas muestran tus estadísticas más importantes:
-          </p>
+          <h3 className="mb-2 text-lg font-bold text-gray-900">📈 Métricas Principales</h3>
+          <p className="text-gray-600">Estas tarjetas muestran tus estadísticas más importantes:</p>
           <ul className="mt-2 space-y-1 text-sm text-gray-500">
             <li>
               • <strong>Total Streams:</strong> Reproducciones totales
@@ -122,13 +110,10 @@ const DashboardTour: React.FC<DashboardTourProps> = ({ onTourComplete }) => {
       target: '[data-tour="analytics-chart"]',
       content: (
         <div>
-          <h3 className="mb-2 text-lg font-bold text-gray-900">
-            📊 Gráfico de Rendimiento
-          </h3>
+          <h3 className="mb-2 text-lg font-bold text-gray-900">📊 Gráfico de Rendimiento</h3>
           <p className="text-gray-600">
-            Visualiza tu rendimiento a lo largo del tiempo. Puedes cambiar entre
-            diferentes períodos (7 días, 30 días, etc.) para analizar tendencias
-            y patrones.
+            Visualiza tu rendimiento a lo largo del tiempo. Puedes cambiar entre diferentes períodos
+            (7 días, 30 días, etc.) para analizar tendencias y patrones.
           </p>
         </div>
       ),
@@ -139,12 +124,10 @@ const DashboardTour: React.FC<DashboardTourProps> = ({ onTourComplete }) => {
       target: '[data-tour="balance-section"]',
       content: (
         <div>
-          <h3 className="mb-2 text-lg font-bold text-gray-900">
-            💰 Balance y Pagos
-          </h3>
+          <h3 className="mb-2 text-lg font-bold text-gray-900">💰 Balance y Pagos</h3>
           <p className="text-gray-600">
-            Aquí puedes ver tu balance actual, ingresos y gastos. También puedes
-            acceder a Payoneer para gestionar tus pagos de forma segura.
+            Aquí puedes ver tu balance actual, ingresos y gastos. También puedes acceder a Payoneer
+            para gestionar tus pagos de forma segura.
           </p>
         </div>
       ),
@@ -155,13 +138,10 @@ const DashboardTour: React.FC<DashboardTourProps> = ({ onTourComplete }) => {
       target: '[data-tour="platforms-section"]',
       content: (
         <div>
-          <h3 className="mb-2 text-lg font-bold text-gray-900">
-            🌐 Plataformas de Streaming
-          </h3>
+          <h3 className="mb-2 text-lg font-bold text-gray-900">🌐 Plataformas de Streaming</h3>
           <p className="text-gray-600">
-            Monitorea tu rendimiento en diferentes plataformas como Spotify,
-            Apple Music, YouTube y más. Ve cómo se distribuyen tus streams y
-            ganancias.
+            Monitorea tu rendimiento en diferentes plataformas como Spotify, Apple Music, YouTube y
+            más. Ve cómo se distribuyen tus streams y ganancias.
           </p>
         </div>
       ),
@@ -172,13 +152,10 @@ const DashboardTour: React.FC<DashboardTourProps> = ({ onTourComplete }) => {
       target: '[data-tour="top-songs"]',
       content: (
         <div>
-          <h3 className="mb-2 text-lg font-bold text-gray-900">
-            🎵 Tus Mejores Canciones
-          </h3>
+          <h3 className="mb-2 text-lg font-bold text-gray-900">🎵 Tus Mejores Canciones</h3>
           <p className="text-gray-600">
-            Descubre cuáles son tus canciones más exitosas del mes. Usa los
-            filtros para analizar diferentes aspectos y haz clic en "Ver todas"
-            para acceder a tu biblioteca completa.
+            Descubre cuáles son tus canciones más exitosas del mes. Usa los filtros para analizar
+            diferentes aspectos y haz clic en "Ver todas" para acceder a tu biblioteca completa.
           </p>
         </div>
       ),
@@ -197,17 +174,15 @@ const DashboardTour: React.FC<DashboardTourProps> = ({ onTourComplete }) => {
           >
             <Crown className="h-8 w-8 text-white" />
           </motion.div>
-          <h3 className="mb-2 text-xl font-bold text-gray-900">
-            ¡Tour Completado!
-          </h3>
+          <h3 className="mb-2 text-xl font-bold text-gray-900">¡Tour Completado!</h3>
           <p className="mb-4 text-gray-600">
-            Ya conoces las funciones principales de tu dashboard. ¡Ahora puedes
-            explorar y aprovechar al máximo todas las herramientas!
+            Ya conoces las funciones principales de tu dashboard. ¡Ahora puedes explorar y
+            aprovechar al máximo todas las herramientas!
           </p>
           <div className="text-sm text-gray-500">
             <p>
-              💡 <strong>Consejo:</strong> Puedes revisar este tour en cualquier
-              momento desde tu perfil.
+              💡 <strong>Consejo:</strong> Puedes revisar este tour en cualquier momento desde tu
+              perfil.
             </p>
           </div>
         </div>
@@ -264,8 +239,7 @@ const DashboardTour: React.FC<DashboardTourProps> = ({ onTourComplete }) => {
             backgroundColor: "#ffffff",
             borderRadius: "16px",
             padding: "20px",
-            boxShadow:
-              "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+            boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
             border: "1px solid rgba(139, 92, 246, 0.1)",
           },
           tooltipTitle: {
@@ -337,9 +311,7 @@ const DashboardTour: React.FC<DashboardTourProps> = ({ onTourComplete }) => {
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-purple-600" />
-              <span className="text-sm font-medium text-gray-700">
-                Tour del Dashboard
-              </span>
+              <span className="text-sm font-medium text-gray-700">Tour del Dashboard</span>
             </div>
             <div className="flex items-center gap-1">
               <span className="text-xs text-gray-500">{stepIndex + 1}</span>

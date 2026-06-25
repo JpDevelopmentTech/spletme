@@ -21,9 +21,7 @@ export default function AddCollaborator({
     // Prepare the request payload based on the method
     const requestPayload = {
       songId: id || "",
-      ...(method === "email"
-        ? { collaboratorEmail: email }
-        : { collaboratorId: code }),
+      ...(method === "email" ? { collaboratorEmail: email } : { collaboratorId: code }),
     };
 
     const response = await SongService.addCollaborator(requestPayload);
@@ -60,9 +58,7 @@ export default function AddCollaborator({
                 <div className="rounded-lg bg-orange-50 p-2">
                   <UserPlus className="h-4 w-4 text-[#F97316]" />
                 </div>
-                <h3 className="text-base font-bold text-gray-900">
-                  Añadir colaborador
-                </h3>
+                <h3 className="text-base font-bold text-gray-900">Añadir colaborador</h3>
               </div>
               <button
                 className="rounded-lg p-1.5 transition-colors hover:bg-gray-100"
@@ -201,9 +197,7 @@ export default function AddCollaborator({
                 <Plus className="h-6 w-6 text-[#F97316]" />
               </div>
               <div className="flex flex-col items-start">
-                <span className="text-lg font-semibold text-gray-900">
-                  Agregar
-                </span>
+                <span className="text-lg font-semibold text-gray-900">Agregar</span>
                 <span className="text-sm text-gray-500">Nuevo colaborador</span>
               </div>
             </button>

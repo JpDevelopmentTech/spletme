@@ -18,9 +18,7 @@ export default function PasswordRecoveryRequest() {
   const [emailError, setEmailError] = useState("");
   const [sentEmail, setSentEmail] = useState("");
 
-  const [codeDigits, setCodeDigits] = useState<string[]>(
-    Array(CODE_LENGTH).fill(""),
-  );
+  const [codeDigits, setCodeDigits] = useState<string[]>(Array(CODE_LENGTH).fill(""));
   const [codeError, setCodeError] = useState("");
 
   const handleSendRecoveryRequest = async (e: React.FormEvent) => {
@@ -38,8 +36,7 @@ export default function PasswordRecoveryRequest() {
     setIsSendingRequest(true);
 
     try {
-      const recoveryResponse =
-        await AuthService.sentPasswordRecoveryRequest(normalizedEmail);
+      const recoveryResponse = await AuthService.sentPasswordRecoveryRequest(normalizedEmail);
 
       if (!recoveryResponse.success) {
         setEmailError(recoveryResponse.message || "correo no encontrado");
@@ -72,10 +69,7 @@ export default function PasswordRecoveryRequest() {
     }
   };
 
-  const handleDigitKeyDown = (
-    index: number,
-    e: React.KeyboardEvent<HTMLInputElement>,
-  ) => {
+  const handleDigitKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Backspace" && !codeDigits[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
@@ -118,13 +112,13 @@ export default function PasswordRecoveryRequest() {
     setIsVerifyingCode(true);
     setCodeError("");
     try {
-      const verificationResponse =
-        await AuthService.sentcodeForPasswordRecovery(sentEmail, fullCode);
+      const verificationResponse = await AuthService.sentcodeForPasswordRecovery(
+        sentEmail,
+        fullCode,
+      );
 
       if (!verificationResponse.success) {
-        setCodeError(
-          verificationResponse.message || "Código inválido o expirado",
-        );
+        setCodeError(verificationResponse.message || "Código inválido o expirado");
         return;
       }
 
@@ -162,9 +156,7 @@ export default function PasswordRecoveryRequest() {
 
           <div className="mb-4 flex items-center gap-3">
             <ShieldCheck className="h-8 w-8 text-blue-500" />
-            <h1 className="text-3xl font-bold text-gray-800">
-              Verificar código
-            </h1>
+            <h1 className="text-3xl font-bold text-gray-800">Verificar código</h1>
           </div>
 
           <p className="mb-6 text-gray-600">
@@ -195,9 +187,7 @@ export default function PasswordRecoveryRequest() {
               ))}
             </div>
 
-            {codeError && (
-              <p className="text-center text-sm text-red-500">{codeError}</p>
-            )}
+            {codeError && <p className="text-center text-sm text-red-500">{codeError}</p>}
 
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -235,9 +225,7 @@ export default function PasswordRecoveryRequest() {
               exit={{ scale: 0.96, opacity: 0, y: 10 }}
               className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
             >
-              <h2 className="mb-2 text-2xl font-bold text-gray-800">
-                Recuperar contraseña
-              </h2>
+              <h2 className="mb-2 text-2xl font-bold text-gray-800">Recuperar contraseña</h2>
               <p className="mb-6 text-sm text-gray-600">
                 Ingresa tu correo y te enviaremos un código de verificación.
               </p>
@@ -267,9 +255,7 @@ export default function PasswordRecoveryRequest() {
                       required
                     />
                   </div>
-                  {emailError && (
-                    <p className="mt-2 text-sm text-red-500">{emailError}</p>
-                  )}
+                  {emailError && <p className="mt-2 text-sm text-red-500">{emailError}</p>}
                 </div>
 
                 <motion.button
@@ -302,9 +288,7 @@ export default function PasswordRecoveryRequest() {
               className="flex w-full max-w-xs flex-col items-center gap-3 rounded-2xl bg-white p-6 shadow-2xl"
             >
               <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-              <p className="font-semibold text-gray-800">
-                Verificando código...
-              </p>
+              <p className="font-semibold text-gray-800">Verificando código...</p>
             </motion.div>
           </motion.div>
         )}

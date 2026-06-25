@@ -58,10 +58,7 @@ export function ProfileHeroCard({
 }: ProfileHeroCardProps) {
   return (
     <div className="overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white">
-      <div
-        className="flex items-center gap-4 px-6 py-5"
-        style={{ backgroundColor: "#0F172A" }}
-      >
+      <div className="flex items-center gap-4 px-6 py-5" style={{ backgroundColor: "#0F172A" }}>
         {/* Avatar */}
         <div className="group relative flex-shrink-0">
           <div
@@ -75,11 +72,7 @@ export function ProfileHeroCard({
             }}
           >
             {profileImage ? (
-              <img
-                src={profileImage}
-                alt="Profile"
-                className="h-full w-full object-cover"
-              />
+              <img src={profileImage} alt="Profile" className="h-full w-full object-cover" />
             ) : (
               <User size={36} color="#64748B" />
             )}
@@ -110,29 +103,18 @@ export function ProfileHeroCard({
           </p>
           <div className="mt-1 flex flex-wrap gap-3">
             {userData.onboardingData.profession && (
-              <p
-                className="flex items-center gap-1 text-sm"
-                style={{ color: "#94A3B8" }}
-              >
-                <AudioWaveform size={14} color="#94A3B8" />{" "}
-                {userData.onboardingData.profession}
+              <p className="flex items-center gap-1 text-sm" style={{ color: "#94A3B8" }}>
+                <AudioWaveform size={14} color="#94A3B8" /> {userData.onboardingData.profession}
               </p>
             )}
             {userData.onboardingData.country && (
-              <p
-                className="flex items-center gap-1 text-sm"
-                style={{ color: "#94A3B8" }}
-              >
+              <p className="flex items-center gap-1 text-sm" style={{ color: "#94A3B8" }}>
                 <Earth size={14} color="#94A3B8" /> {convertCountry}
               </p>
             )}
             {userData.onboardingData.address && (
-              <p
-                className="flex items-center gap-1 text-sm"
-                style={{ color: "#94A3B8" }}
-              >
-                <MapPin size={14} color="#94A3B8" />{" "}
-                {userData.onboardingData.address}
+              <p className="flex items-center gap-1 text-sm" style={{ color: "#94A3B8" }}>
+                <MapPin size={14} color="#94A3B8" /> {userData.onboardingData.address}
               </p>
             )}
           </div>
@@ -170,9 +152,7 @@ export function ProfileHeroCard({
                 <select
                   value={editForm.country}
                   onChange={(e) => onEditFormChange("country", e.target.value)}
-                  className={
-                    inputCls(!!editErrors.country) + " appearance-none pr-10"
-                  }
+                  className={inputCls(!!editErrors.country) + " appearance-none pr-10"}
                 >
                   <option value="">Selecciona tu país</option>
                   {PROFILE_COUNTRIES.map((c) => (
@@ -184,9 +164,7 @@ export function ProfileHeroCard({
                 <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9CA3AF]" />
               </div>
               {editErrors.country && (
-                <p className="mt-1 text-xs text-red-500">
-                  {editErrors.country}
-                </p>
+                <p className="mt-1 text-xs text-red-500">{editErrors.country}</p>
               )}
             </div>
 
@@ -198,12 +176,8 @@ export function ProfileHeroCard({
               <div className="relative">
                 <select
                   value={editForm.profession}
-                  onChange={(e) =>
-                    onEditFormChange("profession", e.target.value)
-                  }
-                  className={
-                    inputCls(!!editErrors.profession) + " appearance-none pr-10"
-                  }
+                  onChange={(e) => onEditFormChange("profession", e.target.value)}
+                  className={inputCls(!!editErrors.profession) + " appearance-none pr-10"}
                 >
                   <option value="">Selecciona tu profesión</option>
                   {PROFILE_PROFESSIONS.map((p) => (
@@ -215,9 +189,7 @@ export function ProfileHeroCard({
                 <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9CA3AF]" />
               </div>
               {editErrors.profession && (
-                <p className="mt-1 text-xs text-red-500">
-                  {editErrors.profession}
-                </p>
+                <p className="mt-1 text-xs text-red-500">{editErrors.profession}</p>
               )}
             </div>
 
@@ -230,13 +202,8 @@ export function ProfileHeroCard({
                 <div className="relative">
                   <select
                     value={editForm.otherProfession}
-                    onChange={(e) =>
-                      onEditFormChange("otherProfession", e.target.value)
-                    }
-                    className={
-                      inputCls(!!editErrors.otherProfession) +
-                      " appearance-none pr-10"
-                    }
+                    onChange={(e) => onEditFormChange("otherProfession", e.target.value)}
+                    className={inputCls(!!editErrors.otherProfession) + " appearance-none pr-10"}
                   >
                     <option value="">Selecciona</option>
                     {OTHER_PROFESSIONS.map((p) => (
@@ -248,9 +215,7 @@ export function ProfileHeroCard({
                   <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9CA3AF]" />
                 </div>
                 {editErrors.otherProfession && (
-                  <p className="mt-1 text-xs text-red-500">
-                    {editErrors.otherProfession}
-                  </p>
+                  <p className="mt-1 text-xs text-red-500">{editErrors.otherProfession}</p>
                 )}
               </div>
             )}
@@ -268,9 +233,7 @@ export function ProfileHeroCard({
                 className={inputCls(!!editErrors.address)}
               />
               {editErrors.address && (
-                <p className="mt-1 text-xs text-red-500">
-                  {editErrors.address}
-                </p>
+                <p className="mt-1 text-xs text-red-500">{editErrors.address}</p>
               )}
             </div>
 
@@ -293,8 +256,8 @@ export function ProfileHeroCard({
                   border: "1px solid rgba(34,197,94,0.2)",
                 }}
               >
-                <CheckCircle2 size={15} className="flex-shrink-0" /> Perfil
-                actualizado correctamente.
+                <CheckCircle2 size={15} className="flex-shrink-0" /> Perfil actualizado
+                correctamente.
               </div>
             )}
 

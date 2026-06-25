@@ -12,14 +12,8 @@ interface DistributorStepProps {
   initialData?: OnboardingData;
 }
 
-const DistributorStep = ({
-  nextStep,
-  prevStep,
-  initialData,
-}: DistributorStepProps) => {
-  const [selectedDistributor, setSelectedDistributor] = useState<string | null>(
-    null,
-  );
+const DistributorStep = ({ nextStep, prevStep, initialData }: DistributorStepProps) => {
+  const [selectedDistributor, setSelectedDistributor] = useState<string | null>(null);
   const [credentials, setCredentials] = useState({
     email: "",
     password: "",
@@ -46,11 +40,7 @@ const DistributorStep = ({
       description: "Distribución global independiente",
       color: "from-gray-500 to-gray-600",
       icon: believeIcon,
-      features: [
-        "Distribución mundial",
-        "Analytics avanzados",
-        "Promoción digital",
-      ],
+      features: ["Distribución mundial", "Analytics avanzados", "Promoción digital"],
     },
     {
       id: "onerpm",
@@ -74,11 +64,7 @@ const DistributorStep = ({
       description: "Distribución independiente completa",
       color: "from-gray-500 to-gray-600",
       icon: symphonicIcon,
-      features: [
-        "Distribución completa",
-        "Herramientas de artista",
-        "Soporte personalizado",
-      ],
+      features: ["Distribución completa", "Herramientas de artista", "Soporte personalizado"],
     },
   ];
 
@@ -128,9 +114,7 @@ const DistributorStep = ({
     }
   };
 
-  const selectedDistributorData = distributors.find(
-    (d) => d.id === selectedDistributor,
-  );
+  const selectedDistributorData = distributors.find((d) => d.id === selectedDistributor);
 
   return (
     <div className="space-y-6">
@@ -242,9 +226,7 @@ const DistributorStep = ({
                   type="email"
                   id="email"
                   value={credentials.email}
-                  onChange={(e) =>
-                    handleCredentialChange("email", e.target.value)
-                  }
+                  onChange={(e) => handleCredentialChange("email", e.target.value)}
                   placeholder="tu@email.com"
                   className={`w-full rounded-xl border-2 px-4 py-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-gray-500/20 ${
                     errors.email
@@ -258,11 +240,7 @@ const DistributorStep = ({
                     animate={{ opacity: 1, y: 0 }}
                     className="mt-2 flex items-center space-x-1 text-sm text-red-600 dark:text-red-400"
                   >
-                    <svg
-                      className="h-4 w-4"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
+                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
                       <path
                         fillRule="evenodd"
                         d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
@@ -293,9 +271,7 @@ const DistributorStep = ({
                   type="password"
                   id="password"
                   value={credentials.password}
-                  onChange={(e) =>
-                    handleCredentialChange("password", e.target.value)
-                  }
+                  onChange={(e) => handleCredentialChange("password", e.target.value)}
                   placeholder="••••••••"
                   className={`w-full rounded-xl border-2 px-4 py-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-gray-500/20 ${
                     errors.password
@@ -309,11 +285,7 @@ const DistributorStep = ({
                     animate={{ opacity: 1, y: 0 }}
                     className="mt-2 flex items-center space-x-1 text-sm text-red-600 dark:text-red-400"
                   >
-                    <svg
-                      className="h-4 w-4"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
+                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
                       <path
                         fillRule="evenodd"
                         d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
@@ -340,8 +312,8 @@ const DistributorStep = ({
                     Conexión segura
                   </h4>
                   <p className="text-xs text-gray-600 dark:text-gray-400">
-                    Tus credenciales se encriptan y solo se usan para
-                    sincronizar tu catálogo musical.
+                    Tus credenciales se encriptan y solo se usan para sincronizar tu catálogo
+                    musical.
                   </p>
                 </div>
               </div>

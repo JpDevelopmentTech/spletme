@@ -24,9 +24,7 @@ export default function Data({ song }: { song: any }) {
           whileTap={{ scale: 0.95 }}
           className="rounded-lg bg-quinary/10 px-4 py-2 text-sm font-medium text-quinary transition-all hover:bg-quinary/20"
           onClick={() => {
-            document
-              .getElementById("data-valora")
-              ?.scrollIntoView({ behavior: "smooth" });
+            document.getElementById("data-valora")?.scrollIntoView({ behavior: "smooth" });
           }}
         >
           Ver más
@@ -83,10 +81,7 @@ export default function Data({ song }: { song: any }) {
                 {item.value}
               </motion.span>
               {item.copyable && item.value !== "—" && (
-                <CopyButton
-                  value={String(item.value)}
-                  title={`Copiar ${item.label}`}
-                />
+                <CopyButton value={String(item.value)} title={`Copiar ${item.label}`} />
               )}
             </span>
           </motion.div>

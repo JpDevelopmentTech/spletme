@@ -17,8 +17,7 @@ const AUTH_ENDPOINTS = ["sign-in", "sign-up", "password-recovery"];
  */
 const PERMISSION_ONLY_ENDPOINTS = ["add-collaborator"];
 
-const isAuthEndpoint = (url = "") =>
-  AUTH_ENDPOINTS.some((path) => url.includes(path));
+const isAuthEndpoint = (url = "") => AUTH_ENDPOINTS.some((path) => url.includes(path));
 
 const isPermissionEndpoint = (url = "") =>
   PERMISSION_ONLY_ENDPOINTS.some((path) => url.includes(path));

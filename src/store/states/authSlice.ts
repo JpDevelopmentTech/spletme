@@ -14,9 +14,7 @@ interface SetAuthPayload {
 
 const initialState: AuthState = {
   isAuth: localStorage.getItem("isAuth") === "true" ? "true" : "false",
-  user: localStorage.getItem("user")
-    ? (JSON.parse(localStorage.getItem("user")!) as User)
-    : {},
+  user: localStorage.getItem("user") ? (JSON.parse(localStorage.getItem("user")!) as User) : {},
 };
 
 const authSlice = createSlice({

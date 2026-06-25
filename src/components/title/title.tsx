@@ -1,12 +1,6 @@
 import { motion } from "framer-motion";
 
-export default function Title({
-  title,
-  subtitle,
-}: {
-  title: string;
-  subtitle?: string;
-}) {
+export default function Title({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <div className="flex flex-col space-y-1 overflow-hidden">
       <motion.span

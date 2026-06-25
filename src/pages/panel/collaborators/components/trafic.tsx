@@ -66,12 +66,7 @@ const Trafic = () => {
     <div className="col-span-6 row-span-2 flex flex-col rounded-2xl p-6 shadow-lg">
       <Title title="Trafico" subtitle="Aqui un texto para el trafico" />
       <div>
-        <ReactApexChart
-          options={options}
-          series={series}
-          type="area"
-          height={200}
-        />
+        <ReactApexChart options={options} series={series} type="area" height={200} />
       </div>
     </div>
   );

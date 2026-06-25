@@ -5,21 +5,17 @@ export default function EspecificData({ song }: { song: any }) {
   const getDateLabel = (value: any) => {
     if (!value) return "N/A";
     const parsed = new Date(value);
-    return Number.isNaN(parsed.getTime())
-      ? String(value)
-      : parsed.toLocaleDateString();
+    return Number.isNaN(parsed.getTime()) ? String(value) : parsed.toLocaleDateString();
   };
 
   const getDurationLabel = () => {
-    const rawDuration =
-      song?.duration || song?.durationMs || song?.spotifyData?.duration_ms;
+    const rawDuration = song?.duration || song?.durationMs || song?.spotifyData?.duration_ms;
     if (!rawDuration && rawDuration !== 0) return "N/A";
 
     const value = Number(rawDuration);
     if (Number.isNaN(value)) return String(rawDuration);
 
-    const totalSeconds =
-      value > 10000 ? Math.round(value / 1000) : Math.round(value);
+    const totalSeconds = value > 10000 ? Math.round(value / 1000) : Math.round(value);
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
     return `${minutes}:${String(seconds).padStart(2, "0")}`;
@@ -28,9 +24,7 @@ export default function EspecificData({ song }: { song: any }) {
   const upc = song?.upc || song?.ean || song?.releases?.[0]?.upc || "N/A";
   const isrc = song?.isrc || "N/A";
   const releaseDate = getDateLabel(
-    song?.releaseDate ||
-      song?.releases?.[0]?.releaseDate ||
-      song?.releases?.[0]?.salesMonth,
+    song?.releaseDate || song?.releases?.[0]?.releaseDate || song?.releases?.[0]?.salesMonth,
   );
   const duration = getDurationLabel();
   const label = song?.artisticLabel || song?.label || "N/A";
@@ -40,14 +34,9 @@ export default function EspecificData({ song }: { song: any }) {
     (Array.isArray(song?.songwriters) ? song.songwriters.join(", ") : null) ||
     "N/A";
   const producer =
-    song?.producer ||
-    (Array.isArray(song?.producers) ? song.producers.join(", ") : null) ||
-    "N/A";
+    song?.producer || (Array.isArray(song?.producers) ? song.producers.join(", ") : null) || "N/A";
   const currentDistributor =
-    song?.currentDistributor ||
-    song?.distributor ||
-    song?.distributorName ||
-    "N/A";
+    song?.currentDistributor || song?.distributor || song?.distributorName || "N/A";
   const previousDistributors = Array.isArray(song?.previousDistributors)
     ? song.previousDistributors
     : [];
@@ -79,9 +68,7 @@ export default function EspecificData({ song }: { song: any }) {
             </span>
             <span className="inline-flex items-center gap-1.5">
               {isrc}
-              {isrc !== "N/A" && (
-                <CopyButton value={isrc} title="Copiar ISRC" />
-              )}
+              {isrc !== "N/A" && <CopyButton value={isrc} title="Copiar ISRC" />}
             </span>
             <span>{releaseDate}</span>
             <span>{duration}</span>
@@ -94,9 +81,7 @@ export default function EspecificData({ song }: { song: any }) {
           <div className="flex w-full gap-3 rounded-2xl p-3 shadow-lg">
             <img src={img} alt="" className="h-16 w-16 rounded-full" />
             <div className="flex flex-col justify-center">
-              <span className="text-subtitle font-bold">
-                {currentDistributor}
-              </span>
+              <span className="text-subtitle font-bold">{currentDistributor}</span>
               <span className="text-normal">Distribuidor actual</span>
             </div>
           </div>

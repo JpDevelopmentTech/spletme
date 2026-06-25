@@ -1,12 +1,6 @@
 import { KeyboardEvent } from "react";
 
-const Step2 = ({
-  nextStep,
-  prevStep,
-}: {
-  nextStep: () => void;
-  prevStep: () => void;
-}) => {
+const Step2 = ({ nextStep, prevStep }: { nextStep: () => void; prevStep: () => void }) => {
   const focusNextInput = (
     currentInput: KeyboardEvent<HTMLInputElement>,
     prevInputId: string,
@@ -42,10 +36,8 @@ const Step2 = ({
           </h1>
           <p className="font-light text-gray-500 dark:text-gray-400">
             Nosotros enviamos un código de verificación a{" "}
-            <span className="font-medium text-gray-900 dark:text-white">
-              +1 555-555-5555
-            </span>
-            . Por favor, ingresa el código a continuación.
+            <span className="font-medium text-gray-900 dark:text-white">+1 555-555-5555</span>. Por
+            favor, ingresa el código a continuación.
           </p>
           <form action="#">
             <div className="my-4 flex space-x-2 sm:space-x-4 md:my-6">

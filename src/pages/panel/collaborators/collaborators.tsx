@@ -172,15 +172,12 @@ export default function Collaborators() {
     refreshMetrics();
   }, [refreshMetrics]);
 
-  const featured =
-    collaborators.find((c) => c.id === featuredId) ?? collaborators[0];
+  const featured = collaborators.find((c) => c.id === featuredId) ?? collaborators[0];
 
   const totalSent = metrics?.totalAmountSent ?? 0;
   const totalReceived = metrics?.totalAmountReceived ?? 0;
   const activeSplits = metrics?.activeSplits ?? 0;
-  const pendingPayments = collaborators.filter(
-    (c) => c.status === "pending",
-  ).length;
+  const pendingPayments = collaborators.filter((c) => c.status === "pending").length;
 
   return (
     <div className="min-h-screen bg-[#F7F8FA]">
@@ -205,9 +202,7 @@ export default function Collaborators() {
         </div>
 
         <CollaboratorsStatsGrid
-          totalCollaborators={
-            loading ? 0 : (metrics?.totalCollaborators ?? collaborators.length)
-          }
+          totalCollaborators={loading ? 0 : (metrics?.totalCollaborators ?? collaborators.length)}
           totalSent={
             loading
               ? "$0.00"
@@ -241,10 +236,7 @@ export default function Collaborators() {
       </div>
 
       {profileOpen && featured && (
-        <CollaboratorDetailModal
-          collaborator={featured}
-          onClose={() => setProfileOpen(false)}
-        />
+        <CollaboratorDetailModal collaborator={featured} onClose={() => setProfileOpen(false)} />
       )}
 
       {featured && (
@@ -258,10 +250,7 @@ export default function Collaborators() {
         />
       )}
 
-      <AddCollaboratorSidebar
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-      />
+      <AddCollaboratorSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
     </div>
   );
 }

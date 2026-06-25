@@ -1,9 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import LabelsService, {
-  Label,
-  LabelSong,
-  CustomLabel,
-} from "../services/labels";
+import LabelsService, { Label, LabelSong, CustomLabel } from "../services/labels";
 
 export const useLabels = () => {
   const [labels, setLabels] = useState<Label[]>([]);
@@ -23,12 +19,8 @@ export const useLabels = () => {
         LabelsService.getCustomLabels(),
       ]);
 
-      const artisticLabels: Label[] = artisticResponse.error
-        ? []
-        : artisticResponse.data || [];
-      const customLabelsList: CustomLabel[] = customResponse.error
-        ? []
-        : customResponse.data || [];
+      const artisticLabels: Label[] = artisticResponse.error ? [] : artisticResponse.data || [];
+      const customLabelsList: CustomLabel[] = customResponse.error ? [] : customResponse.data || [];
 
       // Marcar los labels artísticos como no personalizados
       const artisticLabelsWithFlag = artisticLabels.map((label) => ({

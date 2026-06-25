@@ -17,10 +17,7 @@ const CardAlbum = ({ album }: { album: any }) => {
     setData(response);
   };
   return (
-    <Link
-      to={"/panel/album/" + data?.id}
-      className="flex items-center gap-6 rounded-lg shadow-lg"
-    >
+    <Link to={"/panel/album/" + data?.id} className="flex items-center gap-6 rounded-lg shadow-lg">
       <img src={data?.images[0].url} alt="" className="h-48 w-48 rounded-lg" />
       <div className="flex w-full flex-col">
         <Title

@@ -79,9 +79,7 @@ export const SplitsStatsComponent: React.FC<SplitsStatsProps> = ({
     <div className="space-y-6">
       <div className="flex items-center gap-2">
         <BarChart3 className="h-6 w-6 text-indigo-600" />
-        <h3 className="text-xl font-semibold text-gray-900">
-          Estadísticas de Splits
-        </h3>
+        <h3 className="text-xl font-semibold text-gray-900">Estadísticas de Splits</h3>
         <span className="text-sm capitalize text-gray-500">
           ({type === "owner" ? "Como propietario" : "Como colaborador"})
         </span>
@@ -90,18 +88,11 @@ export const SplitsStatsComponent: React.FC<SplitsStatsProps> = ({
       {/* Cards de estadísticas */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {cards.map((card, index) => (
-          <div
-            key={index}
-            className={`${card.bgColor} rounded-lg border border-gray-200 p-4`}
-          >
+          <div key={index} className={`${card.bgColor} rounded-lg border border-gray-200 p-4`}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">
-                  {card.title}
-                </p>
-                <p className={`text-2xl font-bold ${card.color}`}>
-                  {card.value}
-                </p>
+                <p className="text-sm font-medium text-gray-600">{card.title}</p>
+                <p className={`text-2xl font-bold ${card.color}`}>{card.value}</p>
               </div>
               <div className={`rounded-lg p-2 ${card.bgColor}`}>
                 <card.icon className={`h-6 w-6 ${card.color}`} />
@@ -153,9 +144,7 @@ export const SplitsStatsComponent: React.FC<SplitsStatsProps> = ({
 
           {stats.splits.length > 5 && (
             <div className="mt-4 text-center">
-              <p className="text-sm text-gray-500">
-                Mostrando 5 de {stats.splits.length} splits
-              </p>
+              <p className="text-sm text-gray-500">Mostrando 5 de {stats.splits.length} splits</p>
             </div>
           )}
         </div>

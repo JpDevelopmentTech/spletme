@@ -8,11 +8,7 @@ import { ProfileHeroCard } from "@/components/profile/ProfileHeroCard";
 import { ProfileInfoCard } from "@/components/profile/ProfileInfoCard";
 import { SubprofilesCard } from "@/components/profile/SubprofilesCard";
 import { ChangePasswordCard } from "@/components/profile/ChangePasswordCard";
-import type {
-  ActiveSection,
-  ProfileUserData,
-  EditProfileForm,
-} from "@/types/profile.types";
+import type { ActiveSection, ProfileUserData, EditProfileForm } from "@/types/profile.types";
 import type { RegisterSubuserSchema } from "@/types";
 
 const ProfilePage = () => {
@@ -99,11 +95,7 @@ const ProfilePage = () => {
             onSaveProfile={profileEdit.handleSaveProfile}
           />
 
-          <ProfileInfoCard
-            userData={userData}
-            copied={copied}
-            onCopyId={handleCopyId}
-          />
+          <ProfileInfoCard userData={userData} copied={copied} onCopyId={handleCopyId} />
 
           <SubprofilesCard
             subprofiles={subprofiles.subprofiles}
@@ -120,16 +112,11 @@ const ProfilePage = () => {
             createSuccess={subprofiles.createSuccess}
             onReload={() => void subprofiles.loadSubprofiles()}
             onToggleCreate={() => toggleSection("create-subprofile")}
-            onCreateFormChange={(
-              field: keyof RegisterSubuserSchema,
-              value: string,
-            ) =>
+            onCreateFormChange={(field: keyof RegisterSubuserSchema, value: string) =>
               subprofiles.setCreateForm((prev) => ({ ...prev, [field]: value }))
             }
             onCreateSubmit={(e) =>
-              void subprofiles.handleCreateSubprofile(e, () =>
-                setActiveSection(null),
-              )
+              void subprofiles.handleCreateSubprofile(e, () => setActiveSection(null))
             }
             onConfirmUnlink={subprofiles.setConfirmingId}
             onCancelUnlink={() => subprofiles.setConfirmingId(null)}

@@ -20,13 +20,7 @@ export function useHomeDashboard() {
 
   const { totalAmount } = useSplitPayments();
   const { summary } = UseFilterSongsData();
-  const {
-    wallet,
-    loading: walletLoading,
-    hasWallet,
-    createWallet,
-    refreshWallet,
-  } = useWallet();
+  const { wallet, loading: walletLoading, hasWallet, createWallet, refreshWallet } = useWallet();
   const { user } = useAuth0();
 
   useEffect(() => {
@@ -59,17 +53,13 @@ export function useHomeDashboard() {
       {
         name: "Streams",
         type: "area",
-        data: MONTH_WEIGHTS.map((w) =>
-          Math.round(((summary.totalStreams ?? 0) * w) / WEIGHTS_SUM),
-        ),
+        data: MONTH_WEIGHTS.map((w) => Math.round(((summary.totalStreams ?? 0) * w) / WEIGHTS_SUM)),
       },
       {
         name: "Revenue",
         type: "area",
         data: MONTH_WEIGHTS.map((w) =>
-          Number(
-            (((summary.totalNetIncome ?? 0) * w) / WEIGHTS_SUM).toFixed(2),
-          ),
+          Number((((summary.totalNetIncome ?? 0) * w) / WEIGHTS_SUM).toFixed(2)),
         ),
       },
     ],
@@ -136,8 +126,7 @@ export function useHomeDashboard() {
         y: [
           {
             formatter: (val: number) => {
-              if (val >= 1_000_000)
-                return `${(val / 1_000_000).toFixed(1)}M streams`;
+              if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M streams`;
               if (val >= 1_000) return `${(val / 1_000).toFixed(1)}K streams`;
               return `${Math.round(val)} streams`;
             },

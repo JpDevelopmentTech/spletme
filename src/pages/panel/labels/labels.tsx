@@ -1,13 +1,5 @@
 import { useState, useMemo } from "react";
-import {
-  Music2,
-  Tag,
-  Plus,
-  Search,
-  ArrowRight,
-  AlertCircle,
-  FolderOpen,
-} from "lucide-react";
+import { Music2, Tag, Plus, Search, ArrowRight, AlertCircle, FolderOpen } from "lucide-react";
 import { useLabels } from "../../../hooks/useLabels";
 import Loading from "../../../components/loading/loading";
 import { useNavigate } from "react-router-dom";
@@ -20,14 +12,11 @@ export default function Labels() {
   const [search, setSearch] = useState("");
 
   const totalSongs = labels.reduce((sum, l) => sum + l.count, 0);
-  const avgSongs =
-    labels.length > 0 ? Math.round(totalSongs / labels.length) : 0;
+  const avgSongs = labels.length > 0 ? Math.round(totalSongs / labels.length) : 0;
 
   const filteredLabels = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return q
-      ? labels.filter((l) => l.label?.toLowerCase().includes(q))
-      : labels;
+    return q ? labels.filter((l) => l.label?.toLowerCase().includes(q)) : labels;
   }, [labels, search]);
 
   const handleCreateSuccess = () => {
@@ -62,9 +51,7 @@ export default function Labels() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50">
               <Tag className="h-4 w-4 text-[#F97316]" />
             </div>
-            <span className="text-xs font-medium text-gray-500">
-              Total Labels
-            </span>
+            <span className="text-xs font-medium text-gray-500">Total Labels</span>
           </div>
           <p className="text-2xl font-bold text-gray-900">{labels.length}</p>
         </div>
@@ -74,9 +61,7 @@ export default function Labels() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50">
               <Music2 className="h-4 w-4 text-blue-600" />
             </div>
-            <span className="text-xs font-medium text-gray-500">
-              Total Canciones
-            </span>
+            <span className="text-xs font-medium text-gray-500">Total Canciones</span>
           </div>
           <p className="text-2xl font-bold text-gray-900">{totalSongs}</p>
         </div>
@@ -86,9 +71,7 @@ export default function Labels() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50">
               <Music2 className="h-4 w-4 text-green-600" />
             </div>
-            <span className="text-xs font-medium text-gray-500">
-              Promedio por Label
-            </span>
+            <span className="text-xs font-medium text-gray-500">Promedio por Label</span>
           </div>
           <p className="text-2xl font-bold text-gray-900">{avgSongs}</p>
         </div>
@@ -108,9 +91,7 @@ export default function Labels() {
         <div className="flex flex-col items-start justify-between gap-3 border-b border-gray-100 px-6 py-4 sm:flex-row sm:items-center">
           <div className="flex items-center gap-2">
             <Tag className="h-4 w-4 text-gray-400" />
-            <span className="text-sm font-semibold text-gray-900">
-              Sellos discográficos
-            </span>
+            <span className="text-sm font-semibold text-gray-900">Sellos discográficos</span>
             <span className="ml-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-600">
               {filteredLabels.length}
             </span>
@@ -133,9 +114,7 @@ export default function Labels() {
             <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100">
               <FolderOpen className="h-6 w-6 text-gray-400" />
             </div>
-            <p className="mb-1 text-sm font-semibold text-gray-700">
-              Sin labels
-            </p>
+            <p className="mb-1 text-sm font-semibold text-gray-700">Sin labels</p>
             <p className="mb-4 text-xs text-gray-400">
               Aún no tienes canciones con labels asignados
             </p>
@@ -155,12 +134,8 @@ export default function Labels() {
             <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-gray-100">
               <Search className="h-5 w-5 text-gray-400" />
             </div>
-            <p className="mb-1 text-sm font-semibold text-gray-700">
-              Sin resultados
-            </p>
-            <p className="mb-3 text-xs text-gray-400">
-              No se encontraron labels para "{search}"
-            </p>
+            <p className="mb-1 text-sm font-semibold text-gray-700">Sin resultados</p>
+            <p className="mb-3 text-xs text-gray-400">No se encontraron labels para "{search}"</p>
             <button
               onClick={() => setSearch("")}
               className="text-xs font-medium text-[#F97316] hover:underline"
@@ -176,9 +151,7 @@ export default function Labels() {
             {filteredLabels.map((label, index) => (
               <button
                 key={index}
-                onClick={() =>
-                  navigate(`/panel/labels/${encodeURIComponent(label.label)}`)
-                }
+                onClick={() => navigate(`/panel/labels/${encodeURIComponent(label.label)}`)}
                 className="group rounded-xl border border-gray-200 bg-[#F7F8FA] p-5 text-left transition-all hover:border-[#F97316] hover:bg-white"
               >
                 {/* Icon + name */}
@@ -191,8 +164,7 @@ export default function Labels() {
                       {label.label || "Sin Label"}
                     </p>
                     <p className="mt-0.5 text-xs text-gray-500">
-                      {label.count}{" "}
-                      {label.count === 1 ? "canción" : "canciones"}
+                      {label.count} {label.count === 1 ? "canción" : "canciones"}
                     </p>
                   </div>
                 </div>

@@ -1,15 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  X,
-  Check,
-  Loader2,
-  Lock,
-  Globe,
-  Briefcase,
-  MapPin,
-  ChevronDown,
-} from "lucide-react";
+import { X, Check, Loader2, Lock, Globe, Briefcase, MapPin, ChevronDown } from "lucide-react";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -107,18 +98,11 @@ const inputBase = `
 const inputNormal =
   "border-gray-200 dark:border-gray-700 focus:border-violet-400 dark:focus:border-violet-500 focus:ring-2 focus:ring-violet-400/20";
 
-const inputError =
-  "border-red-400 dark:border-red-500 focus:ring-2 focus:ring-red-400/20";
+const inputError = "border-red-400 dark:border-red-500 focus:ring-2 focus:ring-red-400/20";
 
 // ── Sub-components ─────────────────────────────────────────────────────────
 
-const FieldLabel = ({
-  icon,
-  label,
-}: {
-  icon: React.ReactNode;
-  label: string;
-}) => (
+const FieldLabel = ({ icon, label }: { icon: React.ReactNode; label: string }) => (
   <label className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
     <span className="text-gray-300 dark:text-gray-600">{icon}</span>
     {label}
@@ -173,8 +157,7 @@ const UpdateModal = ({ user, onClose, onSave }: UpdateModalProps) => {
   const validate = (): boolean => {
     const newErrors: Partial<UpdateUserPayload> = {};
     if (!form.country?.trim()) newErrors.country = "El país es requerido";
-    if (!form.profession?.trim())
-      newErrors.profession = "La profesión es requerida";
+    if (!form.profession?.trim()) newErrors.profession = "La profesión es requerida";
     if (form.profession === "otro" && !form.otherProfession?.trim())
       newErrors.otherProfession = "Selecciona tu profesión específica";
     if (!form.address?.trim()) newErrors.address = "La dirección es requerida";
@@ -187,8 +170,7 @@ const UpdateModal = ({ user, onClose, onSave }: UpdateModalProps) => {
     setLoading(true);
     setSaveError("");
     try {
-      const finalProfession =
-        form.profession === "otro" ? form.otherProfession : form.profession;
+      const finalProfession = form.profession === "otro" ? form.otherProfession : form.profession;
       await onSave({
         country: form.country,
         profession: finalProfession,
@@ -196,11 +178,7 @@ const UpdateModal = ({ user, onClose, onSave }: UpdateModalProps) => {
       });
       onClose();
     } catch (e) {
-      setSaveError(
-        e instanceof Error
-          ? e.message
-          : "No se pudo guardar. Intenta de nuevo.",
-      );
+      setSaveError(e instanceof Error ? e.message : "No se pudo guardar. Intenta de nuevo.");
     } finally {
       setLoading(false);
     }
@@ -211,9 +189,7 @@ const UpdateModal = ({ user, onClose, onSave }: UpdateModalProps) => {
 
   const initials = getInitials(user.name, user.lastName);
   const fullName = `${user.name} ${user.lastName}`.trim();
-  const selectedProfessionDesc = PROFESSIONS.find(
-    (p) => p.id === form.profession,
-  )?.description;
+  const selectedProfessionDesc = PROFESSIONS.find((p) => p.id === form.profession)?.description;
 
   return (
     <AnimatePresence>
@@ -252,9 +228,7 @@ const UpdateModal = ({ user, onClose, onSave }: UpdateModalProps) => {
                 <p className="text-sm font-semibold leading-tight text-gray-900 dark:text-white">
                   {fullName}
                 </p>
-                <p className="text-xs text-gray-400 dark:text-gray-500">
-                  @{user.username}
-                </p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">@{user.username}</p>
               </div>
             </div>
             <button
@@ -287,9 +261,7 @@ const UpdateModal = ({ user, onClose, onSave }: UpdateModalProps) => {
                   >
                     <div className="flex shrink-0 items-center gap-2">
                       <Lock className="h-3 w-3 text-gray-300 dark:text-gray-600" />
-                      <span className="text-xs text-gray-400 dark:text-gray-500">
-                        {item.label}
-                      </span>
+                      <span className="text-xs text-gray-400 dark:text-gray-500">{item.label}</span>
                     </div>
                     <span className="truncate text-right text-xs text-gray-500 dark:text-gray-400">
                       {item.value}
@@ -301,10 +273,7 @@ const UpdateModal = ({ user, onClose, onSave }: UpdateModalProps) => {
 
             {/* ── País ── */}
             <div>
-              <FieldLabel
-                icon={<Globe className="h-3.5 w-3.5" />}
-                label="País"
-              />
+              <FieldLabel icon={<Globe className="h-3.5 w-3.5" />} label="País" />
               <StyledSelect
                 value={form.country ?? ""}
                 hasError={!!errors.country}
@@ -325,10 +294,7 @@ const UpdateModal = ({ user, onClose, onSave }: UpdateModalProps) => {
 
             {/* ── Profesión ── */}
             <div>
-              <FieldLabel
-                icon={<Briefcase className="h-3.5 w-3.5" />}
-                label="Profesión"
-              />
+              <FieldLabel icon={<Briefcase className="h-3.5 w-3.5" />} label="Profesión" />
               <StyledSelect
                 value={form.profession ?? ""}
                 hasError={!!errors.profession}
@@ -337,8 +303,7 @@ const UpdateModal = ({ user, onClose, onSave }: UpdateModalProps) => {
                   setForm((prev) => ({
                     ...prev,
                     profession: value,
-                    otherProfession:
-                      value === "otro" ? prev.otherProfession : "",
+                    otherProfession: value === "otro" ? prev.otherProfession : "",
                   }));
                   clearError("profession");
                 }}
@@ -390,9 +355,7 @@ const UpdateModal = ({ user, onClose, onSave }: UpdateModalProps) => {
                         clearError("otherProfession");
                       }}
                     >
-                      <option value="">
-                        Selecciona tu profesión específica
-                      </option>
+                      <option value="">Selecciona tu profesión específica</option>
                       {OTHER_PROFESSIONS.map((p) => (
                         <option key={p} value={p}>
                           {p}
@@ -407,10 +370,7 @@ const UpdateModal = ({ user, onClose, onSave }: UpdateModalProps) => {
 
             {/* ── Dirección ── */}
             <div>
-              <FieldLabel
-                icon={<MapPin className="h-3.5 w-3.5" />}
-                label="Dirección"
-              />
+              <FieldLabel icon={<MapPin className="h-3.5 w-3.5" />} label="Dirección" />
               <input
                 type="text"
                 value={form.address ?? ""}

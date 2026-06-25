@@ -9,18 +9,12 @@ interface MetricPaymentsItem {
 
 type MetricPaymentsData = MetricPaymentsItem[];
 
-const useMetricPayments = (
-  songId?: string,
-  date: "month" | "day" | "year" = "month",
-) => {
+const useMetricPayments = (songId?: string, date: "month" | "day" | "year" = "month") => {
   const [metricsData, setMetricsData] = useState<MetricPaymentsData>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getMetricPayments = async (
-    id: string,
-    dateType: "month" | "day" | "year",
-  ) => {
+  const getMetricPayments = async (id: string, dateType: "month" | "day" | "year") => {
     if (!id) return;
 
     setLoading(true);
