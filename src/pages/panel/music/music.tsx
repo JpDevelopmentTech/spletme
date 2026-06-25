@@ -69,6 +69,7 @@ export default function Music() {
     showFilterPanel,
     setShowFilterPanel,
     initialLoading,
+    loading,
     filteredSongs,
     displayAlbums,
     groupedAlbums,
@@ -175,7 +176,14 @@ export default function Music() {
         </div>
 
         {/* Content */}
-        {currentData.length === 0 ? (
+        {loading && currentData.length === 0 ? (
+          <div className="rounded-xl border border-gray-200 bg-white p-12 text-center">
+            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-orange-500" />
+            <p className="mt-4 text-sm text-gray-400">
+              Cargando {mode === "songs" ? "canciones" : "álbumes"}...
+            </p>
+          </div>
+        ) : currentData.length === 0 ? (
           <div className="rounded-xl border border-gray-200 bg-white p-12 text-center">
             <MusicIcon size={48} className="mx-auto mb-4 text-gray-300" />
             <h3 className="mb-2 text-lg font-semibold text-gray-700">

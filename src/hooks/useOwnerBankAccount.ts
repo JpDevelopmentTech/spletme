@@ -55,6 +55,16 @@ export const useOwnerBankAccount = () => {
     setFeedback(null);
     setLinking(true);
     try {
+      // ─── DEBUG STRIPE (temporal — quitar tras depurar) ──────────────────────
+      // Compara con el log del backend. Si el prefijo de la pk no concuerda con
+      // `livemode` del backend (pk_test ↔ false, pk_live ↔ true) → ese es el bug.
+      const pk = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string | undefined;
+      console.info("🔑 [STRIPE DEBUG] frontend", {
+        publishableKeyMode: pk ? pk.slice(0, 8) : "AUSENTE", // "pk_live_" / "pk_test_"
+        apiBaseUrl: import.meta.env.VITE_URL_API,
+      });
+      // ────────────────────────────────────────────────────────────────────────
+
       const stripe = await getStripe();
       if (!stripe) {
         setFeedback({
@@ -66,6 +76,16 @@ export const useOwnerBankAccount = () => {
 
       const setupRes = await bankAccountService.setup();
       const clientSecret = setupRes.data?.clientSecret;
+
+      // ─── DEBUG STRIPE (temporal — quitar tras depurar) ──────────────────────
+      console.info("🔑 [STRIPE DEBUG] SetupIntent recibido del backend", {
+        setupIntentId: setupRes.data?.setupIntentId,
+        // Solo el prefijo "seti_..." (antes de _secret_), nunca el secreto completo:
+        setupIntentFromSecret: clientSecret ? clientSecret.split("_secret_")[0] : null,
+        backendMessage: setupRes.message,
+      });
+      // ────────────────────────────────────────────────────────────────────────
+
       if (!clientSecret) {
         setFeedback({
           type: "error",
@@ -88,6 +108,8 @@ export const useOwnerBankAccount = () => {
       });
 
       if (collectResult.error) {
+        // DEBUG STRIPE (temporal — quitar tras depurar): error crudo de Stripe.js
+        console.error("🔑 [STRIPE DEBUG] collectBankAccountForSetup error", collectResult.error);
         setFeedback({
           type: "error",
           text: collectResult.error.message ?? "Error al recolectar la cuenta.",
@@ -104,6 +126,8 @@ export const useOwnerBankAccount = () => {
 
       const confirmResult = await stripe.confirmUsBankAccountSetup(clientSecret);
       if (confirmResult.error) {
+        // DEBUG STRIPE (temporal — quitar tras depurar): error crudo de Stripe.js
+        console.error("🔑 [STRIPE DEBUG] confirmUsBankAccountSetup error", confirmResult.error);
         setFeedback({
           type: "error",
           text: confirmResult.error.message ?? "Error al confirmar el mandato.",

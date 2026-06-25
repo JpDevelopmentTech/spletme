@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import UseSongs from "@/hooks/useSongs";
 import useAlbums from "@/hooks/useAlbums";
@@ -47,10 +47,6 @@ export function useMusicLibrary() {
     totalPages?: number;
   } | null>(null);
   const [isFilterLoading, setIsFilterLoading] = useState(false);
-  const [songsReady, setSongsReady] = useState(false);
-  const [albumsReady, setAlbumsReady] = useState(false);
-  const songLoadingStarted = useRef(false);
-  const albumLoadingStarted = useRef(false);
 
   const debouncedSearchQuery = useDebounce(searchQuery, 600);
 
@@ -65,6 +61,7 @@ export function useMusicLibrary() {
     searchResults,
     isSearching,
     clearSearch,
+    hasLoaded: songsHasLoaded,
   } = UseSongs(page, limit);
 
   // Detecta si hay filtros de cliente aplicados
@@ -85,19 +82,9 @@ export function useMusicLibrary() {
     pagination: albumsPagination,
     getAlbumByUPC,
     refreshAlbums,
-  } = useAlbums(mode === "albums" ? page : 1, mode === "albums" ? limit : 10);
+  } = useAlbums(mode === "albums" ? page : 1, mode === "albums" ? limit : 10, mode === "albums");
 
   const { customLabels } = useLabels();
-
-  useEffect(() => {
-    if (songsLoading) { songLoadingStarted.current = true; }
-    else if (songLoadingStarted.current) { setSongsReady(true); }
-  }, [songsLoading]);
-
-  useEffect(() => {
-    if (albumsLoading) { albumLoadingStarted.current = true; }
-    else if (albumLoadingStarted.current) { setAlbumsReady(true); }
-  }, [albumsLoading]);
 
   // Búsqueda reactiva según modo y query
   useEffect(() => {
@@ -129,15 +116,15 @@ export function useMusicLibrary() {
     }
   }, [debouncedSearchQuery, mode, searchSongs, clearSearch, searchSongsByCode, getAlbumByUPC]);
 
-  // Al cambiar a modo álbumes, limpia búsqueda y recarga
+  // Al cambiar a modo álbumes limpia la búsqueda; la carga de álbumes la
+  // dispara useAlbums vía autoLoad (lazy: solo al entrar a la pestaña).
   useEffect(() => {
     if (mode === "albums") {
       clearSearch();
       setSearchQuery("");
       setAlbumSearchResult(null);
-      refreshAlbums();
     }
-  }, [mode, clearSearch, refreshAlbums]);
+  }, [mode, clearSearch]);
 
   // Llama al endpoint /songs/filter cuando hay filtros de servidor activos
   useEffect(() => {
@@ -594,7 +581,9 @@ export function useMusicLibrary() {
     groupAlbumsByTrackCount,
   ].filter(Boolean).length;
 
-  const initialLoading = !songsReady || !albumsReady;
+  // La UI solo espera la carga de la pestaña por defecto ("songs"); los
+  // álbumes cargan de forma lazy con su propio indicador en el contenido.
+  const initialLoading = !songsHasLoaded;
   const loading = mode === "songs" ? songsLoading || isSearching || isFilterLoading : albumsLoading;
 
   return {

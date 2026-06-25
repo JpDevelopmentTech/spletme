@@ -118,16 +118,6 @@ class WalletService {
     }
   }
 
-  /** Crea un depósito */
-  async createDeposit(data: { amount: number; currency: string; country: string }) {
-    try {
-      const response = await apiClient.post(`${this.BASE}/create-deposit`, data);
-      return response.data;
-    } catch {
-      return { error: true, message: "Error creating deposit" };
-    }
-  }
-
   /** Obtiene el historial de transacciones */
   async getTransactions(pageNumber = 1, pageSize = 25) {
     try {

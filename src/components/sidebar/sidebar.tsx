@@ -34,7 +34,7 @@ const navItems = [
   { to: "/panel/collaborators", label: "Colaboradores", icon: Users },
   { to: "/panel/labels", label: "Sellos", icon: Tag },
   { to: "/panel/analytics", label: "Analíticas", icon: BarChart2 },
-  { to: "/panel/wallet", label: "Billetera", icon: Wallet },
+  { to: "/panel/wallet", label: "Banco", icon: Wallet },
 ];
 
 export default function Sidebar() {

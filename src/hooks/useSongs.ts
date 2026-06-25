@@ -47,6 +47,7 @@ interface SongsPagination {
 const UseSongs = (page: number, limit: number) => {
   const [songs, setSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [pagination, setPagination] = useState<SongsPagination | null>(null);
   const [searchResults, setSearchResults] = useState<Song[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -101,6 +102,7 @@ const UseSongs = (page: number, limit: number) => {
       setPagination(null);
     } finally {
       setLoading(false);
+      setHasLoaded(true);
     }
   }, [page, limit]);
 
@@ -172,6 +174,7 @@ const UseSongs = (page: number, limit: number) => {
   return {
     songs,
     loading,
+    hasLoaded,
     pagination,
     getSongs,
     uploadSongs,

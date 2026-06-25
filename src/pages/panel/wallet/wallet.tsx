@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import {
-  Wallet,
   Search,
   ChevronLeft,
   ChevronRight,
@@ -10,26 +9,10 @@ import {
   Clock,
   AlertCircle,
 } from "lucide-react";
-import WalletService from "@/services/wallet";
 import PaymentsService from "@/services/payments";
 import type { RoyaltyPayment, RoyaltyBreakdownItem } from "@/services/payments";
 import BankAccountSection from "@/components/bank-account/BankAccountSection";
 import PayoutAccountSection from "@/components/bank-account/PayoutAccountSection";
-
-interface WalletAccount {
-  balance: number;
-  currency: string;
-  received_balance?: number;
-  on_hold_balance?: number;
-}
-
-interface WalletData {
-  id: string;
-  status: string;
-  accounts?: WalletAccount[];
-  first_name?: string;
-  last_name?: string;
-}
 
 const STATUS_CONFIG: Record<
   RoyaltyPayment["status"],
@@ -80,10 +63,7 @@ function getCollaboratorName(collaboratorId: RoyaltyBreakdownItem["collaboratorI
 const PAGE_SIZE = 10;
 
 export default function WalletPage() {
-  const [wallet, setWallet] = useState<WalletData | null>(null);
-  const [walletError, setWalletError] = useState<string | null>(null);
   const [payments, setPayments] = useState<RoyaltyPayment[]>([]);
-  const [loadingWallet, setLoadingWallet] = useState(true);
   const [loadingTx, setLoadingTx] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -91,14 +71,6 @@ export default function WalletPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
-    WalletService.getWallet().then((res) => {
-      if (!res.error && res.data) {
-        setWallet(res.data as WalletData);
-      } else {
-        setWalletError(res.message ?? "Could not load wallet");
-      }
-      setLoadingWallet(false);
-    });
     PaymentsService.getRoyaltyPayments().then((res) => {
       if (!res.error && res.data) setPayments(res.data);
       setLoadingTx(false);
@@ -118,70 +90,16 @@ export default function WalletPage() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const accounts = wallet?.accounts ?? [];
-
   return (
     <div className="flex min-h-screen flex-col gap-6 bg-[#F7F8FA] p-10">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-bold text-gray-900">Wallet</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Banco</h1>
           <p className="text-sm text-gray-500">
-            Tus saldos y el historial de pagos hechos a Stripe
+            Tus cuentas bancarias y el historial de pagos
           </p>
         </div>
-      </div>
-
-      {/* Balance Cards */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {loadingWallet ? (
-          Array.from({ length: 4 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-24 animate-pulse rounded-xl border border-gray-200 bg-white p-5"
-            />
-          ))
-        ) : walletError ? (
-          <div className="col-span-4 flex items-center gap-3 rounded-xl border border-red-100 bg-white p-6 text-red-400">
-            <Wallet className="h-5 w-5" />
-            <span className="text-sm">{walletError}</span>
-          </div>
-        ) : accounts.length === 0 ? (
-          <div className="col-span-4 flex flex-col gap-2 rounded-xl border border-gray-200 bg-white p-5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                USD
-              </span>
-              <Wallet className="h-4 w-4 text-orange-400" />
-            </div>
-            <span className="text-xl font-bold text-gray-900">0.00</span>
-            <span className="text-xs text-gray-400">No funds deposited yet</span>
-          </div>
-        ) : (
-          accounts.map((acc) => (
-            <div
-              key={acc.currency}
-              className="flex flex-col gap-2.5 rounded-xl border border-gray-200 bg-white p-5"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                  {acc.currency}
-                </span>
-                <Wallet className="h-4 w-4 text-orange-400" />
-              </div>
-              <span className="text-xl font-bold text-gray-900">
-                {acc.balance.toLocaleString("en-US", {
-                  minimumFractionDigits: 2,
-                })}
-              </span>
-              {acc.on_hold_balance !== undefined && acc.on_hold_balance > 0 && (
-                <span className="text-xs text-gray-400">
-                  {acc.on_hold_balance.toLocaleString()} on hold
-                </span>
-              )}
-            </div>
-          ))
-        )}
       </div>
 
       {/* Cuenta bancaria del Owner (ACH) — para PAGAR regalías */}

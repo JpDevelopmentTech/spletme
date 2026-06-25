@@ -20,18 +20,14 @@ interface UseAlbumsReturn {
   hasMoreAlbums: boolean;
 }
 
-export const useAlbums = (page: number, limit: number): UseAlbumsReturn => {
+export const useAlbums = (
+  page: number,
+  limit: number,
+  autoLoad: boolean = true,
+): UseAlbumsReturn => {
   const currentSkip = Math.max(0, (page - 1) * limit);
-
-  const {
-    autoLoad = true,
-    initialSkip = 0,
-    initialLimit = limit,
-  } = {
-    autoLoad: true,
-    initialSkip: currentSkip,
-    initialLimit: limit,
-  };
+  const initialSkip = currentSkip;
+  const initialLimit = limit;
 
   // State
   const [albums, setAlbums] = useState<Album[]>([]);
