@@ -7,8 +7,18 @@ export interface Label {
   totalStreams: number;
   totalGrossIncome: number;
   totalNetIncome: number;
-  topSongs: Array<{ _id: string; trackTitle: string; artistName: string; isrc: string }>;
-  splitProgress: { total: number; withSplits: number; percentage: number; hasAllSplits: boolean };
+  topSongs: Array<{
+    _id: string;
+    trackTitle: string;
+    artistName: string;
+    isrc: string;
+  }>;
+  splitProgress: {
+    total: number;
+    withSplits: number;
+    percentage: number;
+    hasAllSplits: boolean;
+  };
   isCustom?: boolean;
 }
 
@@ -19,7 +29,12 @@ export interface CustomLabel {
   ownerId: string;
   createdAt: string;
   updatedAt: string;
-  stats: { totalSongs: number; totalStreams: number; totalGrossIncome: number; totalNetIncome: number };
+  stats: {
+    totalSongs: number;
+    totalStreams: number;
+    totalGrossIncome: number;
+    totalNetIncome: number;
+  };
 }
 
 export interface LabelSong {
@@ -70,7 +85,8 @@ export interface LabelSplitPayload {
 }
 
 const errMsg = (error: unknown, fallback: string): string => {
-  if (axios.isAxiosError(error)) return error.response?.data?.message ?? fallback;
+  if (axios.isAxiosError(error))
+    return error.response?.data?.message ?? fallback;
   return fallback;
 };
 
@@ -78,7 +94,11 @@ class LabelsService {
   private readonly BASE = "/labels";
 
   /** Obtiene todos los labels del usuario */
-  async getLabels(): Promise<{ error: boolean; data?: Label[]; message?: string }> {
+  async getLabels(): Promise<{
+    error: boolean;
+    data?: Label[];
+    message?: string;
+  }> {
     try {
       const response = await apiClient.get(`${this.BASE}?t=${Date.now()}`, {
         headers: { "Cache-Control": "no-cache", Pragma: "no-cache" },
@@ -90,9 +110,13 @@ class LabelsService {
   }
 
   /** Obtiene las canciones de un label específico */
-  async getSongsByLabel(label: string): Promise<{ error: boolean; data?: LabelSong[]; message?: string }> {
+  async getSongsByLabel(
+    label: string,
+  ): Promise<{ error: boolean; data?: LabelSong[]; message?: string }> {
     try {
-      const response = await apiClient.get(`${this.BASE}/${encodeURIComponent(label)}`);
+      const response = await apiClient.get(
+        `${this.BASE}/${encodeURIComponent(label)}`,
+      );
       return response.data;
     } catch {
       return { error: true, message: "Error getting songs by label" };
@@ -103,8 +127,20 @@ class LabelsService {
   async createLabel(data: { name: string; artisticLabels: string[] }): Promise<{
     error: boolean;
     data?: {
-      label: { _id: string; name: string; artisticLabels: string[]; ownerId: string; createdAt: string; updatedAt: string };
-      stats: { totalSongs: number; totalStreams: number; totalGrossIncome: number; totalNetIncome: number };
+      label: {
+        _id: string;
+        name: string;
+        artisticLabels: string[];
+        ownerId: string;
+        createdAt: string;
+        updatedAt: string;
+      };
+      stats: {
+        totalSongs: number;
+        totalStreams: number;
+        totalGrossIncome: number;
+        totalNetIncome: number;
+      };
       warnings?: { message: string; excludedLabels: string[] };
     };
     message?: string;
@@ -118,7 +154,11 @@ class LabelsService {
   }
 
   /** Obtiene los labels personalizados del usuario */
-  async getCustomLabels(): Promise<{ error: boolean; data?: CustomLabel[]; message?: string }> {
+  async getCustomLabels(): Promise<{
+    error: boolean;
+    data?: CustomLabel[];
+    message?: string;
+  }> {
     try {
       const response = await apiClient.get(`${this.BASE}/custom`);
       return response.data;
@@ -130,11 +170,21 @@ class LabelsService {
   /** Obtiene las canciones de un label personalizado */
   async getSongsByCustomLabel(labelName: string): Promise<{
     error: boolean;
-    data?: { customLabel: { _id: string; name: string; artisticLabels: string[]; createdAt: string }; songs: LabelSong[] };
+    data?: {
+      customLabel: {
+        _id: string;
+        name: string;
+        artisticLabels: string[];
+        createdAt: string;
+      };
+      songs: LabelSong[];
+    };
     message?: string;
   }> {
     try {
-      const response = await apiClient.get(`${this.BASE}/custom/${encodeURIComponent(labelName)}`);
+      const response = await apiClient.get(
+        `${this.BASE}/custom/${encodeURIComponent(labelName)}`,
+      );
       return response.data;
     } catch {
       return { error: true, message: "Error getting songs by custom label" };
@@ -143,40 +193,70 @@ class LabelsService {
 
   /** Crea/actualiza el owner split de todas las canciones de un label (artisticLabel) */
   async createSplitByLabel(
-    data: LabelSplitPayload & { label: string }
+    data: LabelSplitPayload & { label: string },
   ): Promise<{ error: boolean; data?: unknown; message?: string }> {
     try {
-      const response = await apiClient.post(`${this.BASE}/create-split-by-label`, data);
+      const response = await apiClient.post(
+        `${this.BASE}/create-split-by-label`,
+        data,
+      );
       return response.data;
     } catch (error) {
-      return { error: true, message: errMsg(error, "Error creating split by label") };
+      return {
+        error: true,
+        message: errMsg(error, "Error creating split by label"),
+      };
     }
   }
 
   /** Crea/actualiza el owner split de todas las canciones de un label personalizado */
   async createSplitByCustomLabel(
-    data: LabelSplitPayload & { labelName: string }
+    data: LabelSplitPayload & { labelName: string },
   ): Promise<{ error: boolean; data?: unknown; message?: string }> {
     try {
-      const response = await apiClient.post(`${this.BASE}/create-split-by-custom-label`, data);
+      const response = await apiClient.post(
+        `${this.BASE}/create-split-by-custom-label`,
+        data,
+      );
       return response.data;
     } catch (error) {
-      return { error: true, message: errMsg(error, "Error creating split by custom label") };
+      return {
+        error: true,
+        message: errMsg(error, "Error creating split by custom label"),
+      };
     }
   }
 
   /** Actualiza un label personalizado */
-  async updateLabel(labelId: string, data: { name?: string; artisticLabels?: string[] }): Promise<{
+  async updateLabel(
+    labelId: string,
+    data: { name?: string; artisticLabels?: string[] },
+  ): Promise<{
     error: boolean;
     data?: {
-      label: { _id: string; name: string; artisticLabels: string[]; ownerId: string; createdAt: string; updatedAt: string };
-      stats: { totalSongs: number; totalStreams: number; totalGrossIncome: number; totalNetIncome: number };
+      label: {
+        _id: string;
+        name: string;
+        artisticLabels: string[];
+        ownerId: string;
+        createdAt: string;
+        updatedAt: string;
+      };
+      stats: {
+        totalSongs: number;
+        totalStreams: number;
+        totalGrossIncome: number;
+        totalNetIncome: number;
+      };
       warnings?: { message: string; excludedLabels: string[] } | null;
     };
     message?: string;
   }> {
     try {
-      const response = await apiClient.put(`${this.BASE}/custom/${labelId}`, data);
+      const response = await apiClient.put(
+        `${this.BASE}/custom/${labelId}`,
+        data,
+      );
       return response.data;
     } catch (error) {
       return { error: true, message: errMsg(error, "Error updating label") };
@@ -184,7 +264,9 @@ class LabelsService {
   }
 
   /** Elimina un label personalizado */
-  async deleteLabel(labelId: string): Promise<{ error: boolean; message?: string }> {
+  async deleteLabel(
+    labelId: string,
+  ): Promise<{ error: boolean; message?: string }> {
     try {
       const response = await apiClient.delete(`${this.BASE}/custom/${labelId}`);
       return response.data;
@@ -214,10 +296,16 @@ class LabelsService {
     message?: string;
   }> {
     try {
-      const response = await apiClient.post(`${this.BASE}/invite-collaborator`, data);
+      const response = await apiClient.post(
+        `${this.BASE}/invite-collaborator`,
+        data,
+      );
       return response.data;
     } catch (error) {
-      return { error: true, message: errMsg(error, "Error inviting collaborator") };
+      return {
+        error: true,
+        message: errMsg(error, "Error inviting collaborator"),
+      };
     }
   }
 
@@ -228,69 +316,132 @@ class LabelsService {
       labelName: string;
       labelType: string;
       results: {
-        successful: Array<{ songId: string; trackTitle: string; artistName: string; artisticLabel: string }>;
-        alreadyCollaborator: Array<{ songId: string; trackTitle: string; artistName: string; artisticLabel: string }>;
-        failed: Array<{ songId: string; trackTitle: string; artisticLabel: string; reason: string }>;
-        summary: { total: number; added: number; alreadyExists: number; errors: number };
+        successful: Array<{
+          songId: string;
+          trackTitle: string;
+          artistName: string;
+          artisticLabel: string;
+        }>;
+        alreadyCollaborator: Array<{
+          songId: string;
+          trackTitle: string;
+          artistName: string;
+          artisticLabel: string;
+        }>;
+        failed: Array<{
+          songId: string;
+          trackTitle: string;
+          artisticLabel: string;
+          reason: string;
+        }>;
+        summary: {
+          total: number;
+          added: number;
+          alreadyExists: number;
+          errors: number;
+        };
       };
     };
     message?: string;
   }> {
     try {
-      const response = await apiClient.post(`${this.BASE}/accept-invitation`, { token });
+      const response = await apiClient.post(`${this.BASE}/accept-invitation`, {
+        token,
+      });
       return response.data;
     } catch (error) {
-      return { error: true, message: errMsg(error, "Error accepting invitation") };
+      return {
+        error: true,
+        message: errMsg(error, "Error accepting invitation"),
+      };
     }
   }
 
   /** Rechaza una invitación a un label */
-  async rejectLabelInvitation(token: string): Promise<{ error: boolean; message?: string }> {
+  async rejectLabelInvitation(
+    token: string,
+  ): Promise<{ error: boolean; message?: string }> {
     try {
-      const response = await apiClient.post(`${this.BASE}/reject-invitation`, { token });
+      const response = await apiClient.post(`${this.BASE}/reject-invitation`, {
+        token,
+      });
       return response.data;
     } catch (error) {
-      return { error: true, message: errMsg(error, "Error rejecting invitation") };
+      return {
+        error: true,
+        message: errMsg(error, "Error rejecting invitation"),
+      };
     }
   }
 
   /** Obtiene las invitaciones pendientes (como colaborador) */
-  async getPendingInvitations(): Promise<{ error: boolean; data?: unknown[]; message?: string }> {
+  async getPendingInvitations(): Promise<{
+    error: boolean;
+    data?: unknown[];
+    message?: string;
+  }> {
     try {
       const response = await apiClient.get(`${this.BASE}/invitations/pending`);
       return response.data;
     } catch (error) {
-      return { error: true, message: errMsg(error, "Error getting invitations"), data: [] };
+      return {
+        error: true,
+        message: errMsg(error, "Error getting invitations"),
+        data: [],
+      };
     }
   }
 
   /** Obtiene las invitaciones enviadas (como owner) */
-  async getSentInvitations(): Promise<{ error: boolean; data?: unknown[]; message?: string }> {
+  async getSentInvitations(): Promise<{
+    error: boolean;
+    data?: unknown[];
+    message?: string;
+  }> {
     try {
       const response = await apiClient.get(`${this.BASE}/invitations/sent`);
       return response.data;
     } catch (error) {
-      return { error: true, message: errMsg(error, "Error getting invitations"), data: [] };
+      return {
+        error: true,
+        message: errMsg(error, "Error getting invitations"),
+        data: [],
+      };
     }
   }
 
   /** Cancela una invitación enviada */
-  async cancelInvitation(invitationId: string): Promise<{ error: boolean; message?: string }> {
+  async cancelInvitation(
+    invitationId: string,
+  ): Promise<{ error: boolean; message?: string }> {
     try {
-      const response = await apiClient.delete(`${this.BASE}/invitations/${invitationId}/cancel`);
+      const response = await apiClient.delete(
+        `${this.BASE}/invitations/${invitationId}/cancel`,
+      );
       return response.data;
     } catch (error) {
-      return { error: true, message: errMsg(error, "Error canceling invitation") };
+      return {
+        error: true,
+        message: errMsg(error, "Error canceling invitation"),
+      };
     }
   }
 
   /** Rechaza una invitación recibida */
-  async rejectInvitation(invitationId: string): Promise<{ error: boolean; message?: string }> {
+  async rejectInvitation(
+    invitationId: string,
+  ): Promise<{ error: boolean; message?: string }> {
     try {
-      const response = await apiClient.post(`${this.BASE}/invitations/${invitationId}/reject`, {});
+      const response = await apiClient.post(
+        `${this.BASE}/invitations/${invitationId}/reject`,
+        {},
+      );
       return response.data;
     } catch (error) {
-      return { error: true, message: errMsg(error, "Error rejecting invitation") };
+      return {
+        error: true,
+        message: errMsg(error, "Error rejecting invitation"),
+      };
     }
   }
 }

@@ -146,7 +146,10 @@ export const countries = [
   { value: "rwanda", label: "Rwanda" },
   { value: "saint-kitts-and-nevis", label: "Saint Kitts and Nevis" },
   { value: "saint-lucia", label: "Saint Lucia" },
-  { value: "saint-vincent-and-the-grenadines", label: "Saint Vincent and the Grenadines" },
+  {
+    value: "saint-vincent-and-the-grenadines",
+    label: "Saint Vincent and the Grenadines",
+  },
   { value: "samoa", label: "Samoa" },
   { value: "san-marino", label: "San Marino" },
   { value: "sao-tome-and-principe", label: "São Tomé and Príncipe" },
@@ -194,5 +197,5 @@ export const countries = [
   { value: "vietnam", label: "Vietnam" },
   { value: "yemen", label: "Yemen" },
   { value: "zambia", label: "Zambia" },
-  { value: "zimbabwe", label: "Zimbabwe" }
-]
+  { value: "zimbabwe", label: "Zimbabwe" },
+];

@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useMemo } from 'react';
-import LocalStorageService from '../services/localstorage';
+import { useMemo } from "react";
+import LocalStorageService from "../services/localstorage";
 
 interface UseCurrentCollaboratorProps {
   collaborators: any[];
 }
 
-const useCurrentCollaborator = ({ collaborators }: UseCurrentCollaboratorProps) => {
+const useCurrentCollaborator = ({
+  collaborators,
+}: UseCurrentCollaboratorProps) => {
   const currentCollaborator = useMemo(() => {
     if (!collaborators || collaborators.length === 0) {
       return null;
@@ -22,10 +24,11 @@ const useCurrentCollaborator = ({ collaborators }: UseCurrentCollaboratorProps) 
     }
 
     // Buscar el colaborador que coincida con el usuario actual
-    const collaborator = collaborators.find(collab => 
-      collab._id === currentUserId || 
-      collab.id === currentUserId ||
-      collab.email === currentUserEmail
+    const collaborator = collaborators.find(
+      (collab) =>
+        collab._id === currentUserId ||
+        collab.id === currentUserId ||
+        collab.email === currentUserEmail,
     );
 
     if (!collaborator) {
@@ -41,21 +44,21 @@ const useCurrentCollaborator = ({ collaborators }: UseCurrentCollaboratorProps) 
       percentage: percentage.toFixed(2),
       amountToPay: amountToPay.toFixed(2),
       calculatedAmount: amountToPay,
-      status: collaborator.hasActiveSplit ? 'active' : 'unknown'
+      status: collaborator.hasActiveSplit ? "active" : "unknown",
     };
   }, [collaborators]);
 
   // Funciones de utilidad
   const getCurrentUserPercentage = () => {
-    return currentCollaborator ? currentCollaborator.percentage : '0.00';
+    return currentCollaborator ? currentCollaborator.percentage : "0.00";
   };
 
   const getCurrentUserAmount = () => {
-    return currentCollaborator ? currentCollaborator.amountToPay : '0.00';
+    return currentCollaborator ? currentCollaborator.amountToPay : "0.00";
   };
 
   const getCurrentUserStatus = () => {
-    return currentCollaborator ? currentCollaborator.status : 'unknown';
+    return currentCollaborator ? currentCollaborator.status : "unknown";
   };
 
   const isCurrentUserCollaborator = () => {
@@ -67,7 +70,7 @@ const useCurrentCollaborator = ({ collaborators }: UseCurrentCollaboratorProps) 
     getCurrentUserPercentage,
     getCurrentUserAmount,
     getCurrentUserStatus,
-    isCurrentUserCollaborator
+    isCurrentUserCollaborator,
   };
 };
 

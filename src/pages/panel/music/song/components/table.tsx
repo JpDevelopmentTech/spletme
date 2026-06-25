@@ -5,14 +5,7 @@ import OwnerSplitModal from "./ownerfrom";
 import RegisterPaymentModal from "../../../../../components/modal/RegisterPaymentModal";
 import PaymentConfirmationModal from "../../../../../components/modal/PaymentConfirmationModal";
 import CollaboratorPaymentHistoryModal from "../../../../../components/modal/CollaboratorPaymentHistoryModal";
-import {
-  DollarSign,
-  Plus,
-  History,
-  Wallet,
-  Users,
-  Music,
-} from "lucide-react";
+import { DollarSign, Plus, History, Wallet, Users, Music } from "lucide-react";
 import { User as UserType } from "../../../../../models/user";
 import PaymentsService from "@/services/payments";
 import { useWallet } from "@/hooks/useWallet";
@@ -77,7 +70,12 @@ function getInitials(name: string) {
     .toUpperCase();
 }
 
-export default function Table({ collaborators, songId, song, isOwner = false }: TableProps) {
+export default function Table({
+  collaborators,
+  songId,
+  song,
+  isOwner = false,
+}: TableProps) {
   const [isSplitsModalOpen, setIsSplitsModalOpen] = useState(false);
   const [isPaymentHistoryModalOpen, setIsPaymentHistoryModalOpen] =
     useState(false);
@@ -108,13 +106,13 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
       currentUser?.type ||
       currentUser?.userType ||
       currentUser?.accountType ||
-      ""
+      "",
   ).toLowerCase();
   const isLabelUser = rawUserType.includes("label");
   const hasOwnerSplit = Boolean(
     (song as any)?.ownerId?.split ||
-      (song as any)?.owner?.split ||
-      (song as any)?.ownerSplit
+    (song as any)?.owner?.split ||
+    (song as any)?.ownerSplit,
   );
 
   const addToast = (type: ValidationToastType, message: string) => {
@@ -132,7 +130,7 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
     if (isLabelUser && !hasOwnerSplit) {
       addToast(
         "error",
-        "Error al crear split: el owner de la cancion a un no crea su split"
+        "Error al crear split: el owner de la cancion a un no crea su split",
       );
       return;
     }
@@ -166,7 +164,7 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
     collaboratorName: string,
     collaboratorEmail: string,
     amount: number,
-    songId: string
+    songId: string,
   ) => {
     setPaymentData({
       collaboratorId,
@@ -247,24 +245,23 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
         currency="USD"
       />
 
-
       {/* Actions bar */}
-      <div className="flex items-center gap-2 px-6 py-4 border-b border-gray-100">
+      <div className="flex items-center gap-2 border-b border-gray-100 px-6 py-4">
         {isOwner && song?.requesterRole === "admin" && (
           <button
             onClick={() => setIsOwnerSplitModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F97316] hover:bg-orange-600 text-white text-xs font-semibold rounded-lg transition-colors"
+            className="flex items-center gap-1.5 rounded-lg bg-[#F97316] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-orange-600"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="h-3.5 w-3.5" />
             Owner Split
           </button>
         )}
         {song?.requesterRole === "admin" && (
           <button
             onClick={handleOpenSplitsModal}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-semibold rounded-lg transition-colors"
+            className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50"
           >
-            <Music className="w-3.5 h-3.5" />
+            <Music className="h-3.5 w-3.5" />
             Configurar Splits
           </button>
         )}
@@ -272,23 +269,23 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
           <>
             <button
               onClick={() => openPaymentHistoryModal(currentSplitId)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-semibold rounded-lg transition-colors"
+              className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50"
             >
-              <History className="w-3.5 h-3.5" />
+              <History className="h-3.5 w-3.5" />
               Historial
             </button>
             {hasWallet ? (
               <button
                 onClick={() => openRegisterPaymentModal(currentSplitId)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-lg transition-colors"
+                className="flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-green-700"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="h-3.5 w-3.5" />
                 Nuevo Pago
               </button>
             ) : (
               <Link to="/panel/home">
-                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-lg transition-colors">
-                  <Wallet className="w-3.5 h-3.5" />
+                <button className="flex items-center gap-1.5 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-amber-600">
+                  <Wallet className="h-3.5 w-3.5" />
                   Vincular Wallet
                 </button>
               </Link>
@@ -301,26 +298,26 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
       {collaborators && collaborators.length > 0 ? (
         <table className="w-full">
           <thead>
-            <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+            <tr className="border-b border-gray-100 bg-gray-50">
+              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                 Nombre
               </th>
-              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                 Email
               </th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                 Split %
               </th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                 Pagado
               </th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                 Pendiente
               </th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                 Estado
               </th>
-              <th className="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+              <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500">
                 Acciones
               </th>
             </tr>
@@ -330,21 +327,20 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
               const hasActiveSplit =
                 collaborator.percentage &&
                 parseFloat(String(collaborator.percentage)) > 0;
-              const avatarColor =
-                AVATAR_COLORS[idx % AVATAR_COLORS.length];
+              const avatarColor = AVATAR_COLORS[idx % AVATAR_COLORS.length];
 
               return (
                 <tr
                   key={collaborator.id}
-                  className="hover:bg-gray-50 transition-colors"
+                  className="transition-colors hover:bg-gray-50"
                 >
                   {/* Name */}
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div
-                        className={`w-8 h-8 rounded-full ${avatarColor} flex items-center justify-center flex-shrink-0`}
+                        className={`h-8 w-8 rounded-full ${avatarColor} flex flex-shrink-0 items-center justify-center`}
                       >
-                        <span className="text-white text-xs font-semibold">
+                        <span className="text-xs font-semibold text-white">
                           {getInitials(collaborator.name || "?")}
                         </span>
                       </div>
@@ -391,11 +387,11 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
                   {/* Status */}
                   <td className="px-4 py-4">
                     {hasActiveSplit ? (
-                      <span className="inline-flex px-2.5 py-1 bg-green-50 text-green-700 text-xs font-semibold rounded-full">
+                      <span className="inline-flex rounded-full bg-green-50 px-2.5 py-1 text-xs font-semibold text-green-700">
                         Activo
                       </span>
                     ) : (
-                      <span className="inline-flex px-2.5 py-1 bg-orange-50 text-orange-600 text-xs font-semibold rounded-full">
+                      <span className="inline-flex rounded-full bg-orange-50 px-2.5 py-1 text-xs font-semibold text-orange-600">
                         Sin split
                       </span>
                     )}
@@ -409,14 +405,16 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
                           setHistoryModal({
                             open: true,
                             id: String(
-                              (collaborator as any)._id || collaborator.id || ""
+                              (collaborator as any)._id ||
+                                collaborator.id ||
+                                "",
                             ),
                             name: collaborator.name || "",
                           })
                         }
-                        className="flex items-center gap-1 px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded-lg transition-colors"
+                        className="flex items-center gap-1 rounded-lg bg-gray-100 px-2.5 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200"
                       >
-                        <History className="w-3.5 h-3.5" />
+                        <History className="h-3.5 w-3.5" />
                         Historial
                       </button>
 
@@ -424,16 +422,20 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
                         <button
                           onClick={() =>
                             openPaymentConfirmation(
-                              String((collaborator as any)._id || collaborator.id || ""),
+                              String(
+                                (collaborator as any)._id ||
+                                  collaborator.id ||
+                                  "",
+                              ),
                               collaborator.name,
                               collaborator.email,
                               Number(collaborator.amountToPay) || 0,
-                              songId || ""
+                              songId || "",
                             )
                           }
-                          className="flex items-center gap-1 px-2.5 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-lg transition-colors"
+                          className="flex items-center gap-1 rounded-lg bg-green-600 px-2.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-green-700"
                         >
-                          <DollarSign className="w-3.5 h-3.5" />
+                          <DollarSign className="h-3.5 w-3.5" />
                           Pagar
                         </button>
                       ) : (
@@ -450,22 +452,22 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
         </table>
       ) : (
         /* Empty state */
-        <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-          <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mb-4">
-            <Users className="w-6 h-6 text-gray-400" />
+        <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100">
+            <Users className="h-6 w-6 text-gray-400" />
           </div>
-          <h3 className="text-sm font-semibold text-gray-900 mb-1">
+          <h3 className="mb-1 text-sm font-semibold text-gray-900">
             Sin colaboradores
           </h3>
-          <p className="text-sm text-gray-500 mb-5 max-w-xs">
+          <p className="mb-5 max-w-xs text-sm text-gray-500">
             Agrega colaboradores para gestionar splits y pagos de esta canción.
           </p>
           {isOwner && song?.requesterRole === "admin" && (
             <button
               onClick={handleOpenSplitsModal}
-              className="flex items-center gap-2 px-4 py-2 bg-[#F97316] hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition-colors"
+              className="flex items-center gap-2 rounded-lg bg-[#F97316] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-orange-600"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="h-4 w-4" />
               Configurar Splits
             </button>
           )}

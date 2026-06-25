@@ -1,13 +1,21 @@
 export type MusicMode = "songs" | "albums";
 export type SortBy =
-  | "alpha" | "revenue" | "streams"
+  | "alpha"
+  | "revenue"
+  | "streams"
   | "title_desc"
-  | "artist_asc" | "artist_desc"
-  | "label_asc" | "label_desc"
-  | "date_asc" | "date_desc"
-  | "percentage_asc" | "percentage_desc"
-  | "collaborators_asc" | "collaborators_desc"
-  | "split_asc" | "split_desc";
+  | "artist_asc"
+  | "artist_desc"
+  | "label_asc"
+  | "label_desc"
+  | "date_asc"
+  | "date_desc"
+  | "percentage_asc"
+  | "percentage_desc"
+  | "collaborators_asc"
+  | "collaborators_desc"
+  | "split_asc"
+  | "split_desc";
 export type SplitFilter = "all" | "with_split" | "without_split";
 
 export interface SplitData {

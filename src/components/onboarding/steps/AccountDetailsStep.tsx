@@ -70,7 +70,8 @@ const AccountDetailsStep = ({
     if (!formData.address) e.address = "La dirección es requerida";
     else if (formData.address.length < 10)
       e.address = "Ingresa una dirección más específica";
-    if (!formData.identification) e.identification = "La identificación es requerida";
+    if (!formData.identification)
+      e.identification = "La identificación es requerida";
     else if (!/^\d{6,}$/.test(formData.identification))
       e.identification = "Ingresa un número válido";
     setErrors(e);
@@ -191,7 +192,7 @@ const AccountDetailsStep = ({
           <p className="text-sm font-semibold text-[#111827]">
             Tu información está segura
           </p>
-          <p className="text-xs text-[#6B7280] mt-0.5">
+          <p className="mt-0.5 text-xs text-[#6B7280]">
             Utilizamos encriptación de nivel bancario para proteger tus datos.
           </p>
         </div>

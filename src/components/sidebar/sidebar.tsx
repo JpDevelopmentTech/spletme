@@ -75,23 +75,23 @@ export default function Sidebar() {
       {/* Mobile menu button */}
       <button
         onClick={() => setIsMobileMenuOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2.5 rounded-xl transition-colors"
+        className="fixed left-4 top-4 z-50 rounded-xl p-2.5 transition-colors lg:hidden"
         style={{ backgroundColor: "#0F172A", border: "1px solid #1E293B" }}
       >
-        <Menu className="w-5 h-5 text-white" />
+        <Menu className="h-5 w-5 text-white" />
       </button>
 
       {/* Mobile overlay */}
       {isMobileMenuOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <div
-        className={`fixed left-0 top-0 h-full z-30 w-[260px] flex flex-col transition-transform duration-300 ${
+        className={`fixed left-0 top-0 z-30 flex h-full w-[260px] flex-col transition-transform duration-300 ${
           isMobileMenuOpen
             ? "translate-x-0"
             : "-translate-x-full lg:translate-x-0"
@@ -100,11 +100,11 @@ export default function Sidebar() {
       >
         {/* Top bar — logo */}
         <div
-          className="flex items-center gap-2.5 px-6 flex-shrink-0"
+          className="flex flex-shrink-0 items-center gap-2.5 px-6"
           style={{ height: 64, borderBottom: "1px solid #1E293B" }}
         >
           <div
-            className="flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
+            className="flex flex-shrink-0 items-center justify-center text-lg font-bold text-white"
             style={{
               width: 36,
               height: 36,
@@ -114,26 +114,26 @@ export default function Sidebar() {
           >
             S
           </div>
-          <span className="text-white font-bold text-lg flex-1">SplitMe</span>
+          <span className="flex-1 text-lg font-bold text-white">SplitMe</span>
 
           <button
             onClick={() => setIsMobileMenuOpen(false)}
-            className="lg:hidden p-1.5 rounded-lg transition-colors"
+            className="rounded-lg p-1.5 transition-colors lg:hidden"
             style={{ color: "#94A3B8" }}
           >
-            <X className="w-5 h-5" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Navigation */}
-        <nav className="flex flex-col gap-0.5 p-3 flex-1 overflow-y-auto">
+        <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-3">
           {navItems.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
               onClick={() => setIsMobileMenuOpen(false)}
               className={({ isActive }) =>
-                `flex items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-sm font-medium transition-colors ${
+                `flex items-center gap-2.5 rounded-[8px] px-3 py-2.5 text-sm font-medium transition-colors ${
                   isActive ? "font-semibold" : ""
                 }`
               }
@@ -161,7 +161,7 @@ export default function Sidebar() {
               {({ isActive }) => (
                 <>
                   <Icon
-                    className="w-[18px] h-[18px] flex-shrink-0"
+                    className="h-[18px] w-[18px] flex-shrink-0"
                     style={{ color: isActive ? "#F97316" : "#475569" }}
                   />
                   <span>{label}</span>
@@ -175,7 +175,7 @@ export default function Sidebar() {
             to="/panel/profile"
             onClick={() => setIsMobileMenuOpen(false)}
             className={({ isActive }) =>
-              `flex items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-sm font-medium transition-colors ${
+              `flex items-center gap-2.5 rounded-[8px] px-3 py-2.5 text-sm font-medium transition-colors ${
                 isActive ? "font-semibold" : ""
               }`
             }
@@ -203,7 +203,7 @@ export default function Sidebar() {
             {({ isActive }) => (
               <>
                 <Settings
-                  className="w-[18px] h-[18px] flex-shrink-0"
+                  className="h-[18px] w-[18px] flex-shrink-0"
                   style={{ color: isActive ? "#F97316" : "#475569" }}
                 />
                 <span>Ajustes</span>
@@ -215,48 +215,57 @@ export default function Sidebar() {
         {/* Account card - clickable */}
         <button
           onClick={() => setShowSwitchUserModal((prev) => !prev)}
-          className="flex items-center gap-3 p-3 rounded-xl mx-3 mb-3 w-[calc(100%-24px)] transition-colors"
+          className="mx-3 mb-3 flex w-[calc(100%-24px)] items-center gap-3 rounded-xl p-3 transition-colors"
           style={{
             backgroundColor: showSwitchUserModal ? "#263548" : "#1E293B",
-            border: showSwitchUserModal ? "1px solid #334155" : "1px solid transparent",
+            border: showSwitchUserModal
+              ? "1px solid #334155"
+              : "1px solid transparent",
           }}
           onMouseEnter={(e) => {
             if (!showSwitchUserModal)
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#1a2d42";
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+                "#1a2d42";
           }}
           onMouseLeave={(e) => {
             if (!showSwitchUserModal)
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#1E293B";
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+                "#1E293B";
           }}
         >
           <div
-            className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full"
             style={{ backgroundColor: "#F97316" }}
           >
             <span className="text-xs font-bold text-white">{initials}</span>
           </div>
-          <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-            <span className="text-[13px] font-semibold truncate" style={{ color: "#F1F5F9" }}>
+          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+            <span
+              className="truncate text-[13px] font-semibold"
+              style={{ color: "#F1F5F9" }}
+            >
               {displayName}
             </span>
-            <span className="text-[11px] truncate" style={{ color: "#475569" }}>
+            <span className="truncate text-[11px]" style={{ color: "#475569" }}>
               @{userData?.username || displayEmail}
             </span>
           </div>
           <ChevronDown
-            className="w-4 h-4 flex-shrink-0 transition-transform duration-200"
+            className="h-4 w-4 flex-shrink-0 transition-transform duration-200"
             style={{
               color: "#94A3B8",
-              transform: showSwitchUserModal ? "rotate(180deg)" : "rotate(0deg)",
+              transform: showSwitchUserModal
+                ? "rotate(180deg)"
+                : "rotate(0deg)",
             }}
           />
         </button>
 
         {/* Bottom section */}
-        <div className="flex flex-col gap-2 p-3 flex-shrink-0">
+        <div className="flex flex-shrink-0 flex-col gap-2 p-3">
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-sm font-medium transition-colors"
+            className="flex items-center gap-2.5 rounded-[8px] px-3 py-2.5 text-sm font-medium transition-colors"
             style={{ color: "#94A3B8" }}
             onMouseEnter={(e) => {
               (e.currentTarget as HTMLButtonElement).style.backgroundColor =
@@ -269,7 +278,7 @@ export default function Sidebar() {
               (e.currentTarget as HTMLButtonElement).style.color = "#94A3B8";
             }}
           >
-            <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
+            <LogOut className="h-[18px] w-[18px] flex-shrink-0" />
             <span>Cerrar sesión</span>
           </button>
         </div>

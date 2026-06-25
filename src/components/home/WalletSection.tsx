@@ -1,4 +1,11 @@
-import { Wallet, Plus, Send, DollarSign, History, ChevronRight } from "lucide-react";
+import {
+  Wallet,
+  Plus,
+  Send,
+  DollarSign,
+  History,
+  ChevronRight,
+} from "lucide-react";
 
 interface WalletSectionProps {
   walletLoading: boolean;
@@ -23,28 +30,29 @@ export function WalletSection({
 }: WalletSectionProps) {
   return (
     <div
-      className="col-span-3 row-span-2 bg-white rounded-xl p-6 border border-gray-200 flex flex-col gap-5"
+      className="col-span-3 row-span-2 flex flex-col gap-5 rounded-xl border border-gray-200 bg-white p-6"
       data-tour="balance-section"
     >
       {walletLoading ? (
         <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" />
+          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-orange-500" />
         </div>
       ) : hasWallet ? (
         <>
           <div className="flex items-center justify-between">
             <h2 className="text-base font-semibold text-gray-900">Billetera</h2>
-            <span className="px-2.5 py-1 bg-green-50 text-green-500 text-[11px] font-semibold rounded-full">
+            <span className="rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-500">
               Activa
             </span>
           </div>
 
-          <div className="flex flex-col gap-1 py-4 border-y border-gray-100">
-            <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">
+          <div className="flex flex-col gap-1 border-y border-gray-100 py-4">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-gray-400">
               Balance Disponible
             </span>
-            <span className="text-[32px] font-bold text-green-500 leading-tight">
-              ${Number(balance).toLocaleString("en-US", {
+            <span className="text-[32px] font-bold leading-tight text-green-500">
+              $
+              {Number(balance).toLocaleString("en-US", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}
@@ -55,32 +63,36 @@ export function WalletSection({
           <div className="flex flex-col gap-2">
             <button
               onClick={onTransfer}
-              className="w-full flex items-center justify-between px-4 py-3 bg-orange-500 text-white rounded-[10px] hover:bg-orange-600 transition-colors"
+              className="flex w-full items-center justify-between rounded-[10px] bg-orange-500 px-4 py-3 text-white transition-colors hover:bg-orange-600"
             >
               <div className="flex items-center gap-2.5">
-                <Send className="w-4 h-4" />
+                <Send className="h-4 w-4" />
                 <span className="text-[13px] font-semibold">Enviar dinero</span>
               </div>
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="h-4 w-4" />
             </button>
 
             <button
               onClick={onWithdrawal}
-              className="w-full flex items-center justify-between px-4 py-3 bg-[#F7F8FA] border border-gray-200 rounded-[10px] hover:bg-gray-100 transition-colors"
+              className="flex w-full items-center justify-between rounded-[10px] border border-gray-200 bg-[#F7F8FA] px-4 py-3 transition-colors hover:bg-gray-100"
             >
               <div className="flex items-center gap-2.5">
-                <DollarSign className="w-4 h-4 text-gray-500" />
-                <span className="text-[13px] font-medium text-gray-700">Retirar fondos</span>
+                <DollarSign className="h-4 w-4 text-gray-500" />
+                <span className="text-[13px] font-medium text-gray-700">
+                  Retirar fondos
+                </span>
               </div>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <ChevronRight className="h-4 w-4 text-gray-400" />
             </button>
 
-            <button className="w-full flex items-center justify-between px-4 py-3 bg-[#F7F8FA] border border-gray-200 rounded-[10px] hover:bg-gray-100 transition-colors">
+            <button className="flex w-full items-center justify-between rounded-[10px] border border-gray-200 bg-[#F7F8FA] px-4 py-3 transition-colors hover:bg-gray-100">
               <div className="flex items-center gap-2.5">
-                <History className="w-4 h-4 text-gray-500" />
-                <span className="text-[13px] font-medium text-gray-700">Ver historial</span>
+                <History className="h-4 w-4 text-gray-500" />
+                <span className="text-[13px] font-medium text-gray-700">
+                  Ver historial
+                </span>
               </div>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <ChevronRight className="h-4 w-4 text-gray-400" />
             </button>
           </div>
         </>
@@ -89,20 +101,22 @@ export function WalletSection({
           <div className="flex items-center justify-between">
             <h2 className="text-base font-semibold text-gray-900">Billetera</h2>
           </div>
-          <div className="flex flex-col items-center text-center py-6 gap-3">
-            <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center">
-              <Wallet className="w-6 h-6 text-white" />
+          <div className="flex flex-col items-center gap-3 py-6 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500">
+              <Wallet className="h-6 w-6 text-white" />
             </div>
-            <h3 className="text-sm font-semibold text-gray-900">Sin billetera conectada</h3>
+            <h3 className="text-sm font-semibold text-gray-900">
+              Sin billetera conectada
+            </h3>
             <p className="text-xs text-gray-500">
               Crea tu billetera de pago para comenzar a recibir pagos
             </p>
           </div>
           <button
             onClick={onCreateWallet}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-orange-500 text-white rounded-[10px] text-[13px] font-semibold hover:bg-orange-600 transition-colors"
+            className="flex w-full items-center justify-center gap-2 rounded-[10px] bg-orange-500 px-4 py-3 text-[13px] font-semibold text-white transition-colors hover:bg-orange-600"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="h-4 w-4" />
             Crear billetera
           </button>
         </>

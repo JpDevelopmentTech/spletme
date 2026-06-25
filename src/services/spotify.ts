@@ -23,11 +23,11 @@ export const SpotifyService = {
 
         localStorage.setItem(
           "access_token_spotify",
-          response.data.access_token
+          response.data.access_token,
         );
         localStorage.setItem(
           "expire",
-          JSON.stringify(Date.now() + response.data.expires_in * 1000)
+          JSON.stringify(Date.now() + response.data.expires_in * 1000),
         );
       }
     } catch (error) {

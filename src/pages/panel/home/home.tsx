@@ -20,7 +20,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#F7F8FA]">
-      <div className="px-6 lg:px-10 py-8 flex flex-col gap-7">
+      <div className="flex flex-col gap-7 px-6 py-8 lg:px-10">
         <div className="flex flex-col gap-1.5">
           <div className="flex flex-col gap-1">
             <h1 className="text-2xl font-bold text-[#111827]">
@@ -30,7 +30,7 @@ export default function Home() {
               Aquí lo que ha pasado con tu música los últimos días
             </p>
           </div>
-          <div className="w-10 h-0.5 rounded-full bg-[#F97316]" />
+          <div className="h-0.5 w-10 rounded-full bg-[#F97316]" />
         </div>
 
         <div className="grid grid-cols-12 gap-4">
@@ -51,13 +51,15 @@ export default function Home() {
 
           <PlatformsCard />
 
-          <div className="flex-1 bg-white rounded-xl p-6 border border-gray-200 col-span-9">
+          <div className="col-span-9 flex-1 rounded-xl border border-gray-200 bg-white p-6">
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-base font-semibold text-gray-900">Canciones Principales</h2>
+                <h2 className="text-base font-semibold text-gray-900">
+                  Canciones Principales
+                </h2>
                 <a
                   href="/panel/music"
-                  className="text-xs font-medium text-orange-500 hover:text-orange-600 transition-colors"
+                  className="text-xs font-medium text-orange-500 transition-colors hover:text-orange-600"
                 >
                   Ver todas
                 </a>

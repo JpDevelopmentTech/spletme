@@ -1,6 +1,6 @@
-export type Currency = 'USD' | 'EUR';
-export type Quarter = 'Q1' | 'Q2' | 'Q3' | 'Q4';
-export type UploadStatus = 'processing' | 'done' | 'error';
+export type Currency = "USD" | "EUR";
+export type Quarter = "Q1" | "Q2" | "Q3" | "Q4";
+export type UploadStatus = "processing" | "done" | "error";
 
 export interface Distributor {
   _id: string;
@@ -15,7 +15,12 @@ export interface Distributor {
 export interface DistributorUpload {
   _id: string;
   distributorId: string;
-  uploadedBy: { _id: string; name: string; email: string; username?: string } | null;
+  uploadedBy: {
+    _id: string;
+    name: string;
+    email: string;
+    username?: string;
+  } | null;
   quarter: Quarter;
   year: number;
   fileName: string | null;

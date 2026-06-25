@@ -12,11 +12,17 @@ interface DistributorStepProps {
   initialData?: OnboardingData;
 }
 
-const DistributorStep = ({ nextStep, prevStep, initialData }: DistributorStepProps) => {
-  const [selectedDistributor, setSelectedDistributor] = useState<string | null>(null);
+const DistributorStep = ({
+  nextStep,
+  prevStep,
+  initialData,
+}: DistributorStepProps) => {
+  const [selectedDistributor, setSelectedDistributor] = useState<string | null>(
+    null,
+  );
   const [credentials, setCredentials] = useState({
     email: "",
-    password: ""
+    password: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -25,7 +31,7 @@ const DistributorStep = ({ nextStep, prevStep, initialData }: DistributorStepPro
       setSelectedDistributor(initialData.distributor);
     }
     if (initialData?.distributorEmail) {
-      setCredentials(prev => ({
+      setCredentials((prev) => ({
         ...prev,
         email: initialData.distributorEmail || "",
         password: initialData.distributorPassword || "",
@@ -40,7 +46,11 @@ const DistributorStep = ({ nextStep, prevStep, initialData }: DistributorStepPro
       description: "Distribución global independiente",
       color: "from-gray-500 to-gray-600",
       icon: believeIcon,
-      features: ["Distribución mundial", "Analytics avanzados", "Promoción digital"]
+      features: [
+        "Distribución mundial",
+        "Analytics avanzados",
+        "Promoción digital",
+      ],
     },
     {
       id: "onerpm",
@@ -48,7 +58,7 @@ const DistributorStep = ({ nextStep, prevStep, initialData }: DistributorStepPro
       description: "Plataforma de distribución moderna",
       color: "from-gray-500 to-gray-600",
       icon: onerpmIcon,
-      features: ["Tecnología avanzada", "Soporte 24/7", "Marketing digital"]
+      features: ["Tecnología avanzada", "Soporte 24/7", "Marketing digital"],
     },
     {
       id: "orchard",
@@ -56,7 +66,7 @@ const DistributorStep = ({ nextStep, prevStep, initialData }: DistributorStepPro
       description: "Distribución premium de Sony Music",
       color: "from-gray-500 to-gray-600",
       icon: orchardIcon,
-      features: ["Red global", "Servicios premium", "Soporte especializado"]
+      features: ["Red global", "Servicios premium", "Soporte especializado"],
     },
     {
       id: "symphonic",
@@ -64,8 +74,12 @@ const DistributorStep = ({ nextStep, prevStep, initialData }: DistributorStepPro
       description: "Distribución independiente completa",
       color: "from-gray-500 to-gray-600",
       icon: symphonicIcon,
-      features: ["Distribución completa", "Herramientas de artista", "Soporte personalizado"]
-    }
+      features: [
+        "Distribución completa",
+        "Herramientas de artista",
+        "Soporte personalizado",
+      ],
+    },
   ];
 
   const handleDistributorSelect = (distributorId: string) => {
@@ -75,9 +89,9 @@ const DistributorStep = ({ nextStep, prevStep, initialData }: DistributorStepPro
   };
 
   const handleCredentialChange = (field: string, value: string) => {
-    setCredentials(prev => ({ ...prev, [field]: value }));
+    setCredentials((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: "" }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
@@ -114,12 +128,14 @@ const DistributorStep = ({ nextStep, prevStep, initialData }: DistributorStepPro
     }
   };
 
-  const selectedDistributorData = distributors.find(d => d.id === selectedDistributor);
+  const selectedDistributorData = distributors.find(
+    (d) => d.id === selectedDistributor,
+  );
 
   return (
     <div className="space-y-6">
       {/* Selección de distribuidor */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {distributors.map((distributor, index) => (
           <motion.div
             key={distributor.id}
@@ -134,36 +150,42 @@ const DistributorStep = ({ nextStep, prevStep, initialData }: DistributorStepPro
               id={distributor.id}
               name="distributor"
               value={distributor.id}
-              className="hidden peer"
+              className="peer hidden"
               onChange={() => handleDistributorSelect(distributor.id)}
               checked={selectedDistributor === distributor.id}
             />
             <label
               htmlFor={distributor.id}
-              className={`block p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 hover:shadow-lg ${
+              className={`block cursor-pointer rounded-xl border-2 p-6 transition-all duration-300 hover:shadow-lg ${
                 selectedDistributor === distributor.id
                   ? `border-transparent bg-gradient-to-r ${distributor.color} text-white shadow-lg`
                   : "border-gray-200 bg-white hover:border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-gray-500"
               }`}
             >
-              <div className="flex flex-col items-center text-center space-y-4">
-                <div className={`w-16 h-16 rounded-lg flex items-center justify-center text-3xl ${
-                  selectedDistributor === distributor.id 
-                    ? "bg-white/20" 
-                    : "bg-gray-50 dark:bg-gray-600"
-                }`}>
-                  <img src={distributor.icon} alt={distributor.name} className="w-full h-full object-contain" />
+              <div className="flex flex-col items-center space-y-4 text-center">
+                <div
+                  className={`flex h-16 w-16 items-center justify-center rounded-lg text-3xl ${
+                    selectedDistributor === distributor.id
+                      ? "bg-white/20"
+                      : "bg-gray-50 dark:bg-gray-600"
+                  }`}
+                >
+                  <img
+                    src={distributor.icon}
+                    alt={distributor.name}
+                    className="h-full w-full object-contain"
+                  />
                 </div>
                 <div>
-                  <h3 className={`font-bold text-lg mb-1 ${
-                    selectedDistributor === distributor.id 
-                      ? "text-white" 
-                      : "text-gray-900 dark:text-white"
-                  }`}>
+                  <h3
+                    className={`mb-1 text-lg font-bold ${
+                      selectedDistributor === distributor.id
+                        ? "text-white"
+                        : "text-gray-900 dark:text-white"
+                    }`}
+                  >
                     {distributor.name}
                   </h3>
-                  
-                
                 </div>
               </div>
             </label>
@@ -186,16 +208,16 @@ const DistributorStep = ({ nextStep, prevStep, initialData }: DistributorStepPro
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.2 }}
-                className="inline-flex items-center space-x-3 mb-4"
+                className="mb-4 inline-flex items-center space-x-3"
               >
-                <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-xl">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-xl dark:bg-gray-700">
                   {selectedDistributorData?.icon}
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                   Conecta tu cuenta de {selectedDistributorData?.name}
                 </h3>
               </motion.div>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 Ingresa tus credenciales para sincronizar tu catálogo musical
               </p>
             </div>
@@ -208,7 +230,7 @@ const DistributorStep = ({ nextStep, prevStep, initialData }: DistributorStepPro
               >
                 <label
                   htmlFor="email"
-                  className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
+                  className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
                 >
                   <div className="flex items-center space-x-2">
                     <span className="text-lg">📧</span>
@@ -220,9 +242,11 @@ const DistributorStep = ({ nextStep, prevStep, initialData }: DistributorStepPro
                   type="email"
                   id="email"
                   value={credentials.email}
-                  onChange={(e) => handleCredentialChange("email", e.target.value)}
+                  onChange={(e) =>
+                    handleCredentialChange("email", e.target.value)
+                  }
                   placeholder="tu@email.com"
-                  className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-gray-500/20 ${
+                  className={`w-full rounded-xl border-2 px-4 py-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-gray-500/20 ${
                     errors.email
                       ? "border-red-300 bg-red-50 dark:border-red-600 dark:bg-red-900/20"
                       : "border-gray-200 bg-white hover:border-gray-300 focus:border-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-gray-500 dark:focus:border-gray-400"
@@ -232,10 +256,18 @@ const DistributorStep = ({ nextStep, prevStep, initialData }: DistributorStepPro
                   <motion.p
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center space-x-1"
+                    className="mt-2 flex items-center space-x-1 text-sm text-red-600 dark:text-red-400"
                   >
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    <svg
+                      className="h-4 w-4"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                     <span>{errors.email}</span>
                   </motion.p>
@@ -249,7 +281,7 @@ const DistributorStep = ({ nextStep, prevStep, initialData }: DistributorStepPro
               >
                 <label
                   htmlFor="password"
-                  className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
+                  className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
                 >
                   <div className="flex items-center space-x-2">
                     <span className="text-lg">🔐</span>
@@ -261,9 +293,11 @@ const DistributorStep = ({ nextStep, prevStep, initialData }: DistributorStepPro
                   type="password"
                   id="password"
                   value={credentials.password}
-                  onChange={(e) => handleCredentialChange("password", e.target.value)}
+                  onChange={(e) =>
+                    handleCredentialChange("password", e.target.value)
+                  }
                   placeholder="••••••••"
-                  className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-gray-500/20 ${
+                  className={`w-full rounded-xl border-2 px-4 py-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-gray-500/20 ${
                     errors.password
                       ? "border-red-300 bg-red-50 dark:border-red-600 dark:bg-red-900/20"
                       : "border-gray-200 bg-white hover:border-gray-300 focus:border-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-gray-500 dark:focus:border-gray-400"
@@ -273,10 +307,18 @@ const DistributorStep = ({ nextStep, prevStep, initialData }: DistributorStepPro
                   <motion.p
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center space-x-1"
+                    className="mt-2 flex items-center space-x-1 text-sm text-red-600 dark:text-red-400"
                   >
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    <svg
+                      className="h-4 w-4"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                     <span>{errors.password}</span>
                   </motion.p>
@@ -289,16 +331,17 @@ const DistributorStep = ({ nextStep, prevStep, initialData }: DistributorStepPro
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="bg-gray-50 dark:bg-gray-800/60 rounded-xl p-4 border border-gray-200 dark:border-gray-700"
+              className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/60"
             >
               <div className="flex items-center space-x-3">
-                <div className="text-gray-500 text-xl">ℹ️</div>
+                <div className="text-xl text-gray-500">ℹ️</div>
                 <div>
-                  <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-sm mb-1">
+                  <h4 className="mb-1 text-sm font-semibold text-gray-900 dark:text-gray-100">
                     Conexión segura
                   </h4>
                   <p className="text-xs text-gray-600 dark:text-gray-400">
-                    Tus credenciales se encriptan y solo se usan para sincronizar tu catálogo musical.
+                    Tus credenciales se encriptan y solo se usan para
+                    sincronizar tu catálogo musical.
                   </p>
                 </div>
               </div>
@@ -316,18 +359,18 @@ const DistributorStep = ({ nextStep, prevStep, initialData }: DistributorStepPro
       >
         <button
           onClick={prevStep}
-          className="flex-1 py-3 px-6 rounded-xl font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-all duration-300"
+          className="flex-1 rounded-xl bg-gray-100 px-6 py-3 font-semibold text-gray-700 transition-all duration-300 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
         >
           ← Anterior
         </button>
-        
+
         <button
           onClick={handleSubmit}
           disabled={!selectedDistributor}
-          className={`flex-1 py-3 px-6 rounded-xl font-semibold text-white transition-all duration-300 ${
+          className={`flex-1 rounded-xl px-6 py-3 font-semibold text-white transition-all duration-300 ${
             selectedDistributor
-              ? "bg-gradient-to-r from-gray-500 to-gray-700 hover:from-gray-600 hover:to-gray-800 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-              : "bg-gray-300 cursor-not-allowed dark:bg-gray-600"
+              ? "transform bg-gradient-to-r from-gray-500 to-gray-700 shadow-lg hover:-translate-y-0.5 hover:from-gray-600 hover:to-gray-800 hover:shadow-xl"
+              : "cursor-not-allowed bg-gray-300 dark:bg-gray-600"
           }`}
         >
           Continuar →
@@ -337,4 +380,4 @@ const DistributorStep = ({ nextStep, prevStep, initialData }: DistributorStepPro
   );
 };
 
-export default DistributorStep; 
+export default DistributorStep;

@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Wallet, DollarSign, AlertTriangle, CheckCircle, ArrowDownToLine } from "lucide-react";
+import {
+  X,
+  Wallet,
+  DollarSign,
+  AlertTriangle,
+  CheckCircle,
+  ArrowDownToLine,
+} from "lucide-react";
 import WalletService from "@/services/wallet";
 
 interface WithdrawalModalProps {
@@ -40,19 +47,20 @@ export default function WithdrawalModal({
     setError(null);
     try {
       const response = await WalletService.getPayoutMethodTypes();
-  
-      console.log('Payout methods response:', response);
-      
+
+      console.log("Payout methods response:", response);
+
       if (!response.error && response.data) {
         // El backend ahora retorna directamente los datos sin el wrapper body
         const methods = Array.isArray(response.data) ? response.data : [];
-        console.log('Payout methods:', methods);
+        console.log("Payout methods:", methods);
         setPayoutMethods(methods);
       } else {
         setError(response.message || "Error loading payout methods");
       }
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Error loading payout methods";
+      const errorMessage =
+        err instanceof Error ? err.message : "Error loading payout methods";
       setError(errorMessage);
     } finally {
       setLoadingMethods(false);
@@ -64,20 +72,22 @@ export default function WithdrawalModal({
     setError(null);
     setRequiredFields([]);
     try {
-      const response = await WalletService.getRequiredFieldsForPayoutMethod(payoutMethodType);
-      console.log('Required fields response:', response);
-      
+      const response =
+        await WalletService.getRequiredFieldsForPayoutMethod(payoutMethodType);
+      console.log("Required fields response:", response);
+
       if (!response.error && response.data) {
         // El backend ahora retorna directamente los datos sin el wrapper body
         const fieldsData = response.data as { fields?: unknown[] };
         const fields = fieldsData.fields || [];
-        console.log('Required fields:', fields);
+        console.log("Required fields:", fields);
         setRequiredFields(fields);
       } else {
         setError(response.message || "Error loading required fields");
       }
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Error loading required fields";
+      const errorMessage =
+        err instanceof Error ? err.message : "Error loading required fields";
       setError(errorMessage);
     } finally {
       setLoadingFields(false);
@@ -90,7 +100,7 @@ export default function WithdrawalModal({
       payoutMethodType,
       beneficiaryDetails: {},
     });
-    
+
     if (payoutMethodType) {
       await fetchRequiredFields(payoutMethodType);
     } else {
@@ -140,7 +150,8 @@ export default function WithdrawalModal({
         setError(response.message || "Error requesting withdrawal");
       }
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Error requesting withdrawal";
+      const errorMessage =
+        err instanceof Error ? err.message : "Error requesting withdrawal";
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -187,46 +198,46 @@ export default function WithdrawalModal({
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative w-full max-w-2xl bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
+            className="relative max-h-[90vh] w-full max-w-2xl overflow-hidden overflow-y-auto rounded-3xl bg-white shadow-2xl dark:bg-gray-800"
           >
             {/* Header */}
             <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
-                    <ArrowDownToLine className="w-6 h-6 text-white" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20">
+                    <ArrowDownToLine className="h-6 w-6 text-white" />
                   </div>
                   <div>
                     <h2 className="text-2xl font-bold text-white">
                       Withdraw Funds
                     </h2>
-                    <p className="text-green-100 text-sm">
+                    <p className="text-sm text-green-100">
                       Transfer money to your bank account
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={handleClose}
-                  className="text-white/80 hover:text-white transition-colors"
+                  className="text-white/80 transition-colors hover:text-white"
                   disabled={loading}
                 >
-                  <X className="w-6 h-6" />
+                  <X className="h-6 w-6" />
                 </button>
               </div>
             </div>
 
             {/* Content */}
-            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6 p-6">
               {/* Success Message */}
               {success && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4"
+                  className="rounded-xl border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20"
                 >
                   <div className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
-                    <p className="text-green-600 dark:text-green-400 text-sm font-medium">
+                    <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    <p className="text-sm font-medium text-green-600 dark:text-green-400">
                       Withdrawal request submitted successfully!
                     </p>
                   </div>
@@ -238,11 +249,11 @@ export default function WithdrawalModal({
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4"
+                  className="rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20"
                 >
                   <div className="flex items-center gap-2">
-                    <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
-                    <p className="text-red-600 dark:text-red-400 text-sm font-medium">
+                    <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                    <p className="text-sm font-medium text-red-600 dark:text-red-400">
                       {error}
                     </p>
                   </div>
@@ -250,33 +261,39 @@ export default function WithdrawalModal({
               )}
 
               {/* Available Balance */}
-              <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl p-4 border border-blue-200 dark:border-blue-800">
+              <div className="rounded-2xl border border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50 p-4 dark:border-blue-800 dark:from-blue-900/20 dark:to-purple-900/20">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Wallet className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <Wallet className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     <span className="text-sm text-gray-600 dark:text-gray-400">
                       Available Balance
                     </span>
                   </div>
                   <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                    ${walletBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    $
+                    {walletBalance.toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
                   </span>
                 </div>
               </div>
 
               {/* Amount */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  <DollarSign className="w-4 h-4 inline mr-2" />
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <DollarSign className="mr-2 inline h-4 w-4" />
                   Withdrawal Amount
                 </label>
                 <input
                   type="number"
                   step="0.01"
                   value={formData.amount}
-                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, amount: e.target.value })
+                  }
                   required
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                  className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 transition-all focus:border-transparent focus:ring-2 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                   placeholder="0.00"
                   disabled={loading || success}
                 />
@@ -284,27 +301,36 @@ export default function WithdrawalModal({
 
               {/* Payout Methods */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Payout Method
                 </label>
                 {loadingMethods ? (
                   <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+                    <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-green-500"></div>
                   </div>
                 ) : (
                   <select
                     value={formData.payoutMethodType}
                     onChange={(e) => handlePayoutMethodChange(e.target.value)}
                     required
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                    className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 transition-all focus:border-transparent focus:ring-2 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     disabled={loading || success}
                   >
                     <option value="">Select a payout method</option>
                     {payoutMethods.map((method) => {
-                      const m = method as { payout_method_type: string; name?: string };
+                      const m = method as {
+                        payout_method_type: string;
+                        name?: string;
+                      };
                       return (
-                        <option key={m.payout_method_type} value={m.payout_method_type}>
-                          {m.name || m.payout_method_type.replace(/_/g, ' ').toUpperCase()}
+                        <option
+                          key={m.payout_method_type}
+                          value={m.payout_method_type}
+                        >
+                          {m.name ||
+                            m.payout_method_type
+                              .replace(/_/g, " ")
+                              .toUpperCase()}
                         </option>
                       );
                     })}
@@ -315,48 +341,58 @@ export default function WithdrawalModal({
               {/* Loading Fields Indicator */}
               {loadingFields && (
                 <div className="flex items-center justify-center py-4">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mr-3"></div>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Loading fields...</span>
+                  <div className="mr-3 h-6 w-6 animate-spin rounded-full border-b-2 border-green-500"></div>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    Loading fields...
+                  </span>
                 </div>
               )}
 
               {/* Dynamic Required Fields */}
               {!loadingFields && requiredFields.length > 0 && (
-                <div className="space-y-4 bg-gray-50 dark:bg-gray-900/30 rounded-2xl p-4 border border-gray-200 dark:border-gray-700">
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                    <DollarSign className="w-4 h-4" />
+                <div className="space-y-4 rounded-2xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/30">
+                  <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white">
+                    <DollarSign className="h-4 w-4" />
                     Required Payment Details
                   </h3>
                   {requiredFields.map((field) => {
-                    const f = field as { 
-                      name: string; 
-                      type: string; 
-                      is_required: boolean; 
-                      instructions?: string; 
+                    const f = field as {
+                      name: string;
+                      type: string;
+                      is_required: boolean;
+                      instructions?: string;
                       regex?: string;
                     };
                     return (
-                    <div key={f.name}>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {f.name.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
-                        {f.is_required && <span className="text-red-500 ml-1">*</span>}
-                      </label>
-                      {f.instructions && (
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 italic">
-                          💡 {f.instructions}
-                        </p>
-                      )}
-                      <input
-                        type={f.type === 'number' ? 'number' : 'text'}
-                        value={formData.beneficiaryDetails[f.name] || ''}
-                        onChange={(e) => handleBeneficiaryFieldChange(f.name, e.target.value)}
-                        required={f.is_required}
-                        pattern={f.regex || undefined}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                        placeholder={f.instructions || f.name.replace(/_/g, ' ')}
-                        disabled={loading || success}
-                      />
-                    </div>
+                      <div key={f.name}>
+                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          {f.name
+                            .replace(/_/g, " ")
+                            .replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                          {f.is_required && (
+                            <span className="ml-1 text-red-500">*</span>
+                          )}
+                        </label>
+                        {f.instructions && (
+                          <p className="mb-1 text-xs italic text-gray-500 dark:text-gray-400">
+                            💡 {f.instructions}
+                          </p>
+                        )}
+                        <input
+                          type={f.type === "number" ? "number" : "text"}
+                          value={formData.beneficiaryDetails[f.name] || ""}
+                          onChange={(e) =>
+                            handleBeneficiaryFieldChange(f.name, e.target.value)
+                          }
+                          required={f.is_required}
+                          pattern={f.regex || undefined}
+                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 transition-all focus:border-transparent focus:ring-2 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                          placeholder={
+                            f.instructions || f.name.replace(/_/g, " ")
+                          }
+                          disabled={loading || success}
+                        />
+                      </div>
                     );
                   })}
                 </div>
@@ -370,7 +406,7 @@ export default function WithdrawalModal({
                   disabled={loading || success}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 px-6 py-3 rounded-xl border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all disabled:opacity-50"
+                  className="flex-1 rounded-xl border-2 border-gray-300 px-6 py-3 font-semibold text-gray-700 transition-all hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
                 >
                   Cancel
                 </motion.button>
@@ -379,9 +415,13 @@ export default function WithdrawalModal({
                   disabled={loading || success || loadingMethods}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-3 font-semibold text-white transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {loading ? "Processing..." : success ? "Success!" : "Submit Withdrawal"}
+                  {loading
+                    ? "Processing..."
+                    : success
+                      ? "Success!"
+                      : "Submit Withdrawal"}
                 </motion.button>
               </div>
             </form>
@@ -391,4 +431,3 @@ export default function WithdrawalModal({
     </AnimatePresence>
   );
 }
-

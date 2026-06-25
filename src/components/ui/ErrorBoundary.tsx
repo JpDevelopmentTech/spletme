@@ -16,7 +16,10 @@ interface ErrorBoundaryState {
  * Muestra AppErrorFallback en lugar de dejar la pantalla en blanco.
  * Debe envolver el árbol completo de la app en main.tsx.
  */
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class ErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   state: ErrorBoundaryState = { hasError: false, error: null };
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
@@ -24,7 +27,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error("[ErrorBoundary] Error capturado:", error, info.componentStack);
+    console.error(
+      "[ErrorBoundary] Error capturado:",
+      error,
+      info.componentStack,
+    );
   }
 
   handleReset = () => {
@@ -33,7 +40,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   render() {
     if (this.state.hasError && this.state.error) {
-      return <AppErrorFallback error={this.state.error} onReset={this.handleReset} />;
+      return (
+        <AppErrorFallback error={this.state.error} onReset={this.handleReset} />
+      );
     }
     return this.props.children;
   }

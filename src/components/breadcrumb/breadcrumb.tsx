@@ -9,7 +9,7 @@ const Breadcrumb = ({ items }: { items: { label: string; url: string }[] }) => {
             <div className="flex items-center">
               {index === 0 ? (
                 <svg
-                  className="w-3 h-3 me-2.5"
+                  className="me-2.5 h-3 w-3"
                   aria-hidden="true"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="currentColor"
@@ -19,7 +19,7 @@ const Breadcrumb = ({ items }: { items: { label: string; url: string }[] }) => {
                 </svg>
               ) : (
                 <svg
-                  className="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1"
+                  className="mx-1 h-3 w-3 text-gray-400 rtl:rotate-180"
                   aria-hidden="true"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -35,13 +35,13 @@ const Breadcrumb = ({ items }: { items: { label: string; url: string }[] }) => {
                 </svg>
               )}
               {index === items.length - 1 ? (
-                <span className="ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-400">
+                <span className="ms-1 text-sm font-medium text-gray-500 dark:text-gray-400 md:ms-2">
                   {item.label}
                 </span>
               ) : (
                 <Link
                   to={item.url}
-                  className="ms-1 text-sm font-medium text-gray-700 hover:text-black md:ms-2 dark:text-gray-400 dark:hover:text-white"
+                  className="ms-1 text-sm font-medium text-gray-700 hover:text-black dark:text-gray-400 dark:hover:text-white md:ms-2"
                 >
                   {item.label}
                 </Link>

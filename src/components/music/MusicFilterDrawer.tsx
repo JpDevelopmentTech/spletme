@@ -43,16 +43,28 @@ const SPLIT_OPTIONS: { value: SplitFilter; label: string }[] = [
   { value: "without_split", label: "Sin split" },
 ];
 
-function RadioOption({ selected, label, onClick }: { selected: boolean; label: string; onClick: () => void }) {
+function RadioOption({
+  selected,
+  label,
+  onClick,
+}: {
+  selected: boolean;
+  label: string;
+  onClick: () => void;
+}) {
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg border text-sm transition-colors ${
-        selected ? "border-orange-200 bg-orange-50 text-orange-700 font-semibold" : "border-gray-200 text-gray-600 hover:bg-gray-50"
+      className={`flex w-full items-center gap-3 rounded-lg border px-3.5 py-2.5 text-sm transition-colors ${
+        selected
+          ? "border-orange-200 bg-orange-50 font-semibold text-orange-700"
+          : "border-gray-200 text-gray-600 hover:bg-gray-50"
       }`}
     >
-      <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${selected ? "border-orange-500" : "border-gray-300"}`}>
-        {selected && <span className="w-2 h-2 rounded-full bg-orange-500" />}
+      <span
+        className={`flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full border-2 ${selected ? "border-orange-500" : "border-gray-300"}`}
+      >
+        {selected && <span className="h-2 w-2 rounded-full bg-orange-500" />}
       </span>
       {label}
     </button>
@@ -63,62 +75,103 @@ function RadioOption({ selected, label, onClick }: { selected: boolean; label: s
  * Drawer lateral de filtros y ordenación para la biblioteca musical.
  */
 export function MusicFilterDrawer({
-  isOpen, mode, sortBy, splitFilter, artistFilter, isrcFilter, upcFilter,
-  countryFilter, dateFrom, dateTo, percentageMin, percentageMax,
-  groupAlbumsByTrackCount, activeFilterCount, onClose, onSortChange,
-  onSplitFilterChange, onArtistFilterChange, onIsrcFilterChange,
-  onUpcFilterChange, onCountryFilterChange, onDateFromChange, onDateToChange,
-  onPercentageMinChange, onPercentageMaxChange,
-  onGroupByTrackCountChange, onClearAll,
+  isOpen,
+  mode,
+  sortBy,
+  splitFilter,
+  artistFilter,
+  isrcFilter,
+  upcFilter,
+  countryFilter,
+  dateFrom,
+  dateTo,
+  percentageMin,
+  percentageMax,
+  groupAlbumsByTrackCount,
+  activeFilterCount,
+  onClose,
+  onSortChange,
+  onSplitFilterChange,
+  onArtistFilterChange,
+  onIsrcFilterChange,
+  onUpcFilterChange,
+  onCountryFilterChange,
+  onDateFromChange,
+  onDateToChange,
+  onPercentageMinChange,
+  onPercentageMaxChange,
+  onGroupByTrackCountChange,
+  onClearAll,
 }: MusicFilterDrawerProps) {
   return (
     <>
       {isOpen && (
         <div className="fixed inset-0 z-40 bg-black/20" onClick={onClose} />
       )}
-      <div className={`fixed top-0 right-0 h-full w-80 bg-white z-50 flex flex-col transition-transform duration-300 ease-in-out shadow-2xl ${isOpen ? "translate-x-0" : "translate-x-full"}`}>
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+      <div
+        className={`fixed right-0 top-0 z-50 flex h-full w-80 flex-col bg-white shadow-2xl transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "translate-x-full"}`}
+      >
+        <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
           <div className="flex items-center gap-2.5">
             <SlidersHorizontal size={18} className="text-gray-700" />
             <h3 className="text-base font-bold text-gray-900">Filtros</h3>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+          <button
+            onClick={onClose}
+            className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+          >
             <X size={18} />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-5 py-5 space-y-7">
+        <div className="flex-1 space-y-7 overflow-y-auto px-5 py-5">
           <div>
-            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-3">Ordenar por</p>
+            <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+              Ordenar por
+            </p>
             <div className="space-y-2">
               {SORT_OPTIONS.map(({ value, label }) => (
-                <RadioOption key={value} selected={sortBy === value} label={label} onClick={() => onSortChange(value)} />
+                <RadioOption
+                  key={value}
+                  selected={sortBy === value}
+                  label={label}
+                  onClick={() => onSortChange(value)}
+                />
               ))}
             </div>
           </div>
 
           <div>
-            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-3">Estado de Split</p>
+            <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+              Estado de Split
+            </p>
             <div className="space-y-2">
               {SPLIT_OPTIONS.map(({ value, label }) => (
-                <RadioOption key={value} selected={splitFilter === value} label={label} onClick={() => onSplitFilterChange(value)} />
+                <RadioOption
+                  key={value}
+                  selected={splitFilter === value}
+                  label={label}
+                  onClick={() => onSplitFilterChange(value)}
+                />
               ))}
             </div>
           </div>
 
           <div>
-            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-3">Artista</p>
+            <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+              Artista
+            </p>
             <input
               type="text"
               value={artistFilter}
               onChange={(e) => onArtistFilterChange(e.target.value)}
               placeholder="Filtrar por nombre de artista"
-              className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full rounded-lg border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
           </div>
 
           <div>
-            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-3">
+            <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
               {mode === "songs" ? "ISRC" : "UPC"}
             </p>
             {mode === "songs" ? (
@@ -127,7 +180,7 @@ export function MusicFilterDrawer({
                 value={isrcFilter}
                 onChange={(e) => onIsrcFilterChange(e.target.value)}
                 placeholder="Filtrar por ISRC"
-                className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full rounded-lg border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
             ) : (
               <input
@@ -135,24 +188,28 @@ export function MusicFilterDrawer({
                 value={upcFilter}
                 onChange={(e) => onUpcFilterChange(e.target.value)}
                 placeholder="Filtrar por UPC"
-                className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full rounded-lg border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
             )}
           </div>
 
           <div>
-            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-3">País</p>
+            <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+              País
+            </p>
             <input
               type="text"
               value={countryFilter}
               onChange={(e) => onCountryFilterChange(e.target.value)}
               placeholder="Filtrar por país"
-              className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full rounded-lg border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
           </div>
 
           <div>
-            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-3">Fecha de lanzamiento</p>
+            <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+              Fecha de lanzamiento
+            </p>
             <div className="flex flex-col gap-2">
               <div className="flex flex-col gap-1">
                 <label className="text-xs text-gray-500">Desde</label>
@@ -160,7 +217,7 @@ export function MusicFilterDrawer({
                   type="date"
                   value={dateFrom}
                   onChange={(e) => onDateFromChange(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="w-full rounded-lg border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-orange-500"
                 />
               </div>
               <div className="flex flex-col gap-1">
@@ -169,7 +226,7 @@ export function MusicFilterDrawer({
                   type="date"
                   value={dateTo}
                   onChange={(e) => onDateToChange(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="w-full rounded-lg border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-orange-500"
                 />
               </div>
             </div>
@@ -177,9 +234,11 @@ export function MusicFilterDrawer({
 
           {mode === "songs" && (
             <div>
-              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-3">Porcentaje de split</p>
+              <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                Porcentaje de split
+              </p>
               <div className="flex gap-2">
-                <div className="flex flex-col gap-1 flex-1">
+                <div className="flex flex-1 flex-col gap-1">
                   <label className="text-xs text-gray-500">Mínimo (%)</label>
                   <input
                     type="number"
@@ -188,10 +247,10 @@ export function MusicFilterDrawer({
                     value={percentageMin}
                     onChange={(e) => onPercentageMinChange(e.target.value)}
                     placeholder="0"
-                    className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-orange-500"
                   />
                 </div>
-                <div className="flex flex-col gap-1 flex-1">
+                <div className="flex flex-1 flex-col gap-1">
                   <label className="text-xs text-gray-500">Máximo (%)</label>
                   <input
                     type="number"
@@ -200,7 +259,7 @@ export function MusicFilterDrawer({
                     value={percentageMax}
                     onChange={(e) => onPercentageMaxChange(e.target.value)}
                     placeholder="100"
-                    className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-orange-500"
                   />
                 </div>
               </div>
@@ -209,14 +268,22 @@ export function MusicFilterDrawer({
 
           {mode === "albums" && (
             <div>
-              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-3">Álbumes</p>
+              <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                Álbumes
+              </p>
               <button
-                onClick={() => onGroupByTrackCountChange(!groupAlbumsByTrackCount)}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg border text-sm transition-colors ${groupAlbumsByTrackCount ? "border-orange-200 bg-orange-50 text-orange-700" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}
+                onClick={() =>
+                  onGroupByTrackCountChange(!groupAlbumsByTrackCount)
+                }
+                className={`flex w-full items-center justify-between rounded-lg border px-3.5 py-2.5 text-sm transition-colors ${groupAlbumsByTrackCount ? "border-orange-200 bg-orange-50 text-orange-700" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}
               >
                 <span>Agrupar por nº canciones</span>
-                <span className={`w-9 h-5 rounded-full transition-colors flex items-center px-0.5 flex-shrink-0 ${groupAlbumsByTrackCount ? "bg-orange-500" : "bg-gray-300"}`}>
-                  <span className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${groupAlbumsByTrackCount ? "translate-x-4" : "translate-x-0"}`} />
+                <span
+                  className={`flex h-5 w-9 flex-shrink-0 items-center rounded-full px-0.5 transition-colors ${groupAlbumsByTrackCount ? "bg-orange-500" : "bg-gray-300"}`}
+                >
+                  <span
+                    className={`h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${groupAlbumsByTrackCount ? "translate-x-4" : "translate-x-0"}`}
+                  />
                 </span>
               </button>
             </div>
@@ -224,10 +291,10 @@ export function MusicFilterDrawer({
         </div>
 
         {activeFilterCount > 0 && (
-          <div className="px-5 py-4 border-t border-gray-100">
+          <div className="border-t border-gray-100 px-5 py-4">
             <button
               onClick={onClearAll}
-              className="w-full py-2.5 text-sm font-semibold text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              className="w-full rounded-lg border border-gray-200 py-2.5 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-50"
             >
               Limpiar todos los filtros ({activeFilterCount})
             </button>

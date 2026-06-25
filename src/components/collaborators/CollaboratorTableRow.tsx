@@ -18,14 +18,14 @@ export function CollaboratorTableRow({
   return (
     <tr
       onClick={() => onClick(collaborator.id)}
-      className={`border-b border-gray-100 last:border-b-0 cursor-pointer transition-colors ${
+      className={`cursor-pointer border-b border-gray-100 transition-colors last:border-b-0 ${
         isActive ? "bg-orange-50/40" : "hover:bg-gray-50"
       }`}
     >
       <td className="px-6 py-4">
         <div className="flex items-center gap-3">
           <div
-            className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full"
             style={{ backgroundColor: collaborator.avatarBg }}
           >
             <span
@@ -35,31 +35,31 @@ export function CollaboratorTableRow({
               {collaborator.initials}
             </span>
           </div>
-          <div className="flex flex-col gap-0.5 min-w-0">
-            <span className="text-[13px] font-semibold text-[#111827] truncate">
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <span className="truncate text-[13px] font-semibold text-[#111827]">
               {collaborator.name}
             </span>
-            <span className="text-[11px] text-[#9CA3AF] truncate">
+            <span className="truncate text-[11px] text-[#9CA3AF]">
               {collaborator.email}
             </span>
           </div>
         </div>
       </td>
-      <td className="px-3 py-4 text-[13px] text-center font-semibold text-[#111827]">
+      <td className="px-3 py-4 text-center text-[13px] font-semibold text-[#111827]">
         {collaborator.songs}
       </td>
-      <td className="px-3 py-4 text-[13px] text-center font-semibold text-[#F97316]">
+      <td className="px-3 py-4 text-center text-[13px] font-semibold text-[#F97316]">
         {collaborator.splitPercentage != null
           ? `${collaborator.splitPercentage}%`
           : "—"}
       </td>
       <td className="px-3 py-4 text-center">
         {collaborator.roles && collaborator.roles.length > 0 ? (
-          <div className="flex items-center justify-center gap-1 flex-wrap">
+          <div className="flex flex-wrap items-center justify-center gap-1">
             {collaborator.roles.map((r) => (
               <span
                 key={r}
-                className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-orange-50 text-[#F97316] capitalize"
+                className="rounded-full bg-orange-50 px-2 py-0.5 text-[10px] font-bold capitalize text-[#F97316]"
               >
                 {r}
               </span>
@@ -70,13 +70,13 @@ export function CollaboratorTableRow({
         )}
       </td>
       <td
-        className={`px-3 py-4 text-[13px] text-center font-semibold ${
+        className={`px-3 py-4 text-center text-[13px] font-semibold ${
           collaborator.amountPending > 0 ? "text-[#F43F5E]" : "text-[#9CA3AF]"
         }`}
       >
         {formatCurrency(collaborator.amountPending)}
       </td>
-      <td className="px-3 py-4 text-[13px] text-center font-semibold text-green-500">
+      <td className="px-3 py-4 text-center text-[13px] font-semibold text-green-500">
         {formatCurrency(collaborator.paid)}
       </td>
     </tr>

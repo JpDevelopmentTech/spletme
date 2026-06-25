@@ -8,7 +8,11 @@ import { ProfileHeroCard } from "@/components/profile/ProfileHeroCard";
 import { ProfileInfoCard } from "@/components/profile/ProfileInfoCard";
 import { SubprofilesCard } from "@/components/profile/SubprofilesCard";
 import { ChangePasswordCard } from "@/components/profile/ChangePasswordCard";
-import type { ActiveSection, ProfileUserData, EditProfileForm } from "@/types/profile.types";
+import type {
+  ActiveSection,
+  ProfileUserData,
+  EditProfileForm,
+} from "@/types/profile.types";
 import type { RegisterSubuserSchema } from "@/types";
 
 const ProfilePage = () => {
@@ -52,7 +56,9 @@ const ProfilePage = () => {
       await navigator.clipboard.writeText(userData.userId);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch { /* clipboard not available */ }
+    } catch {
+      /* clipboard not available */
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,9 +75,9 @@ const ProfilePage = () => {
   return (
     <div className="min-h-screen bg-[#F7F8FA] px-10 py-8">
       <div style={{ maxWidth: 680 }}>
-        <div className="flex flex-col gap-1.5 mb-6">
+        <div className="mb-6 flex flex-col gap-1.5">
           <h1 className="text-2xl font-bold text-[#111827]">Mi Perfil</h1>
-          <div className="w-10 h-0.5 rounded-full bg-[#F97316]" />
+          <div className="h-0.5 w-10 rounded-full bg-[#F97316]" />
         </div>
 
         <div className="flex flex-col gap-4">
@@ -114,10 +120,17 @@ const ProfilePage = () => {
             createSuccess={subprofiles.createSuccess}
             onReload={() => void subprofiles.loadSubprofiles()}
             onToggleCreate={() => toggleSection("create-subprofile")}
-            onCreateFormChange={(field: keyof RegisterSubuserSchema, value: string) =>
+            onCreateFormChange={(
+              field: keyof RegisterSubuserSchema,
+              value: string,
+            ) =>
               subprofiles.setCreateForm((prev) => ({ ...prev, [field]: value }))
             }
-            onCreateSubmit={(e) => void subprofiles.handleCreateSubprofile(e, () => setActiveSection(null))}
+            onCreateSubmit={(e) =>
+              void subprofiles.handleCreateSubprofile(e, () =>
+                setActiveSection(null),
+              )
+            }
             onConfirmUnlink={subprofiles.setConfirmingId}
             onCancelUnlink={() => subprofiles.setConfirmingId(null)}
             onUnlink={(id) => void subprofiles.handleUnlink(id)}
@@ -135,7 +148,10 @@ const ProfilePage = () => {
               changePassword.setPwdForm((prev) => ({ ...prev, [field]: value }))
             }
             onToggleShow={(field) =>
-              changePassword.setPwdShow((prev) => ({ ...prev, [field]: !prev[field] }))
+              changePassword.setPwdShow((prev) => ({
+                ...prev,
+                [field]: !prev[field],
+              }))
             }
             onSubmit={changePassword.handleChangePassword}
           />

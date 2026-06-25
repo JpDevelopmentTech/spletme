@@ -15,7 +15,7 @@ interface UseReleaseFiltersResult {
  */
 export function useReleaseFilters(
   songId: string,
-  enabled: boolean
+  enabled: boolean,
 ): UseReleaseFiltersResult {
   const [countryOptions, setCountryOptions] = useState<SelectOption[]>([]);
   const [platformOptions, setPlatformOptions] = useState<SelectOption[]>([]);

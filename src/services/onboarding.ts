@@ -33,14 +33,22 @@ export interface AccountVerificationVerifyResponse {
 }
 
 const getErrorMessage = (error: unknown, fallback: string): string => {
-  if (axios.isAxiosError(error) && error.response?.data && typeof error.response.data === "object") {
+  if (
+    axios.isAxiosError(error) &&
+    error.response?.data &&
+    typeof error.response.data === "object"
+  ) {
     const payload = error.response.data as ErrorPayload;
-    if (typeof payload.message === "string" && payload.message.trim()) return payload.message;
+    if (typeof payload.message === "string" && payload.message.trim())
+      return payload.message;
   }
   return fallback;
 };
 
-const getBooleanFromPayload = (payload: unknown, key: "accepted" | "verified"): boolean | undefined => {
+const getBooleanFromPayload = (
+  payload: unknown,
+  key: "accepted" | "verified",
+): boolean | undefined => {
   if (!payload || typeof payload !== "object") return undefined;
   const top = payload as BooleanPayload;
   if (typeof top[key] === "boolean") return top[key] as boolean;
@@ -57,7 +65,10 @@ export const OnboardingService = {
   /** Actualiza los datos de onboarding del usuario autenticado */
   updateOnboarding: async (onboardingData: OnboardingData) => {
     try {
-      const response = await apiClient.put(`${BASE}/onboarding`, onboardingData);
+      const response = await apiClient.put(
+        `${BASE}/onboarding`,
+        onboardingData,
+      );
       return response.data;
     } catch (error) {
       throw error;
@@ -65,26 +76,43 @@ export const OnboardingService = {
   },
 
   /** Solicita el envío de un código de verificación de cuenta */
-  requestAccountVerificationCode: async (email: string): Promise<AccountVerificationRequestResponse> => {
+  requestAccountVerificationCode: async (
+    email: string,
+  ): Promise<AccountVerificationRequestResponse> => {
     try {
-      const response = await apiClient.post(`${BASE}/account-verification/request`, {
-        email: email.trim().toLowerCase(),
-      });
-      const accepted = getBooleanFromPayload(response.data, "accepted") ?? (response.status >= 200 && response.status < 300);
+      const response = await apiClient.post(
+        `${BASE}/account-verification/request`,
+        {
+          email: email.trim().toLowerCase(),
+        },
+      );
+      const accepted =
+        getBooleanFromPayload(response.data, "accepted") ??
+        (response.status >= 200 && response.status < 300);
       return { accepted };
     } catch (error) {
-      throw new Error(getErrorMessage(error, "No se pudo enviar el código de verificación"));
+      throw new Error(
+        getErrorMessage(error, "No se pudo enviar el código de verificación"),
+      );
     }
   },
 
   /** Verifica el código de verificación de cuenta */
-  verifyAccountCode: async (email: string, code: string): Promise<AccountVerificationVerifyResponse> => {
+  verifyAccountCode: async (
+    email: string,
+    code: string,
+  ): Promise<AccountVerificationVerifyResponse> => {
     try {
-      const response = await apiClient.post(`${BASE}/account-verification/verify-code`, {
-        email: email.trim().toLowerCase(),
-        code: code.trim(),
-      });
-      const verified = getBooleanFromPayload(response.data, "verified") ?? (response.status >= 200 && response.status < 300);
+      const response = await apiClient.post(
+        `${BASE}/account-verification/verify-code`,
+        {
+          email: email.trim().toLowerCase(),
+          code: code.trim(),
+        },
+      );
+      const verified =
+        getBooleanFromPayload(response.data, "verified") ??
+        (response.status >= 200 && response.status < 300);
       return { verified };
     } catch (error) {
       throw new Error(getErrorMessage(error, "Código inválido o expirado"));

@@ -5,12 +5,14 @@ import useAlbums from "@/hooks/useAlbums";
 import useDebounce from "@/hooks/useDebounce";
 import { useLabels } from "@/hooks/useLabels";
 import SongService from "@/services/songs";
-import {
-  hasAnySplit,
-  looksLikeISRC,
-  looksLikeUPC,
-} from "@/utils/music.utils";
-import type { MusicMode, SortBy, SplitFilter, SongItem, AlbumItem } from "@/types/music.types";
+import { hasAnySplit, looksLikeISRC, looksLikeUPC } from "@/utils/music.utils";
+import type {
+  MusicMode,
+  SortBy,
+  SplitFilter,
+  SongItem,
+  AlbumItem,
+} from "@/types/music.types";
 
 /**
  * Centraliza el estado, efectos, filtros y paginación de la biblioteca musical.
@@ -23,13 +25,16 @@ export function useMusicLibrary() {
   const [limit, setLimit] = useState(10);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [albumSearchResult, setAlbumSearchResult] = useState<AlbumItem | null>(null);
+  const [albumSearchResult, setAlbumSearchResult] = useState<AlbumItem | null>(
+    null,
+  );
   const [isAlbumSearching, setIsAlbumSearching] = useState(false);
   const [isOwnerSplitModalOpen, setIsOwnerSplitModalOpen] = useState(false);
   const [selectedAlbum, setSelectedAlbum] = useState<AlbumItem | null>(null);
   const [isSongDetailsOpen, setIsSongDetailsOpen] = useState(false);
   const [selectedSong, setSelectedSong] = useState<SongItem | null>(null);
-  const [selectedSongDetails, setSelectedSongDetails] = useState<SongItem | null>(null);
+  const [selectedSongDetails, setSelectedSongDetails] =
+    useState<SongItem | null>(null);
   const [isSongDetailsLoading, setIsSongDetailsLoading] = useState(false);
   const [songDetailsError, setSongDetailsError] = useState("");
   const [sortBy, setSortBy] = useState<SortBy>("alpha");
@@ -45,7 +50,11 @@ export function useMusicLibrary() {
   const [groupAlbumsByTrackCount, setGroupAlbumsByTrackCount] = useState(false);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [filterResults, setFilterResults] = useState<SongItem[]>([]);
-  const [filterPagination, setFilterPagination] = useState<{ total?: number; hasMore?: boolean; totalPages?: number } | null>(null);
+  const [filterPagination, setFilterPagination] = useState<{
+    total?: number;
+    hasMore?: boolean;
+    totalPages?: number;
+  } | null>(null);
   const [isFilterLoading, setIsFilterLoading] = useState(false);
 
   const debouncedSearchQuery = useDebounce(searchQuery, 600);
@@ -65,14 +74,14 @@ export function useMusicLibrary() {
 
   // Detecta si hay filtros de cliente aplicados
   const albumFiltersApplied = Boolean(
-    debouncedSearchQuery.trim() || 
-    artistFilter.trim() || 
-    upcFilter.trim() || 
+    debouncedSearchQuery.trim() ||
+    artistFilter.trim() ||
+    upcFilter.trim() ||
     splitFilter !== "all" ||
     countryFilter.trim() ||
     dateFrom ||
     dateTo ||
-    groupAlbumsByTrackCount
+    groupAlbumsByTrackCount,
   );
 
   const {
@@ -81,10 +90,7 @@ export function useMusicLibrary() {
     pagination: albumsPagination,
     getAlbumByUPC,
     refreshAlbums,
-  } = useAlbums(
-    mode === "albums" ? page : 1,
-    mode === "albums" ? limit : 10
-  );
+  } = useAlbums(mode === "albums" ? page : 1, mode === "albums" ? limit : 10);
 
   const { customLabels } = useLabels();
 
@@ -116,7 +122,14 @@ export function useMusicLibrary() {
         setAlbumSearchResult(null);
       }
     }
-  }, [debouncedSearchQuery, mode, searchSongs, clearSearch, searchSongsByCode, getAlbumByUPC]);
+  }, [
+    debouncedSearchQuery,
+    mode,
+    searchSongs,
+    clearSearch,
+    searchSongsByCode,
+    getAlbumByUPC,
+  ]);
 
   // Al cambiar a modo álbumes, limpia búsqueda y recarga
   useEffect(() => {
@@ -136,7 +149,12 @@ export function useMusicLibrary() {
       return;
     }
     const serverActive = Boolean(
-      countryFilter.trim() || dateFrom || dateTo || splitFilter !== "all" || percentageMin !== "" || percentageMax !== ""
+      countryFilter.trim() ||
+      dateFrom ||
+      dateTo ||
+      splitFilter !== "all" ||
+      percentageMin !== "" ||
+      percentageMax !== "",
     );
     if (!serverActive) {
       setFilterResults([]);
@@ -152,75 +170,141 @@ export function useMusicLibrary() {
     if (countryFilter.trim()) params.country = countryFilter.trim();
     if (percentageMin !== "") params.percentageMin = Number(percentageMin);
     if (percentageMax !== "") params.percentageMax = Number(percentageMax);
-    SongService.filterSongs(params).then((response) => {
-      const songs = response?.data?.songs ?? response?.data ?? [];
-      setFilterResults(Array.isArray(songs) ? songs : []);
-      setFilterPagination(response?.data?.pagination ?? response?.pagination ?? null);
-    }).catch(() => {
-      setFilterResults([]);
-      setFilterPagination(null);
-    }).finally(() => {
-      setIsFilterLoading(false);
-    });
-  }, [mode, page, limit, splitFilter, countryFilter, dateFrom, dateTo, percentageMin, percentageMax]);
+    SongService.filterSongs(params)
+      .then((response) => {
+        const songs = response?.data?.songs ?? response?.data ?? [];
+        setFilterResults(Array.isArray(songs) ? songs : []);
+        setFilterPagination(
+          response?.data?.pagination ?? response?.pagination ?? null,
+        );
+      })
+      .catch(() => {
+        setFilterResults([]);
+        setFilterPagination(null);
+      })
+      .finally(() => {
+        setIsFilterLoading(false);
+      });
+  }, [
+    mode,
+    page,
+    limit,
+    splitFilter,
+    countryFilter,
+    dateFrom,
+    dateTo,
+    percentageMin,
+    percentageMax,
+  ]);
 
   // Resetea la página al cambiar cualquier filtro
   useEffect(() => {
     setPage(1);
-  }, [mode, limit, debouncedSearchQuery, sortBy, splitFilter, artistFilter, isrcFilter, upcFilter, countryFilter, dateFrom, dateTo, percentageMin, percentageMax, groupAlbumsByTrackCount]);
+  }, [
+    mode,
+    limit,
+    debouncedSearchQuery,
+    sortBy,
+    splitFilter,
+    artistFilter,
+    isrcFilter,
+    upcFilter,
+    countryFilter,
+    dateFrom,
+    dateTo,
+    percentageMin,
+    percentageMax,
+    groupAlbumsByTrackCount,
+  ]);
 
   const getLabelName = (value: unknown): string | null => {
     if (typeof value === "string" && value.trim()) return value.trim();
     if (value && typeof value === "object") {
       const obj = value as Record<string, unknown>;
       const candidate = obj.name ?? obj.label ?? obj.artisticLabel ?? obj.title;
-      if (typeof candidate === "string" && candidate.trim()) return candidate.trim();
+      if (typeof candidate === "string" && candidate.trim())
+        return candidate.trim();
     }
     return null;
   };
 
   const getAllSongLabels = (song: SongItem): string[] => {
-    const sources = [song?.artisticLabel, song?.label, song?.labels, song?.customLabels, song?.labelNames, song?.otherLabels];
-    const directLabels = Array.from(new Set(
-      sources.flatMap((src) => {
-        if (Array.isArray(src)) return src.map(getLabelName).filter((l): l is string => Boolean(l));
-        const single = getLabelName(src);
-        return single ? [single] : [];
-      })
-    ));
-    const normalizedDirect = new Set(directLabels.map((l) => l.trim().toLowerCase()));
+    const sources = [
+      song?.artisticLabel,
+      song?.label,
+      song?.labels,
+      song?.customLabels,
+      song?.labelNames,
+      song?.otherLabels,
+    ];
+    const directLabels = Array.from(
+      new Set(
+        sources.flatMap((src) => {
+          if (Array.isArray(src))
+            return src.map(getLabelName).filter((l): l is string => Boolean(l));
+          const single = getLabelName(src);
+          return single ? [single] : [];
+        }),
+      ),
+    );
+    const normalizedDirect = new Set(
+      directLabels.map((l) => l.trim().toLowerCase()),
+    );
     const fromCustomLabels = customLabels
-      .filter((cl) => cl.artisticLabels?.some((al: string) => normalizedDirect.has(al.trim().toLowerCase())))
+      .filter((cl) =>
+        cl.artisticLabels?.some((al: string) =>
+          normalizedDirect.has(al.trim().toLowerCase()),
+        ),
+      )
       .map((cl) => cl.name);
     return Array.from(new Set([...directLabels, ...fromCustomLabels]));
   };
 
   const normalize = (value: unknown) => String(value ?? "").toLowerCase();
 
-  const getSongDate = (s: SongItem) => s?.releaseDate ?? s?.release_date ?? s?.releasedAt ?? s?.release ?? "";
+  const getSongDate = (s: SongItem) =>
+    s?.releaseDate ?? s?.release_date ?? s?.releasedAt ?? s?.release ?? "";
 
   const filteredSongs = useMemo<SongItem[]>(() => {
-    const serverActive = mode === "songs" && Boolean(
-      countryFilter.trim() || dateFrom || dateTo || splitFilter !== "all" || percentageMin !== "" || percentageMax !== ""
-    );
+    const serverActive =
+      mode === "songs" &&
+      Boolean(
+        countryFilter.trim() ||
+        dateFrom ||
+        dateTo ||
+        splitFilter !== "all" ||
+        percentageMin !== "" ||
+        percentageMax !== "",
+      );
     let list: SongItem[];
     if (serverActive) {
       list = [...filterResults];
     } else {
-      list = [...(debouncedSearchQuery.trim() && mode === "songs" ? (searchResults as SongItem[]) : (songs as SongItem[]))];
+      list = [
+        ...(debouncedSearchQuery.trim() && mode === "songs"
+          ? (searchResults as SongItem[])
+          : (songs as SongItem[])),
+      ];
       if (splitFilter === "with_split") list = list.filter(hasAnySplit);
-      else if (splitFilter === "without_split") list = list.filter((s) => !hasAnySplit(s));
+      else if (splitFilter === "without_split")
+        list = list.filter((s) => !hasAnySplit(s));
       if (countryFilter.trim()) {
         const country = normalize(countryFilter.trim());
         list = list.filter((s) => normalize(s?.country).includes(country));
       }
       if (dateFrom) {
         const from = new Date(dateFrom).getTime();
-        list = list.filter((s) => { const d = getSongDate(s); return d ? new Date(d).getTime() >= from : true; });
+        list = list.filter((s) => {
+          const d = getSongDate(s);
+          return d ? new Date(d).getTime() >= from : true;
+        });
       }
       if (dateTo) {
         const to = new Date(dateTo).getTime();
-        list = list.filter((s) => { const d = getSongDate(s); return d ? new Date(d).getTime() <= to : true; });
+        list = list.filter((s) => {
+          const d = getSongDate(s);
+          return d ? new Date(d).getTime() <= to : true;
+        });
       }
     }
     if (artistFilter.trim()) {
@@ -231,26 +315,88 @@ export function useMusicLibrary() {
       const isrc = normalize(isrcFilter.trim());
       list = list.filter((s) => normalize(s?.isrc).includes(isrc));
     }
-    if (sortBy === "alpha") list.sort((a, b) => String(a?.trackTitle ?? "").localeCompare(String(b?.trackTitle ?? "")));
-    else if (sortBy === "title_desc") list.sort((a, b) => String(b?.trackTitle ?? "").localeCompare(String(a?.trackTitle ?? "")));
-    else if (sortBy === "revenue") list.sort((a, b) => (b?.totalNetIncome ?? 0) - (a?.totalNetIncome ?? 0));
-    else if (sortBy === "streams") list.sort((a, b) => (b?.totalStreams ?? 0) - (a?.totalStreams ?? 0));
-    else if (sortBy === "artist_asc") list.sort((a, b) => String(a?.artistName ?? "").localeCompare(String(b?.artistName ?? "")));
-    else if (sortBy === "artist_desc") list.sort((a, b) => String(b?.artistName ?? "").localeCompare(String(a?.artistName ?? "")));
-    else if (sortBy === "label_asc") list.sort((a, b) => String(a?.artisticLabel ?? "").localeCompare(String(b?.artisticLabel ?? "")));
-    else if (sortBy === "label_desc") list.sort((a, b) => String(b?.artisticLabel ?? "").localeCompare(String(a?.artisticLabel ?? "")));
-    else if (sortBy === "date_asc") list.sort((a, b) => new Date(getSongDate(a) || 0).getTime() - new Date(getSongDate(b) || 0).getTime());
-    else if (sortBy === "date_desc") list.sort((a, b) => new Date(getSongDate(b) || 0).getTime() - new Date(getSongDate(a) || 0).getTime());
-    else if (sortBy === "percentage_asc") list.sort((a, b) => (a?.percetaje ?? 0) - (b?.percetaje ?? 0));
-    else if (sortBy === "percentage_desc") list.sort((a, b) => (b?.percetaje ?? 0) - (a?.percetaje ?? 0));
-    else if (sortBy === "collaborators_asc") list.sort((a, b) => (a?.collaborators?.length ?? 0) - (b?.collaborators?.length ?? 0));
-    else if (sortBy === "collaborators_desc") list.sort((a, b) => (b?.collaborators?.length ?? 0) - (a?.collaborators?.length ?? 0));
-    else if (sortBy === "split_desc") list.sort((a, b) => (hasAnySplit(b) ? 1 : 0) - (hasAnySplit(a) ? 1 : 0));
-    else if (sortBy === "split_asc") list.sort((a, b) => (hasAnySplit(a) ? 1 : 0) - (hasAnySplit(b) ? 1 : 0));
+    if (sortBy === "alpha")
+      list.sort((a, b) =>
+        String(a?.trackTitle ?? "").localeCompare(String(b?.trackTitle ?? "")),
+      );
+    else if (sortBy === "title_desc")
+      list.sort((a, b) =>
+        String(b?.trackTitle ?? "").localeCompare(String(a?.trackTitle ?? "")),
+      );
+    else if (sortBy === "revenue")
+      list.sort((a, b) => (b?.totalNetIncome ?? 0) - (a?.totalNetIncome ?? 0));
+    else if (sortBy === "streams")
+      list.sort((a, b) => (b?.totalStreams ?? 0) - (a?.totalStreams ?? 0));
+    else if (sortBy === "artist_asc")
+      list.sort((a, b) =>
+        String(a?.artistName ?? "").localeCompare(String(b?.artistName ?? "")),
+      );
+    else if (sortBy === "artist_desc")
+      list.sort((a, b) =>
+        String(b?.artistName ?? "").localeCompare(String(a?.artistName ?? "")),
+      );
+    else if (sortBy === "label_asc")
+      list.sort((a, b) =>
+        String(a?.artisticLabel ?? "").localeCompare(
+          String(b?.artisticLabel ?? ""),
+        ),
+      );
+    else if (sortBy === "label_desc")
+      list.sort((a, b) =>
+        String(b?.artisticLabel ?? "").localeCompare(
+          String(a?.artisticLabel ?? ""),
+        ),
+      );
+    else if (sortBy === "date_asc")
+      list.sort(
+        (a, b) =>
+          new Date(getSongDate(a) || 0).getTime() -
+          new Date(getSongDate(b) || 0).getTime(),
+      );
+    else if (sortBy === "date_desc")
+      list.sort(
+        (a, b) =>
+          new Date(getSongDate(b) || 0).getTime() -
+          new Date(getSongDate(a) || 0).getTime(),
+      );
+    else if (sortBy === "percentage_asc")
+      list.sort((a, b) => (a?.percetaje ?? 0) - (b?.percetaje ?? 0));
+    else if (sortBy === "percentage_desc")
+      list.sort((a, b) => (b?.percetaje ?? 0) - (a?.percetaje ?? 0));
+    else if (sortBy === "collaborators_asc")
+      list.sort(
+        (a, b) =>
+          (a?.collaborators?.length ?? 0) - (b?.collaborators?.length ?? 0),
+      );
+    else if (sortBy === "collaborators_desc")
+      list.sort(
+        (a, b) =>
+          (b?.collaborators?.length ?? 0) - (a?.collaborators?.length ?? 0),
+      );
+    else if (sortBy === "split_desc")
+      list.sort((a, b) => (hasAnySplit(b) ? 1 : 0) - (hasAnySplit(a) ? 1 : 0));
+    else if (sortBy === "split_asc")
+      list.sort((a, b) => (hasAnySplit(a) ? 1 : 0) - (hasAnySplit(b) ? 1 : 0));
     return list;
-  }, [debouncedSearchQuery, mode, searchResults, songs, splitFilter, artistFilter, isrcFilter, countryFilter, dateFrom, dateTo, percentageMin, percentageMax, sortBy, filterResults]);
+  }, [
+    debouncedSearchQuery,
+    mode,
+    searchResults,
+    songs,
+    splitFilter,
+    artistFilter,
+    isrcFilter,
+    countryFilter,
+    dateFrom,
+    dateTo,
+    percentageMin,
+    percentageMax,
+    sortBy,
+    filterResults,
+  ]);
 
-  const getAlbumDate = (a: AlbumItem) => (a as AlbumItem & { releaseDate?: string })?.releaseDate ?? "";
+  const getAlbumDate = (a: AlbumItem) =>
+    (a as AlbumItem & { releaseDate?: string })?.releaseDate ?? "";
 
   const filteredAlbums = useMemo<AlbumItem[]>(() => {
     let list: AlbumItem[] = albumSearchResult
@@ -271,42 +417,130 @@ export function useMusicLibrary() {
     }
     if (countryFilter.trim()) {
       const country = normalize(countryFilter.trim());
-      list = list.filter((a) => normalize((a as AlbumItem & { country?: string })?.country).includes(country));
+      list = list.filter((a) =>
+        normalize((a as AlbumItem & { country?: string })?.country).includes(
+          country,
+        ),
+      );
     }
     if (dateFrom) {
       const from = new Date(dateFrom).getTime();
-      list = list.filter((a) => { const d = getAlbumDate(a); return d ? new Date(d).getTime() >= from : true; });
+      list = list.filter((a) => {
+        const d = getAlbumDate(a);
+        return d ? new Date(d).getTime() >= from : true;
+      });
     }
     if (dateTo) {
       const to = new Date(dateTo).getTime();
-      list = list.filter((a) => { const d = getAlbumDate(a); return d ? new Date(d).getTime() <= to : true; });
+      list = list.filter((a) => {
+        const d = getAlbumDate(a);
+        return d ? new Date(d).getTime() <= to : true;
+      });
     }
-    if (splitFilter !== "all") list = list.filter((a) => splitFilter === "with_split" ? hasAnySplit(a) : !hasAnySplit(a));
-    if (sortBy === "alpha") list.sort((a, b) => String(a?.releaseTitle ?? a?.albumTitle ?? "").localeCompare(String(b?.releaseTitle ?? b?.albumTitle ?? "")));
-    else if (sortBy === "title_desc") list.sort((a, b) => String(b?.releaseTitle ?? b?.albumTitle ?? "").localeCompare(String(a?.releaseTitle ?? a?.albumTitle ?? "")));
-    else if (sortBy === "revenue") list.sort((a, b) => (b?.totalNetIncome ?? 0) - (a?.totalNetIncome ?? 0));
-    else if (sortBy === "streams") list.sort((a, b) => (b?.totalStreams ?? 0) - (a?.totalStreams ?? 0));
-    else if (sortBy === "artist_asc") list.sort((a, b) => String(a?.artistName ?? "").localeCompare(String(b?.artistName ?? "")));
-    else if (sortBy === "artist_desc") list.sort((a, b) => String(b?.artistName ?? "").localeCompare(String(a?.artistName ?? "")));
-    else if (sortBy === "label_asc") list.sort((a, b) => String(a?.artisticLabel ?? "").localeCompare(String(b?.artisticLabel ?? "")));
-    else if (sortBy === "label_desc") list.sort((a, b) => String(b?.artisticLabel ?? "").localeCompare(String(a?.artisticLabel ?? "")));
-    else if (sortBy === "date_asc") list.sort((a, b) => new Date(getAlbumDate(a) || 0).getTime() - new Date(getAlbumDate(b) || 0).getTime());
-    else if (sortBy === "date_desc") list.sort((a, b) => new Date(getAlbumDate(b) || 0).getTime() - new Date(getAlbumDate(a) || 0).getTime());
-    if (groupAlbumsByTrackCount) list.sort((a, b) => (b?.totalTracks ?? b?.tracks?.length ?? 0) - (a?.totalTracks ?? a?.tracks?.length ?? 0));
+    if (splitFilter !== "all")
+      list = list.filter((a) =>
+        splitFilter === "with_split" ? hasAnySplit(a) : !hasAnySplit(a),
+      );
+    if (sortBy === "alpha")
+      list.sort((a, b) =>
+        String(a?.releaseTitle ?? a?.albumTitle ?? "").localeCompare(
+          String(b?.releaseTitle ?? b?.albumTitle ?? ""),
+        ),
+      );
+    else if (sortBy === "title_desc")
+      list.sort((a, b) =>
+        String(b?.releaseTitle ?? b?.albumTitle ?? "").localeCompare(
+          String(a?.releaseTitle ?? a?.albumTitle ?? ""),
+        ),
+      );
+    else if (sortBy === "revenue")
+      list.sort((a, b) => (b?.totalNetIncome ?? 0) - (a?.totalNetIncome ?? 0));
+    else if (sortBy === "streams")
+      list.sort((a, b) => (b?.totalStreams ?? 0) - (a?.totalStreams ?? 0));
+    else if (sortBy === "artist_asc")
+      list.sort((a, b) =>
+        String(a?.artistName ?? "").localeCompare(String(b?.artistName ?? "")),
+      );
+    else if (sortBy === "artist_desc")
+      list.sort((a, b) =>
+        String(b?.artistName ?? "").localeCompare(String(a?.artistName ?? "")),
+      );
+    else if (sortBy === "label_asc")
+      list.sort((a, b) =>
+        String(a?.artisticLabel ?? "").localeCompare(
+          String(b?.artisticLabel ?? ""),
+        ),
+      );
+    else if (sortBy === "label_desc")
+      list.sort((a, b) =>
+        String(b?.artisticLabel ?? "").localeCompare(
+          String(a?.artisticLabel ?? ""),
+        ),
+      );
+    else if (sortBy === "date_asc")
+      list.sort(
+        (a, b) =>
+          new Date(getAlbumDate(a) || 0).getTime() -
+          new Date(getAlbumDate(b) || 0).getTime(),
+      );
+    else if (sortBy === "date_desc")
+      list.sort(
+        (a, b) =>
+          new Date(getAlbumDate(b) || 0).getTime() -
+          new Date(getAlbumDate(a) || 0).getTime(),
+      );
+    if (groupAlbumsByTrackCount)
+      list.sort(
+        (a, b) =>
+          (b?.totalTracks ?? b?.tracks?.length ?? 0) -
+          (a?.totalTracks ?? a?.tracks?.length ?? 0),
+      );
     return list;
-  }, [albumSearchResult, albums, searchQuery, artistFilter, upcFilter, countryFilter, dateFrom, dateTo, splitFilter, sortBy, groupAlbumsByTrackCount]);
+  }, [
+    albumSearchResult,
+    albums,
+    searchQuery,
+    artistFilter,
+    upcFilter,
+    countryFilter,
+    dateFrom,
+    dateTo,
+    splitFilter,
+    sortBy,
+    groupAlbumsByTrackCount,
+  ]);
 
   // Paginación
-  const isServerFilterActive = mode === "songs" && Boolean(
-    countryFilter.trim() || dateFrom || dateTo || splitFilter !== "all" || percentageMin !== "" || percentageMax !== ""
+  const isServerFilterActive =
+    mode === "songs" &&
+    Boolean(
+      countryFilter.trim() ||
+      dateFrom ||
+      dateTo ||
+      splitFilter !== "all" ||
+      percentageMin !== "" ||
+      percentageMax !== "",
+    );
+  const songFiltersApplied = Boolean(
+    debouncedSearchQuery.trim() ||
+    artistFilter.trim() ||
+    isrcFilter.trim() ||
+    isServerFilterActive,
   );
-  const songFiltersApplied = Boolean(debouncedSearchQuery.trim() || artistFilter.trim() || isrcFilter.trim() || isServerFilterActive);
-  const knownTotalItems = mode === "songs"
-    ? isServerFilterActive
-      ? (filterPagination?.total ?? filteredSongs.length)
-      : (songFiltersApplied ? filteredSongs.length : songsPagination?.total)
-    : (albumFiltersApplied ? filteredAlbums.length : albumsPagination?.total);
-  const knownTotalPages = knownTotalItems != null ? Math.max(1, Math.ceil(knownTotalItems / limit)) : null;
+  const knownTotalItems =
+    mode === "songs"
+      ? isServerFilterActive
+        ? (filterPagination?.total ?? filteredSongs.length)
+        : songFiltersApplied
+          ? filteredSongs.length
+          : songsPagination?.total
+      : albumFiltersApplied
+        ? filteredAlbums.length
+        : albumsPagination?.total;
+  const knownTotalPages =
+    knownTotalItems != null
+      ? Math.max(1, Math.ceil(knownTotalItems / limit))
+      : null;
   const safePage = knownTotalPages ? Math.min(page, knownTotalPages) : page;
   const pageStart = (safePage - 1) * limit;
   const displayAlbums = useMemo(() => {
@@ -325,12 +559,22 @@ export function useMusicLibrary() {
   const currentData = mode === "songs" ? filteredSongs : displayAlbums;
   const currentPageItems = currentData.length;
   const pageEnd = pageStart + currentPageItems;
-  const hasMoreFromApi = mode === "songs"
-    ? (isServerFilterActive ? filterPagination?.hasMore : songsPagination?.hasMore)
-    : albumsPagination?.hasMore;
-  const hasMoreFallback = mode === "songs" ? (!songFiltersApplied && currentPageItems > 0) : (!albumFiltersApplied && currentPageItems > 0);
-  const canGoNext = knownTotalPages ? safePage < knownTotalPages : (hasMoreFromApi ?? hasMoreFallback);
-  const totalItemsForDisplay = knownTotalItems ?? Math.max(pageStart + currentPageItems, currentData.length);
+  const hasMoreFromApi =
+    mode === "songs"
+      ? isServerFilterActive
+        ? filterPagination?.hasMore
+        : songsPagination?.hasMore
+      : albumsPagination?.hasMore;
+  const hasMoreFallback =
+    mode === "songs"
+      ? !songFiltersApplied && currentPageItems > 0
+      : !albumFiltersApplied && currentPageItems > 0;
+  const canGoNext = knownTotalPages
+    ? safePage < knownTotalPages
+    : (hasMoreFromApi ?? hasMoreFallback);
+  const totalItemsForDisplay =
+    knownTotalItems ??
+    Math.max(pageStart + currentPageItems, currentData.length);
 
   // Handlers
   const handleFileSelect = async (file: File) => {
@@ -360,7 +604,9 @@ export function useMusicLibrary() {
     setIsSongDetailsLoading(false);
     const details = response?.data ?? response;
     if (!details) {
-      setSongDetailsError("No se pudo obtener el detalle de la canción por ISRC.");
+      setSongDetailsError(
+        "No se pudo obtener el detalle de la canción por ISRC.",
+      );
       return;
     }
     setSelectedSongDetails(details as SongItem);
@@ -373,7 +619,8 @@ export function useMusicLibrary() {
     setSongDetailsError("");
   };
 
-  const handleNavigateToSong = (songId: string) => navigate(`/panel/song/${songId}`);
+  const handleNavigateToSong = (songId: string) =>
+    navigate(`/panel/song/${songId}`);
 
   const clearAllFilters = () => {
     setSortBy("alpha");
@@ -403,35 +650,57 @@ export function useMusicLibrary() {
     groupAlbumsByTrackCount,
   ].filter(Boolean).length;
 
-  const loading = mode === "songs" ? songsLoading || isSearching || isFilterLoading : albumsLoading;
+  const loading =
+    mode === "songs"
+      ? songsLoading || isSearching || isFilterLoading
+      : albumsLoading;
 
   return {
     // state
-    mode, setMode,
-    page, setPage,
-    limit, setLimit,
-    isModalOpen, setIsModalOpen,
-    searchQuery, setSearchQuery,
+    mode,
+    setMode,
+    page,
+    setPage,
+    limit,
+    setLimit,
+    isModalOpen,
+    setIsModalOpen,
+    searchQuery,
+    setSearchQuery,
     isAlbumSearching,
-    isOwnerSplitModalOpen, setIsOwnerSplitModalOpen,
-    selectedAlbum, setSelectedAlbum,
+    isOwnerSplitModalOpen,
+    setIsOwnerSplitModalOpen,
+    selectedAlbum,
+    setSelectedAlbum,
     isSongDetailsOpen,
     selectedSong,
     selectedSongDetails,
     isSongDetailsLoading,
     songDetailsError,
-    sortBy, setSortBy,
-    splitFilter, setSplitFilter,
-    artistFilter, setArtistFilter,
-    isrcFilter, setIsrcFilter,
-    upcFilter, setUpcFilter,
-    countryFilter, setCountryFilter,
-    dateFrom, setDateFrom,
-    dateTo, setDateTo,
-    percentageMin, setPercentageMin,
-    percentageMax, setPercentageMax,
-    groupAlbumsByTrackCount, setGroupAlbumsByTrackCount,
-    showFilterPanel, setShowFilterPanel,
+    sortBy,
+    setSortBy,
+    splitFilter,
+    setSplitFilter,
+    artistFilter,
+    setArtistFilter,
+    isrcFilter,
+    setIsrcFilter,
+    upcFilter,
+    setUpcFilter,
+    countryFilter,
+    setCountryFilter,
+    dateFrom,
+    setDateFrom,
+    dateTo,
+    setDateTo,
+    percentageMin,
+    setPercentageMin,
+    percentageMax,
+    setPercentageMax,
+    groupAlbumsByTrackCount,
+    setGroupAlbumsByTrackCount,
+    showFilterPanel,
+    setShowFilterPanel,
     // computed
     loading,
     filteredSongs,

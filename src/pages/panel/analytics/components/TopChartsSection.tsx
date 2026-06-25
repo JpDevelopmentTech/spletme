@@ -1,4 +1,8 @@
-import type { TopSong, TopArtist, TopLabel } from '../../../../types/analytics.types';
+import type {
+  TopSong,
+  TopArtist,
+  TopLabel,
+} from "../../../../types/analytics.types";
 
 interface Props {
   topSongs: TopSong[];
@@ -19,7 +23,13 @@ function fmtStreams(n: number) {
   return String(n);
 }
 
-const RANK_COLORS = ['text-yellow-500', 'text-gray-400', 'text-amber-600', 'text-[#9CA3AF]', 'text-[#9CA3AF]'];
+const RANK_COLORS = [
+  "text-yellow-500",
+  "text-gray-400",
+  "text-amber-600",
+  "text-[#9CA3AF]",
+  "text-[#9CA3AF]",
+];
 
 function TopCard<T>({
   title,
@@ -39,30 +49,40 @@ function TopCard<T>({
   loading: boolean;
 }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-6 flex flex-col gap-4">
+    <div className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-6">
       <h2 className="text-sm font-semibold text-[#111827]">{title}</h2>
       {loading ? (
-        <div className="h-[160px] flex items-center justify-center text-sm text-[#9CA3AF]">
+        <div className="flex h-[160px] items-center justify-center text-sm text-[#9CA3AF]">
           Cargando...
         </div>
       ) : items.length === 0 ? (
-        <div className="h-[160px] flex items-center justify-center text-sm text-[#9CA3AF]">
+        <div className="flex h-[160px] items-center justify-center text-sm text-[#9CA3AF]">
           Sin datos
         </div>
       ) : (
         <div className="flex flex-col gap-3">
           {items.map((item, i) => (
             <div key={i} className="flex items-center gap-3">
-              <span className={`text-[13px] font-bold w-5 flex-shrink-0 ${RANK_COLORS[i]}`}>
+              <span
+                className={`w-5 flex-shrink-0 text-[13px] font-bold ${RANK_COLORS[i]}`}
+              >
                 #{i + 1}
               </span>
-              <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-semibold text-[#111827] truncate">{getLabel(item)}</p>
-                <p className="text-[11px] text-[#9CA3AF] truncate">{getSub(item)}</p>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[13px] font-semibold text-[#111827]">
+                  {getLabel(item)}
+                </p>
+                <p className="truncate text-[11px] text-[#9CA3AF]">
+                  {getSub(item)}
+                </p>
               </div>
-              <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
-                <span className="text-[12px] font-bold text-green-500">{fmt(getIncome(item))}</span>
-                <span className="text-[10px] text-[#9CA3AF]">{fmtStreams(getStreams(item))} streams</span>
+              <div className="flex flex-shrink-0 flex-col items-end gap-0.5">
+                <span className="text-[12px] font-bold text-green-500">
+                  {fmt(getIncome(item))}
+                </span>
+                <span className="text-[10px] text-[#9CA3AF]">
+                  {fmtStreams(getStreams(item))} streams
+                </span>
               </div>
             </div>
           ))}
@@ -72,9 +92,14 @@ function TopCard<T>({
   );
 }
 
-export default function TopChartsSection({ topSongs, topArtists, topLabels, loading }: Props) {
+export default function TopChartsSection({
+  topSongs,
+  topArtists,
+  topLabels,
+  loading,
+}: Props) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
       <TopCard<TopSong>
         title="Top 5 Canciones"
         items={topSongs}
@@ -87,8 +112,8 @@ export default function TopChartsSection({ topSongs, topArtists, topLabels, load
       <TopCard<TopArtist>
         title="Top 5 Artistas"
         items={topArtists}
-        getLabel={(a) => a.artistName || 'Desconocido'}
-        getSub={(a) => `${a.songCount} canción${a.songCount !== 1 ? 'es' : ''}`}
+        getLabel={(a) => a.artistName || "Desconocido"}
+        getSub={(a) => `${a.songCount} canción${a.songCount !== 1 ? "es" : ""}`}
         getIncome={(a) => a.netIncome}
         getStreams={(a) => a.streams}
         loading={loading}
@@ -96,8 +121,8 @@ export default function TopChartsSection({ topSongs, topArtists, topLabels, load
       <TopCard<TopLabel>
         title="Top 5 Sellos"
         items={topLabels}
-        getLabel={(l) => l.labelName || 'Sin sello'}
-        getSub={(l) => `${l.songCount} canción${l.songCount !== 1 ? 'es' : ''}`}
+        getLabel={(l) => l.labelName || "Sin sello"}
+        getSub={(l) => `${l.songCount} canción${l.songCount !== 1 ? "es" : ""}`}
         getIncome={(l) => l.netIncome}
         getStreams={(l) => l.streams}
         loading={loading}

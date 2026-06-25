@@ -28,5 +28,5 @@ export const platforms = [
   { value: "boomplay", label: "Boomplay" },
   { value: "mdundo", label: "Mdundo" },
   { value: "audiius", label: "Audius" },
-  { value: "mixcloud", label: "Mixcloud" }
+  { value: "mixcloud", label: "Mixcloud" },
 ];

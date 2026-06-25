@@ -63,10 +63,15 @@ const options: ApexOptions = {
 
 const Trafic = () => {
   return (
-    <div className="rounded-2xl shadow-lg col-span-6 row-span-2 p-6 flex flex-col">
+    <div className="col-span-6 row-span-2 flex flex-col rounded-2xl p-6 shadow-lg">
       <Title title="Trafico" subtitle="Aqui un texto para el trafico" />
       <div>
-        <ReactApexChart options={options} series={series} type="area" height={200} />
+        <ReactApexChart
+          options={options}
+          series={series}
+          type="area"
+          height={200}
+        />
       </div>
     </div>
   );

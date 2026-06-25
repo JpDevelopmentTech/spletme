@@ -22,18 +22,27 @@ const Loading = ({ text = "Cargando" }: LoadingProps) => {
 
       <div className="flex flex-col items-center gap-4">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-[#111827] tracking-wide select-none" style={{ fontSize: 13 }}>
+          <span
+            className="select-none font-semibold tracking-wide text-[#111827]"
+            style={{ fontSize: 13 }}
+          >
             {text}
           </span>
           <div className="flex items-center gap-1">
-            <span className="dot w-1.5 h-1.5 rounded-full bg-[#F97316] inline-block" />
-            <span className="dot w-1.5 h-1.5 rounded-full bg-[#F97316] inline-block" />
-            <span className="dot w-1.5 h-1.5 rounded-full bg-[#F97316] inline-block" />
+            <span className="dot inline-block h-1.5 w-1.5 rounded-full bg-[#F97316]" />
+            <span className="dot inline-block h-1.5 w-1.5 rounded-full bg-[#F97316]" />
+            <span className="dot inline-block h-1.5 w-1.5 rounded-full bg-[#F97316]" />
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-full bg-[#E5E7EB]" style={{ width: 140, height: 3 }}>
-          <div className="bar-fill absolute inset-y-0 left-0 rounded-full bg-[#F97316]" style={{ width: "35%" }} />
+        <div
+          className="relative overflow-hidden rounded-full bg-[#E5E7EB]"
+          style={{ width: 140, height: 3 }}
+        >
+          <div
+            className="bar-fill absolute inset-y-0 left-0 rounded-full bg-[#F97316]"
+            style={{ width: "35%" }}
+          />
         </div>
       </div>
     </div>

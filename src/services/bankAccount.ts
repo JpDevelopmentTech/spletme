@@ -16,8 +16,12 @@ class BankAccountService {
   };
 
   /** Confirma la vinculación tras autorizar el mandato y devuelve el estado actualizado. */
-  confirm = async (setupIntentId: string): Promise<ApiResponse<BankAccountStatusData>> => {
-    const response = await apiClient.post(`${this.BASE}/confirm`, { setupIntentId });
+  confirm = async (
+    setupIntentId: string,
+  ): Promise<ApiResponse<BankAccountStatusData>> => {
+    const response = await apiClient.post(`${this.BASE}/confirm`, {
+      setupIntentId,
+    });
     return response.data;
   };
 

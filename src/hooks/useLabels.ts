@@ -1,17 +1,21 @@
-import { useState, useCallback, useEffect } from 'react';
-import LabelsService, { Label, LabelSong, CustomLabel } from '../services/labels';
+import { useState, useCallback, useEffect } from "react";
+import LabelsService, {
+  Label,
+  LabelSong,
+  CustomLabel,
+} from "../services/labels";
 
 export const useLabels = () => {
   const [labels, setLabels] = useState<Label[]>([]);
   const [customLabels, setCustomLabels] = useState<CustomLabel[]>([]);
   const [allLabels, setAllLabels] = useState<Label[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
 
   const loadLabels = useCallback(async () => {
     try {
       setLoading(true);
-      setError('');
+      setError("");
 
       // Cargar ambos tipos de labels en paralelo
       const [artisticResponse, customResponse] = await Promise.all([
@@ -19,46 +23,52 @@ export const useLabels = () => {
         LabelsService.getCustomLabels(),
       ]);
 
-      const artisticLabels: Label[] = artisticResponse.error ? [] : (artisticResponse.data || []);
-      const customLabelsList: CustomLabel[] = customResponse.error ? [] : (customResponse.data || []);
+      const artisticLabels: Label[] = artisticResponse.error
+        ? []
+        : artisticResponse.data || [];
+      const customLabelsList: CustomLabel[] = customResponse.error
+        ? []
+        : customResponse.data || [];
 
       // Marcar los labels artísticos como no personalizados
-      const artisticLabelsWithFlag = artisticLabels.map(label => ({
+      const artisticLabelsWithFlag = artisticLabels.map((label) => ({
         ...label,
         isCustom: false,
       }));
 
       // Convertir los labels personalizados al formato de Label para mostrarlos en la tabla
-      const customLabelsAsLabel: Label[] = customLabelsList.map(custom => ({
-        label: custom.name,
-        count: custom.stats?.totalSongs || 0,
-        totalStreams: custom.stats?.totalStreams || 0,
-        totalGrossIncome: custom.stats?.totalGrossIncome || 0,
-        totalNetIncome: custom.stats?.totalNetIncome || 0,
-        topSongs: [],
-        splitProgress: {
-          total: 0,
-          withSplits: 0,
-          percentage: 0,
-          hasAllSplits: false,
-        },
-        isCustom: true,
-        // Campos adicionales para labels personalizados
-        _id: custom._id,
-        artisticLabels: custom.artisticLabels,
-        createdAt: custom.createdAt,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any));
+      const customLabelsAsLabel: Label[] = customLabelsList.map(
+        (custom) =>
+          ({
+            label: custom.name,
+            count: custom.stats?.totalSongs || 0,
+            totalStreams: custom.stats?.totalStreams || 0,
+            totalGrossIncome: custom.stats?.totalGrossIncome || 0,
+            totalNetIncome: custom.stats?.totalNetIncome || 0,
+            topSongs: [],
+            splitProgress: {
+              total: 0,
+              withSplits: 0,
+              percentage: 0,
+              hasAllSplits: false,
+            },
+            isCustom: true,
+            // Campos adicionales para labels personalizados
+            _id: custom._id,
+            artisticLabels: custom.artisticLabels,
+            createdAt: custom.createdAt,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          }) as any,
+      );
 
       setLabels(artisticLabelsWithFlag);
       setCustomLabels(customLabelsList);
-      
+
       // Combinar ambos: primero los personalizados, luego los artísticos
       setAllLabels([...customLabelsAsLabel, ...artisticLabelsWithFlag]);
-
     } catch (err) {
-      console.error('Error loading labels:', err);
-      setError('Error al conectar con el servidor');
+      console.error("Error loading labels:", err);
+      setError("Error al conectar con el servidor");
       setLabels([]);
       setCustomLabels([]);
       setAllLabels([]);
@@ -85,26 +95,26 @@ export const useLabels = () => {
 export const useLabelSongs = (label: string) => {
   const [songs, setSongs] = useState<LabelSong[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
 
   const loadSongs = useCallback(async () => {
     if (!label) return;
 
     try {
       setLoading(true);
-      setError('');
+      setError("");
 
       const response = await LabelsService.getSongsByLabel(label);
 
       if (response.error) {
-        setError(response.message || 'Error al cargar las canciones');
+        setError(response.message || "Error al cargar las canciones");
         setSongs([]);
       } else {
         setSongs(response.data || []);
       }
     } catch (err) {
-      console.error('Error loading songs by label:', err);
-      setError('Error al conectar con el servidor');
+      console.error("Error loading songs by label:", err);
+      setError("Error al conectar con el servidor");
       setSongs([]);
     } finally {
       setLoading(false);
@@ -132,19 +142,19 @@ export const useCustomLabelSongs = (labelName: string) => {
     createdAt: string;
   } | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
 
   const loadSongs = useCallback(async () => {
     if (!labelName) return;
 
     try {
       setLoading(true);
-      setError('');
+      setError("");
 
       const response = await LabelsService.getSongsByCustomLabel(labelName);
 
       if (response.error) {
-        setError(response.message || 'Error al cargar las canciones');
+        setError(response.message || "Error al cargar las canciones");
         setSongs([]);
         setCustomLabel(null);
       } else {
@@ -152,8 +162,8 @@ export const useCustomLabelSongs = (labelName: string) => {
         setCustomLabel(response.data?.customLabel || null);
       }
     } catch (err) {
-      console.error('Error loading songs by custom label:', err);
-      setError('Error al conectar con el servidor');
+      console.error("Error loading songs by custom label:", err);
+      setError("Error al conectar con el servidor");
       setSongs([]);
       setCustomLabel(null);
     } finally {
@@ -173,4 +183,3 @@ export const useCustomLabelSongs = (labelName: string) => {
     loadSongs,
   };
 };
-

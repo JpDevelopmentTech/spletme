@@ -73,58 +73,62 @@ CREATE TABLE payment_history (
 
 ```javascript
 // POST /api/v1/payoneer/link-account
-app.post('/api/v1/payoneer/link-account', authenticateUser, async (req, res) => {
+app.post(
+  "/api/v1/payoneer/link-account",
+  authenticateUser,
+  async (req, res) => {
     try {
-        const { payoneerEmail, payoneerAccountId } = req.body;
-        const userId = req.user.id;
+      const { payoneerEmail, payoneerAccountId } = req.body;
+      const userId = req.user.id;
 
-        // Verificar si el email ya está vinculado
-        const existingAccount = await PayoneerAccount.findOne({ 
-            payoneer_email: payoneerEmail 
-        });
-        
-        if (existingAccount && existingAccount.user_id !== userId) {
-            return res.status(400).json({ 
-                message: 'Este email de Payoneer ya está vinculado a otra cuenta' 
-            });
-        }
+      // Verificar si el email ya está vinculado
+      const existingAccount = await PayoneerAccount.findOne({
+        payoneer_email: payoneerEmail,
+      });
 
-        // Crear o actualizar cuenta vinculada
-        const account = await PayoneerAccount.upsert({
-            user_id: userId,
-            payoneer_email: payoneerEmail,
-            payoneer_account_id: payoneerAccountId,
-            account_status: 'pending'
+      if (existingAccount && existingAccount.user_id !== userId) {
+        return res.status(400).json({
+          message: "Este email de Payoneer ya está vinculado a otra cuenta",
         });
+      }
 
-        res.json({ 
-            message: 'Cuenta vinculada exitosamente', 
-            account 
-        });
+      // Crear o actualizar cuenta vinculada
+      const account = await PayoneerAccount.upsert({
+        user_id: userId,
+        payoneer_email: payoneerEmail,
+        payoneer_account_id: payoneerAccountId,
+        account_status: "pending",
+      });
+
+      res.json({
+        message: "Cuenta vinculada exitosamente",
+        account,
+      });
     } catch (error) {
-        res.status(500).json({ message: 'Error vinculando cuenta', error });
+      res.status(500).json({ message: "Error vinculando cuenta", error });
     }
-});
+  },
+);
 ```
 
 #### 3.2 Obtener Información de Cuenta
 
 ```javascript
 // GET /api/v1/payoneer/account
-app.get('/api/v1/payoneer/account', authenticateUser, async (req, res) => {
-    try {
-        const userId = req.user.id;
-        
-        const account = await PayoneerAccount.findOne({ user_id: userId });
-        
-        if (!account) {
-            return res.json({ account: null });
-        }
+app.get("/api/v1/payoneer/account", authenticateUser, async (req, res) => {
+  try {
+    const userId = req.user.id;
 
-        res.json({ account });
-    } catch (error) {
-        res.status(500).json({ message: 'Error obteniendo cuenta', error });
+    const account = await PayoneerAccount.findOne({ user_id: userId });
+
+    if (!account) {
+      return res.json({ account: null });
     }
+
+    res.json({ account });
+  } catch (error) {
+    res.status(500).json({ message: "Error obteniendo cuenta", error });
+  }
 });
 ```
 
@@ -132,196 +136,214 @@ app.get('/api/v1/payoneer/account', authenticateUser, async (req, res) => {
 
 ```javascript
 // POST /api/v1/payoneer/send-payment
-app.post('/api/v1/payoneer/send-payment', authenticateUser, async (req, res) => {
+app.post(
+  "/api/v1/payoneer/send-payment",
+  authenticateUser,
+  async (req, res) => {
     try {
-        const { toUserEmail, amount, currency, description } = req.body;
-        const fromUserId = req.user.id;
+      const { toUserEmail, amount, currency, description } = req.body;
+      const fromUserId = req.user.id;
 
-        // Verificar cuenta del remitente
-        const senderAccount = await PayoneerAccount.findOne({ 
-            user_id: fromUserId, 
-            is_verified: true 
+      // Verificar cuenta del remitente
+      const senderAccount = await PayoneerAccount.findOne({
+        user_id: fromUserId,
+        is_verified: true,
+      });
+
+      if (!senderAccount) {
+        return res.status(400).json({
+          message: "Tu cuenta de Payoneer no está verificada",
         });
-        
-        if (!senderAccount) {
-            return res.status(400).json({ 
-                message: 'Tu cuenta de Payoneer no está verificada' 
-            });
-        }
+      }
 
-        // Buscar usuario destinatario
-        const recipientAccount = await PayoneerAccount.findOne({ 
-            payoneer_email: toUserEmail,
-            is_verified: true 
+      // Buscar usuario destinatario
+      const recipientAccount = await PayoneerAccount.findOne({
+        payoneer_email: toUserEmail,
+        is_verified: true,
+      });
+
+      if (!recipientAccount) {
+        return res.status(400).json({
+          message: "Usuario destinatario no encontrado o no verificado",
         });
-        
-        if (!recipientAccount) {
-            return res.status(400).json({ 
-                message: 'Usuario destinatario no encontrado o no verificado' 
-            });
-        }
+      }
 
-        // Usar Payoneer API para enviar el pago
-        const payoneerPayment = await sendPayoneerToPayoneerPayment({
-            senderEmail: senderAccount.payoneer_email,
-            recipientEmail: toUserEmail,
-            amount,
-            currency,
-            description
-        });
+      // Usar Payoneer API para enviar el pago
+      const payoneerPayment = await sendPayoneerToPayoneerPayment({
+        senderEmail: senderAccount.payoneer_email,
+        recipientEmail: toUserEmail,
+        amount,
+        currency,
+        description,
+      });
 
-        // Crear registro de pago
-        const payment = await PaymentRequest.create({
-            from_user_id: fromUserId,
-            to_user_id: recipientAccount.user_id,
-            amount,
-            currency,
-            description,
-            status: 'completed',
-            payoneer_payment_id: payoneerPayment.id,
-            completed_at: new Date()
-        });
+      // Crear registro de pago
+      const payment = await PaymentRequest.create({
+        from_user_id: fromUserId,
+        to_user_id: recipientAccount.user_id,
+        amount,
+        currency,
+        description,
+        status: "completed",
+        payoneer_payment_id: payoneerPayment.id,
+        completed_at: new Date(),
+      });
 
-        // Crear entradas en historial
-        await Promise.all([
-            PaymentHistory.create({
-                user_id: fromUserId,
-                type: 'sent',
-                amount,
-                currency,
-                description,
-                status: 'completed',
-                payoneer_transaction_id: payoneerPayment.id
-            }),
-            PaymentHistory.create({
-                user_id: recipientAccount.user_id,
-                type: 'received',
-                amount,
-                currency,
-                description,
-                status: 'completed',
-                payoneer_transaction_id: payoneerPayment.id
-            })
-        ]);
+      // Crear entradas en historial
+      await Promise.all([
+        PaymentHistory.create({
+          user_id: fromUserId,
+          type: "sent",
+          amount,
+          currency,
+          description,
+          status: "completed",
+          payoneer_transaction_id: payoneerPayment.id,
+        }),
+        PaymentHistory.create({
+          user_id: recipientAccount.user_id,
+          type: "received",
+          amount,
+          currency,
+          description,
+          status: "completed",
+          payoneer_transaction_id: payoneerPayment.id,
+        }),
+      ]);
 
-        res.json({ payment });
+      res.json({ payment });
     } catch (error) {
-        res.status(500).json({ message: 'Error enviando pago', error });
+      res.status(500).json({ message: "Error enviando pago", error });
     }
-});
+  },
+);
 ```
 
 #### 3.4 Solicitar Pago
 
 ```javascript
 // POST /api/v1/payoneer/request-payment
-app.post('/api/v1/payoneer/request-payment', authenticateUser, async (req, res) => {
+app.post(
+  "/api/v1/payoneer/request-payment",
+  authenticateUser,
+  async (req, res) => {
     try {
-        const { toUserEmail, amount, currency, description, dueDate } = req.body;
-        const fromUserId = req.user.id;
+      const { toUserEmail, amount, currency, description, dueDate } = req.body;
+      const fromUserId = req.user.id;
 
-        // Buscar usuario destinatario
-        const recipientAccount = await PayoneerAccount.findOne({ 
-            payoneer_email: toUserEmail 
+      // Buscar usuario destinatario
+      const recipientAccount = await PayoneerAccount.findOne({
+        payoneer_email: toUserEmail,
+      });
+
+      if (!recipientAccount) {
+        return res.status(400).json({
+          message: "Usuario no encontrado",
         });
-        
-        if (!recipientAccount) {
-            return res.status(400).json({ 
-                message: 'Usuario no encontrado' 
-            });
-        }
+      }
 
-        // Crear solicitud de pago
-        const request = await PaymentRequest.create({
-            from_user_id: fromUserId,
-            to_user_id: recipientAccount.user_id,
-            amount,
-            currency,
-            description,
-            due_date: dueDate,
-            status: 'pending'
-        });
+      // Crear solicitud de pago
+      const request = await PaymentRequest.create({
+        from_user_id: fromUserId,
+        to_user_id: recipientAccount.user_id,
+        amount,
+        currency,
+        description,
+        due_date: dueDate,
+        status: "pending",
+      });
 
-        // Enviar notificación por email (opcional)
-        await sendPaymentRequestNotification(recipientAccount.payoneer_email, {
-            requesterName: req.user.name,
-            amount,
-            currency,
-            description,
-            requestId: request.id
-        });
+      // Enviar notificación por email (opcional)
+      await sendPaymentRequestNotification(recipientAccount.payoneer_email, {
+        requesterName: req.user.name,
+        amount,
+        currency,
+        description,
+        requestId: request.id,
+      });
 
-        res.json({ request });
+      res.json({ request });
     } catch (error) {
-        res.status(500).json({ message: 'Error creando solicitud', error });
+      res.status(500).json({ message: "Error creando solicitud", error });
     }
-});
+  },
+);
 ```
 
 ### 4. Funciones de Utilidad para Payoneer API
 
 ```javascript
 // utils/payoneerApi.js
-const axios = require('axios');
+const axios = require("axios");
 
 class PayoneerAPI {
-    constructor() {
-        this.baseURL = process.env.PAYONEER_API_URL;
-        this.clientId = process.env.PAYONEER_CLIENT_ID;
-        this.clientSecret = process.env.PAYONEER_CLIENT_SECRET;
-    }
+  constructor() {
+    this.baseURL = process.env.PAYONEER_API_URL;
+    this.clientId = process.env.PAYONEER_CLIENT_ID;
+    this.clientSecret = process.env.PAYONEER_CLIENT_SECRET;
+  }
 
-    async getAccessToken() {
-        // Implementar OAuth2 flow para obtener token de acceso
-        const response = await axios.post(`${this.baseURL}/oauth2/token`, {
-            grant_type: 'client_credentials',
-            client_id: this.clientId,
-            client_secret: this.clientSecret
-        });
-        
-        return response.data.access_token;
-    }
+  async getAccessToken() {
+    // Implementar OAuth2 flow para obtener token de acceso
+    const response = await axios.post(`${this.baseURL}/oauth2/token`, {
+      grant_type: "client_credentials",
+      client_id: this.clientId,
+      client_secret: this.clientSecret,
+    });
 
-    async sendPayoneerToPayoneerPayment({ senderEmail, recipientEmail, amount, currency, description }) {
-        const token = await this.getAccessToken();
-        
-        // Usar Request Payment API de Payoneer
-        const response = await axios.post(`${this.baseURL}/v2/payments/request`, {
-            intent: 'capture',
-            payer: {
-                payment_method: 'payoneer',
-                email: senderEmail
-            },
-            payee: {
-                email: recipientEmail
-            },
-            amount: {
-                total: amount.toString(),
-                currency: currency
-            },
-            description: description
-        }, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
+    return response.data.access_token;
+  }
 
-        return response.data;
-    }
+  async sendPayoneerToPayoneerPayment({
+    senderEmail,
+    recipientEmail,
+    amount,
+    currency,
+    description,
+  }) {
+    const token = await this.getAccessToken();
 
-    async getAccountBalance(payoneerEmail) {
-        const token = await this.getAccessToken();
-        
-        const response = await axios.get(`${this.baseURL}/v2/accounts/balance`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Payoneer-Account': payoneerEmail
-            }
-        });
+    // Usar Request Payment API de Payoneer
+    const response = await axios.post(
+      `${this.baseURL}/v2/payments/request`,
+      {
+        intent: "capture",
+        payer: {
+          payment_method: "payoneer",
+          email: senderEmail,
+        },
+        payee: {
+          email: recipientEmail,
+        },
+        amount: {
+          total: amount.toString(),
+          currency: currency,
+        },
+        description: description,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      },
+    );
 
-        return response.data;
-    }
+    return response.data;
+  }
+
+  async getAccountBalance(payoneerEmail) {
+    const token = await this.getAccessToken();
+
+    const response = await axios.get(`${this.baseURL}/v2/accounts/balance`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Payoneer-Account": payoneerEmail,
+      },
+    });
+
+    return response.data;
+  }
 }
 
 module.exports = new PayoneerAPI();
@@ -331,53 +353,57 @@ module.exports = new PayoneerAPI();
 
 ```javascript
 // POST /webhooks/payoneer
-app.post('/webhooks/payoneer', express.raw({ type: 'application/json' }), async (req, res) => {
+app.post(
+  "/webhooks/payoneer",
+  express.raw({ type: "application/json" }),
+  async (req, res) => {
     try {
-        const signature = req.headers['payoneer-signature'];
-        const payload = req.body;
+      const signature = req.headers["payoneer-signature"];
+      const payload = req.body;
 
-        // Verificar firma del webhook
-        if (!verifyPayoneerSignature(payload, signature)) {
-            return res.status(401).send('Unauthorized');
-        }
+      // Verificar firma del webhook
+      if (!verifyPayoneerSignature(payload, signature)) {
+        return res.status(401).send("Unauthorized");
+      }
 
-        const event = JSON.parse(payload);
+      const event = JSON.parse(payload);
 
-        switch (event.type) {
-            case 'PAYMENT_COMPLETED':
-                await handlePaymentCompleted(event.data);
-                break;
-            case 'PAYMENT_FAILED':
-                await handlePaymentFailed(event.data);
-                break;
-            case 'ACCOUNT_VERIFIED':
-                await handleAccountVerified(event.data);
-                break;
-            default:
-                console.log('Unhandled webhook event:', event.type);
-        }
+      switch (event.type) {
+        case "PAYMENT_COMPLETED":
+          await handlePaymentCompleted(event.data);
+          break;
+        case "PAYMENT_FAILED":
+          await handlePaymentFailed(event.data);
+          break;
+        case "ACCOUNT_VERIFIED":
+          await handleAccountVerified(event.data);
+          break;
+        default:
+          console.log("Unhandled webhook event:", event.type);
+      }
 
-        res.status(200).send('OK');
+      res.status(200).send("OK");
     } catch (error) {
-        console.error('Webhook error:', error);
-        res.status(500).send('Error');
+      console.error("Webhook error:", error);
+      res.status(500).send("Error");
     }
-});
+  },
+);
 
 async function handlePaymentCompleted(data) {
-    // Actualizar estado del pago en la base de datos
-    await PaymentRequest.update(
-        { status: 'completed', completed_at: new Date() },
-        { where: { payoneer_payment_id: data.payment_id } }
-    );
+  // Actualizar estado del pago en la base de datos
+  await PaymentRequest.update(
+    { status: "completed", completed_at: new Date() },
+    { where: { payoneer_payment_id: data.payment_id } },
+  );
 }
 
 async function handleAccountVerified(data) {
-    // Actualizar estado de verificación de la cuenta
-    await PayoneerAccount.update(
-        { is_verified: true, account_status: 'approved' },
-        { where: { payoneer_email: data.email } }
-    );
+  // Actualizar estado de verificación de la cuenta
+  await PayoneerAccount.update(
+    { is_verified: true, account_status: "approved" },
+    { where: { payoneer_email: data.email } },
+  );
 }
 ```
 
@@ -396,20 +422,20 @@ async function handleAccountVerified(data) {
 ```javascript
 // Usuarios de prueba para sandbox
 const testUsers = {
-    sender: {
-        email: 'sender@example.com',
-        payoneerEmail: 'sender@payoneer-test.com'
-    },
-    recipient: {
-        email: 'recipient@example.com',
-        payoneerEmail: 'recipient@payoneer-test.com'
-    }
+  sender: {
+    email: "sender@example.com",
+    payoneerEmail: "sender@payoneer-test.com",
+  },
+  recipient: {
+    email: "recipient@example.com",
+    payoneerEmail: "recipient@payoneer-test.com",
+  },
 };
 
 // Números de tarjeta de prueba
 const testCards = {
-    success: '4111111111111111',
-    decline: '4000000000000002'
+  success: "4111111111111111",
+  decline: "4000000000000002",
 };
 ```
 
@@ -434,4 +460,4 @@ const testCards = {
 
 - [Documentación oficial de Payoneer API](https://developer.payoneer.com)
 - [Términos y condiciones de Payoneer](https://www.payoneer.com/legal/terms-conditions/)
-- [Centro de ayuda para desarrolladores](https://payoneer.custhelp.com/) 
+- [Centro de ayuda para desarrolladores](https://payoneer.custhelp.com/)

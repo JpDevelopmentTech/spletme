@@ -6,7 +6,10 @@ import type {
   SongSplitDistribution,
   ReleaseFiltersOptions,
 } from "@/types";
-import type { SplitHistoryItem, SplitHistoryResponse } from "@/types/song-split.types";
+import type {
+  SplitHistoryItem,
+  SplitHistoryResponse,
+} from "@/types/song-split.types";
 
 const toSelectOptions = (values: string[]) =>
   (values ?? []).map((value) => ({ value, label: value }));
@@ -19,7 +22,9 @@ class SongSplitsService {
     return response.data?.data ?? response.data;
   }
 
-  async createCollaboratorSplit(payload: CreateCollaboratorSplitPayload): Promise<SongSplit> {
+  async createCollaboratorSplit(
+    payload: CreateCollaboratorSplitPayload,
+  ): Promise<SongSplit> {
     const response = await apiClient.post(`${this.BASE}/collaborator`, payload);
     return response.data?.data ?? response.data;
   }
@@ -33,10 +38,17 @@ class SongSplitsService {
     await apiClient.delete(`${this.BASE}/${splitId}`);
   }
 
-  async getReleaseFiltersForSongs(songIds: string[]): Promise<ReleaseFiltersOptions> {
+  async getReleaseFiltersForSongs(
+    songIds: string[],
+  ): Promise<ReleaseFiltersOptions> {
     try {
-      const response = await apiClient.post(`${this.BASE}/filter-options`, { songIds });
-      const data = (response.data?.data ?? { countries: [], platforms: [] }) as {
+      const response = await apiClient.post(`${this.BASE}/filter-options`, {
+        songIds,
+      });
+      const data = (response.data?.data ?? {
+        countries: [],
+        platforms: [],
+      }) as {
         countries: string[];
         platforms: string[];
       };
@@ -51,10 +63,16 @@ class SongSplitsService {
 
   async getSplitHistoryBySong(songId: string): Promise<SplitHistoryItem[]> {
     try {
-      const response = await apiClient.get(`${this.BASE}/song/${songId}/history`);
+      const response = await apiClient.get(
+        `${this.BASE}/song/${songId}/history`,
+      );
       const data = response.data?.data;
       if (Array.isArray(data)) return data as SplitHistoryItem[];
-      if (data && typeof data === "object" && Array.isArray((data as { history?: unknown }).history))
+      if (
+        data &&
+        typeof data === "object" &&
+        Array.isArray((data as { history?: unknown }).history)
+      )
         return (data as { history: SplitHistoryItem[] }).history;
       return [];
     } catch {
@@ -64,7 +82,9 @@ class SongSplitsService {
 
   async getUserSplitHistory(userId: string): Promise<SplitHistoryItem[]> {
     try {
-      const response = await apiClient.get<SplitHistoryResponse>(`${this.BASE}/user/${userId}/history`);
+      const response = await apiClient.get<SplitHistoryResponse>(
+        `${this.BASE}/user/${userId}/history`,
+      );
       return response.data?.data ?? [];
     } catch {
       return [];

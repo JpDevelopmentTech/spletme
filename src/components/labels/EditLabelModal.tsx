@@ -1,7 +1,17 @@
-import { useState, useEffect } from 'react';
-import { X, Layers, Sparkles, Check, AlertCircle, Loader2, Edit3, Trash2, Search } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import LabelsService, { Label } from '../../services/labels';
+import { useState, useEffect } from "react";
+import {
+  X,
+  Layers,
+  Sparkles,
+  Check,
+  AlertCircle,
+  Loader2,
+  Edit3,
+  Trash2,
+  Search,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import LabelsService, { Label } from "../../services/labels";
 
 interface EditLabelModalProps {
   isOpen: boolean;
@@ -25,70 +35,72 @@ export default function EditLabelModal({
   onDelete,
 }: EditLabelModalProps) {
   const [name, setName] = useState(currentName);
-  const [selectedLabels, setSelectedLabels] = useState<string[]>(currentArtisticLabels);
+  const [selectedLabels, setSelectedLabels] = useState<string[]>(
+    currentArtisticLabels,
+  );
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Resetear estado cuando se abre/cierra el modal o cambian los datos
   useEffect(() => {
     if (isOpen) {
       setName(currentName);
       setSelectedLabels(currentArtisticLabels);
-      setError('');
+      setError("");
       setSuccess(false);
       setShowDeleteConfirm(false);
-      setSearchQuery('');
+      setSearchQuery("");
     }
   }, [isOpen, currentName, currentArtisticLabels]);
 
   const filteredAvailableLabels = availableLabels.filter((label) =>
-    (label.label || 'Sin Label')
+    (label.label || "Sin Label")
       .toLowerCase()
-      .includes(searchQuery.trim().toLowerCase())
+      .includes(searchQuery.trim().toLowerCase()),
   );
 
   const toggleLabel = (label: string) => {
-    setSelectedLabels(prev =>
-      prev.includes(label)
-        ? prev.filter(l => l !== label)
-        : [...prev, label]
+    setSelectedLabels((prev) =>
+      prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label],
     );
   };
 
   const handleSubmit = async () => {
     if (!name.trim()) {
-      setError('El nombre del label es requerido');
+      setError("El nombre del label es requerido");
       return;
     }
 
     if (selectedLabels.length === 0) {
-      setError('Debes seleccionar al menos un label artístico');
+      setError("Debes seleccionar al menos un label artístico");
       return;
     }
 
     // Verificar si hay cambios
     const nameChanged = name.trim() !== currentName;
-    const labelsChanged = JSON.stringify(selectedLabels.sort()) !== JSON.stringify(currentArtisticLabels.sort());
+    const labelsChanged =
+      JSON.stringify(selectedLabels.sort()) !==
+      JSON.stringify(currentArtisticLabels.sort());
 
     if (!nameChanged && !labelsChanged) {
-      setError('No hay cambios para guardar');
+      setError("No hay cambios para guardar");
       return;
     }
 
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       const updateData: { name?: string; artisticLabels?: string[] } = {};
-      
+
       if (nameChanged) {
         updateData.name = name.trim();
       }
-      
+
       if (labelsChanged) {
         updateData.artisticLabels = selectedLabels;
       }
@@ -96,7 +108,7 @@ export default function EditLabelModal({
       const response = await LabelsService.updateLabel(labelId, updateData);
 
       if (response.error) {
-        setError(response.message || 'Error al actualizar el label');
+        setError(response.message || "Error al actualizar el label");
       } else {
         setSuccess(true);
         setTimeout(() => {
@@ -105,8 +117,8 @@ export default function EditLabelModal({
         }, 1500);
       }
     } catch (err) {
-      console.error('Error updating label:', err);
-      setError('Error al actualizar el label');
+      console.error("Error updating label:", err);
+      setError("Error al actualizar el label");
     } finally {
       setLoading(false);
     }
@@ -114,21 +126,21 @@ export default function EditLabelModal({
 
   const handleDelete = async () => {
     setDeleting(true);
-    setError('');
+    setError("");
 
     try {
       const response = await LabelsService.deleteLabel(labelId);
 
       if (response.error) {
-        setError(response.message || 'Error al eliminar el label');
+        setError(response.message || "Error al eliminar el label");
         setShowDeleteConfirm(false);
       } else {
         onDelete?.();
         onClose();
       }
     } catch (err) {
-      console.error('Error deleting label:', err);
-      setError('Error al eliminar el label');
+      console.error("Error deleting label:", err);
+      setError("Error al eliminar el label");
       setShowDeleteConfirm(false);
     } finally {
       setDeleting(false);
@@ -137,14 +149,14 @@ export default function EditLabelModal({
 
   // Calcular estadísticas de los labels seleccionados
   const selectedStats = availableLabels
-    .filter(l => selectedLabels.includes(l.label))
+    .filter((l) => selectedLabels.includes(l.label))
     .reduce(
       (acc, l) => ({
         songs: acc.songs + l.count,
         streams: acc.streams + l.totalStreams,
         income: acc.income + l.totalNetIncome,
       }),
-      { songs: 0, streams: 0, income: 0 }
+      { songs: 0, streams: 0, income: 0 },
     );
 
   return (
@@ -156,7 +168,7 @@ export default function EditLabelModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
           />
 
           <motion.div
@@ -167,19 +179,19 @@ export default function EditLabelModal({
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
           >
             <div
-              className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col"
+              className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-gray-800"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20">
+              <div className="border-b border-gray-200 bg-gradient-to-r from-amber-50 to-orange-50 p-6 dark:border-gray-700 dark:from-amber-900/20 dark:to-orange-900/20">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
                     <div className="relative">
-                      <div className="w-12 h-12 bg-gradient-to-br from-amber-500 via-orange-500 to-red-500 rounded-xl flex items-center justify-center shadow-lg">
-                        <Edit3 className="w-6 h-6 text-white" />
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 via-orange-500 to-red-500 shadow-lg">
+                        <Edit3 className="h-6 w-6 text-white" />
                       </div>
-                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-full flex items-center justify-center shadow-md">
-                        <Sparkles className="w-3 h-3 text-white" />
+                      <div className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 shadow-md">
+                        <Sparkles className="h-3 w-3 text-white" />
                       </div>
                     </div>
                     <div>
@@ -193,9 +205,9 @@ export default function EditLabelModal({
                   </div>
                   <button
                     onClick={onClose}
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                    className="text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-300"
                   >
-                    <X className="w-6 h-6" />
+                    <X className="h-6 w-6" />
                   </button>
                 </div>
               </div>
@@ -206,12 +218,12 @@ export default function EditLabelModal({
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="text-center py-8"
+                    className="py-8 text-center"
                   >
-                    <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                      <Check className="w-8 h-8 text-white" />
+                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-emerald-500 shadow-lg">
+                      <Check className="h-8 w-8 text-white" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    <h3 className="mb-2 text-xl font-bold text-gray-900 dark:text-white">
                       ¡Label Actualizado!
                     </h3>
                     <p className="text-gray-600 dark:text-gray-400">
@@ -222,38 +234,39 @@ export default function EditLabelModal({
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="text-center py-8"
+                    className="py-8 text-center"
                   >
-                    <div className="w-16 h-16 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                      <Trash2 className="w-8 h-8 text-white" />
+                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-red-400 to-red-600 shadow-lg">
+                      <Trash2 className="h-8 w-8 text-white" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    <h3 className="mb-2 text-xl font-bold text-gray-900 dark:text-white">
                       ¿Eliminar Label?
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-400 mb-6">
-                      Esta acción no se puede deshacer. El label "{currentName}" será eliminado permanentemente.
+                    <p className="mb-6 text-gray-600 dark:text-gray-400">
+                      Esta acción no se puede deshacer. El label "{currentName}"
+                      será eliminado permanentemente.
                     </p>
                     <div className="flex items-center justify-center gap-3">
                       <button
                         onClick={() => setShowDeleteConfirm(false)}
                         disabled={deleting}
-                        className="px-6 py-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50"
+                        className="rounded-lg px-6 py-2.5 text-gray-700 transition-colors hover:bg-gray-100 disabled:opacity-50 dark:text-gray-300 dark:hover:bg-gray-700"
                       >
                         Cancelar
                       </button>
                       <button
                         onClick={handleDelete}
                         disabled={deleting}
-                        className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
+                        className="flex items-center gap-2 rounded-lg bg-red-600 px-6 py-2.5 text-white transition-colors hover:bg-red-700 disabled:opacity-50"
                       >
                         {deleting ? (
                           <>
-                            <Loader2 className="w-5 h-5 animate-spin" />
+                            <Loader2 className="h-5 w-5 animate-spin" />
                             <span>Eliminando...</span>
                           </>
                         ) : (
                           <>
-                            <Trash2 className="w-5 h-5" />
+                            <Trash2 className="h-5 w-5" />
                             <span>Eliminar</span>
                           </>
                         )}
@@ -264,7 +277,7 @@ export default function EditLabelModal({
                   <>
                     {/* Name Input */}
                     <div className="mb-6">
-                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
                         Nombre del Label
                       </label>
                       <input
@@ -272,42 +285,42 @@ export default function EditLabelModal({
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="Ej: Mis Éxitos 2024"
-                        className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all text-gray-900 dark:text-white placeholder-gray-400"
+                        className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 transition-all focus:border-transparent focus:ring-2 focus:ring-amber-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                       />
                     </div>
 
                     {/* Labels Selection */}
                     <div className="mb-6">
-                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
                         Labels Artísticos Incluidos
                       </label>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                      <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">
                         Selecciona los labels que deseas agrupar
                       </p>
 
                       {/* Buscador de labels */}
                       <div className="relative mb-3">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                         <input
                           type="text"
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
                           placeholder="Buscar label artístico..."
-                          className="w-full pl-9 pr-9 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all text-sm text-gray-900 dark:text-white placeholder-gray-400"
+                          className="w-full rounded-xl border border-gray-300 bg-white py-2.5 pl-9 pr-9 text-sm text-gray-900 placeholder-gray-400 transition-all focus:border-transparent focus:ring-2 focus:ring-amber-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                         />
                         {searchQuery && (
                           <button
                             type="button"
-                            onClick={() => setSearchQuery('')}
+                            onClick={() => setSearchQuery("")}
                             className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                             aria-label="Limpiar búsqueda"
                           >
-                            <X className="w-4 h-4" />
+                            <X className="h-4 w-4" />
                           </button>
                         )}
                       </div>
 
-                      <div className="max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-xl p-3 space-y-2">
+                      <div className="max-h-60 space-y-2 overflow-y-auto rounded-xl border border-gray-200 p-3 dark:border-gray-700">
                         {filteredAvailableLabels.length > 0 ? (
                           filteredAvailableLabels.map((label) => (
                             <motion.button
@@ -316,24 +329,26 @@ export default function EditLabelModal({
                               onClick={() => toggleLabel(label.label)}
                               whileHover={{ scale: 1.01 }}
                               whileTap={{ scale: 0.99 }}
-                              className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all ${
+                              className={`flex w-full items-center justify-between rounded-lg border p-3 transition-all ${
                                 selectedLabels.includes(label.label)
-                                  ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20'
-                                  : 'border-gray-200 dark:border-gray-600 hover:border-amber-300 dark:hover:border-amber-700'
+                                  ? "border-amber-500 bg-amber-50 dark:bg-amber-900/20"
+                                  : "border-gray-200 hover:border-amber-300 dark:border-gray-600 dark:hover:border-amber-700"
                               }`}
                             >
                               <div className="flex items-center gap-3">
-                                <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
-                                  selectedLabels.includes(label.label)
-                                    ? 'border-amber-500 bg-amber-500'
-                                    : 'border-gray-300 dark:border-gray-600'
-                                }`}>
+                                <div
+                                  className={`flex h-5 w-5 items-center justify-center rounded-md border-2 transition-all ${
+                                    selectedLabels.includes(label.label)
+                                      ? "border-amber-500 bg-amber-500"
+                                      : "border-gray-300 dark:border-gray-600"
+                                  }`}
+                                >
                                   {selectedLabels.includes(label.label) && (
-                                    <Check className="w-3 h-3 text-white" />
+                                    <Check className="h-3 w-3 text-white" />
                                   )}
                                 </div>
                                 <span className="font-medium text-gray-900 dark:text-white">
-                                  {label.label || 'Sin Label'}
+                                  {label.label || "Sin Label"}
                                 </span>
                               </div>
                               <div className="text-right">
@@ -347,7 +362,7 @@ export default function EditLabelModal({
                             </motion.button>
                           ))
                         ) : (
-                          <div className="text-center py-6">
+                          <div className="py-6 text-center">
                             <p className="text-sm text-gray-500 dark:text-gray-400">
                               No se encontraron labels para "{searchQuery}"
                             </p>
@@ -361,10 +376,10 @@ export default function EditLabelModal({
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl p-4 border border-amber-200 dark:border-amber-800"
+                        className="rounded-xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-4 dark:border-amber-800 dark:from-amber-900/20 dark:to-orange-900/20"
                       >
-                        <div className="flex items-center gap-2 mb-3">
-                          <Layers className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                        <div className="mb-3 flex items-center gap-2">
+                          <Layers className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                           <span className="font-semibold text-amber-700 dark:text-amber-300">
                             Vista Previa
                           </span>
@@ -374,19 +389,25 @@ export default function EditLabelModal({
                             <p className="text-2xl font-bold text-gray-900 dark:text-white">
                               {selectedStats.songs}
                             </p>
-                            <p className="text-xs text-gray-600 dark:text-gray-400">Canciones</p>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">
+                              Canciones
+                            </p>
                           </div>
                           <div>
                             <p className="text-2xl font-bold text-gray-900 dark:text-white">
                               {selectedStats.streams.toLocaleString()}
                             </p>
-                            <p className="text-xs text-gray-600 dark:text-gray-400">Streams</p>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">
+                              Streams
+                            </p>
                           </div>
                           <div>
                             <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                               ${selectedStats.income.toFixed(2)}
                             </p>
-                            <p className="text-xs text-gray-600 dark:text-gray-400">Ingresos</p>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">
+                              Ingresos
+                            </p>
                           </div>
                         </div>
                       </motion.div>
@@ -397,10 +418,12 @@ export default function EditLabelModal({
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-3"
+                        className="mt-4 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20"
                       >
-                        <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                        <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600 dark:text-red-400" />
+                        <p className="text-sm text-red-600 dark:text-red-400">
+                          {error}
+                        </p>
                       </motion.div>
                     )}
                   </>
@@ -409,37 +432,39 @@ export default function EditLabelModal({
 
               {/* Footer */}
               {!success && !showDeleteConfirm && (
-                <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                <div className="flex items-center justify-between border-t border-gray-200 p-6 dark:border-gray-700">
                   <button
                     onClick={() => setShowDeleteConfirm(true)}
                     disabled={loading}
-                    className="inline-flex items-center gap-2 px-4 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
+                    className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-red-600 transition-colors hover:bg-red-50 hover:text-red-700 disabled:opacity-50 dark:hover:bg-red-900/20"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="h-4 w-4" />
                     <span>Eliminar Label</span>
                   </button>
-                  
+
                   <div className="flex items-center gap-3">
                     <button
                       onClick={onClose}
                       disabled={loading}
-                      className="px-6 py-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50"
+                      className="rounded-lg px-6 py-2.5 text-gray-700 transition-colors hover:bg-gray-100 disabled:opacity-50 dark:text-gray-300 dark:hover:bg-gray-700"
                     >
                       Cancelar
                     </button>
                     <button
                       onClick={handleSubmit}
-                      disabled={loading || !name.trim() || selectedLabels.length === 0}
-                      className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-md"
+                      disabled={
+                        loading || !name.trim() || selectedLabels.length === 0
+                      }
+                      className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-2.5 text-white shadow-md transition-colors hover:from-amber-600 hover:to-orange-600 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {loading ? (
                         <>
-                          <Loader2 className="w-5 h-5 animate-spin" />
+                          <Loader2 className="h-5 w-5 animate-spin" />
                           <span>Guardando...</span>
                         </>
                       ) : (
                         <>
-                          <Check className="w-5 h-5" />
+                          <Check className="h-5 w-5" />
                           <span>Guardar Cambios</span>
                         </>
                       )}
@@ -454,4 +479,3 @@ export default function EditLabelModal({
     </AnimatePresence>
   );
 }
-

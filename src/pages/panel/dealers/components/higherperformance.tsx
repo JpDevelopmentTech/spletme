@@ -90,44 +90,52 @@ export default function HigherPerformance() {
           y: 1000000,
         },
       ],
-    }
+    },
   ];
   const options: ApexOptions = {
     chart: {
-      type: 'bar',
-      height: 350
+      type: "bar",
+      height: 350,
     },
     plotOptions: {
       bar: {
         horizontal: false,
-        columnWidth: '70%',
-        borderRadius: 15
+        columnWidth: "70%",
+        borderRadius: 15,
       },
     },
     dataLabels: {
-      enabled: false
+      enabled: false,
     },
     stroke: {
       show: true,
       width: 2,
-      colors: ['transparent']
+      colors: ["transparent"],
     },
     xaxis: {
-      categories: ['Ene','Feb', 'Mar', 'Apr', 'May', 'Jun'],
+      categories: ["Ene", "Feb", "Mar", "Apr", "May", "Jun"],
     },
     yaxis: {
       title: {
-        text: '$ (thousands)'
-      }
+        text: "$ (thousands)",
+      },
     },
     fill: {
-      opacity: 1
+      opacity: 1,
     },
-  }
+  };
   return (
-    <div id="high_performance" className="col-span-6 p-6 rounded-2xl shadow-lg hover:scale-[1.01] duration-200">
+    <div
+      id="high_performance"
+      className="col-span-6 rounded-2xl p-6 shadow-lg duration-200 hover:scale-[1.01]"
+    >
       <Title title="Rendimiento" subtitle="Distribuidores" />
-      <ReactApexChart options={options} series={series} height={350} type="bar"/>
+      <ReactApexChart
+        options={options}
+        series={series}
+        height={350}
+        type="bar"
+      />
     </div>
   );
 }

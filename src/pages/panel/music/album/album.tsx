@@ -44,23 +44,26 @@ const Album = () => {
     return `${minutes}:${seconds}`;
   };
 
-  const totalDurationMs = album?.tracks?.items?.reduce(
-    (sum: number, t: any) => sum + (t.duration_ms || 0),
-    0
-  ) ?? 0;
+  const totalDurationMs =
+    album?.tracks?.items?.reduce(
+      (sum: number, t: any) => sum + (t.duration_ms || 0),
+      0,
+    ) ?? 0;
 
   if (loading) return <Loading />;
 
   if (error || !album) {
     return (
-      <div className="min-h-screen bg-[#F7F8FA] px-6 lg:px-10 py-8">
-        <div className="flex items-start gap-2 p-4 bg-red-50 border border-red-100 rounded-xl max-w-lg">
-          <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+      <div className="min-h-screen bg-[#F7F8FA] px-6 py-8 lg:px-10">
+        <div className="flex max-w-lg items-start gap-2 rounded-xl border border-red-100 bg-red-50 p-4">
+          <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />
           <div>
-            <p className="text-sm font-semibold text-red-700 mb-1">
+            <p className="mb-1 text-sm font-semibold text-red-700">
               Error al cargar el álbum
             </p>
-            <p className="text-xs text-red-600">{error || "Álbum no encontrado"}</p>
+            <p className="text-xs text-red-600">
+              {error || "Álbum no encontrado"}
+            </p>
           </div>
         </div>
       </div>
@@ -70,108 +73,135 @@ const Album = () => {
   const artistNames = album.artists?.map((a: any) => a.name).join(", ") || "—";
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA] px-6 lg:px-10 py-8 space-y-6">
-
+    <div className="min-h-screen space-y-6 bg-[#F7F8FA] px-6 py-8 lg:px-10">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-600 text-sm font-medium hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="h-4 w-4" />
             Regresar
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Detalle del Álbum</h1>
-            <p className="text-sm text-gray-500 mt-0.5">Información y pistas del álbum</p>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Detalle del Álbum
+            </h1>
+            <p className="mt-0.5 text-sm text-gray-500">
+              Información y pistas del álbum
+            </p>
           </div>
         </div>
 
         {/* Breadcrumb */}
-        <div className="hidden sm:flex items-center gap-2 text-sm">
+        <div className="hidden items-center gap-2 text-sm sm:flex">
           <Link to="/panel/music" className="text-gray-400 hover:text-gray-600">
             Música
           </Link>
           <span className="text-gray-300">/</span>
-          <span className="text-gray-900 font-medium truncate max-w-[180px]">
+          <span className="max-w-[180px] truncate font-medium text-gray-900">
             {album.name}
           </span>
         </div>
       </div>
 
       {/* Hero Card */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6 flex flex-col sm:flex-row gap-6">
+      <div className="flex flex-col gap-6 rounded-xl border border-gray-200 bg-white p-6 sm:flex-row">
         {/* Cover */}
-        <div className="w-40 h-40 rounded-xl overflow-hidden flex-shrink-0 bg-orange-50 flex items-center justify-center self-center sm:self-start">
+        <div className="flex h-40 w-40 flex-shrink-0 items-center justify-center self-center overflow-hidden rounded-xl bg-orange-50 sm:self-start">
           {album.images?.[0]?.url ? (
             <img
               src={album.images[0].url}
               alt={album.name}
-              className="w-full h-full object-cover"
+              className="h-full w-full object-cover"
             />
           ) : (
-            <Disc3 className="w-12 h-12 text-[#F97316]" />
+            <Disc3 className="h-12 w-12 text-[#F97316]" />
           )}
         </div>
 
         {/* Info */}
-        <div className="flex-1 flex flex-col gap-4">
+        <div className="flex flex-1 flex-col gap-4">
           <div>
-            <span className="text-xs font-semibold text-[#F97316] uppercase tracking-wide">
+            <span className="text-xs font-semibold uppercase tracking-wide text-[#F97316]">
               Álbum
             </span>
-            <h2 className="text-2xl font-bold text-gray-900 mt-1">{album.name}</h2>
-            <p className="flex items-center gap-1.5 text-sm text-gray-500 mt-1">
-              <Users className="w-3.5 h-3.5" />
+            <h2 className="mt-1 text-2xl font-bold text-gray-900">
+              {album.name}
+            </h2>
+            <p className="mt-1 flex items-center gap-1.5 text-sm text-gray-500">
+              <Users className="h-3.5 w-3.5" />
               {artistNames}
             </p>
           </div>
 
           {/* Stats row */}
-          <div className={`grid ${album?.ownerEarnings ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-2 sm:grid-cols-3'} gap-4`}>
-            <div className="bg-[#F7F8FA] rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-7 h-7 bg-orange-50 rounded-lg flex items-center justify-center">
-                  <Music2 className="w-3.5 h-3.5 text-[#F97316]" />
+          <div
+            className={`grid ${album?.ownerEarnings ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-2 sm:grid-cols-3"} gap-4`}
+          >
+            <div className="rounded-xl bg-[#F7F8FA] p-4">
+              <div className="mb-1 flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-50">
+                  <Music2 className="h-3.5 w-3.5 text-[#F97316]" />
                 </div>
-                <span className="text-xs font-medium text-gray-500">Pistas</span>
+                <span className="text-xs font-medium text-gray-500">
+                  Pistas
+                </span>
               </div>
-              <p className="text-xl font-bold text-gray-900">{album.total_tracks}</p>
+              <p className="text-xl font-bold text-gray-900">
+                {album.total_tracks}
+              </p>
             </div>
 
-            <div className="bg-[#F7F8FA] rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-7 h-7 bg-blue-50 rounded-lg flex items-center justify-center">
-                  <Clock className="w-3.5 h-3.5 text-blue-600" />
+            <div className="rounded-xl bg-[#F7F8FA] p-4">
+              <div className="mb-1 flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50">
+                  <Clock className="h-3.5 w-3.5 text-blue-600" />
                 </div>
-                <span className="text-xs font-medium text-gray-500">Duración</span>
+                <span className="text-xs font-medium text-gray-500">
+                  Duración
+                </span>
               </div>
-              <p className="text-xl font-bold text-gray-900">{formatDuration(totalDurationMs)}</p>
+              <p className="text-xl font-bold text-gray-900">
+                {formatDuration(totalDurationMs)}
+              </p>
             </div>
 
-            <div className="bg-[#F7F8FA] rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-7 h-7 bg-purple-50 rounded-lg flex items-center justify-center">
-                  <Users className="w-3.5 h-3.5 text-purple-600" />
+            <div className="rounded-xl bg-[#F7F8FA] p-4">
+              <div className="mb-1 flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-purple-50">
+                  <Users className="h-3.5 w-3.5 text-purple-600" />
                 </div>
-                <span className="text-xs font-medium text-gray-500">Artistas</span>
+                <span className="text-xs font-medium text-gray-500">
+                  Artistas
+                </span>
               </div>
-              <p className="text-xl font-bold text-gray-900">{album.artists?.length ?? 1}</p>
+              <p className="text-xl font-bold text-gray-900">
+                {album.artists?.length ?? 1}
+              </p>
             </div>
 
             {album?.ownerEarnings && (
-              <div className="bg-green-50 rounded-xl p-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="w-7 h-7 bg-green-100 rounded-lg flex items-center justify-center">
+              <div className="rounded-xl bg-green-50 p-4">
+                <div className="mb-1 flex items-center gap-2">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-green-100">
                     <span className="text-xs font-bold text-green-600">$</span>
                   </div>
-                  <span className="text-xs font-medium text-gray-500">Ganancias</span>
+                  <span className="text-xs font-medium text-gray-500">
+                    Ganancias
+                  </span>
                 </div>
                 <p className="text-xl font-bold text-green-600">
-                  ${(Array.isArray(album.ownerEarnings) && album.ownerEarnings[0]?.calculation?.amountToPay 
-                    ? album.ownerEarnings[0].calculation.amountToPay 
-                    : 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  $
+                  {(Array.isArray(album.ownerEarnings) &&
+                  album.ownerEarnings[0]?.calculation?.amountToPay
+                    ? album.ownerEarnings[0].calculation.amountToPay
+                    : 0
+                  ).toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </p>
               </div>
             )}
@@ -180,13 +210,12 @@ const Album = () => {
       </div>
 
       {/* Tracks Table */}
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
         {/* Toolbar */}
-        <div className="flex items-center gap-2 px-6 py-4 border-b border-gray-100">
-          <Music2 className="w-4 h-4 text-gray-400" />
+        <div className="flex items-center gap-2 border-b border-gray-100 px-6 py-4">
+          <Music2 className="h-4 w-4 text-gray-400" />
           <span className="text-sm font-semibold text-gray-900">Pistas</span>
-          <span className="ml-1 px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-semibold rounded-full">
+          <span className="ml-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-600">
             {album.tracks?.items?.length ?? 0}
           </span>
         </div>
@@ -194,20 +223,20 @@ const Album = () => {
         {album.tracks?.items?.length > 0 ? (
           <table className="w-full">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-100">
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide w-12">
+              <tr className="border-b border-gray-100 bg-gray-50">
+                <th className="w-12 px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                   #
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Título
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden sm:table-cell">
+                <th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 sm:table-cell">
                   Artistas
                 </th>
-                <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden md:table-cell">
+                <th className="hidden px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-500 md:table-cell">
                   Tipo
                 </th>
-                <th className="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Duración
                 </th>
               </tr>
@@ -216,42 +245,44 @@ const Album = () => {
               {album.tracks.items.map((track: any, index: number) => (
                 <tr
                   key={track.id || index}
-                  className="hover:bg-gray-50 transition-colors"
+                  className="transition-colors hover:bg-gray-50"
                 >
                   {/* # */}
                   <td className="px-6 py-4">
-                    <span className="text-sm text-gray-400 font-medium">{index + 1}</span>
+                    <span className="text-sm font-medium text-gray-400">
+                      {index + 1}
+                    </span>
                   </td>
 
                   {/* Title */}
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Music2 className="w-4 h-4 text-[#F97316]" />
+                      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-orange-50">
+                        <Music2 className="h-4 w-4 text-[#F97316]" />
                       </div>
-                      <p className="text-sm font-semibold text-gray-900 truncate max-w-[200px]">
+                      <p className="max-w-[200px] truncate text-sm font-semibold text-gray-900">
                         {track.name}
                       </p>
                     </div>
                   </td>
 
                   {/* Artists */}
-                  <td className="px-4 py-4 hidden sm:table-cell">
-                    <p className="text-xs text-gray-500 truncate max-w-[180px]">
+                  <td className="hidden px-4 py-4 sm:table-cell">
+                    <p className="max-w-[180px] truncate text-xs text-gray-500">
                       {track.artists?.map((a: any) => a.name).join(", ") || "—"}
                     </p>
                   </td>
 
                   {/* Type */}
-                  <td className="px-4 py-4 text-center hidden md:table-cell">
-                    <span className="inline-flex px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-semibold rounded-full capitalize">
+                  <td className="hidden px-4 py-4 text-center md:table-cell">
+                    <span className="inline-flex rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold capitalize text-gray-600">
                       {track.type || "track"}
                     </span>
                   </td>
 
                   {/* Duration */}
                   <td className="px-6 py-4 text-right">
-                    <span className="text-sm font-medium text-gray-600 font-mono">
+                    <span className="font-mono text-sm font-medium text-gray-600">
                       {formatDuration(track.duration_ms || 0)}
                     </span>
                   </td>
@@ -261,11 +292,15 @@ const Album = () => {
           </table>
         ) : (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mb-3">
-              <Music2 className="w-6 h-6 text-gray-400" />
+            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100">
+              <Music2 className="h-6 w-6 text-gray-400" />
             </div>
-            <p className="text-sm font-semibold text-gray-700 mb-1">Sin pistas</p>
-            <p className="text-xs text-gray-400">Este álbum no tiene pistas disponibles</p>
+            <p className="mb-1 text-sm font-semibold text-gray-700">
+              Sin pistas
+            </p>
+            <p className="text-xs text-gray-400">
+              Este álbum no tiene pistas disponibles
+            </p>
           </div>
         )}
       </div>

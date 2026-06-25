@@ -1,4 +1,3 @@
-
 import { ApexOptions } from "apexcharts";
 import ReactApexChart from "react-apexcharts";
 
@@ -125,16 +124,16 @@ const Statistics = () => {
     },
   };
   return (
-    <div className="col-span-6 p-6 flex flex-col border rounded-2xl">
+    <div className="col-span-6 flex flex-col rounded-2xl border p-6">
       <div className="flex flex-col">
-        <span className="font-semibold text-xl">Estadisticas</span>
+        <span className="text-xl font-semibold">Estadisticas</span>
         <span className="text-sm">Reporte de tu rendimiento general</span>
       </div>
       <ReactApexChart type="area" options={options} series={series} />
-      <div className="w-full flex justify-end gap-2 p-3">
-        <span className="bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-full me-2 dark:bg-gray-700 dark:text-gray-400 border  ">
+      <div className="flex w-full justify-end gap-2 p-3">
+        <span className="me-2 inline-flex items-center rounded-full border bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800 dark:bg-gray-700 dark:text-gray-400">
           <svg
-            className="w-3 h-3 me-1.5"
+            className="me-1.5 h-3 w-3"
             aria-hidden="true"
             xmlns="http://www.w3.org/2000/svg"
             width="24"
@@ -151,9 +150,9 @@ const Statistics = () => {
           </svg>
           325k Streams
         </span>
-        <span className="bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-full me-2 dark:bg-gray-700 dark:text-gray-400 border  ">
+        <span className="me-2 inline-flex items-center rounded-full border bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800 dark:bg-gray-700 dark:text-gray-400">
           <svg
-            className="w-3 h-3 me-1.5"
+            className="me-1.5 h-3 w-3"
             aria-hidden="true"
             xmlns="http://www.w3.org/2000/svg"
             width="24"
@@ -169,9 +168,9 @@ const Statistics = () => {
           </svg>
           325K Views
         </span>
-        <span className="bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-full me-2 dark:bg-gray-700 dark:text-gray-400 border  ">
+        <span className="me-2 inline-flex items-center rounded-full border bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800 dark:bg-gray-700 dark:text-gray-400">
           <svg
-            className="w-3 h-3 me-1.5"
+            className="me-1.5 h-3 w-3"
             aria-hidden="true"
             xmlns="http://www.w3.org/2000/svg"
             width="24"

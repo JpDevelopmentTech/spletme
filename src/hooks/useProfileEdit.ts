@@ -7,7 +7,7 @@ import type { ProfileUserData, EditProfileForm } from "@/types/profile.types";
  */
 export function useProfileEdit(
   userData: ProfileUserData,
-  onSuccess: (patch: Partial<ProfileUserData["onboardingData"]>) => void
+  onSuccess: (patch: Partial<ProfileUserData["onboardingData"]>) => void,
 ) {
   const [editForm, setEditForm] = useState<EditProfileForm>({
     country: userData.onboardingData.country ?? "",
@@ -38,7 +38,9 @@ export function useProfileEdit(
     setEditSuccess(false);
     try {
       const finalProfession =
-        editForm.profession === "otro" ? editForm.otherProfession : editForm.profession;
+        editForm.profession === "otro"
+          ? editForm.otherProfession
+          : editForm.profession;
       const payload = {
         country: editForm.country || null,
         profession: finalProfession || null,
@@ -50,24 +52,31 @@ export function useProfileEdit(
       const stored = localStorage.getItem("user");
       if (stored) {
         const u = JSON.parse(stored);
-        localStorage.setItem("user", JSON.stringify({
-          ...u,
-          onboardingData: { ...(u.onboardingData ?? {}), ...payload },
-        }));
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            ...u,
+            onboardingData: { ...(u.onboardingData ?? {}), ...payload },
+          }),
+        );
       }
       onSuccess(payload);
       setEditSuccess(true);
       setTimeout(() => setEditSuccess(false), 1500);
     } catch {
-      setEditError("No se pudo guardar. Verifica tu conexión e intenta de nuevo.");
+      setEditError(
+        "No se pudo guardar. Verifica tu conexión e intenta de nuevo.",
+      );
     } finally {
       setEditLoading(false);
     }
   };
 
   return {
-    editForm, setEditForm,
-    editErrors, setEditErrors,
+    editForm,
+    setEditForm,
+    editErrors,
+    setEditErrors,
     editLoading,
     editError,
     editSuccess,

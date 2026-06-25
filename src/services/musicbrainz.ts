@@ -24,11 +24,14 @@ class MusicBrainzService {
 
   async getReleaseCoverArt(mbid: string) {
     try {
-      const response = await axios.get(`https://coverartarchive.org/release/${mbid}`, {
-        headers: {
-          "User-Agent": this.USER_AGENT,
+      const response = await axios.get(
+        `https://coverartarchive.org/release/${mbid}`,
+        {
+          headers: {
+            "User-Agent": this.USER_AGENT,
+          },
         },
-      });
+      );
       return response.data;
     } catch (error) {
       console.error("Error fetching cover art:", error);

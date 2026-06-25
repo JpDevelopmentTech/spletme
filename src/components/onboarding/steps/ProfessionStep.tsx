@@ -15,10 +15,30 @@ interface Profession {
 }
 
 const PROFESSIONS: Profession[] = [
-  { id: "artista", name: "Artista", description: "Cantante, músico o intérprete", Icon: Mic },
-  { id: "productor", name: "Productor", description: "Productor musical o de audio", Icon: SlidersHorizontal },
-  { id: "compositor", name: "Compositor", description: "Compositor o escritor de canciones", Icon: Music },
-  { id: "otro", name: "Otro", description: "Otra profesión musical", Icon: User },
+  {
+    id: "artista",
+    name: "Artista",
+    description: "Cantante, músico o intérprete",
+    Icon: Mic,
+  },
+  {
+    id: "productor",
+    name: "Productor",
+    description: "Productor musical o de audio",
+    Icon: SlidersHorizontal,
+  },
+  {
+    id: "compositor",
+    name: "Compositor",
+    description: "Compositor o escritor de canciones",
+    Icon: Music,
+  },
+  {
+    id: "otro",
+    name: "Otro",
+    description: "Otra profesión musical",
+    Icon: User,
+  },
 ];
 
 const OTHER_PROFESSIONS = [
@@ -41,7 +61,8 @@ const ProfessionStep = ({ nextStep, initialData }: ProfessionStepProps) => {
 
   useEffect(() => {
     if (initialData?.profession) setSelectedProfession(initialData.profession);
-    if (initialData?.otherProfession) setSelectedOtherProfession(initialData.otherProfession);
+    if (initialData?.otherProfession)
+      setSelectedOtherProfession(initialData.otherProfession);
   }, [initialData]);
 
   const handleSelect = (id: string) => {
@@ -50,13 +71,15 @@ const ProfessionStep = ({ nextStep, initialData }: ProfessionStepProps) => {
   };
 
   const canContinue =
-    selectedProfession && (selectedProfession !== "otro" || selectedOtherProfession);
+    selectedProfession &&
+    (selectedProfession !== "otro" || selectedOtherProfession);
 
   const handleSubmit = () => {
     if (!canContinue) return;
     nextStep({
       profession: selectedProfession,
-      otherProfession: selectedProfession === "otro" ? selectedOtherProfession : undefined,
+      otherProfession:
+        selectedProfession === "otro" ? selectedOtherProfession : undefined,
     });
   };
 
@@ -83,12 +106,14 @@ const ProfessionStep = ({ nextStep, initialData }: ProfessionStepProps) => {
                 <button
                   key={id}
                   onClick={() => handleSelect(id)}
-                  className="flex-1 flex flex-col items-center gap-2.5 text-center transition-colors"
+                  className="flex flex-1 flex-col items-center gap-2.5 text-center transition-colors"
                   style={{
                     padding: 20,
                     borderRadius: 12,
                     backgroundColor: isSelected ? "#FFF7ED" : "#FFFFFF",
-                    border: isSelected ? "2px solid #F97316" : "1px solid #E5E7EB",
+                    border: isSelected
+                      ? "2px solid #F97316"
+                      : "1px solid #E5E7EB",
                   }}
                 >
                   <Icon size={28} color={isSelected ? "#F97316" : "#9CA3AF"} />
@@ -114,18 +139,20 @@ const ProfessionStep = ({ nextStep, initialData }: ProfessionStepProps) => {
           <p className="text-sm font-medium text-[#374151]">
             ¿Cuál es tu profesión específica?
           </p>
-          <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+          <div className="grid max-h-48 grid-cols-2 gap-2 overflow-y-auto">
             {OTHER_PROFESSIONS.map((prof) => {
               const isSelected = selectedOtherProfession === prof;
               return (
                 <button
                   key={prof}
                   onClick={() => setSelectedOtherProfession(prof)}
-                  className="px-3 py-2 text-sm text-center transition-colors"
+                  className="px-3 py-2 text-center text-sm transition-colors"
                   style={{
                     borderRadius: 8,
                     backgroundColor: isSelected ? "#FFF7ED" : "#FFFFFF",
-                    border: isSelected ? "2px solid #F97316" : "1px solid #E5E7EB",
+                    border: isSelected
+                      ? "2px solid #F97316"
+                      : "1px solid #E5E7EB",
                     color: isSelected ? "#C2410C" : "#374151",
                   }}
                 >
@@ -141,7 +168,7 @@ const ProfessionStep = ({ nextStep, initialData }: ProfessionStepProps) => {
       <button
         onClick={handleSubmit}
         disabled={!canContinue}
-        className="w-full font-semibold text-[15px] text-white transition-opacity"
+        className="w-full text-[15px] font-semibold text-white transition-opacity"
         style={{
           height: 46,
           borderRadius: 10,

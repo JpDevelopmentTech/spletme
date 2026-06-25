@@ -1,5 +1,5 @@
-import { Crown, Music, TrendingUp, Star } from 'lucide-react';
-import type { SplitOwnerInfo } from '../../../../types/analytics.types';
+import { Crown, Music, TrendingUp, Star } from "lucide-react";
+import type { SplitOwnerInfo } from "../../../../types/analytics.types";
 
 interface Props {
   data: SplitOwnerInfo | null;
@@ -8,44 +8,48 @@ interface Props {
 
 export default function SplitOwnerModule({ data, loading }: Props) {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-6 flex flex-col gap-5">
+    <div className="flex flex-col gap-5 rounded-xl border border-gray-200 bg-white p-6">
       <div className="flex items-center gap-2.5">
-        <div className="w-7 h-7 bg-yellow-50 rounded-md flex items-center justify-center">
-          <Crown className="w-4 h-4 text-yellow-500" />
+        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-yellow-50">
+          <Crown className="h-4 w-4 text-yellow-500" />
         </div>
         <div>
           <h2 className="text-sm font-semibold text-[#111827]">Split Owner</h2>
-          <p className="text-xs text-[#6B7280]">Resumen de tu catálogo como owner</p>
+          <p className="text-xs text-[#6B7280]">
+            Resumen de tu catálogo como owner
+          </p>
         </div>
       </div>
 
       {loading ? (
-        <div className="h-[100px] flex items-center justify-center text-sm text-[#9CA3AF]">
+        <div className="flex h-[100px] items-center justify-center text-sm text-[#9CA3AF]">
           Cargando...
         </div>
       ) : !data ? (
-        <div className="h-[100px] flex items-center justify-center text-sm text-[#9CA3AF]">
+        <div className="flex h-[100px] items-center justify-center text-sm text-[#9CA3AF]">
           Sin datos disponibles
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3">
-          <div className="flex items-center gap-3 p-3 bg-[#FAFAFA] rounded-lg">
-            <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Music className="w-4 h-4 text-blue-600" />
+          <div className="flex items-center gap-3 rounded-lg bg-[#FAFAFA] p-3">
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-blue-50">
+              <Music className="h-4 w-4 text-blue-600" />
             </div>
             <div>
               <p className="text-[11px] text-[#6B7280]">Canciones</p>
-              <p className="text-[18px] font-bold text-[#111827] leading-tight">{data.songCount}</p>
+              <p className="text-[18px] font-bold leading-tight text-[#111827]">
+                {data.songCount}
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-3 bg-[#FAFAFA] rounded-lg">
-            <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center flex-shrink-0">
-              <TrendingUp className="w-4 h-4 text-green-600" />
+          <div className="flex items-center gap-3 rounded-lg bg-[#FAFAFA] p-3">
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-green-50">
+              <TrendingUp className="h-4 w-4 text-green-600" />
             </div>
             <div>
               <p className="text-[11px] text-[#6B7280]">Ingreso Total</p>
-              <p className="text-[18px] font-bold text-green-500 leading-tight">
+              <p className="text-[18px] font-bold leading-tight text-green-500">
                 {data.totalNetIncome >= 1_000
                   ? `$${(data.totalNetIncome / 1_000).toFixed(1)}K`
                   : `$${data.totalNetIncome.toFixed(2)}`}
@@ -53,18 +57,18 @@ export default function SplitOwnerModule({ data, loading }: Props) {
             </div>
           </div>
 
-          <div className="col-span-2 flex items-center gap-3 p-3 bg-[#FAFAFA] rounded-lg">
-            <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Star className="w-4 h-4 text-[#F97316]" />
+          <div className="col-span-2 flex items-center gap-3 rounded-lg bg-[#FAFAFA] p-3">
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-orange-50">
+              <Star className="h-4 w-4 text-[#F97316]" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-[11px] text-[#6B7280]">Top Canción</p>
               {data.topSong ? (
                 <>
-                  <p className="text-[13px] font-semibold text-[#111827] truncate">
+                  <p className="truncate text-[13px] font-semibold text-[#111827]">
                     {data.topSong.trackTitle}
                   </p>
-                  <p className="text-[11px] text-green-500 font-medium">
+                  <p className="text-[11px] font-medium text-green-500">
                     ${data.topSong.netIncome.toFixed(2)}
                   </p>
                 </>

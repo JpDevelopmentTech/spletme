@@ -4,7 +4,7 @@ const Step3 = () => {
   return (
     <div>
       <svg
-        className="w-12 h-12 mb-4 text-gray-400"
+        className="mb-4 h-12 w-12 text-gray-400"
         fill="currentColor"
         viewBox="0 0 20 20"
         xmlns="http://www.w3.org/2000/svg"
@@ -15,14 +15,15 @@ const Step3 = () => {
           clip-rule="evenodd"
         ></path>
       </svg>
-      <h1 className="mb-2 text-2xl font-extrabold tracking-tight text-gray-900 leding-tight dark:text-white">
+      <h1 className="leding-tight mb-2 text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white">
         Verificado
       </h1>
       <p className="mb-4 font-light text-gray-500 dark:text-gray-400 md:mb-6">
         Haz completado el proceso de verificación
       </p>
-      <Link to={'/panel/home'}
-        className="block w-full text-white bg-gray-600 hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 sm:py-3.5 text-center dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800"
+      <Link
+        to={"/panel/home"}
+        className="block w-full rounded-lg bg-gray-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 sm:py-3.5"
       >
         Ingresar en mi cuenta
       </Link>

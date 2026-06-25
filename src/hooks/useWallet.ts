@@ -66,4 +66,3 @@ export const useWallet = () => {
     refreshWallet: fetchWallet,
   };
 };
-

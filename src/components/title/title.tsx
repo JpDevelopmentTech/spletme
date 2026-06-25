@@ -1,9 +1,15 @@
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
 
-export default function Title({title, subtitle}: {title: string, subtitle?: string}) {
+export default function Title({
+  title,
+  subtitle,
+}: {
+  title: string;
+  subtitle?: string;
+}) {
   return (
     <div className="flex flex-col space-y-1 overflow-hidden">
-      <motion.span 
+      <motion.span
         className="text-lg font-semibold tracking-tight"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -11,9 +17,9 @@ export default function Title({title, subtitle}: {title: string, subtitle?: stri
       >
         {title}
       </motion.span>
-      
+
       {subtitle && (
-        <motion.span 
+        <motion.span
           className="text-sm text-gray-500 dark:text-gray-400"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}

@@ -36,40 +36,52 @@ const routes = [
   },
   {
     path: "/auth/email-login",
-    element: <PublicOnlyRoute><EmailLogin /></PublicOnlyRoute>
+    element: (
+      <PublicOnlyRoute>
+        <EmailLogin />
+      </PublicOnlyRoute>
+    ),
   },
   {
     path: "/auth/register",
-    element: <PublicOnlyRoute><Register /></PublicOnlyRoute>
+    element: (
+      <PublicOnlyRoute>
+        <Register />
+      </PublicOnlyRoute>
+    ),
   },
   {
     path: "/auth/password-recovery",
-    element: <PasswordRecoveryRequest />
+    element: <PasswordRecoveryRequest />,
   },
   {
     path: "/auth/password-recovery/reset",
-    element: <PasswordRecoveryReset />
+    element: <PasswordRecoveryReset />,
   },
   {
     path: "/onboarding",
-    element: <Onboarding />
+    element: <Onboarding />,
   },
   {
     path: "/collaboration/accept",
-    element: <AcceptCollaboration />
+    element: <AcceptCollaboration />,
   },
   {
     path: "/collaboration/accept-label",
-    element: <AcceptLabelCollaboration />
+    element: <AcceptLabelCollaboration />,
   },
 
   {
     path: "/panel",
-    element: <GuardedRoute><Panel /></GuardedRoute>,
+    element: (
+      <GuardedRoute>
+        <Panel />
+      </GuardedRoute>
+    ),
     children: [
       {
         path: "stripe/:status",
-        element: <Stripe />
+        element: <Stripe />,
       },
       {
         path: "home",
@@ -77,7 +89,7 @@ const routes = [
       },
       {
         path: "music",
-        element: <Music/>,
+        element: <Music />,
       },
       {
         path: "song/:id",
@@ -85,11 +97,11 @@ const routes = [
       },
       {
         path: "album/:id",
-        element: <Album />
+        element: <Album />,
       },
       {
         path: "album/upc/:upc",
-        element: <AlbumDetail />
+        element: <AlbumDetail />,
       },
       {
         path: "report",
@@ -101,7 +113,7 @@ const routes = [
       },
       {
         path: "collaborators",
-        element: <Collaborators />
+        element: <Collaborators />,
       },
       {
         path: "dealers",
@@ -113,7 +125,7 @@ const routes = [
       },
       {
         path: "collaborators/:id",
-        element: <Collaborator />
+        element: <Collaborator />,
       },
       {
         path: "analytics",
@@ -121,32 +133,32 @@ const routes = [
       },
       {
         path: "balance",
-        element: <Balance />
+        element: <Balance />,
       },
       {
         path: "profile",
-        element: <Profile />
+        element: <Profile />,
       },
       {
         path: "wallet",
-        element: <WalletPage />
+        element: <WalletPage />,
       },
       {
         path: "change-password",
-        element: <ChangePasswordPage />
+        element: <ChangePasswordPage />,
       },
       {
         path: "labels",
-        element: <LabelsTable />
+        element: <LabelsTable />,
       },
       {
         path: "labels/custom/:label",
-        element: <CustomLabelDetail />
+        element: <CustomLabelDetail />,
       },
       {
         path: "labels/:label",
-        element: <LabelDetail />
-      }
+        element: <LabelDetail />,
+      },
     ],
   },
 ];

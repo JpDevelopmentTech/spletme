@@ -73,34 +73,50 @@ export default function EmailLogin() {
     <div className="flex min-h-screen">
       {/* Panel izquierdo */}
       <div
-        className="hidden lg:flex flex-col justify-center gap-9 flex-shrink-0"
+        className="hidden flex-shrink-0 flex-col justify-center gap-9 lg:flex"
         style={{ width: 500, backgroundColor: "#0F172A", padding: "60px 50px" }}
       >
         {/* Logo */}
         <div className="flex items-center gap-3">
           <div
-            className="flex items-center justify-center text-white font-bold text-xl flex-shrink-0"
-            style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: "#F97316" }}
+            className="flex flex-shrink-0 items-center justify-center text-xl font-bold text-white"
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 10,
+              backgroundColor: "#F97316",
+            }}
           >
             S
           </div>
-          <span className="text-white font-bold text-xl">SplitMe</span>
+          <span className="text-xl font-bold text-white">SplitMe</span>
         </div>
 
         {/* Encabezado */}
         <div className="flex flex-col gap-4">
-          <h1 className="text-white font-bold" style={{ fontSize: 42, lineHeight: 1.2 }}>
+          <h1
+            className="font-bold text-white"
+            style={{ fontSize: 42, lineHeight: 1.2 }}
+          >
             Gestiona tus
             <br />
             regalías musicales.
           </h1>
-          <p className="text-[#94A3B8] text-sm" style={{ lineHeight: 1.6 }}>
-            Rastrea streams, divide pagos y gestiona colaboradores en un solo lugar.
+          <p className="text-sm text-[#94A3B8]" style={{ lineHeight: 1.6 }}>
+            Rastrea streams, divide pagos y gestiona colaboradores en un solo
+            lugar.
           </p>
         </div>
 
         {/* Acento naranja */}
-        <div style={{ width: 48, height: 3, borderRadius: 2, backgroundColor: "#F97316" }} />
+        <div
+          style={{
+            width: 48,
+            height: 3,
+            borderRadius: 2,
+            backgroundColor: "#F97316",
+          }}
+        />
 
         {/* Características */}
         <div className="flex flex-col gap-3.5">
@@ -110,7 +126,7 @@ export default function EmailLogin() {
                 className="flex-shrink-0 rounded-full"
                 style={{ width: 8, height: 8, backgroundColor: "#F97316" }}
               />
-              <span className="text-[#CBD5E1] text-sm">{feat}</span>
+              <span className="text-sm text-[#CBD5E1]">{feat}</span>
             </div>
           ))}
         </div>
@@ -118,12 +134,12 @@ export default function EmailLogin() {
 
       {/* Panel derecho */}
       <div
-        className="flex-1 flex items-center justify-center p-6"
+        className="flex flex-1 items-center justify-center p-6"
         style={{ backgroundColor: "#F7F8FA" }}
       >
         {/* Tarjeta del formulario */}
         <div
-          className="w-full flex flex-col gap-5"
+          className="flex w-full flex-col gap-5"
           style={{
             maxWidth: 420,
             backgroundColor: "#FFFFFF",
@@ -134,15 +150,22 @@ export default function EmailLogin() {
         >
           {/* Logo de la tarjeta */}
           <div
-            className="flex items-center justify-center text-white font-bold text-[22px] self-start"
-            style={{ width: 44, height: 44, borderRadius: 11, backgroundColor: "#F97316" }}
+            className="flex items-center justify-center self-start text-[22px] font-bold text-white"
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 11,
+              backgroundColor: "#F97316",
+            }}
           >
             S
           </div>
 
           {/* Encabezado */}
           <div className="flex flex-col gap-1">
-            <h2 className="text-[26px] font-bold text-[#111827]">Bienvenido de nuevo</h2>
+            <h2 className="text-[26px] font-bold text-[#111827]">
+              Bienvenido de nuevo
+            </h2>
             <p className="text-sm text-[#6B7280]">
               Inicia sesión para continuar
             </p>
@@ -158,7 +181,7 @@ export default function EmailLogin() {
                 <Mail
                   size={16}
                   color="#9CA3AF"
-                  className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2"
                 />
                 <input
                   type="email"
@@ -180,7 +203,7 @@ export default function EmailLogin() {
                 <Lock
                   size={16}
                   color="#9CA3AF"
-                  className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2"
                 />
                 <input
                   type={showPassword ? "text" : "password"}
@@ -193,7 +216,7 @@ export default function EmailLogin() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#6B7280] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] transition-colors hover:text-[#6B7280]"
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -202,7 +225,7 @@ export default function EmailLogin() {
 
             {/* Opciones */}
             <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 cursor-pointer">
+              <label className="flex cursor-pointer items-center gap-2">
                 <div
                   className="flex-shrink-0"
                   style={{
@@ -218,7 +241,7 @@ export default function EmailLogin() {
               <button
                 type="button"
                 onClick={() => navigate("/auth/password-recovery")}
-                className="text-sm font-medium text-[#F97316] hover:opacity-80 transition-opacity"
+                className="text-sm font-medium text-[#F97316] transition-opacity hover:opacity-80"
               >
                 ¿Olvidaste tu contraseña?
               </button>
@@ -226,15 +249,19 @@ export default function EmailLogin() {
 
             {/* Error */}
             {error && (
-              <p className="text-sm text-red-500 text-center">{error}</p>
+              <p className="text-center text-sm text-red-500">{error}</p>
             )}
 
             {/* Botón iniciar sesión */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full text-white font-semibold text-[15px] transition-opacity hover:opacity-90 disabled:opacity-60"
-              style={{ height: 46, borderRadius: 10, backgroundColor: "#F97316" }}
+              className="w-full text-[15px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+              style={{
+                height: 46,
+                borderRadius: 10,
+                backgroundColor: "#F97316",
+              }}
             >
               {loading ? "Iniciando sesión..." : "Iniciar sesión"}
             </button>
@@ -242,9 +269,9 @@ export default function EmailLogin() {
 
           {/* Divisor */}
           <div className="flex items-center gap-3">
-            <div className="flex-1 h-px bg-[#E5E7EB]" />
+            <div className="h-px flex-1 bg-[#E5E7EB]" />
             <span className="text-xs text-[#9CA3AF]">o</span>
-            <div className="flex-1 h-px bg-[#E5E7EB]" />
+            <div className="h-px flex-1 bg-[#E5E7EB]" />
           </div>
 
           {/* Registro */}
@@ -252,7 +279,7 @@ export default function EmailLogin() {
             <span className="text-sm text-[#6B7280]">¿No tienes cuenta?</span>
             <Link
               to="/auth/register"
-              className="text-sm font-semibold text-[#F97316] hover:opacity-80 transition-opacity"
+              className="text-sm font-semibold text-[#F97316] transition-opacity hover:opacity-80"
             >
               Regístrate
             </Link>

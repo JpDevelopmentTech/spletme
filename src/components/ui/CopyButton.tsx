@@ -6,7 +6,12 @@ import type { CopyButtonProps } from "@/types/copy-button.types";
  * Botón reutilizable para copiar un texto al portapapeles. Muestra un check
  * temporal tras copiar. Agnóstico al dominio: solo recibe el valor a copiar.
  */
-export function CopyButton({ value, size = 13, className = "", title = "Copiar" }: CopyButtonProps) {
+export function CopyButton({
+  value,
+  size = 13,
+  className = "",
+  title = "Copiar",
+}: CopyButtonProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async (e: React.MouseEvent) => {
@@ -28,9 +33,13 @@ export function CopyButton({ value, size = 13, className = "", title = "Copiar" 
       onClick={handleCopy}
       title={copied ? "¡Copiado!" : title}
       aria-label={title}
-      className={`inline-flex items-center justify-center rounded p-0.5 text-gray-400 hover:text-orange-500 hover:bg-gray-100 transition-colors ${className}`}
+      className={`inline-flex items-center justify-center rounded p-0.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-orange-500 ${className}`}
     >
-      {copied ? <Check size={size} className="text-green-500" /> : <Copy size={size} />}
+      {copied ? (
+        <Check size={size} className="text-green-500" />
+      ) : (
+        <Copy size={size} />
+      )}
     </button>
   );
 }

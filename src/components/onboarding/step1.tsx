@@ -1,13 +1,8 @@
 import { useState } from "react";
 
 const Step1 = ({ nextStep }: { nextStep: () => void }) => {
-  const professions = [
-    "Artista",
-    "Productor",
-    "Compositor",
-    "Otro",
-  ];
-  
+  const professions = ["Artista", "Productor", "Compositor", "Otro"];
+
   const otherProfessionList = [
     "Ingeniero de sonido",
     "Diseñador de sonido",
@@ -36,13 +31,13 @@ const Step1 = ({ nextStep }: { nextStep: () => void }) => {
     "Ingeniero de sonido en realidad fantástica",
     "Ingeniero de sonido en realidad mágica",
     "Ingeniero de sonido en realidad mística",
-  ]
+  ];
 
   const [profession, setProfession] = useState("");
-  const [ , setOtherProfession] = useState("");
+  const [, setOtherProfession] = useState("");
   return (
     <div className="my-12">
-      <h1 className="mb-4 text-2xl font-extrabold leading-tight tracking-tight text-gray-900 sm:mb-6 dark:text-white">
+      <h1 className="mb-4 text-2xl font-extrabold leading-tight tracking-tight text-gray-900 dark:text-white sm:mb-6">
         Cuentanos sobre ti
       </h1>
       <p className="mb-4 text-lg font-light text-gray-500 dark:text-gray-400">
@@ -56,16 +51,16 @@ const Step1 = ({ nextStep }: { nextStep: () => void }) => {
               id={profession}
               name="profession"
               value={profession}
-              className="hidden peer"
+              className="peer hidden"
               required
               onChange={(e) => setProfession(e.target.value)}
             />
             <label
               htmlFor={profession}
-              className="inline-flex items-center justify-center w-full p-5 text-gray-500 border-2 border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-gray-500 peer-checked:border-gray-500 peer-checked:text-gray-500 bg-gray-50 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
+              className="inline-flex w-full cursor-pointer items-center justify-center rounded-lg border-2 border-gray-200 bg-gray-50 p-5 text-gray-500 hover:bg-gray-100 hover:text-gray-600 peer-checked:border-gray-500 peer-checked:text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300 dark:peer-checked:text-gray-500"
             >
               <svg
-                className="w-6 h-6 mr-2"
+                className="mr-2 h-6 w-6"
                 fill="currentColor"
                 viewBox="0 0 20 20"
                 xmlns="http://www.w3.org/2000/svg"
@@ -78,7 +73,7 @@ const Step1 = ({ nextStep }: { nextStep: () => void }) => {
               </svg>
               <span className="w-full">{profession}</span>
               <svg
-                className="w-6 h-6 ml-3"
+                className="ml-3 h-6 w-6"
                 fill="currentColor"
                 viewBox="0 0 20 20"
                 xmlns="http://www.w3.org/2000/svg"
@@ -95,7 +90,7 @@ const Step1 = ({ nextStep }: { nextStep: () => void }) => {
       </ul>
       <div className="mb-12">
         {profession === "Otro" && (
-          <ul className="flex flex-wrap  gap-3">
+          <ul className="flex flex-wrap gap-3">
             {otherProfessionList.map((profession) => (
               <li key={profession}>
                 <input
@@ -103,13 +98,13 @@ const Step1 = ({ nextStep }: { nextStep: () => void }) => {
                   id={profession}
                   name="otherProfession"
                   value={profession}
-                  className="hidden peer"
+                  className="peer hidden"
                   required
                   onChange={(e) => setOtherProfession(e.target.value)}
                 />
                 <label
                   htmlFor={profession}
-                  className="px-3 inline-flex items-center justify-center w-full  text-gray-500 border-2 border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-gray-500 peer-checked:border-gray-500 peer-checked:text-gray-500 bg-gray-50 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
+                  className="inline-flex w-full cursor-pointer items-center justify-center rounded-lg border-2 border-gray-200 bg-gray-50 px-3 text-gray-500 hover:bg-gray-100 hover:text-gray-600 peer-checked:border-gray-500 peer-checked:text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300 dark:peer-checked:text-gray-500"
                 >
                   <span className="w-full">{profession}</span>
                 </label>
@@ -120,7 +115,7 @@ const Step1 = ({ nextStep }: { nextStep: () => void }) => {
       </div>
       <button
         onClick={nextStep}
-        className="w-full px-5 py-2.5 sm:py-3.5 text-sm font-medium text-center text-white rounded-lg bg-gray-600 hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800"
+        className="w-full rounded-lg bg-gray-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 sm:py-3.5"
       >
         Proximo: Detalles de la cuenta
       </button>

@@ -89,28 +89,56 @@ const adaptCollaborator = (raw: ApiCollaborator, idx: number): Collaborator => {
 // TODO: reemplazar con endpoint de pagos cuando esté disponible
 const MOCK_PAYMENTS: CollaboratorPayment[] = [
   {
-    id: "p1", collaboratorName: "Lucia Reyes", initials: "LR",
-    avatarBg: "#FED7AA", avatarText: "#9A3412",
-    songTitle: "Solar Drift", isrc: "USRC17608123",
-    relativeDate: "Hace 2 horas", date: "10 may 2026", amount: 3180, status: "completed",
+    id: "p1",
+    collaboratorName: "Lucia Reyes",
+    initials: "LR",
+    avatarBg: "#FED7AA",
+    avatarText: "#9A3412",
+    songTitle: "Solar Drift",
+    isrc: "USRC17608123",
+    relativeDate: "Hace 2 horas",
+    date: "10 may 2026",
+    amount: 3180,
+    status: "completed",
   },
   {
-    id: "p2", collaboratorName: "Diego Marín", initials: "DM",
-    avatarBg: "#DBEAFE", avatarText: "#1E40AF",
-    songTitle: "Velvet Horizon", isrc: "USRC17608124",
-    relativeDate: "Ayer", date: "9 may 2026", amount: 2140.5, status: "completed",
+    id: "p2",
+    collaboratorName: "Diego Marín",
+    initials: "DM",
+    avatarBg: "#DBEAFE",
+    avatarText: "#1E40AF",
+    songTitle: "Velvet Horizon",
+    isrc: "USRC17608124",
+    relativeDate: "Ayer",
+    date: "9 may 2026",
+    amount: 2140.5,
+    status: "completed",
   },
   {
-    id: "p3", collaboratorName: "Ana Velasco", initials: "AV",
-    avatarBg: "#FCE7F3", avatarText: "#9D174D",
-    songTitle: "Echo Chambers", isrc: "USRC17608125",
-    relativeDate: "Hace 3 días", date: "7 may 2026", amount: 1820.3, status: "processing",
+    id: "p3",
+    collaboratorName: "Ana Velasco",
+    initials: "AV",
+    avatarBg: "#FCE7F3",
+    avatarText: "#9D174D",
+    songTitle: "Echo Chambers",
+    isrc: "USRC17608125",
+    relativeDate: "Hace 3 días",
+    date: "7 may 2026",
+    amount: 1820.3,
+    status: "processing",
   },
   {
-    id: "p4", collaboratorName: "Mateo Salas", initials: "MS",
-    avatarBg: "#D1FAE5", avatarText: "#065F46",
-    songTitle: "Quiet Skylines", isrc: "USRC17608126",
-    relativeDate: "Hace 5 días", date: "5 may 2026", amount: 895.4, status: "completed",
+    id: "p4",
+    collaboratorName: "Mateo Salas",
+    initials: "MS",
+    avatarBg: "#D1FAE5",
+    avatarText: "#065F46",
+    songTitle: "Quiet Skylines",
+    isrc: "USRC17608126",
+    relativeDate: "Hace 5 días",
+    date: "5 may 2026",
+    amount: 895.4,
+    status: "completed",
   },
 ];
 
@@ -144,43 +172,58 @@ export default function Collaborators() {
     refreshMetrics();
   }, [refreshMetrics]);
 
-  const featured = collaborators.find((c) => c.id === featuredId) ?? collaborators[0];
+  const featured =
+    collaborators.find((c) => c.id === featuredId) ?? collaborators[0];
 
   const totalSent = metrics?.totalAmountSent ?? 0;
   const totalReceived = metrics?.totalAmountReceived ?? 0;
   const activeSplits = metrics?.activeSplits ?? 0;
-  const pendingPayments = collaborators.filter((c) => c.status === "pending").length;
+  const pendingPayments = collaborators.filter(
+    (c) => c.status === "pending",
+  ).length;
 
   return (
     <div className="min-h-screen bg-[#F7F8FA]">
-      <div className="px-6 lg:px-10 py-8 flex flex-col gap-6">
+      <div className="flex flex-col gap-6 px-6 py-8 lg:px-10">
         <div className="flex items-center justify-between gap-4">
           <div className="flex flex-col gap-1">
             <h1 className="text-2xl font-bold text-[#111827]">Colaboradores</h1>
-            <p className="text-sm text-[#6B7280]">Organiza y gestiona a las personas que comparten tus regalías</p>
-            <div className="w-10 h-0.5 rounded-full bg-[#F97316] mt-1" />
+            <p className="text-sm text-[#6B7280]">
+              Organiza y gestiona a las personas que comparten tus regalías
+            </p>
+            <div className="mt-1 h-0.5 w-10 rounded-full bg-[#F97316]" />
           </div>
           {canAddCollaborator && (
             <button
               onClick={() => setSidebarOpen(true)}
-              className="flex items-center gap-2 px-4 h-10 bg-[#F97316] hover:bg-orange-600 text-white text-[13px] font-semibold rounded-lg transition-colors"
+              className="flex h-10 items-center gap-2 rounded-lg bg-[#F97316] px-4 text-[13px] font-semibold text-white transition-colors hover:bg-orange-600"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="h-4 w-4" />
               Agregar Colaborador
             </button>
           )}
         </div>
 
         <CollaboratorsStatsGrid
-          totalCollaborators={loading ? 0 : (metrics?.totalCollaborators ?? collaborators.length)}
-          totalSent={loading ? "$0.00" : `$${totalSent.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
-          totalReceived={loading ? "$0.00" : `$${totalReceived.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
+          totalCollaborators={
+            loading ? 0 : (metrics?.totalCollaborators ?? collaborators.length)
+          }
+          totalSent={
+            loading
+              ? "$0.00"
+              : `$${totalSent.toLocaleString("en-US", { minimumFractionDigits: 2 })}`
+          }
+          totalReceived={
+            loading
+              ? "$0.00"
+              : `$${totalReceived.toLocaleString("en-US", { minimumFractionDigits: 2 })}`
+          }
           activeSplits={loading ? 0 : activeSplits}
           pendingPayments={loading ? 0 : pendingPayments}
         />
 
         {!loading && collaborators.length > 0 && featured && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
             <CollaboratorsTable
               collaborators={collaborators}
               featuredId={featuredId ?? ""}

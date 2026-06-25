@@ -1,5 +1,10 @@
 import { apiClient } from "@/infrastructure/http/axiosClient";
-import type { Album, AlbumsResponse, AlbumResponse, AlbumsError } from "../models/album";
+import type {
+  Album,
+  AlbumsResponse,
+  AlbumResponse,
+  AlbumsError,
+} from "../models/album";
 import type { AlbumBalance } from "../types/accounting.types";
 
 class AlbumService {
@@ -10,12 +15,21 @@ class AlbumService {
    */
   async getAlbums(skip = 0, limit = 10): Promise<AlbumsResponse | AlbumsError> {
     try {
-      const response = await apiClient.get(`${this.BASE}/albums?skip=${skip}&limit=${limit}`);
+      const response = await apiClient.get(
+        `${this.BASE}/albums?skip=${skip}&limit=${limit}`,
+      );
       return response.data as AlbumsResponse;
     } catch (error: unknown) {
-      const axErr = error as { response?: { data?: AlbumsError }; message?: string };
+      const axErr = error as {
+        response?: { data?: AlbumsError };
+        message?: string;
+      };
       if (axErr.response?.data) return axErr.response.data;
-      return { success: false, message: "Error retrieving albums", error: axErr.message ?? "Unknown error" };
+      return {
+        success: false,
+        message: "Error retrieving albums",
+        error: axErr.message ?? "Unknown error",
+      };
     }
   }
 
@@ -25,22 +39,36 @@ class AlbumService {
   async getAlbumByUPC(upc: string): Promise<AlbumResponse | AlbumsError> {
     try {
       if (!upc) return { success: false, message: "UPC parameter is required" };
-      const response = await apiClient.get(`${this.BASE}/albums/${encodeURIComponent(upc)}`);
+      const response = await apiClient.get(
+        `${this.BASE}/albums/${encodeURIComponent(upc)}`,
+      );
       return response.data as AlbumResponse;
     } catch (error: unknown) {
-      const axErr = error as { response?: { data?: AlbumsError }; message?: string };
+      const axErr = error as {
+        response?: { data?: AlbumsError };
+        message?: string;
+      };
       if (axErr.response?.data) return axErr.response.data;
-      return { success: false, message: "Error retrieving album", error: axErr.message ?? "Unknown error" };
+      return {
+        success: false,
+        message: "Error retrieving album",
+        error: axErr.message ?? "Unknown error",
+      };
     }
   }
 
   /**
    * Obtiene métricas mensuales de streams e ingresos de un álbum.
    */
-  async getAlbumMonthlyMetrics(upc: string, months = 12): Promise<{ month: string; streams: number; revenue: number }[]> {
+  async getAlbumMonthlyMetrics(
+    upc: string,
+    months = 12,
+  ): Promise<{ month: string; streams: number; revenue: number }[]> {
     try {
       if (!upc) return [];
-      const response = await apiClient.get(`${this.BASE}/albums/${encodeURIComponent(upc)}/monthly-metrics?months=${months}`);
+      const response = await apiClient.get(
+        `${this.BASE}/albums/${encodeURIComponent(upc)}/monthly-metrics?months=${months}`,
+      );
       return Array.isArray(response.data?.data) ? response.data.data : [];
     } catch {
       return [];
@@ -62,7 +90,9 @@ class AlbumService {
   async getAlbumBalance(albumId: string): Promise<AlbumBalance | null> {
     try {
       if (!albumId || albumId.length !== 24) return null;
-      const response = await apiClient.get(`/accounting/balance/album/${albumId}`);
+      const response = await apiClient.get(
+        `/accounting/balance/album/${albumId}`,
+      );
       return response.data?.data ?? response.data;
     } catch {
       return null;

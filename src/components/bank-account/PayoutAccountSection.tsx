@@ -51,8 +51,11 @@ export default function PayoutAccountSection() {
 
   const renderField = (group: PayoutFieldGroup) => {
     const value = values[group.key] ?? "";
-    const onChange = (v: string) => setField(group.key, v, group.refreshRequirementsOnChange);
-    const isSelect = (group.type === "select" || group.type === "radio") && group.valuesAllowed;
+    const onChange = (v: string) =>
+      setField(group.key, v, group.refreshRequirementsOnChange);
+    const isSelect =
+      (group.type === "select" || group.type === "radio") &&
+      group.valuesAllowed;
 
     return (
       <div key={group.key} className="flex flex-col gap-1">
@@ -61,7 +64,11 @@ export default function PayoutAccountSection() {
           {group.required && <span className="text-red-400"> *</span>}
         </label>
         {isSelect ? (
-          <select className={inputClass} value={value} onChange={(e) => onChange(e.target.value)}>
+          <select
+            className={inputClass}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+          >
             <option value="">Seleccionar…</option>
             {group.valuesAllowed!.map((opt) => (
               <option key={opt.key} value={opt.key}>
@@ -82,22 +89,25 @@ export default function PayoutAccountSection() {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col gap-4">
+    <div className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-50">
-            <Banknote className="w-5 h-5 text-emerald-500" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50">
+            <Banknote className="h-5 w-5 text-emerald-500" />
           </div>
           <div className="flex flex-col">
-            <span className="text-[15px] font-bold text-gray-900">Cuenta para recibir pagos</span>
+            <span className="text-[15px] font-bold text-gray-900">
+              Cuenta para recibir pagos
+            </span>
             <span className="text-xs text-gray-500">
-              Registra dónde quieres recibir tu dinero. Los pagos se envían vía Wise.
+              Registra dónde quieres recibir tu dinero. Los pagos se envían vía
+              Wise.
             </span>
           </div>
         </div>
         {hasRecipient && (
-          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-green-50 text-green-600">
-            <CheckCircle2 className="w-3 h-3" />
+          <span className="flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-600">
+            <CheckCircle2 className="h-3 w-3" />
             {status?.payoutCurrency || "Registrada"}
           </span>
         )}
@@ -109,8 +119,8 @@ export default function PayoutAccountSection() {
           {status?.account && (
             <div className="flex items-center justify-between rounded-lg border border-emerald-100 bg-emerald-50/40 px-3 py-2.5">
               <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-9 h-9 rounded-md bg-white border border-gray-200">
-                  <Banknote className="w-4 h-4 text-emerald-500" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-md border border-gray-200 bg-white">
+                  <Banknote className="h-4 w-4 text-emerald-500" />
                 </div>
                 <div className="flex flex-col">
                   <span className="text-sm font-semibold text-gray-800">
@@ -118,8 +128,11 @@ export default function PayoutAccountSection() {
                     {status.account.last4 ? ` ····${status.account.last4}` : ""}
                   </span>
                   <span className="text-xs text-gray-500">
-                    {status.account.accountHolderName || "—"} · {status.account.currency}
-                    {status.account.accountType ? ` · ${status.account.accountType}` : ""}
+                    {status.account.accountHolderName || "—"} ·{" "}
+                    {status.account.currency}
+                    {status.account.accountType
+                      ? ` · ${status.account.accountType}`
+                      : ""}
                   </span>
                 </div>
               </div>
@@ -127,9 +140,9 @@ export default function PayoutAccountSection() {
           )}
           <button
             onClick={() => setEditing(true)}
-            className="self-start flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-2 self-start rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
           >
-            <Pencil className="w-4 h-4" />
+            <Pencil className="h-4 w-4" />
             Actualizar cuenta
           </button>
         </div>
@@ -141,9 +154,9 @@ export default function PayoutAccountSection() {
           {editing && (
             <button
               onClick={() => setEditing(false)}
-              className="self-end flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-gray-700"
+              className="flex items-center gap-1.5 self-end text-xs font-semibold text-gray-500 hover:text-gray-700"
             >
-              <X className="w-3.5 h-3.5" />
+              <X className="h-3.5 w-3.5" />
               Cancelar
             </button>
           )}
@@ -169,7 +182,7 @@ export default function PayoutAccountSection() {
 
           {loadingFields && (
             <span className="flex items-center gap-2 text-sm text-gray-400">
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
               Cargando campos requeridos…
             </span>
           )}
@@ -179,7 +192,9 @@ export default function PayoutAccountSection() {
             <div className="flex flex-col gap-3">
               {requirements.length > 1 && (
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-medium text-gray-500">Tipo de cuenta</label>
+                  <label className="text-xs font-medium text-gray-500">
+                    Tipo de cuenta
+                  </label>
                   <select
                     className={inputClass}
                     value={selectedType}
@@ -206,16 +221,22 @@ export default function PayoutAccountSection() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {current.fields.flatMap((f) => f.group.slice(0, 1)).map(renderField)}
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {current.fields
+                  .flatMap((f) => f.group.slice(0, 1))
+                  .map(renderField)}
               </div>
 
               <button
                 onClick={submit}
                 disabled={submitting}
-                className="self-start flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-600 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 self-start rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-50"
               >
-                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Banknote className="w-4 h-4" />}
+                {submitting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Banknote className="h-4 w-4" />
+                )}
                 {hasRecipient ? "Reemplazar cuenta" : "Guardar cuenta"}
               </button>
             </div>
@@ -224,7 +245,11 @@ export default function PayoutAccountSection() {
       )}
 
       {feedback && (
-        <p className={`text-xs ${FEEDBACK_COLOR[feedback.type] ?? "text-gray-500"}`}>{feedback.text}</p>
+        <p
+          className={`text-xs ${FEEDBACK_COLOR[feedback.type] ?? "text-gray-500"}`}
+        >
+          {feedback.text}
+        </p>
       )}
     </div>
   );

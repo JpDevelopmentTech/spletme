@@ -204,7 +204,9 @@ export default function AlbumDetail() {
   ];
 
   const getAvatarColor = (name?: string) => {
-    const code = (name ?? "").split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+    const code = (name ?? "")
+      .split("")
+      .reduce((acc, c) => acc + c.charCodeAt(0), 0);
     return avatarColors[code % avatarColors.length];
   };
 
@@ -306,11 +308,11 @@ export default function AlbumDetail() {
 
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field)
-      return <ArrowUpDown className="w-3.5 h-3.5 text-gray-300" />;
+      return <ArrowUpDown className="h-3.5 w-3.5 text-gray-300" />;
     return sortDir === "asc" ? (
-      <ChevronUp className="w-3.5 h-3.5 text-[#F97316]" />
+      <ChevronUp className="h-3.5 w-3.5 text-[#F97316]" />
     ) : (
-      <ChevronDown className="w-3.5 h-3.5 text-[#F97316]" />
+      <ChevronDown className="h-3.5 w-3.5 text-[#F97316]" />
     );
   };
 
@@ -318,18 +320,18 @@ export default function AlbumDetail() {
 
   if (error || !album) {
     return (
-      <div className="min-h-screen bg-[#F7F8FA] px-6 lg:px-10 py-8 space-y-6">
+      <div className="min-h-screen space-y-6 bg-[#F7F8FA] px-6 py-8 lg:px-10">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate("/panel/music")}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-600 text-sm font-medium hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="h-4 w-4" />
             Regresar
           </button>
         </div>
-        <div className="flex items-start gap-2 p-4 bg-red-50 border border-red-100 rounded-xl max-w-lg">
-          <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+        <div className="flex max-w-lg items-start gap-2 rounded-xl border border-red-100 bg-red-50 p-4">
+          <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />
           <p className="text-sm text-red-700">
             {error || "Álbum no encontrado"}
           </p>
@@ -339,22 +341,22 @@ export default function AlbumDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA] px-6 lg:px-10 py-8 space-y-6">
+    <div className="min-h-screen space-y-6 bg-[#F7F8FA] px-6 py-8 lg:px-10">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate("/panel/music")}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-600 text-sm font-medium hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="h-4 w-4" />
             Regresar
           </button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
               Detalle del Álbum
             </h1>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <p className="mt-0.5 text-sm text-gray-500">
               Pistas y métricas del álbum
             </p>
           </div>
@@ -362,7 +364,7 @@ export default function AlbumDetail() {
 
         {/* Breadcrumb + action */}
         <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-2 text-sm">
+          <div className="hidden items-center gap-2 text-sm sm:flex">
             <Link
               to="/panel/music"
               className="text-gray-400 hover:text-gray-600"
@@ -370,67 +372,67 @@ export default function AlbumDetail() {
               Música
             </Link>
             <span className="text-gray-300">/</span>
-            <span className="text-gray-900 font-medium truncate max-w-[160px]">
+            <span className="max-w-[160px] truncate font-medium text-gray-900">
               {album.releaseTitle || album.albumTitle}
             </span>
           </div>
           <button
             onClick={() => setIsOwnerSplitModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-[#F97316] hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition-colors"
+            className="flex items-center gap-2 rounded-lg bg-[#F97316] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-orange-600"
           >
-            <Crown className="w-4 h-4" />
+            <Crown className="h-4 w-4" />
             Owner Splits
           </button>
         </div>
       </div>
 
       {/* Hero Card */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6 flex flex-col sm:flex-row gap-6">
+      <div className="flex flex-col gap-6 rounded-xl border border-gray-200 bg-white p-6 sm:flex-row">
         {/* Cover */}
-        <div className="w-40 h-40 rounded-xl overflow-hidden flex-shrink-0 self-center sm:self-start bg-orange-50 flex items-center justify-center">
+        <div className="flex h-40 w-40 flex-shrink-0 items-center justify-center self-center overflow-hidden rounded-xl bg-orange-50 sm:self-start">
           {album.coverImage?.[0]?.[0]?.url ? (
             <img
               src={album.coverImage[0][0].url}
               alt={album.releaseTitle || album.albumTitle}
-              className="w-full h-full object-cover"
+              className="h-full w-full object-cover"
             />
           ) : (
-            <Disc3 className="w-16 h-16 text-[#F97316]" />
+            <Disc3 className="h-16 w-16 text-[#F97316]" />
           )}
         </div>
 
         {/* Info */}
-        <div className="flex-1 flex flex-col gap-4">
+        <div className="flex flex-1 flex-col gap-4">
           <div>
-            <span className="text-xs font-semibold text-[#F97316] uppercase tracking-wide">
+            <span className="text-xs font-semibold uppercase tracking-wide text-[#F97316]">
               Álbum
             </span>
-            <h2 className="text-2xl font-bold text-gray-900 mt-1">
+            <h2 className="mt-1 text-2xl font-bold text-gray-900">
               {album.releaseTitle || album.albumTitle}
             </h2>
-            <p className="text-sm text-gray-500 mt-1">{album.artistName}</p>
+            <p className="mt-1 text-sm text-gray-500">{album.artistName}</p>
             {album.artisticLabel && (
-              <p className="text-xs text-gray-400 mt-0.5">
+              <p className="mt-0.5 text-xs text-gray-400">
                 {album.artisticLabel}
               </p>
             )}
           </div>
 
           {/* UPC */}
-          <div className="inline-flex items-center gap-2 w-fit px-3 py-1.5 bg-gray-100 rounded-full">
+          <div className="inline-flex w-fit items-center gap-2 rounded-full bg-gray-100 px-3 py-1.5">
             <span className="text-xs font-semibold text-gray-500">UPC</span>
-            <span className="text-xs font-mono text-gray-900">{album.upc}</span>
+            <span className="font-mono text-xs text-gray-900">{album.upc}</span>
             {album.upc && <CopyButton value={album.upc} title="Copiar UPC" />}
           </div>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white border border-gray-200 rounded-xl p-5">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center">
-              <Music2 className="w-4 h-4 text-[#F97316]" />
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="rounded-xl border border-gray-200 bg-white p-5">
+          <div className="mb-3 flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50">
+              <Music2 className="h-4 w-4 text-[#F97316]" />
             </div>
             <span className="text-xs font-medium text-gray-500">Pistas</span>
           </div>
@@ -439,10 +441,10 @@ export default function AlbumDetail() {
           </p>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-xl p-5">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
-              <Play className="w-4 h-4 text-blue-600" />
+        <div className="rounded-xl border border-gray-200 bg-white p-5">
+          <div className="mb-3 flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50">
+              <Play className="h-4 w-4 text-blue-600" />
             </div>
             <span className="text-xs font-medium text-gray-500">
               Total Streams
@@ -453,10 +455,10 @@ export default function AlbumDetail() {
           </p>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-xl p-5">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center">
-              <DollarSign className="w-4 h-4 text-green-600" />
+        <div className="rounded-xl border border-gray-200 bg-white p-5">
+          <div className="mb-3 flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50">
+              <DollarSign className="h-4 w-4 text-green-600" />
             </div>
             <span className="text-xs font-medium text-gray-500">
               Ingresos Netos
@@ -467,25 +469,27 @@ export default function AlbumDetail() {
           </p>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-xl p-5">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center">
-              <DollarSign className="w-4 h-4 text-fuchsia-600" />
+        <div className="rounded-xl border border-gray-200 bg-white p-5">
+          <div className="mb-3 flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50">
+              <DollarSign className="h-4 w-4 text-fuchsia-600" />
             </div>
             <span className="text-xs font-medium text-gray-500">
               Owner revenue
             </span>
           </div>
           <p className="text-2xl font-bold text-fuchsia-600">
-            {formatCurrency(album.ownerEarnings ? parseFloat(album.ownerEarnings) : 0)}
+            {formatCurrency(
+              album.ownerEarnings ? parseFloat(album.ownerEarnings) : 0,
+            )}
           </p>
         </div>
       </div>
 
       {/* Performance Chart + Platforms */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-        <div className="bg-white border border-gray-200 rounded-xl p-6 flex flex-col gap-5">
-          <div className="flex items-start sm:items-center justify-between flex-col sm:flex-row gap-2">
+      <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
+        <div className="flex flex-col gap-5 rounded-xl border border-gray-200 bg-white p-6">
+          <div className="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-center">
             <div className="flex flex-col gap-0.5">
               <h2 className="text-base font-semibold text-gray-900">
                 Rendimiento del álbum
@@ -496,22 +500,22 @@ export default function AlbumDetail() {
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 bg-gray-900 rounded-sm" />
+                <div className="h-2 w-2 rounded-sm bg-gray-900" />
                 <span className="text-[11px] text-gray-500">Streams</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 bg-green-500 rounded-sm" />
+                <div className="h-2 w-2 rounded-sm bg-green-500" />
                 <span className="text-[11px] text-gray-500">Ingresos</span>
               </div>
             </div>
           </div>
 
           {metricsLoading ? (
-            <div className="h-[280px] flex items-center justify-center text-sm text-gray-400">
+            <div className="flex h-[280px] items-center justify-center text-sm text-gray-400">
               Cargando métricas...
             </div>
           ) : monthlyMetrics.length === 0 ? (
-            <div className="h-[280px] flex items-center justify-center text-sm text-gray-400">
+            <div className="flex h-[280px] items-center justify-center text-sm text-gray-400">
               Aún no hay datos mensuales para este álbum.
             </div>
           ) : (
@@ -532,24 +536,24 @@ export default function AlbumDetail() {
       </div>
 
       {/* Tracks Table */}
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
         {/* Toolbar */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-6 py-4 border-b border-gray-100">
+        <div className="flex flex-col items-start justify-between gap-3 border-b border-gray-100 px-6 py-4 sm:flex-row sm:items-center">
           <div className="flex items-center gap-2">
-            <Music2 className="w-4 h-4 text-gray-400" />
+            <Music2 className="h-4 w-4 text-gray-400" />
             <span className="text-sm font-semibold text-gray-900">Pistas</span>
-            <span className="ml-1 px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-semibold rounded-full">
+            <span className="ml-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-600">
               {filteredTracks.length}
             </span>
           </div>
           <div className="relative w-full sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder="Buscar por título o ISRC..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#F97316] transition-colors"
+              className="w-full rounded-lg border border-gray-200 py-2 pl-9 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-colors focus:border-[#F97316] focus:outline-none"
             />
           </div>
         </div>
@@ -557,44 +561,44 @@ export default function AlbumDetail() {
         {filteredTracks.length > 0 ? (
           <table className="w-full">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-100">
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide w-10">
+              <tr className="border-b border-gray-100 bg-gray-50">
+                <th className="w-10 px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                   #
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                   <button
                     onClick={() => handleSort("title")}
-                    className="flex items-center gap-1.5 hover:text-gray-700 transition-colors"
+                    className="flex items-center gap-1.5 transition-colors hover:text-gray-700"
                   >
                     Título
                     <SortIcon field="title" />
                   </button>
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden lg:table-cell">
+                <th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 lg:table-cell">
                   ISRC
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                   <button
                     onClick={() => handleSort("streams")}
-                    className="flex items-center gap-1.5 hover:text-gray-700 transition-colors"
+                    className="flex items-center gap-1.5 transition-colors hover:text-gray-700"
                   >
                     Streams
                     <SortIcon field="streams" />
                   </button>
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                   <button
                     onClick={() => handleSort("revenue")}
-                    className="flex items-center gap-1.5 hover:text-gray-700 transition-colors"
+                    className="flex items-center gap-1.5 transition-colors hover:text-gray-700"
                   >
                     Ingresos
                     <SortIcon field="revenue" />
                   </button>
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden md:table-cell">
+                <th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 md:table-cell">
                   Splits
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Colaboradores
                 </th>
               </tr>
@@ -604,11 +608,11 @@ export default function AlbumDetail() {
                 <tr
                   key={track.isrc || index}
                   onClick={() => navigate(`/panel/song/${track._id}`)}
-                  className="hover:bg-gray-50 transition-colors cursor-pointer"
+                  className="cursor-pointer transition-colors hover:bg-gray-50"
                 >
                   {/* # */}
                   <td className="px-6 py-4">
-                    <span className="text-sm text-gray-400 font-medium">
+                    <span className="text-sm font-medium text-gray-400">
                       {index + 1}
                     </span>
                   </td>
@@ -616,20 +620,22 @@ export default function AlbumDetail() {
                   {/* Title */}
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Music2 className="w-4 h-4 text-[#F97316]" />
+                      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-orange-50">
+                        <Music2 className="h-4 w-4 text-[#F97316]" />
                       </div>
-                      <p className="text-sm font-semibold text-gray-900 truncate max-w-[180px]">
+                      <p className="max-w-[180px] truncate text-sm font-semibold text-gray-900">
                         {track.trackTitle}
                       </p>
                     </div>
                   </td>
 
                   {/* ISRC */}
-                  <td className="px-4 py-4 hidden lg:table-cell">
-                    <span className="inline-flex items-center gap-1.5 text-xs font-mono text-gray-500">
+                  <td className="hidden px-4 py-4 lg:table-cell">
+                    <span className="inline-flex items-center gap-1.5 font-mono text-xs text-gray-500">
                       {track.isrc || "—"}
-                      {track.isrc && <CopyButton value={track.isrc} title="Copiar ISRC" />}
+                      {track.isrc && (
+                        <CopyButton value={track.isrc} title="Copiar ISRC" />
+                      )}
                     </span>
                   </td>
 
@@ -648,7 +654,7 @@ export default function AlbumDetail() {
                   </td>
 
                   {/* Splits */}
-                  <td className="px-4 py-4 hidden md:table-cell">
+                  <td className="hidden px-4 py-4 md:table-cell">
                     <div className="flex items-center gap-1.5">
                       <span
                         title={
@@ -656,16 +662,16 @@ export default function AlbumDetail() {
                             ? "Owner split creado"
                             : "Sin owner split"
                         }
-                        className={`inline-flex items-center gap-1 px-2 py-1 text-[11px] font-semibold rounded-full ${
+                        className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold ${
                           hasOwnerSplit(track)
                             ? "bg-orange-50 text-[#F97316]"
                             : "bg-gray-100 text-gray-400"
                         }`}
                       >
                         {hasOwnerSplit(track) ? (
-                          <Check className="w-3 h-3" />
+                          <Check className="h-3 w-3" />
                         ) : (
-                          <Minus className="w-3 h-3" />
+                          <Minus className="h-3 w-3" />
                         )}
                         Owner
                       </span>
@@ -675,16 +681,16 @@ export default function AlbumDetail() {
                             ? "Split de colaborador creado"
                             : "Sin split de colaborador"
                         }
-                        className={`inline-flex items-center gap-1 px-2 py-1 text-[11px] font-semibold rounded-full ${
+                        className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold ${
                           hasCollaboratorSplit(track)
                             ? "bg-green-50 text-green-700"
                             : "bg-gray-100 text-gray-400"
                         }`}
                       >
                         {hasCollaboratorSplit(track) ? (
-                          <Check className="w-3 h-3" />
+                          <Check className="h-3 w-3" />
                         ) : (
-                          <Minus className="w-3 h-3" />
+                          <Minus className="h-3 w-3" />
                         )}
                         Collab
                       </span>
@@ -699,29 +705,31 @@ export default function AlbumDetail() {
                           e.stopPropagation();
                           setCollaboratorsModal(track.collaborators!);
                         }}
-                        className="flex -space-x-2 hover:opacity-80 transition-opacity"
+                        className="flex -space-x-2 transition-opacity hover:opacity-80"
                       >
-                        {track.collaborators!.slice(0, 4).map((collaborator, idx) =>
-                          collaborator?.image ? (
-                            <img
-                              key={collaborator._id || idx}
-                              src={collaborator.image}
-                              alt={collaborator.name || ""}
-                              title={collaborator.name}
-                              className="w-7 h-7 rounded-full border-2 border-white object-cover"
-                            />
-                          ) : (
-                            <div
-                              key={collaborator._id || idx}
-                              title={collaborator.name}
-                              className={`w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold ${getAvatarColor(collaborator.name)}`}
-                            >
-                              {getInitials(collaborator.name)}
-                            </div>
-                          ),
-                        )}
+                        {track
+                          .collaborators!.slice(0, 4)
+                          .map((collaborator, idx) =>
+                            collaborator?.image ? (
+                              <img
+                                key={collaborator._id || idx}
+                                src={collaborator.image}
+                                alt={collaborator.name || ""}
+                                title={collaborator.name}
+                                className="h-7 w-7 rounded-full border-2 border-white object-cover"
+                              />
+                            ) : (
+                              <div
+                                key={collaborator._id || idx}
+                                title={collaborator.name}
+                                className={`flex h-7 w-7 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold ${getAvatarColor(collaborator.name)}`}
+                              >
+                                {getInitials(collaborator.name)}
+                              </div>
+                            ),
+                          )}
                         {collaboratorsCount(track) > 4 && (
-                          <div className="w-7 h-7 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center">
+                          <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-gray-100">
                             <span className="text-[10px] font-semibold text-gray-500">
                               +{collaboratorsCount(track) - 4}
                             </span>
@@ -730,7 +738,7 @@ export default function AlbumDetail() {
                       </button>
                     ) : (
                       <span className="inline-flex items-center gap-1 text-xs text-gray-400">
-                        <Users className="w-3.5 h-3.5" />
+                        <Users className="h-3.5 w-3.5" />
                         Ninguno
                       </span>
                     )}
@@ -741,13 +749,13 @@ export default function AlbumDetail() {
           </table>
         ) : (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mb-3">
-              <Music2 className="w-6 h-6 text-gray-400" />
+            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100">
+              <Music2 className="h-6 w-6 text-gray-400" />
             </div>
-            <p className="text-sm font-semibold text-gray-700 mb-1">
+            <p className="mb-1 text-sm font-semibold text-gray-700">
               {search ? "Sin resultados" : "Sin pistas"}
             </p>
-            <p className="text-xs text-gray-400 max-w-xs">
+            <p className="max-w-xs text-xs text-gray-400">
               {search
                 ? `No se encontraron pistas para "${search}"`
                 : "No hay pistas registradas para este álbum"}
@@ -765,7 +773,7 @@ export default function AlbumDetail() {
       </div>
 
       {/* Album Costs */}
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
         <AlbumExtraordinaryCosts
           albumId={album._id || album.id || ""}
           tracks={album.tracks.map((t) => ({
@@ -782,45 +790,48 @@ export default function AlbumDetail() {
           onClick={() => setCollaboratorsModal(null)}
         >
           <div
-            className="bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4 overflow-hidden"
+            className="mx-4 w-full max-w-sm overflow-hidden rounded-2xl bg-white shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+            <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
               <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-[#F97316]" />
+                <Users className="h-4 w-4 text-[#F97316]" />
                 <span className="text-sm font-semibold text-gray-900">
                   Colaboradores ({collaboratorsModal.length})
                 </span>
               </div>
               <button
                 onClick={() => setCollaboratorsModal(null)}
-                className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors text-lg leading-none"
+                className="flex h-7 w-7 items-center justify-center rounded-full text-lg leading-none text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
               >
                 ×
               </button>
             </div>
-            <ul className="divide-y divide-gray-50 max-h-72 overflow-y-auto">
+            <ul className="max-h-72 divide-y divide-gray-50 overflow-y-auto">
               {collaboratorsModal.map((c, idx) => (
-                <li key={c._id || idx} className="flex items-center gap-3 px-6 py-3">
+                <li
+                  key={c._id || idx}
+                  className="flex items-center gap-3 px-6 py-3"
+                >
                   {c.image ? (
                     <img
                       src={c.image}
                       alt={c.name || ""}
-                      className="w-9 h-9 rounded-full object-cover flex-shrink-0"
+                      className="h-9 w-9 flex-shrink-0 rounded-full object-cover"
                     />
                   ) : (
                     <div
-                      className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${getAvatarColor(c.name)}`}
+                      className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold ${getAvatarColor(c.name)}`}
                     >
                       {getInitials(c.name)}
                     </div>
                   )}
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 truncate">
+                    <p className="truncate text-sm font-semibold text-gray-900">
                       {c.name || "Sin nombre"}
                     </p>
                     {c._id && (
-                      <p className="text-[11px] text-gray-400 font-mono truncate">
+                      <p className="truncate font-mono text-[11px] text-gray-400">
                         {c._id}
                       </p>
                     )}

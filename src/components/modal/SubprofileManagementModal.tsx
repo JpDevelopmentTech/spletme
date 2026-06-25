@@ -97,8 +97,7 @@ const mapSubprofile = (item: unknown, index: number): SubprofileItem => {
     };
   }
 
-  const id =
-    getString(item, ["id", "_id", "userId"]) || `subprofile-${index}`;
+  const id = getString(item, ["id", "_id", "userId"]) || `subprofile-${index}`;
 
   return {
     id,
@@ -154,7 +153,11 @@ const isCurrentOwner = (
   }
 
   const subprofileEmail = normalizeText(subprofile.email);
-  if (currentUser.email && subprofileEmail && currentUser.email === subprofileEmail) {
+  if (
+    currentUser.email &&
+    subprofileEmail &&
+    currentUser.email === subprofileEmail
+  ) {
     return true;
   }
 
@@ -253,7 +256,9 @@ const SubprofileManagementModal = ({
       return;
     }
 
-    setSubprofiles((prev) => prev.filter((subprofile) => subprofile.id !== subprofileId));
+    setSubprofiles((prev) =>
+      prev.filter((subprofile) => subprofile.id !== subprofileId),
+    );
     setSuccessMessage(result.message);
     setConfirmingId(null);
     setUnlinkingId(null);
@@ -278,7 +283,9 @@ const SubprofileManagementModal = ({
           >
             <div className="flex items-center justify-between border-b border-gray-200 bg-gradient-to-r from-indigo-500 to-indigo-600 p-6 dark:border-gray-700">
               <div className="space-y-1">
-                <h2 className="text-xl font-bold text-white">Gestión de Subperfiles</h2>
+                <h2 className="text-xl font-bold text-white">
+                  Gestión de Subperfiles
+                </h2>
                 <p className="text-sm text-white/80">
                   Administra los subperfiles vinculados a tu cuenta
                 </p>
@@ -305,7 +312,8 @@ const SubprofileManagementModal = ({
                       Crear subperfil
                     </h3>
                     <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                      Registra un nuevo subperfil para tu equipo con acceso independiente.
+                      Registra un nuevo subperfil para tu equipo con acceso
+                      independiente.
                     </p>
                   </button>
 
@@ -320,7 +328,8 @@ const SubprofileManagementModal = ({
                       Desvincular subperfil
                     </h3>
                     <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                      Visualiza todos tus subperfiles y desvincula los que ya no necesites.
+                      Visualiza todos tus subperfiles y desvincula los que ya no
+                      necesites.
                     </p>
                   </button>
                 </div>
@@ -404,11 +413,15 @@ const SubprofileManagementModal = ({
                               {isConfirming ? (
                                 <div className="flex gap-2">
                                   <button
-                                    onClick={() => void handleUnlink(subprofile.id)}
+                                    onClick={() =>
+                                      void handleUnlink(subprofile.id)
+                                    }
                                     disabled={isProcessing}
                                     className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-70"
                                   >
-                                    {isProcessing && <Loader2 className="h-4 w-4 animate-spin" />}
+                                    {isProcessing && (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    )}
                                     Confirmar
                                   </button>
                                   <button

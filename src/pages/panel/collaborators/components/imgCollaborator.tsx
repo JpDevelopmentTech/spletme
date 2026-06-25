@@ -16,8 +16,8 @@ export default function ImgCollaborator({
         alt=""
         className={
           active === index
-            ? "w-12 rounded-full h-12 object-cover cursor-pointer"
-            : "w-12 h-12 object-cover rounded-full grayscale cursor-pointer"
+            ? "h-12 w-12 cursor-pointer rounded-full object-cover"
+            : "h-12 w-12 cursor-pointer rounded-full object-cover grayscale"
         }
         onClick={changeActive}
       />

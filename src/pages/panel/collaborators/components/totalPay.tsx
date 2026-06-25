@@ -3,18 +3,18 @@ import Title from "../../../../components/title/title";
 
 const TotalPay = () => {
   return (
-    <div className="rounded-2xl shadow-lg col-span-6 p-6 flex flex-col">
+    <div className="col-span-6 flex flex-col rounded-2xl p-6 shadow-lg">
       <Title
         title="Total a pagar"
         subtitle="Unificado de canciones pendientes por pagar"
       />
-      <div className="mt-3 flex justify-between items-center">
+      <div className="mt-3 flex items-center justify-between">
         <span className="text-3xl text-quinary">$1.159,80</span>
         <Button onClick={() => {}} type="quinary">
           <div className="flex items-center">
             Pagar todas
             <svg
-              className="w-6 h-6 text-white dark:text-white"
+              className="h-6 w-6 text-white dark:text-white"
               aria-hidden="true"
               xmlns="http://www.w3.org/2000/svg"
               width="24"

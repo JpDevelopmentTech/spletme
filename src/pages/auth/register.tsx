@@ -71,34 +71,50 @@ export default function Register() {
     <div className="flex min-h-screen">
       {/* Panel izquierdo */}
       <div
-        className="hidden lg:flex flex-col justify-center gap-9 flex-shrink-0"
+        className="hidden flex-shrink-0 flex-col justify-center gap-9 lg:flex"
         style={{ width: 500, backgroundColor: "#0F172A", padding: "60px 50px" }}
       >
         {/* Logo */}
         <div className="flex items-center gap-3">
           <div
-            className="flex items-center justify-center text-white font-bold text-xl flex-shrink-0"
-            style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: "#F97316" }}
+            className="flex flex-shrink-0 items-center justify-center text-xl font-bold text-white"
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 10,
+              backgroundColor: "#F97316",
+            }}
           >
             S
           </div>
-          <span className="text-white font-bold text-xl">SplitMe</span>
+          <span className="text-xl font-bold text-white">SplitMe</span>
         </div>
 
         {/* Encabezado */}
         <div className="flex flex-col gap-4">
-          <h1 className="text-white font-bold" style={{ fontSize: 42, lineHeight: 1.2 }}>
+          <h1
+            className="font-bold text-white"
+            style={{ fontSize: 42, lineHeight: 1.2 }}
+          >
             Gestiona tus
             <br />
             regalías musicales.
           </h1>
-          <p className="text-[#94A3B8] text-sm" style={{ lineHeight: 1.6 }}>
-            Rastrea streams, divide pagos y gestiona colaboradores en un solo lugar.
+          <p className="text-sm text-[#94A3B8]" style={{ lineHeight: 1.6 }}>
+            Rastrea streams, divide pagos y gestiona colaboradores en un solo
+            lugar.
           </p>
         </div>
 
         {/* Acento naranja */}
-        <div style={{ width: 48, height: 3, borderRadius: 2, backgroundColor: "#F97316" }} />
+        <div
+          style={{
+            width: 48,
+            height: 3,
+            borderRadius: 2,
+            backgroundColor: "#F97316",
+          }}
+        />
 
         {/* Características */}
         <div className="flex flex-col gap-3.5">
@@ -108,7 +124,7 @@ export default function Register() {
                 className="flex-shrink-0 rounded-full"
                 style={{ width: 8, height: 8, backgroundColor: "#F97316" }}
               />
-              <span className="text-[#CBD5E1] text-sm">{feat}</span>
+              <span className="text-sm text-[#CBD5E1]">{feat}</span>
             </div>
           ))}
         </div>
@@ -116,12 +132,12 @@ export default function Register() {
 
       {/* Panel derecho */}
       <div
-        className="flex-1 flex items-center justify-center p-6 overflow-y-auto"
+        className="flex flex-1 items-center justify-center overflow-y-auto p-6"
         style={{ backgroundColor: "#F7F8FA" }}
       >
         {/* Tarjeta del formulario */}
         <div
-          className="w-full flex flex-col gap-5 my-6"
+          className="my-6 flex w-full flex-col gap-5"
           style={{
             maxWidth: 420,
             backgroundColor: "#FFFFFF",
@@ -132,15 +148,22 @@ export default function Register() {
         >
           {/* Logo de la tarjeta */}
           <div
-            className="flex items-center justify-center text-white font-bold text-[22px] self-start"
-            style={{ width: 44, height: 44, borderRadius: 11, backgroundColor: "#F97316" }}
+            className="flex items-center justify-center self-start text-[22px] font-bold text-white"
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 11,
+              backgroundColor: "#F97316",
+            }}
           >
             S
           </div>
 
           {/* Encabezado */}
           <div className="flex flex-col gap-1">
-            <h2 className="text-[26px] font-bold text-[#111827]">Crea tu cuenta</h2>
+            <h2 className="text-[26px] font-bold text-[#111827]">
+              Crea tu cuenta
+            </h2>
             <p className="text-sm text-[#6B7280]">
               Únete a SplitMe y comienza a gestionar tus regalías
             </p>
@@ -177,12 +200,14 @@ export default function Register() {
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {/* Usuario */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-[#374151]">Nombre de usuario</label>
+              <label className="text-sm font-medium text-[#374151]">
+                Nombre de usuario
+              </label>
               <div className="relative">
                 <AtSign
                   size={16}
                   color="#9CA3AF"
-                  className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2"
                 />
                 <input
                   type="text"
@@ -198,13 +223,15 @@ export default function Register() {
 
             {/* Nombre + Apellido */}
             <div className="flex gap-3">
-              <div className="flex-1 flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-[#374151]">Nombre</label>
+              <div className="flex flex-1 flex-col gap-1.5">
+                <label className="text-sm font-medium text-[#374151]">
+                  Nombre
+                </label>
                 <div className="relative">
                   <User
                     size={16}
                     color="#9CA3AF"
-                    className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2"
                   />
                   <input
                     type="text"
@@ -217,13 +244,15 @@ export default function Register() {
                   />
                 </div>
               </div>
-              <div className="flex-1 flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-[#374151]">Apellido</label>
+              <div className="flex flex-1 flex-col gap-1.5">
+                <label className="text-sm font-medium text-[#374151]">
+                  Apellido
+                </label>
                 <div className="relative">
                   <User
                     size={16}
                     color="#9CA3AF"
-                    className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2"
                   />
                   <input
                     type="text"
@@ -240,12 +269,14 @@ export default function Register() {
 
             {/* Correo */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-[#374151]">Correo electrónico</label>
+              <label className="text-sm font-medium text-[#374151]">
+                Correo electrónico
+              </label>
               <div className="relative">
                 <Mail
                   size={16}
                   color="#9CA3AF"
-                  className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2"
                 />
                 <input
                   type="email"
@@ -261,12 +292,14 @@ export default function Register() {
 
             {/* Contraseña */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-[#374151]">Contraseña</label>
+              <label className="text-sm font-medium text-[#374151]">
+                Contraseña
+              </label>
               <div className="relative">
                 <Lock
                   size={16}
                   color="#9CA3AF"
-                  className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2"
                 />
                 <input
                   type={showPassword ? "text" : "password"}
@@ -280,7 +313,7 @@ export default function Register() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#6B7280] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] transition-colors hover:text-[#6B7280]"
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -289,12 +322,14 @@ export default function Register() {
 
             {/* Confirmar contraseña */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-[#374151]">Confirmar contraseña</label>
+              <label className="text-sm font-medium text-[#374151]">
+                Confirmar contraseña
+              </label>
               <div className="relative">
                 <Lock
                   size={16}
                   color="#9CA3AF"
-                  className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2"
                 />
                 <input
                   type={showConfirm ? "text" : "password"}
@@ -308,7 +343,7 @@ export default function Register() {
                 <button
                   type="button"
                   onClick={() => setShowConfirm((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#6B7280] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] transition-colors hover:text-[#6B7280]"
                 >
                   {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -319,14 +354,18 @@ export default function Register() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full text-white font-semibold text-[15px] transition-opacity hover:opacity-90 disabled:opacity-60"
-              style={{ height: 46, borderRadius: 10, backgroundColor: "#F97316" }}
+              className="w-full text-[15px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+              style={{
+                height: 46,
+                borderRadius: 10,
+                backgroundColor: "#F97316",
+              }}
             >
               {isSubmitting ? "Creando cuenta..." : "Crear cuenta"}
             </button>
 
             {/* Términos */}
-            <p className="text-xs text-center text-[#9CA3AF]">
+            <p className="text-center text-xs text-[#9CA3AF]">
               Al crear una cuenta aceptas nuestros{" "}
               <a href="#" className="text-[#F97316] hover:opacity-80">
                 Términos de Servicio
@@ -340,9 +379,9 @@ export default function Register() {
 
           {/* Divisor */}
           <div className="flex items-center gap-3">
-            <div className="flex-1 h-px bg-[#E5E7EB]" />
+            <div className="h-px flex-1 bg-[#E5E7EB]" />
             <span className="text-xs text-[#9CA3AF]">o</span>
-            <div className="flex-1 h-px bg-[#E5E7EB]" />
+            <div className="h-px flex-1 bg-[#E5E7EB]" />
           </div>
 
           {/* Iniciar sesión */}
@@ -350,7 +389,7 @@ export default function Register() {
             <span className="text-sm text-[#6B7280]">¿Ya tienes cuenta?</span>
             <Link
               to="/auth/email-login"
-              className="text-sm font-semibold text-[#F97316] hover:opacity-80 transition-opacity"
+              className="text-sm font-semibold text-[#F97316] transition-opacity hover:opacity-80"
             >
               Inicia sesión
             </Link>

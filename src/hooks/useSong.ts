@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect } from 'react';
-import songs from '../services/songs';
+import { useState, useEffect } from "react";
+import songs from "../services/songs";
 
 /**
  * Carga una canción y expone helpers para leer los splits (owner y colaboradores)

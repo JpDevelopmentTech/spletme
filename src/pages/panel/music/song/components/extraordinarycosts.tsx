@@ -43,8 +43,7 @@ const STATUS_CLASSES: Record<AccountingStatus, string> = {
   pending:
     "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/60 dark:text-yellow-300",
   paid: "bg-green-100 text-green-800 dark:bg-green-900/60 dark:text-green-300",
-  cancelled:
-    "bg-red-100 text-red-800 dark:bg-red-900/60 dark:text-red-300",
+  cancelled: "bg-red-100 text-red-800 dark:bg-red-900/60 dark:text-red-300",
 };
 
 // ─── Helpers ────────────────────────────────────────────────────────────────────
@@ -126,8 +125,8 @@ const StatPill = ({
   }[accent ?? "default"];
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-700/60 rounded-xl p-3 flex flex-col gap-0.5">
-      <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+    <div className="flex flex-col gap-0.5 rounded-xl bg-gray-50 p-3 dark:bg-gray-700/60">
+      <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
         {label}
       </p>
       <p className={`text-base font-bold leading-tight ${valueClass}`}>
@@ -234,25 +233,25 @@ const BalanceFace = ({
   const ingPct = totalForBar > 0 ? (totalIngresos / totalForBar) * 100 : 50;
 
   return (
-    <div className="p-5 flex flex-col gap-4 h-full">
+    <div className="flex h-full flex-col gap-4 p-5">
       {/* Header */}
-      <div className="flex justify-between items-center shrink-0">
+      <div className="flex shrink-0 items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-base font-semibold text-gray-900 dark:text-white">
             Balance
           </span>
-          <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full">
+          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500 dark:bg-gray-700 dark:text-gray-400">
             {balance?.totalEntries ?? costs.length} mov.
           </span>
           {loadingBalance && (
-            <RefreshCw className="h-3 w-3 text-gray-400 animate-spin" />
+            <RefreshCw className="h-3 w-3 animate-spin text-gray-400" />
           )}
         </div>
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={onFlip}
-            className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors px-2.5 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
           >
             <RefreshCw className="h-3.5 w-3.5" />
             Ver detalle
@@ -265,7 +264,7 @@ const BalanceFace = ({
 
       {/* Error notice */}
       {balanceError && (
-        <p className="shrink-0 text-xs text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg px-3 py-2">
+        <p className="shrink-0 rounded-lg bg-yellow-50 px-3 py-2 text-xs text-yellow-600 dark:bg-yellow-900/20 dark:text-yellow-400">
           No se pudo actualizar el balance desde el servidor. Mostrando datos
           locales.
         </p>
@@ -273,14 +272,14 @@ const BalanceFace = ({
 
       {/* Net balance */}
       <div
-        className={`shrink-0 rounded-xl px-4 py-3 flex items-center justify-between ${
+        className={`flex shrink-0 items-center justify-between rounded-xl px-4 py-3 ${
           isPositive
-            ? "bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800/40"
-            : "bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800/40"
+            ? "border border-green-100 bg-green-50 dark:border-green-800/40 dark:bg-green-900/20"
+            : "border border-red-100 bg-red-50 dark:border-red-800/40 dark:bg-red-900/20"
         }`}
       >
         <div>
-          <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
             Balance neto
           </p>
           <p
@@ -294,7 +293,7 @@ const BalanceFace = ({
           </p>
         </div>
         <span
-          className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+          className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
             isPositive
               ? "bg-green-100 text-green-700 dark:bg-green-900/60 dark:text-green-300"
               : "bg-red-100 text-red-700 dark:bg-red-900/60 dark:text-red-300"
@@ -305,11 +304,11 @@ const BalanceFace = ({
       </div>
 
       {/* Ingresos / Egresos grid */}
-      <div className="shrink-0 grid grid-cols-2 gap-3">
-        <div className="bg-gray-50 dark:bg-gray-700/60 rounded-xl p-3">
-          <div className="flex items-center gap-1.5 mb-2">
+      <div className="grid shrink-0 grid-cols-2 gap-3">
+        <div className="rounded-xl bg-gray-50 p-3 dark:bg-gray-700/60">
+          <div className="mb-2 flex items-center gap-1.5">
             <ArrowUpCircle className="h-3.5 w-3.5 text-green-500" />
-            <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
               Ingresos
             </p>
           </div>
@@ -322,15 +321,15 @@ const BalanceFace = ({
             </p>
           )} */}
           {pendingIngresos > 0 && (
-            <p className="text-[11px] text-yellow-600 dark:text-yellow-400 mt-0.5">
+            <p className="mt-0.5 text-[11px] text-yellow-600 dark:text-yellow-400">
               ${fmt(pendingIngresos)} pendiente
             </p>
           )}
         </div>
-        <div className="bg-gray-50 dark:bg-gray-700/60 rounded-xl p-3">
-          <div className="flex items-center gap-1.5 mb-2">
+        <div className="rounded-xl bg-gray-50 p-3 dark:bg-gray-700/60">
+          <div className="mb-2 flex items-center gap-1.5">
             <ArrowDownCircle className="h-3.5 w-3.5 text-orange-500" />
-            <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
               Egresos
             </p>
           </div>
@@ -338,7 +337,7 @@ const BalanceFace = ({
             ${fmt(totalEgresos)}
           </p>
           {pendingEgresos > 0 && (
-            <p className="text-[11px] text-yellow-600 dark:text-yellow-400 mt-0.5">
+            <p className="mt-0.5 text-[11px] text-yellow-600 dark:text-yellow-400">
               ${fmt(pendingEgresos)} pendiente
             </p>
           )}
@@ -351,11 +350,11 @@ const BalanceFace = ({
           {/* Visual bar */}
           {totalForBar > 0 && (
             <div className="shrink-0">
-              <div className="flex justify-between text-[11px] text-gray-400 dark:text-gray-500 mb-1.5">
+              <div className="mb-1.5 flex justify-between text-[11px] text-gray-400 dark:text-gray-500">
                 <span>Ingresos {ingPct.toFixed(0)}%</span>
                 <span>Egresos {(100 - ingPct).toFixed(0)}%</span>
               </div>
-              <div className="w-full h-2 rounded-full bg-orange-200 dark:bg-orange-900/40 overflow-hidden">
+              <div className="h-2 w-full overflow-hidden rounded-full bg-orange-200 dark:bg-orange-900/40">
                 <div
                   className="h-full rounded-full bg-green-500 transition-all duration-500"
                   style={{ width: `${ingPct}%` }}
@@ -365,7 +364,7 @@ const BalanceFace = ({
           )}
 
           {/* Paid / pending counts */}
-          <div className="shrink-0 grid grid-cols-2 gap-3">
+          <div className="grid shrink-0 grid-cols-2 gap-3">
             <StatPill
               label="Pagados"
               value={`${costs.filter((c) => c.status === "paid").length} ítems`}
@@ -600,15 +599,15 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
               visibility: isFlipped ? "hidden" : "visible",
             }}
           >
-            <div className="p-5 flex flex-col gap-4">
+            <div className="flex flex-col gap-4 p-5">
               {/* Header */}
-              <div className="flex justify-between items-center shrink-0">
+              <div className="flex shrink-0 items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-base font-semibold text-gray-900 dark:text-white">
                     Contabilidad
                   </span>
                   {costs.length > 0 && (
-                    <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded-full">
+                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-300">
                       {costs.length}
                     </span>
                   )}
@@ -618,7 +617,7 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
                     <button
                       type="button"
                       onClick={() => setIsFlipped(true)}
-                      className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors px-2.5 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                      className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
                     >
                       <RefreshCw className="h-3.5 w-3.5" />
                       Balance
@@ -633,13 +632,13 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
               {expanded && (
                 <>
                   {/* Toolbar */}
-                  <div className="flex items-center justify-between shrink-0">
-                    <div className="grid grid-cols-4 gap-3 flex-1 mr-3">
+                  <div className="flex shrink-0 items-center justify-between">
+                    <div className="mr-3 grid flex-1 grid-cols-4 gap-3">
                       {/* Ingresos — same value as BalanceFace */}
-                      <div className="bg-gray-50 dark:bg-gray-700/60 rounded-xl p-3">
-                        <div className="flex items-center gap-1 mb-0.5">
-                          <ArrowUpCircle className="h-3 w-3 text-green-500 shrink-0" />
-                          <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                      <div className="rounded-xl bg-gray-50 p-3 dark:bg-gray-700/60">
+                        <div className="mb-0.5 flex items-center gap-1">
+                          <ArrowUpCircle className="h-3 w-3 shrink-0 text-green-500" />
+                          <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
                             Ingresos
                           </p>
                         </div>
@@ -648,10 +647,10 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
                         </p>
                       </div>
                       {/* Egresos — same value as BalanceFace */}
-                      <div className="bg-gray-50 dark:bg-gray-700/60 rounded-xl p-3">
-                        <div className="flex items-center gap-1 mb-0.5">
-                          <ArrowDownCircle className="h-3 w-3 text-orange-500 shrink-0" />
-                          <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                      <div className="rounded-xl bg-gray-50 p-3 dark:bg-gray-700/60">
+                        <div className="mb-0.5 flex items-center gap-1">
+                          <ArrowDownCircle className="h-3 w-3 shrink-0 text-orange-500" />
+                          <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
                             Egresos
                           </p>
                         </div>
@@ -667,7 +666,7 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
                             : "bg-red-50 dark:bg-red-900/20"
                         }`}
                       >
-                        <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">
+                        <p className="mb-0.5 text-[11px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
                           Balance
                         </p>
                         <p
@@ -682,8 +681,8 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
                         </p>
                       </div>
                       {/* Selection total */}
-                      <div className="bg-gray-50 dark:bg-gray-700/60 rounded-xl p-3">
-                        <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">
+                      <div className="rounded-xl bg-gray-50 p-3 dark:bg-gray-700/60">
+                        <p className="mb-0.5 text-[11px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
                           Selección
                         </p>
                         <p className="text-sm font-bold text-gray-900 dark:text-white">
@@ -703,8 +702,8 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
 
                   {/* Mark-as-paid toolbar */}
                   {selectedCosts.length > 0 && (
-                    <div className="shrink-0 flex items-center justify-between bg-primary-50 dark:bg-primary-900/20 rounded-xl px-4 py-2.5">
-                      <span className="text-sm text-primary-700 dark:text-primary-300">
+                    <div className="bg-primary-50 dark:bg-primary-900/20 flex shrink-0 items-center justify-between rounded-xl px-4 py-2.5">
+                      <span className="text-primary-700 dark:text-primary-300 text-sm">
                         {selectedCosts.length} ítem(s) seleccionado(s)
                       </span>
                       <Button onClick={handleMarkAsPaid} type="quinary">
@@ -717,38 +716,38 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
                   )}
 
                   {error && (
-                    <div className="shrink-0 text-sm text-red-500 bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2">
+                    <div className="shrink-0 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-500 dark:bg-red-900/20">
                       {error}
                     </div>
                   )}
 
                   {/* Table */}
-                  <div className="overflow-auto rounded-xl border border-gray-100 dark:border-gray-700 max-h-80">
-                    <table className="w-full text-sm text-left">
-                      <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
+                  <div className="max-h-80 overflow-auto rounded-xl border border-gray-100 dark:border-gray-700">
+                    <table className="w-full text-left text-sm">
+                      <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700">
                         <tr>
-                          <th className="p-3 w-10">
+                          <th className="w-10 p-3">
                             <input
                               id="checkbox-all"
                               type="checkbox"
                               checked={allSelected}
                               onChange={toggleSelectAll}
-                              className="w-4 h-4 rounded accent-primary-600"
+                              className="accent-primary-600 h-4 w-4 rounded"
                             />
                           </th>
-                          <th className="px-3 py-3 text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                          <th className="px-3 py-3 text-[11px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
                             Concepto
                           </th>
-                          <th className="px-3 py-3 text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide text-center">
+                          <th className="px-3 py-3 text-center text-[11px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
                             Tipo
                           </th>
-                          <th className="px-3 py-3 text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide text-center">
+                          <th className="px-3 py-3 text-center text-[11px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
                             Fecha
                           </th>
-                          <th className="px-3 py-3 text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide text-right">
+                          <th className="px-3 py-3 text-right text-[11px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
                             Monto
                           </th>
-                          <th className="px-3 py-3 text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide text-center">
+                          <th className="px-3 py-3 text-center text-[11px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
                             Estado
                           </th>
                           <th className="w-10" />
@@ -759,7 +758,7 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
                           <tr>
                             <td
                               colSpan={7}
-                              className="px-4 py-8 text-center text-gray-400 text-sm"
+                              className="px-4 py-8 text-center text-sm text-gray-400"
                             >
                               Cargando costos...
                             </td>
@@ -769,7 +768,7 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
                           <tr>
                             <td
                               colSpan={7}
-                              className="px-4 py-8 text-center text-gray-400 text-sm"
+                              className="px-4 py-8 text-center text-sm text-gray-400"
                             >
                               No hay costos registrados para esta canción.
                             </td>
@@ -784,7 +783,7 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
                             return (
                               <tr
                                 key={item._id}
-                                className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${
+                                className={`transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50 ${
                                   isSelected
                                     ? "bg-primary-50/50 dark:bg-primary-900/10"
                                     : ""
@@ -797,7 +796,7 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
                                     checked={isSelected}
                                     onChange={() => toggleSelection(item._id)}
                                     disabled={item.status !== "pending"}
-                                    className="w-4 h-4 rounded accent-primary-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="accent-primary-600 h-4 w-4 rounded disabled:cursor-not-allowed disabled:opacity-50"
                                   />
                                 </td>
                                 <td className="px-3 py-3">
@@ -805,14 +804,14 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
                                     {item.concept}
                                   </p>
                                   {item.description && (
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                    <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
                                       {item.description}
                                     </p>
                                   )}
                                 </td>
                                 <td className="px-3 py-3 text-center">
                                   <span
-                                    className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${
+                                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
                                       item.concept === "Ingreso"
                                         ? "bg-green-100 text-green-800 dark:bg-green-900/60 dark:text-green-300"
                                         : "bg-orange-100 text-orange-800 dark:bg-orange-900/60 dark:text-orange-300"
@@ -821,7 +820,7 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
                                     {item.concept}
                                   </span>
                                 </td>
-                                <td className="px-3 py-3 text-center whitespace-nowrap">
+                                <td className="whitespace-nowrap px-3 py-3 text-center">
                                   <p className="text-xs text-gray-600 dark:text-gray-300">
                                     {date}
                                   </p>
@@ -830,12 +829,12 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
                                   </p>
                                 </td>
                                 {/* toNum ensures decimals always render correctly */}
-                                <td className="px-3 py-3 text-right font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+                                <td className="whitespace-nowrap px-3 py-3 text-right font-semibold text-gray-900 dark:text-white">
                                   ${fmt(item.amount)}
                                 </td>
                                 <td className="px-3 py-3 text-center">
                                   <span
-                                    className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${STATUS_CLASSES[item.status]}`}
+                                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_CLASSES[item.status]}`}
                                   >
                                     {STATUS_LABELS[item.status]}
                                   </span>
@@ -845,7 +844,7 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
                                     type="button"
                                     onClick={() => handleDelete(item._id)}
                                     aria-label="Eliminar costo"
-                                    className="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
+                                    className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                                   >
                                     <Trash2 className="h-4 w-4" />
                                   </button>
@@ -892,13 +891,13 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
           onClick={() => setShowForm(false)}
         >
           <div
-            className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-800 shadow-2xl overflow-hidden"
+            className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-gray-800"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+            <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-700">
               <div className="flex items-center gap-2">
                 <Plus className="h-4 w-4" />
-                <span className="font-semibold text-gray-900 dark:text-white text-sm">
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">
                   Nuevo costo
                 </span>
               </div>
@@ -906,15 +905,15 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
                 type="button"
                 onClick={() => setShowForm(false)}
                 aria-label="Cerrar"
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-200"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            <div className="px-5 py-4 flex flex-col gap-3">
+            <div className="flex flex-col gap-3 px-5 py-4">
               {error && (
-                <div className="text-sm text-red-500 bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2">
+                <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-500 dark:bg-red-900/20">
                   {error}
                 </div>
               )}
@@ -958,7 +957,7 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
                   Monto
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">
                     $
                   </span>
                   <input
@@ -1005,7 +1004,7 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 px-5 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+            <div className="flex items-center gap-2 border-t border-gray-100 bg-gray-50 px-5 py-4 dark:border-gray-700 dark:bg-gray-700/50">
               <Button onClick={handleCreate} type="primary">
                 {saving ? "Guardando..." : "Guardar costo"}
               </Button>

@@ -20,7 +20,13 @@ export function useHomeDashboard() {
 
   const { totalAmount } = useSplitPayments();
   const { summary } = UseFilterSongsData();
-  const { wallet, loading: walletLoading, hasWallet, createWallet, refreshWallet } = useWallet();
+  const {
+    wallet,
+    loading: walletLoading,
+    hasWallet,
+    createWallet,
+    refreshWallet,
+  } = useWallet();
   const { user } = useAuth0();
 
   useEffect(() => {
@@ -53,17 +59,21 @@ export function useHomeDashboard() {
       {
         name: "Streams",
         type: "area",
-        data: MONTH_WEIGHTS.map((w) => Math.round(((summary.totalStreams ?? 0) * w) / WEIGHTS_SUM)),
+        data: MONTH_WEIGHTS.map((w) =>
+          Math.round(((summary.totalStreams ?? 0) * w) / WEIGHTS_SUM),
+        ),
       },
       {
         name: "Revenue",
         type: "area",
         data: MONTH_WEIGHTS.map((w) =>
-          Number((((summary.totalNetIncome ?? 0) * w) / WEIGHTS_SUM).toFixed(2))
+          Number(
+            (((summary.totalNetIncome ?? 0) * w) / WEIGHTS_SUM).toFixed(2),
+          ),
         ),
       },
     ],
-    [summary.totalStreams, summary.totalNetIncome]
+    [summary.totalStreams, summary.totalNetIncome],
   );
 
   const chartOptions: ApexOptions = useMemo(
@@ -72,7 +82,12 @@ export function useHomeDashboard() {
       stroke: { width: [2, 2], curve: "smooth" },
       fill: {
         type: "gradient",
-        gradient: { shadeIntensity: 1, opacityFrom: 0.35, opacityTo: 0.02, stops: [0, 90, 100] },
+        gradient: {
+          shadeIntensity: 1,
+          opacityFrom: 0.35,
+          opacityTo: 0.02,
+          stops: [0, 90, 100],
+        },
       },
       markers: { size: [0, 0] },
       dataLabels: { enabled: false },
@@ -121,7 +136,8 @@ export function useHomeDashboard() {
         y: [
           {
             formatter: (val: number) => {
-              if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M streams`;
+              if (val >= 1_000_000)
+                return `${(val / 1_000_000).toFixed(1)}M streams`;
               if (val >= 1_000) return `${(val / 1_000).toFixed(1)}K streams`;
               return `${Math.round(val)} streams`;
             },
@@ -131,7 +147,7 @@ export function useHomeDashboard() {
       },
       legend: { show: false },
     }),
-    [monthlyCategories]
+    [monthlyCategories],
   );
 
   const netBalance = (summary.totalNetIncome ?? 0) - totalAmount;

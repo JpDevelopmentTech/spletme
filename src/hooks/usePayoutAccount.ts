@@ -25,7 +25,10 @@ const setDeep = (obj: Record<string, unknown>, path: string, value: string) => {
 };
 
 /** Construye el objeto `details` para Wise a partir de los valores del formulario. */
-const buildDetails = (requirement: PayoutRequirement | null, values: Record<string, string>) => {
+const buildDetails = (
+  requirement: PayoutRequirement | null,
+  values: Record<string, string>,
+) => {
   const details: Record<string, unknown> = {};
   if (!requirement) return details;
   requirement.fields.forEach((field) =>
@@ -33,7 +36,7 @@ const buildDetails = (requirement: PayoutRequirement | null, values: Record<stri
       if (g.key === "accountHolderName") return;
       const v = values[g.key];
       if (v !== undefined && v !== "") setDeep(details, g.key, v);
-    })
+    }),
   );
   return details;
 };
@@ -80,13 +83,19 @@ export const usePayoutAccount = () => {
     try {
       const res = await payoutAccountService.getRequirements(next);
       if (res.error) {
-        setFeedback({ type: "error", text: res.message || "No se pudieron cargar los campos." });
+        setFeedback({
+          type: "error",
+          text: res.message || "No se pudieron cargar los campos.",
+        });
         return;
       }
       setRequirements(res.data);
       setSelectedType(res.data[0]?.type ?? "");
     } catch {
-      setFeedback({ type: "error", text: "No se pudieron cargar los campos de esta moneda." });
+      setFeedback({
+        type: "error",
+        text: "No se pudieron cargar los campos de esta moneda.",
+      });
     } finally {
       setLoadingFields(false);
     }
@@ -102,20 +111,23 @@ export const usePayoutAccount = () => {
       try {
         const res = await payoutAccountService.refreshRequirements(
           currency,
-          buildDetails(current, nextValues)
+          buildDetails(current, nextValues),
         );
         if (!res.error) setRequirements(res.data);
       } catch {
         /* se conserva el formulario actual si el refresh falla */
       }
     },
-    [values, currency, current]
+    [values, currency, current],
   );
 
   const submit = useCallback(async () => {
     setFeedback(null);
     if (!currency || !selectedType || accountHolderName.trim().length < 2) {
-      setFeedback({ type: "error", text: "Completa la moneda y el titular de la cuenta." });
+      setFeedback({
+        type: "error",
+        text: "Completa la moneda y el titular de la cuenta.",
+      });
       return;
     }
     setSubmitting(true);
@@ -127,13 +139,22 @@ export const usePayoutAccount = () => {
         details: buildDetails(current, values),
       });
       if (res.error) {
-        setFeedback({ type: "error", text: res.message || "No se pudo registrar la cuenta." });
+        setFeedback({
+          type: "error",
+          text: res.message || "No se pudo registrar la cuenta.",
+        });
         return;
       }
-      setFeedback({ type: "success", text: "Cuenta de recepción registrada correctamente." });
+      setFeedback({
+        type: "success",
+        text: "Cuenta de recepción registrada correctamente.",
+      });
       await fetchStatus();
     } catch {
-      setFeedback({ type: "error", text: "Error inesperado al registrar la cuenta." });
+      setFeedback({
+        type: "error",
+        text: "Error inesperado al registrar la cuenta.",
+      });
     } finally {
       setSubmitting(false);
     }

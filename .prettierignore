@@ -1,0 +1,16 @@
+# Dependencias y builds
+node_modules
+dist
+build
+coverage
+
+# Archivos generados / lockfiles
+package-lock.json
+*.min.js
+*.min.css
+
+# Estáticos
+public
+
+# Logs
+*.log

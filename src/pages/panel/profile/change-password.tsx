@@ -9,7 +9,10 @@ const ChangePasswordPage = () => {
   const navigate = useNavigate();
   const userFromStorage = LocalStorageService.getItem("user");
   const authToken = (localStorage.getItem("token") || "").trim();
-  const userEmail = (userFromStorage.email || "").toString().trim().toLowerCase();
+  const userEmail = (userFromStorage.email || "")
+    .toString()
+    .trim()
+    .toLowerCase();
 
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -69,7 +72,7 @@ const ChangePasswordPage = () => {
         passwordData.newPassword,
         passwordData.confirmPassword,
         passwordData.currentPassword,
-        authToken
+        authToken,
       );
 
       if (!response.success) {
@@ -83,7 +86,9 @@ const ChangePasswordPage = () => {
         newPassword: "",
         confirmPassword: "",
       });
-      setSuccessMessage(response.message || "Contraseña actualizada correctamente");
+      setSuccessMessage(
+        response.message || "Contraseña actualizada correctamente",
+      );
     } catch {
       setPasswordError("Error al cambiar la contraseña");
     } finally {
@@ -92,24 +97,24 @@ const ChangePasswordPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div className="min-h-screen bg-gray-50 p-6 dark:bg-gray-900">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-2xl mx-auto"
+        className="mx-auto max-w-2xl"
       >
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white mb-8"
+          className="mb-8 flex items-center gap-2 text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
         >
           <ArrowLeft className="h-5 w-5" />
           <span>Volver</span>
         </button>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
-              <Lock className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+        <div className="rounded-2xl bg-white p-8 shadow-xl dark:bg-gray-800">
+          <div className="mb-6 flex items-center gap-3">
+            <div className="rounded-lg bg-indigo-100 p-3 dark:bg-indigo-900/30">
+              <Lock className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               Cambiar Contraseña
@@ -128,7 +133,7 @@ const ChangePasswordPage = () => {
                 value={passwordData.currentPassword}
                 onChange={handlePasswordChange}
                 placeholder="Contraseña actual"
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                 required
                 disabled={isSubmitting}
               />
@@ -138,7 +143,11 @@ const ChangePasswordPage = () => {
                 disabled={isSubmitting}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               >
-                {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showCurrentPassword ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
               </button>
             </div>
 
@@ -150,7 +159,7 @@ const ChangePasswordPage = () => {
                 onChange={handlePasswordChange}
                 placeholder="Nueva contraseña"
                 minLength={8}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                 required
                 disabled={isSubmitting}
               />
@@ -160,7 +169,11 @@ const ChangePasswordPage = () => {
                 disabled={isSubmitting}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               >
-                {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showNewPassword ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
               </button>
             </div>
 
@@ -172,7 +185,7 @@ const ChangePasswordPage = () => {
                 onChange={handlePasswordChange}
                 placeholder="Confirmar nueva contraseña"
                 minLength={8}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                 required
                 disabled={isSubmitting}
               />
@@ -182,7 +195,11 @@ const ChangePasswordPage = () => {
                 disabled={isSubmitting}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               >
-                {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showConfirmPassword ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
               </button>
             </div>
 
@@ -190,7 +207,7 @@ const ChangePasswordPage = () => {
               <motion.p
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-red-500 text-sm"
+                className="text-sm text-red-500"
               >
                 {passwordError}
               </motion.p>
@@ -200,7 +217,7 @@ const ChangePasswordPage = () => {
               <motion.p
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-green-600 dark:text-green-400 text-sm"
+                className="text-sm text-green-600 dark:text-green-400"
               >
                 {successMessage}
               </motion.p>
@@ -211,7 +228,7 @@ const ChangePasswordPage = () => {
               whileTap={{ scale: 0.98 }}
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-lg hover:from-indigo-600 hover:to-indigo-700 transition-all duration-200 font-medium disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full rounded-lg bg-gradient-to-r from-indigo-500 to-indigo-600 py-3 font-medium text-white transition-all duration-200 hover:from-indigo-600 hover:to-indigo-700 disabled:cursor-not-allowed disabled:opacity-70"
             >
               {isSubmitting ? "Guardando..." : "Cambiar Contraseña"}
             </motion.button>

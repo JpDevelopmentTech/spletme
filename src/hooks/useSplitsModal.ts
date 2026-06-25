@@ -30,17 +30,23 @@ const defaultFormData = (): CollaboratorFormData => ({
  * colaborador. Cada colaborador tiene una sola regla: un porcentaje obligatorio
  * y filtros opcionales de país y plataforma.
  */
-export function useSplitsModal({ isOpen, collaborators, songId }: UseSplitsModalParams) {
-  const [collaboratorForms, setCollaboratorForms] = useState<Record<string, CollaboratorFormData>>({});
-  const [expandedCollaborators, setExpandedCollaborators] = useState<Record<string, boolean>>({});
+export function useSplitsModal({
+  isOpen,
+  collaborators,
+  songId,
+}: UseSplitsModalParams) {
+  const [collaboratorForms, setCollaboratorForms] = useState<
+    Record<string, CollaboratorFormData>
+  >({});
+  const [expandedCollaborators, setExpandedCollaborators] = useState<
+    Record<string, boolean>
+  >({});
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
-  const { countryOptions, platformOptions, isLoadingFilters } = useReleaseFilters(
-    songId,
-    isOpen
-  );
+  const { countryOptions, platformOptions, isLoadingFilters } =
+    useReleaseFilters(songId, isOpen);
 
   useEffect(() => {
     setMounted(true);
@@ -82,7 +88,7 @@ export function useSplitsModal({ isOpen, collaborators, songId }: UseSplitsModal
   const updateForm = (
     collaboratorId: string,
     field: keyof CollaboratorFormData,
-    value: string | readonly SelectOption[]
+    value: string | readonly SelectOption[],
   ) => {
     setCollaboratorForms((prev) => ({
       ...prev,
@@ -96,11 +102,13 @@ export function useSplitsModal({ isOpen, collaborators, songId }: UseSplitsModal
 
     try {
       const pending = Object.entries(collaboratorForms).filter(
-        ([, form]) => form.percentage && parseFloat(form.percentage) > 0
+        ([, form]) => form.percentage && parseFloat(form.percentage) > 0,
       );
 
       if (pending.length === 0) {
-        setErrorMessage("Configura al menos un colaborador con un porcentaje válido.");
+        setErrorMessage(
+          "Configura al menos un colaborador con un porcentaje válido.",
+        );
         return;
       }
 
@@ -119,11 +127,17 @@ export function useSplitsModal({ isOpen, collaborators, songId }: UseSplitsModal
       setTimeout(() => window.location.reload(), 300);
     } catch (error: unknown) {
       const err = error as {
-        response?: { status: number; data?: { message?: string; error?: string } };
+        response?: {
+          status: number;
+          data?: { message?: string; error?: string };
+        };
         message?: string;
       };
       if (err.response?.data) {
-        const msg = err.response.data.message ?? err.response.data.error ?? "Error del servidor.";
+        const msg =
+          err.response.data.message ??
+          err.response.data.error ??
+          "Error del servidor.";
         setErrorMessage(`Error ${err.response.status}: ${msg}`);
       } else {
         setErrorMessage(err.message ?? "Error inesperado.");
@@ -134,7 +148,7 @@ export function useSplitsModal({ isOpen, collaborators, songId }: UseSplitsModal
   };
 
   const configuredCount = Object.values(collaboratorForms).filter(
-    (f) => f.percentage && parseFloat(f.percentage) > 0
+    (f) => f.percentage && parseFloat(f.percentage) > 0,
   ).length;
 
   const hasAnySavedSplit = collaborators.some((c) => Boolean(c.split));

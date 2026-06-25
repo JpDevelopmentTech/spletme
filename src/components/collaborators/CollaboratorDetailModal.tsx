@@ -1,7 +1,17 @@
 import { useEffect, useState } from "react";
 import {
-  X, Crown, Mail, Music, Calendar, UserCheck, DollarSign,
-  Headphones, ChevronRight, BarChart2, History, ArrowLeft,
+  X,
+  Crown,
+  Mail,
+  Music,
+  Calendar,
+  UserCheck,
+  DollarSign,
+  Headphones,
+  ChevronRight,
+  BarChart2,
+  History,
+  ArrowLeft,
 } from "lucide-react";
 import CollaboratorService from "@/services/collaborator";
 import { songSplitsService } from "@/services/songSplits";
@@ -108,32 +118,46 @@ interface CollaboratorDetailModalProps {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const fmt = (n: number) =>
-  n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
+  n.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 2,
+  });
 
 const fmtStreams = (n: number) =>
-  n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1_000 ? `${(n / 1_000).toFixed(1)}K` : String(n);
+  n >= 1_000_000
+    ? `${(n / 1_000_000).toFixed(1)}M`
+    : n >= 1_000
+      ? `${(n / 1_000).toFixed(1)}K`
+      : String(n);
 
 const fmtDate = (iso: string) =>
-  new Date(iso).toLocaleDateString("es-CO", { year: "numeric", month: "short", day: "numeric" });
-
+  new Date(iso).toLocaleDateString("es-CO", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 
 const ACTION_STYLES: Record<string, { label: string; cls: string }> = {
-  create: { label: "Creado",     cls: "bg-green-50 text-[#8B5CF6]" },
+  create: { label: "Creado", cls: "bg-green-50 text-[#8B5CF6]" },
   update: { label: "Actualizado", cls: "bg-orange-50 text-[#F97316]" },
-  delete: { label: "Eliminado",  cls: "bg-red-50 text-red-500" },
+  delete: { label: "Eliminado", cls: "bg-red-50 text-red-500" },
 };
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorDetailModalProps) {
-  const [detail, setDetail]         = useState<ApiCollaboratorDetail | null>(null);
-  const [loading, setLoading]       = useState(true);
-  const [error, setError]           = useState(false);
+export function CollaboratorDetailModal({
+  collaborator,
+  onClose,
+}: CollaboratorDetailModalProps) {
+  const [detail, setDetail] = useState<ApiCollaboratorDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [selectedSong, setSelectedSong] = useState<ApiSong | null>(null);
 
-  const [metrics, setMetrics]               = useState<CollaboratorMetrics | null>(null);
+  const [metrics, setMetrics] = useState<CollaboratorMetrics | null>(null);
   const [metricsLoading, setMetricsLoading] = useState(false);
-  const [history, setHistory]               = useState<SplitHistoryEntry[]>([]);
+  const [history, setHistory] = useState<SplitHistoryEntry[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
 
   // Load collaborator detail
@@ -163,85 +187,146 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
     setHistoryLoading(true);
     songSplitsService
       .getSplitHistoryBySong(selectedSong.songId)
-      .then((rows) => setHistory((rows ?? []) as unknown as SplitHistoryEntry[]))
+      .then((rows) =>
+        setHistory((rows ?? []) as unknown as SplitHistoryEntry[]),
+      )
       .catch(() => setHistory([]))
       .finally(() => setHistoryLoading(false));
   }, [selectedSong?.songId]);
 
-  const totalStreams = detail?.songs.reduce((s, x) => s + (x.totalStreams ?? 0), 0) ?? 0;
-  const totalNet     = detail?.songs.reduce((s, x) => s + (x.totalNetIncome ?? 0), 0) ?? 0;
+  const totalStreams =
+    detail?.songs.reduce((s, x) => s + (x.totalStreams ?? 0), 0) ?? 0;
+  const totalNet =
+    detail?.songs.reduce((s, x) => s + (x.totalNetIncome ?? 0), 0) ?? 0;
 
   // Use metrics.totals when available, fall back to detail.songs
-  const collaboratorTotalStreams = metrics?.totals.totalStreams  ?? detail?.songs.reduce((s, x) => s + (x.totalStreams ?? 0), 0) ?? 0;
-  const collaboratorTotalNet     = metrics?.totals.totalNetIncome ?? detail?.songs.reduce((s, x) => s + (x.totalNetIncome ?? 0), 0) ?? 0;
+  const collaboratorTotalStreams =
+    metrics?.totals.totalStreams ??
+    detail?.songs.reduce((s, x) => s + (x.totalStreams ?? 0), 0) ??
+    0;
+  const collaboratorTotalNet =
+    metrics?.totals.totalNetIncome ??
+    detail?.songs.reduce((s, x) => s + (x.totalNetIncome ?? 0), 0) ??
+    0;
   const songStreams = selectedSong?.totalStreams ?? 0;
-  const songNet    = selectedSong?.totalNetIncome ?? 0;
-  const maxStreams  = Math.max(collaboratorTotalStreams, songStreams, 1);
+  const songNet = selectedSong?.totalNetIncome ?? 0;
+  const maxStreams = Math.max(collaboratorTotalStreams, songStreams, 1);
 
   // Platform data from metrics endpoint
-  const selectedSongMetrics = metrics?.songs.find((s) => s.songId === selectedSong?.songId);
-  const songPlatforms       = selectedSongMetrics?.byPlatform ?? [];
-  const globalPlatforms     = metrics?.totals.byPlatform ?? [];
-  const maxPlatformStreams   = Math.max(...songPlatforms.map((p) => p.streams), 1);
+  const selectedSongMetrics = metrics?.songs.find(
+    (s) => s.songId === selectedSong?.songId,
+  );
+  const songPlatforms = selectedSongMetrics?.byPlatform ?? [];
+  const globalPlatforms = metrics?.totals.byPlatform ?? [];
+  const maxPlatformStreams = Math.max(
+    ...songPlatforms.map((p) => p.streams),
+    1,
+  );
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center gap-4 px-4 overflow-x-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center gap-4 overflow-x-auto bg-black/60 px-4"
       onClick={onClose}
     >
       {/* ── Main modal ─────────────────────────────────────────────────── */}
       <div
-        className="bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col flex-shrink-0 transition-all duration-300"
+        className="flex flex-shrink-0 flex-col overflow-hidden rounded-2xl bg-white shadow-2xl transition-all duration-300"
         style={{ width: 820, height: "90vh" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top bar */}
-        <div className="flex items-center justify-between px-5 py-3 bg-[#0F172A] flex-shrink-0">
+        <div className="flex flex-shrink-0 items-center justify-between bg-[#0F172A] px-5 py-3">
           <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 bg-[#F97316] rounded-full" />
-            <span className="text-[11px] font-bold text-[#F97316] tracking-wider">PERFIL DEL COLABORADOR</span>
+            <span className="h-1.5 w-1.5 rounded-full bg-[#F97316]" />
+            <span className="text-[11px] font-bold tracking-wider text-[#F97316]">
+              PERFIL DEL COLABORADOR
+            </span>
           </div>
-          <button onClick={onClose} className="p-1 rounded-md text-gray-400 hover:text-white hover:bg-white/10 transition-colors">
+          <button
+            onClick={onClose}
+            className="rounded-md p-1 text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
+          >
             <X size={15} />
           </button>
         </div>
 
-        <div className="flex flex-1 min-h-0">
+        <div className="flex min-h-0 flex-1">
           {/* Profile panel */}
-          <div className="w-64 flex-shrink-0 flex flex-col border-r border-gray-100 bg-[#FAFAFA] overflow-y-auto">
-            <div className="flex flex-col items-center gap-2 px-5 py-6 border-b border-gray-100">
-              <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: collaborator.avatarBg }}>
-                <span className="text-xl font-bold" style={{ color: collaborator.avatarText }}>{collaborator.initials}</span>
+          <div className="flex w-64 flex-shrink-0 flex-col overflow-y-auto border-r border-gray-100 bg-[#FAFAFA]">
+            <div className="flex flex-col items-center gap-2 border-b border-gray-100 px-5 py-6">
+              <div
+                className="flex h-16 w-16 items-center justify-center rounded-full"
+                style={{ backgroundColor: collaborator.avatarBg }}
+              >
+                <span
+                  className="text-xl font-bold"
+                  style={{ color: collaborator.avatarText }}
+                >
+                  {collaborator.initials}
+                </span>
               </div>
-              <div className="flex flex-col items-center gap-0.5 w-full">
-                <h3 className="text-sm font-bold text-[#111827] text-center">{detail?.name ?? collaborator.name}</h3>
+              <div className="flex w-full flex-col items-center gap-0.5">
+                <h3 className="text-center text-sm font-bold text-[#111827]">
+                  {detail?.name ?? collaborator.name}
+                </h3>
                 <div className="flex items-center gap-1 text-[11px] text-[#6B7280]">
-                  <Mail className="w-3 h-3 flex-shrink-0" />
-                  <span className="truncate max-w-[160px]">{detail?.email ?? collaborator.email}</span>
+                  <Mail className="h-3 w-3 flex-shrink-0" />
+                  <span className="max-w-[160px] truncate">
+                    {detail?.email ?? collaborator.email}
+                  </span>
                 </div>
               </div>
-              {(detail?.roles?.length ?? (collaborator.roles?.length ?? 0)) > 0 && (
-                <div className="flex items-center gap-1 flex-wrap justify-center">
+              {(detail?.roles?.length ?? collaborator.roles?.length ?? 0) >
+                0 && (
+                <div className="flex flex-wrap items-center justify-center gap-1">
                   {(detail?.roles ?? collaborator.roles ?? []).map((r) => (
-                    <span key={r} className="inline-flex items-center gap-1 px-2.5 h-6 bg-orange-50 border border-orange-100 rounded-full">
-                      <Crown className="w-3 h-3 text-[#F97316]" />
-                      <span className="text-[11px] font-semibold text-orange-900 capitalize">{r}</span>
+                    <span
+                      key={r}
+                      className="inline-flex h-6 items-center gap-1 rounded-full border border-orange-100 bg-orange-50 px-2.5"
+                    >
+                      <Crown className="h-3 w-3 text-[#F97316]" />
+                      <span className="text-[11px] font-semibold capitalize text-orange-900">
+                        {r}
+                      </span>
                     </span>
                   ))}
                 </div>
               )}
             </div>
 
-            <div className="flex flex-col gap-2 px-4 py-4 border-b border-gray-100">
-              <span className="text-[10px] font-bold text-[#9CA3AF] tracking-wider">RESUMEN</span>
+            <div className="flex flex-col gap-2 border-b border-gray-100 px-4 py-4">
+              <span className="text-[10px] font-bold tracking-wider text-[#9CA3AF]">
+                RESUMEN
+              </span>
               <div className="flex flex-col gap-1.5">
                 {[
-                  { icon: <Music className="w-3.5 h-3.5" />, label: "Canciones", value: detail?.songs.length ?? collaborator.songs, cls: "text-[#111827]" },
-                  { icon: <Headphones className="w-3.5 h-3.5" />, label: "Streams", value: fmtStreams(totalStreams), cls: "text-[#F97316]" },
-                  { icon: <DollarSign className="w-3.5 h-3.5" />, label: "Neto total", value: fmt(totalNet), cls: "text-[#C084FC]" },
+                  {
+                    icon: <Music className="h-3.5 w-3.5" />,
+                    label: "Canciones",
+                    value: detail?.songs.length ?? collaborator.songs,
+                    cls: "text-[#111827]",
+                  },
+                  {
+                    icon: <Headphones className="h-3.5 w-3.5" />,
+                    label: "Streams",
+                    value: fmtStreams(totalStreams),
+                    cls: "text-[#F97316]",
+                  },
+                  {
+                    icon: <DollarSign className="h-3.5 w-3.5" />,
+                    label: "Neto total",
+                    value: fmt(totalNet),
+                    cls: "text-[#C084FC]",
+                  },
                 ].map(({ icon, label, value, cls }) => (
-                  <div key={label} className="flex items-center justify-between px-3 h-9 bg-white rounded-lg border border-gray-100">
-                    <div className="flex items-center gap-2 text-[11px] text-[#6B7280]">{icon}<span>{label}</span></div>
+                  <div
+                    key={label}
+                    className="flex h-9 items-center justify-between rounded-lg border border-gray-100 bg-white px-3"
+                  >
+                    <div className="flex items-center gap-2 text-[11px] text-[#6B7280]">
+                      {icon}
+                      <span>{label}</span>
+                    </div>
                     <span className={`text-sm font-bold ${cls}`}>{value}</span>
                   </div>
                 ))}
@@ -250,24 +335,36 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
 
             {detail && (detail.invitedBy || detail.createdAt) && (
               <div className="flex flex-col gap-2 px-4 py-4">
-                <span className="text-[10px] font-bold text-[#9CA3AF] tracking-wider">INFO</span>
+                <span className="text-[10px] font-bold tracking-wider text-[#9CA3AF]">
+                  INFO
+                </span>
                 <div className="flex flex-col gap-2.5">
                   {detail.createdAt && (
                     <div className="flex items-start gap-2">
-                      <Calendar className="w-3.5 h-3.5 text-[#9CA3AF] mt-0.5 flex-shrink-0" />
+                      <Calendar className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-[#9CA3AF]" />
                       <div className="flex flex-col">
-                        <span className="text-[10px] text-[#9CA3AF]">Miembro desde</span>
-                        <span className="text-[11px] font-semibold text-[#374151]">{fmtDate(detail.createdAt)}</span>
+                        <span className="text-[10px] text-[#9CA3AF]">
+                          Miembro desde
+                        </span>
+                        <span className="text-[11px] font-semibold text-[#374151]">
+                          {fmtDate(detail.createdAt)}
+                        </span>
                       </div>
                     </div>
                   )}
                   {detail.invitedBy && (
                     <div className="flex items-start gap-2">
-                      <UserCheck className="w-3.5 h-3.5 text-[#9CA3AF] mt-0.5 flex-shrink-0" />
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-[10px] text-[#9CA3AF]">Invitado por</span>
-                        <span className="text-[11px] font-semibold text-[#374151] truncate">{detail.invitedBy.name}</span>
-                        <span className="text-[10px] text-[#9CA3AF] truncate">{detail.invitedBy.email}</span>
+                      <UserCheck className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-[#9CA3AF]" />
+                      <div className="flex min-w-0 flex-col">
+                        <span className="text-[10px] text-[#9CA3AF]">
+                          Invitado por
+                        </span>
+                        <span className="truncate text-[11px] font-semibold text-[#374151]">
+                          {detail.invitedBy.name}
+                        </span>
+                        <span className="truncate text-[10px] text-[#9CA3AF]">
+                          {detail.invitedBy.email}
+                        </span>
                       </div>
                     </div>
                   )}
@@ -277,63 +374,101 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
           </div>
 
           {/* Songs panel */}
-          <div className="flex-1 min-w-0 flex flex-col min-h-0">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 flex-shrink-0">
-              <span className="text-[11px] font-bold text-[#9CA3AF] tracking-wider">CANCIONES</span>
-              {detail && <span className="text-[10px] text-[#9CA3AF]">{detail.songs.length} en total</span>}
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+            <div className="flex flex-shrink-0 items-center justify-between border-b border-gray-100 px-4 py-3">
+              <span className="text-[11px] font-bold tracking-wider text-[#9CA3AF]">
+                CANCIONES
+              </span>
+              {detail && (
+                <span className="text-[10px] text-[#9CA3AF]">
+                  {detail.songs.length} en total
+                </span>
+              )}
             </div>
-            <div className="flex-1 overflow-y-auto px-3 py-3 flex flex-col gap-1.5">
+            <div className="flex flex-1 flex-col gap-1.5 overflow-y-auto px-3 py-3">
               {loading && (
-                <div className="flex items-center justify-center h-full">
-                  <div className="w-5 h-5 border-2 border-[#F97316] border-t-transparent rounded-full animate-spin" />
+                <div className="flex h-full items-center justify-center">
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#F97316] border-t-transparent" />
                 </div>
               )}
-              {!loading && error && <p className="text-xs text-red-400 text-center py-4">Error al cargar.</p>}
-              {!loading && !error && detail?.songs.map((song) => {
-                const isSelected = selectedSong?.songId === song.songId;
-                return (
-                  <button
-                    key={song.songId}
-                    onClick={() => setSelectedSong(isSelected ? null : song)}
-                    className={`w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-xl border transition-all group ${
-                      isSelected
-                        ? "bg-orange-50 border-orange-200"
-                        : "bg-[#F9FAFB] border-gray-100 hover:border-orange-200 hover:bg-orange-50/40"
-                    }`}
-                  >
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${isSelected ? "bg-[#F97316]" : "bg-orange-100 group-hover:bg-[#F97316]"}`}>
-                      <Music className={`w-3.5 h-3.5 transition-colors ${isSelected ? "text-white" : "text-[#F97316] group-hover:text-white"}`} />
-                    </div>
-                    <div className="flex-1 min-w-0 overflow-hidden">
-                      <p className={`text-xs font-bold truncate ${isSelected ? "text-[#F97316]" : "text-[#111827]"}`} title={song.trackTitle}>{song.trackTitle}</p>
-                      <div className="flex items-center gap-1 mt-0.5 flex-wrap min-w-0">
-                        <p className="text-[10px] text-[#6B7280] truncate">{song.artistName}</p>
-                        {(song.roles ?? []).map((r) => (
-                          <span key={r} className="flex-shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-purple-50 text-purple-600 capitalize leading-none">
-                            {r}
-                          </span>
-                        ))}
+              {!loading && error && (
+                <p className="py-4 text-center text-xs text-red-400">
+                  Error al cargar.
+                </p>
+              )}
+              {!loading &&
+                !error &&
+                detail?.songs.map((song) => {
+                  const isSelected = selectedSong?.songId === song.songId;
+                  return (
+                    <button
+                      key={song.songId}
+                      onClick={() => setSelectedSong(isSelected ? null : song)}
+                      className={`group flex w-full items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition-all ${
+                        isSelected
+                          ? "border-orange-200 bg-orange-50"
+                          : "border-gray-100 bg-[#F9FAFB] hover:border-orange-200 hover:bg-orange-50/40"
+                      }`}
+                    >
+                      <div
+                        className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg transition-colors ${isSelected ? "bg-[#F97316]" : "bg-orange-100 group-hover:bg-[#F97316]"}`}
+                      >
+                        <Music
+                          className={`h-3.5 w-3.5 transition-colors ${isSelected ? "text-white" : "text-[#F97316] group-hover:text-white"}`}
+                        />
                       </div>
-                    </div>
-                    <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
-                      {song.split
-                        ? <span className={`text-[11px] font-bold whitespace-nowrap ${isSelected ? "text-[#F97316]" : "text-[#9CA3AF]"}`}>{song.split.percentage}%</span>
-                        : <span className="text-[9px] text-gray-300 whitespace-nowrap">Sin split</span>
-                      }
-                      <ChevronRight className={`w-3.5 h-3.5 flex-shrink-0 transition-colors ${isSelected ? "text-[#F97316]" : "text-gray-300 group-hover:text-[#F97316]"}`} />
-                    </div>
-                  </button>
-                );
-              })}
+                      <div className="min-w-0 flex-1 overflow-hidden">
+                        <p
+                          className={`truncate text-xs font-bold ${isSelected ? "text-[#F97316]" : "text-[#111827]"}`}
+                          title={song.trackTitle}
+                        >
+                          {song.trackTitle}
+                        </p>
+                        <div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-1">
+                          <p className="truncate text-[10px] text-[#6B7280]">
+                            {song.artistName}
+                          </p>
+                          {(song.roles ?? []).map((r) => (
+                            <span
+                              key={r}
+                              className="flex-shrink-0 rounded-full bg-purple-50 px-1.5 py-0.5 text-[9px] font-bold capitalize leading-none text-purple-600"
+                            >
+                              {r}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="ml-2 flex flex-shrink-0 items-center gap-1.5">
+                        {song.split ? (
+                          <span
+                            className={`whitespace-nowrap text-[11px] font-bold ${isSelected ? "text-[#F97316]" : "text-[#9CA3AF]"}`}
+                          >
+                            {song.split.percentage}%
+                          </span>
+                        ) : (
+                          <span className="whitespace-nowrap text-[9px] text-gray-300">
+                            Sin split
+                          </span>
+                        )}
+                        <ChevronRight
+                          className={`h-3.5 w-3.5 flex-shrink-0 transition-colors ${isSelected ? "text-[#F97316]" : "text-gray-300 group-hover:text-[#F97316]"}`}
+                        />
+                      </div>
+                    </button>
+                  );
+                })}
               {!loading && !error && detail?.songs.length === 0 && (
-                <div className="flex flex-col items-center justify-center h-full gap-2 text-[#9CA3AF]">
-                  <Music className="w-7 h-7" />
+                <div className="flex h-full flex-col items-center justify-center gap-2 text-[#9CA3AF]">
+                  <Music className="h-7 w-7" />
                   <p className="text-xs">Sin canciones asociadas</p>
                 </div>
               )}
             </div>
-            <div className="px-4 py-3 border-t border-gray-100 flex-shrink-0">
-              <button onClick={onClose} className="w-full h-9 bg-white border border-gray-200 hover:bg-gray-50 text-[#111827] text-[12px] font-semibold rounded-lg transition-colors">
+            <div className="flex-shrink-0 border-t border-gray-100 px-4 py-3">
+              <button
+                onClick={onClose}
+                className="h-9 w-full rounded-lg border border-gray-200 bg-white text-[12px] font-semibold text-[#111827] transition-colors hover:bg-gray-50"
+              >
                 Cerrar
               </button>
             </div>
@@ -343,7 +478,7 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
 
       {/* ── Metrics modal — slides in from right ───────────────────────── */}
       <div
-        className="bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col flex-shrink-0 transition-all duration-300"
+        className="flex flex-shrink-0 flex-col overflow-hidden rounded-2xl bg-white shadow-2xl transition-all duration-300"
         style={{
           width: selectedSong ? 680 : 0,
           height: "90vh",
@@ -355,49 +490,84 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
         {selectedSong && (
           <>
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 bg-[#0F172A] flex-shrink-0">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-7 h-7 bg-[#F97316] rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Music className="w-3.5 h-3.5 text-white" />
+            <div className="flex flex-shrink-0 items-center justify-between bg-[#0F172A] px-4 py-3">
+              <div className="flex min-w-0 items-center gap-2.5">
+                <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-[#F97316]">
+                  <Music className="h-3.5 w-3.5 text-white" />
                 </div>
-                <div className="flex flex-col min-w-0">
-                  <span className="text-xs font-bold text-white truncate max-w-[280px]">{selectedSong.trackTitle}</span>
-                  <span className="text-[10px] text-gray-400">{selectedSong.artistName} · {selectedSong.isrc}</span>
+                <div className="flex min-w-0 flex-col">
+                  <span className="max-w-[280px] truncate text-xs font-bold text-white">
+                    {selectedSong.trackTitle}
+                  </span>
+                  <span className="text-[10px] text-gray-400">
+                    {selectedSong.artistName} · {selectedSong.isrc}
+                  </span>
                 </div>
               </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex flex-shrink-0 items-center gap-2">
                 {selectedSong.split && (
-                  <span className="text-xs font-bold text-white bg-[#F97316] px-2.5 h-6 rounded-full flex items-center">
+                  <span className="flex h-6 items-center rounded-full bg-[#F97316] px-2.5 text-xs font-bold text-white">
                     {selectedSong.split.percentage}%
                   </span>
                 )}
-                <button onClick={() => setSelectedSong(null)} className="p-1 rounded-md text-gray-400 hover:text-white hover:bg-white/10 transition-colors">
+                <button
+                  onClick={() => setSelectedSong(null)}
+                  className="rounded-md p-1 text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
+                >
                   <X size={15} />
                 </button>
               </div>
             </div>
 
             {/* Two columns */}
-            <div className="flex flex-1 min-h-0 divide-x divide-gray-100">
+            <div className="flex min-h-0 flex-1 divide-x divide-gray-100">
               {/* Performance — built from detail.songs */}
-              <div className="flex-1 flex flex-col min-h-0">
-                <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
-                  <BarChart2 className="w-3.5 h-3.5 text-[#F97316]" />
-                  <span className="text-[11px] font-bold text-[#374151] tracking-wider">RENDIMIENTO</span>
+              <div className="flex min-h-0 flex-1 flex-col">
+                <div className="flex flex-shrink-0 items-center gap-1.5 border-b border-gray-100 px-4 py-2.5">
+                  <BarChart2 className="h-3.5 w-3.5 text-[#F97316]" />
+                  <span className="text-[11px] font-bold tracking-wider text-[#374151]">
+                    RENDIMIENTO
+                  </span>
                 </div>
-                <div className="flex-1 overflow-y-auto px-3 py-3 flex flex-col gap-3">
-
+                <div className="flex flex-1 flex-col gap-3 overflow-y-auto px-3 py-3">
                   {/* Stats cards */}
                   <div className="grid grid-cols-2 gap-2">
                     {[
-                      { label: "Streams canción",   value: songStreams.toLocaleString("en-US"),             sub: "streams totales",      color: "#F97316" },
-                      { label: "Streams totales",   value: collaboratorTotalStreams.toLocaleString("en-US"), sub: "todas sus canciones",  color: "#06B6D4" },
-                      { label: "Neto canción",       value: fmt(songNet),                                    sub: "neto generado",        color: "#C084FC" },
-                      { label: "Neto total",         value: fmt(collaboratorTotalNet),                       sub: "todas sus canciones",  color: "#8B5CF6" },
+                      {
+                        label: "Streams canción",
+                        value: songStreams.toLocaleString("en-US"),
+                        sub: "streams totales",
+                        color: "#F97316",
+                      },
+                      {
+                        label: "Streams totales",
+                        value: collaboratorTotalStreams.toLocaleString("en-US"),
+                        sub: "todas sus canciones",
+                        color: "#06B6D4",
+                      },
+                      {
+                        label: "Neto canción",
+                        value: fmt(songNet),
+                        sub: "neto generado",
+                        color: "#C084FC",
+                      },
+                      {
+                        label: "Neto total",
+                        value: fmt(collaboratorTotalNet),
+                        sub: "todas sus canciones",
+                        color: "#8B5CF6",
+                      },
                     ].map(({ label, value, sub, color }) => (
-                      <div key={label} className="flex flex-col gap-0.5 px-3 py-2.5 bg-[#F9FAFB] rounded-xl border border-gray-100">
-                        <span className="text-[9px] text-[#9CA3AF] uppercase tracking-wide">{label}</span>
-                        <span className="text-sm font-bold" style={{ color }}>{value}</span>
+                      <div
+                        key={label}
+                        className="flex flex-col gap-0.5 rounded-xl border border-gray-100 bg-[#F9FAFB] px-3 py-2.5"
+                      >
+                        <span className="text-[9px] uppercase tracking-wide text-[#9CA3AF]">
+                          {label}
+                        </span>
+                        <span className="text-sm font-bold" style={{ color }}>
+                          {value}
+                        </span>
                         <span className="text-[9px] text-[#9CA3AF]">{sub}</span>
                       </div>
                     ))}
@@ -406,16 +576,40 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
                   {/* Split financials from metrics */}
                   {selectedSongMetrics?.split && (
                     <div className="flex flex-col gap-1.5">
-                      <span className="text-[10px] font-bold text-[#9CA3AF] tracking-wider">SPLIT — {selectedSongMetrics.split.percentage}%</span>
+                      <span className="text-[10px] font-bold tracking-wider text-[#9CA3AF]">
+                        SPLIT — {selectedSongMetrics.split.percentage}%
+                      </span>
                       <div className="grid grid-cols-3 gap-1.5">
                         {[
-                          { label: "Adeudado",  value: fmt(selectedSongMetrics.split.totalOwed),    color: "#F97316" },
-                          { label: "Pagado",    value: fmt(selectedSongMetrics.split.totalPaid),    color: "#34D399" },
-                          { label: "Pendiente", value: fmt(selectedSongMetrics.split.pendingAmount), color: "#F43F5E" },
+                          {
+                            label: "Adeudado",
+                            value: fmt(selectedSongMetrics.split.totalOwed),
+                            color: "#F97316",
+                          },
+                          {
+                            label: "Pagado",
+                            value: fmt(selectedSongMetrics.split.totalPaid),
+                            color: "#34D399",
+                          },
+                          {
+                            label: "Pendiente",
+                            value: fmt(selectedSongMetrics.split.pendingAmount),
+                            color: "#F43F5E",
+                          },
                         ].map(({ label, value, color }) => (
-                          <div key={label} className="flex flex-col gap-0.5 px-2.5 py-2 bg-[#F9FAFB] rounded-xl border border-gray-100">
-                            <span className="text-[9px] text-[#9CA3AF] uppercase tracking-wide">{label}</span>
-                            <span className="text-[11px] font-bold" style={{ color }}>{value}</span>
+                          <div
+                            key={label}
+                            className="flex flex-col gap-0.5 rounded-xl border border-gray-100 bg-[#F9FAFB] px-2.5 py-2"
+                          >
+                            <span className="text-[9px] uppercase tracking-wide text-[#9CA3AF]">
+                              {label}
+                            </span>
+                            <span
+                              className="text-[11px] font-bold"
+                              style={{ color }}
+                            >
+                              {value}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -424,45 +618,81 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
 
                   {/* Comparison bars */}
                   <div className="flex flex-col gap-2">
-                    <span className="text-[10px] font-bold text-[#9CA3AF] tracking-wider">COMPARATIVA DE STREAMS</span>
-                    <div className="flex flex-col gap-1.5 px-3 py-3 bg-[#F9FAFB] rounded-xl border border-gray-100">
+                    <span className="text-[10px] font-bold tracking-wider text-[#9CA3AF]">
+                      COMPARATIVA DE STREAMS
+                    </span>
+                    <div className="flex flex-col gap-1.5 rounded-xl border border-gray-100 bg-[#F9FAFB] px-3 py-3">
                       <div className="flex items-center gap-2">
-                        <span className="text-[9px] text-[#9CA3AF] w-14 flex-shrink-0">Total</span>
-                        <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <div className="h-full rounded-full bg-[#06B6D4]" style={{ width: "100%" }} />
+                        <span className="w-14 flex-shrink-0 text-[9px] text-[#9CA3AF]">
+                          Total
+                        </span>
+                        <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-100">
+                          <div
+                            className="h-full rounded-full bg-[#06B6D4]"
+                            style={{ width: "100%" }}
+                          />
                         </div>
-                        <span className="text-[9px] text-[#9CA3AF] flex-shrink-0 text-right w-16">{collaboratorTotalStreams.toLocaleString("en-US")}</span>
+                        <span className="w-16 flex-shrink-0 text-right text-[9px] text-[#9CA3AF]">
+                          {collaboratorTotalStreams.toLocaleString("en-US")}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[9px] text-[#9CA3AF] w-14 flex-shrink-0">Canción</span>
-                        <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <div className="h-full rounded-full bg-[#F97316]" style={{ width: `${(songStreams / maxStreams) * 100}%` }} />
+                        <span className="w-14 flex-shrink-0 text-[9px] text-[#9CA3AF]">
+                          Canción
+                        </span>
+                        <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-100">
+                          <div
+                            className="h-full rounded-full bg-[#F97316]"
+                            style={{
+                              width: `${(songStreams / maxStreams) * 100}%`,
+                            }}
+                          />
                         </div>
-                        <span className="text-[9px] text-[#F97316] font-semibold flex-shrink-0 text-right w-16">{songStreams.toLocaleString("en-US")}</span>
+                        <span className="w-16 flex-shrink-0 text-right text-[9px] font-semibold text-[#F97316]">
+                          {songStreams.toLocaleString("en-US")}
+                        </span>
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-1.5 px-3 py-3 bg-[#F9FAFB] rounded-xl border border-gray-100">
+                    <div className="flex flex-col gap-1.5 rounded-xl border border-gray-100 bg-[#F9FAFB] px-3 py-3">
                       <div className="flex items-center gap-2">
-                        <span className="text-[9px] text-[#9CA3AF] w-14 flex-shrink-0">Total</span>
-                        <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <div className="h-full rounded-full bg-[#8B5CF6]" style={{ width: "100%" }} />
+                        <span className="w-14 flex-shrink-0 text-[9px] text-[#9CA3AF]">
+                          Total
+                        </span>
+                        <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-100">
+                          <div
+                            className="h-full rounded-full bg-[#8B5CF6]"
+                            style={{ width: "100%" }}
+                          />
                         </div>
-                        <span className="text-[9px] text-[#9CA3AF] flex-shrink-0 text-right w-16">{fmt(collaboratorTotalNet)}</span>
+                        <span className="w-16 flex-shrink-0 text-right text-[9px] text-[#9CA3AF]">
+                          {fmt(collaboratorTotalNet)}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[9px] text-[#9CA3AF] w-14 flex-shrink-0">Canción</span>
-                        <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <div className="h-full rounded-full bg-[#C084FC]" style={{ width: `${(songNet / Math.max(collaboratorTotalNet, songNet, 1)) * 100}%` }} />
+                        <span className="w-14 flex-shrink-0 text-[9px] text-[#9CA3AF]">
+                          Canción
+                        </span>
+                        <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-100">
+                          <div
+                            className="h-full rounded-full bg-[#C084FC]"
+                            style={{
+                              width: `${(songNet / Math.max(collaboratorTotalNet, songNet, 1)) * 100}%`,
+                            }}
+                          />
                         </div>
-                        <span className="text-[9px] text-[#C084FC] font-semibold flex-shrink-0 text-right w-16">{fmt(songNet)}</span>
+                        <span className="w-16 flex-shrink-0 text-right text-[9px] font-semibold text-[#C084FC]">
+                          {fmt(songNet)}
+                        </span>
                       </div>
                     </div>
                   </div>
 
                   {/* All songs ranking */}
                   <div className="flex flex-col gap-1.5">
-                    <span className="text-[10px] font-bold text-[#9CA3AF] tracking-wider">CANCIONES DEL COLABORADOR</span>
+                    <span className="text-[10px] font-bold tracking-wider text-[#9CA3AF]">
+                      CANCIONES DEL COLABORADOR
+                    </span>
                     {detail?.songs
                       .slice()
                       .sort((a, b) => b.totalStreams - a.totalStreams)
@@ -470,13 +700,30 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
                         const isThis = song.songId === selectedSong?.songId;
                         const pct = (song.totalStreams / maxStreams) * 100;
                         return (
-                          <div key={song.songId} className={`flex flex-col gap-1 px-2.5 py-2 rounded-lg border ${isThis ? "bg-orange-50 border-orange-200" : "bg-[#F9FAFB] border-gray-100"}`}>
+                          <div
+                            key={song.songId}
+                            className={`flex flex-col gap-1 rounded-lg border px-2.5 py-2 ${isThis ? "border-orange-200 bg-orange-50" : "border-gray-100 bg-[#F9FAFB]"}`}
+                          >
                             <div className="flex items-center justify-between">
-                              <span className={`text-[10px] font-semibold truncate max-w-[120px] ${isThis ? "text-[#F97316]" : "text-[#374151]"}`}>{song.trackTitle}</span>
-                              <span className="text-[10px] text-[#9CA3AF]">{song.totalStreams.toLocaleString("en-US")}</span>
+                              <span
+                                className={`max-w-[120px] truncate text-[10px] font-semibold ${isThis ? "text-[#F97316]" : "text-[#374151]"}`}
+                              >
+                                {song.trackTitle}
+                              </span>
+                              <span className="text-[10px] text-[#9CA3AF]">
+                                {song.totalStreams.toLocaleString("en-US")}
+                              </span>
                             </div>
-                            <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden">
-                              <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: isThis ? "#F97316" : "#34D399" }} />
+                            <div className="h-1 w-full overflow-hidden rounded-full bg-gray-100">
+                              <div
+                                className="h-full rounded-full"
+                                style={{
+                                  width: `${pct}%`,
+                                  backgroundColor: isThis
+                                    ? "#F97316"
+                                    : "#34D399",
+                                }}
+                              />
                             </div>
                           </div>
                         );
@@ -485,13 +732,17 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
 
                   {/* Platform breakdown from /metrics endpoint */}
                   <div className="flex flex-col gap-1.5">
-                    <span className="text-[10px] font-bold text-[#9CA3AF] tracking-wider">DESGLOSE POR PLATAFORMA</span>
+                    <span className="text-[10px] font-bold tracking-wider text-[#9CA3AF]">
+                      DESGLOSE POR PLATAFORMA
+                    </span>
                     {metricsLoading ? (
                       <div className="flex items-center justify-center py-4">
-                        <div className="w-4 h-4 border-2 border-[#F97316] border-t-transparent rounded-full animate-spin" />
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#F97316] border-t-transparent" />
                       </div>
                     ) : songPlatforms.length === 0 ? (
-                      <p className="text-[10px] text-[#9CA3AF] text-center py-3">Sin datos de plataformas</p>
+                      <p className="py-3 text-center text-[10px] text-[#9CA3AF]">
+                        Sin datos de plataformas
+                      </p>
                     ) : (
                       <div className="flex flex-col gap-1.5">
                         {/* Song platforms */}
@@ -499,48 +750,84 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
                           .slice()
                           .sort((a, b) => b.streams - a.streams)
                           .map((p) => {
-                            const globalEntry = globalPlatforms.find((g) => g.platform === p.platform);
-                            const globalPct   = ((globalEntry?.streams ?? 0) / Math.max(...globalPlatforms.map((g) => g.streams), 1)) * 100;
-                            const songPct     = (p.streams / maxPlatformStreams) * 100;
+                            const globalEntry = globalPlatforms.find(
+                              (g) => g.platform === p.platform,
+                            );
+                            const globalPct =
+                              ((globalEntry?.streams ?? 0) /
+                                Math.max(
+                                  ...globalPlatforms.map((g) => g.streams),
+                                  1,
+                                )) *
+                              100;
+                            const songPct =
+                              (p.streams / maxPlatformStreams) * 100;
                             return (
-                              <div key={p.platform} className="flex flex-col gap-1.5 px-3 py-2.5 bg-[#F9FAFB] rounded-xl border border-gray-100">
+                              <div
+                                key={p.platform}
+                                className="flex flex-col gap-1.5 rounded-xl border border-gray-100 bg-[#F9FAFB] px-3 py-2.5"
+                              >
                                 <div className="flex items-center justify-between">
-                                  <span className="text-[11px] font-semibold text-[#111827] capitalize">{p.platform}</span>
+                                  <span className="text-[11px] font-semibold capitalize text-[#111827]">
+                                    {p.platform}
+                                  </span>
                                 </div>
                                 <div className="grid grid-cols-3 gap-1.5">
-                                  <div className="flex flex-col gap-0.5 px-2 py-1.5 bg-white rounded-lg border border-gray-100">
-                                    <span className="text-[9px] text-[#9CA3AF] uppercase tracking-wide">Streams</span>
+                                  <div className="flex flex-col gap-0.5 rounded-lg border border-gray-100 bg-white px-2 py-1.5">
+                                    <span className="text-[9px] uppercase tracking-wide text-[#9CA3AF]">
+                                      Streams
+                                    </span>
                                     <div className="flex items-center gap-1 text-[#06B6D4]">
-                                      <Headphones className="w-2.5 h-2.5" />
-                                      <span className="text-[10px] font-bold">{p.streams.toLocaleString("en-US")}</span>
+                                      <Headphones className="h-2.5 w-2.5" />
+                                      <span className="text-[10px] font-bold">
+                                        {p.streams.toLocaleString("en-US")}
+                                      </span>
                                     </div>
                                   </div>
-                                  <div className="flex flex-col gap-0.5 px-2 py-1.5 bg-white rounded-lg border border-gray-100">
-                                    <span className="text-[9px] text-[#9CA3AF] uppercase tracking-wide">Neto</span>
+                                  <div className="flex flex-col gap-0.5 rounded-lg border border-gray-100 bg-white px-2 py-1.5">
+                                    <span className="text-[9px] uppercase tracking-wide text-[#9CA3AF]">
+                                      Neto
+                                    </span>
                                     <div className="flex items-center gap-1 text-[#8B5CF6]">
-                                      <DollarSign className="w-2.5 h-2.5" />
-                                      <span className="text-[10px] font-bold">{fmt(p.netIncome)}</span>
+                                      <DollarSign className="h-2.5 w-2.5" />
+                                      <span className="text-[10px] font-bold">
+                                        {fmt(p.netIncome)}
+                                      </span>
                                     </div>
                                   </div>
-                                  <div className="flex flex-col gap-0.5 px-2 py-1.5 bg-white rounded-lg border border-gray-100">
-                                    <span className="text-[9px] text-[#9CA3AF] uppercase tracking-wide">Bruto</span>
+                                  <div className="flex flex-col gap-0.5 rounded-lg border border-gray-100 bg-white px-2 py-1.5">
+                                    <span className="text-[9px] uppercase tracking-wide text-[#9CA3AF]">
+                                      Bruto
+                                    </span>
                                     <div className="flex items-center gap-1 text-[#C084FC]">
-                                      <DollarSign className="w-2.5 h-2.5" />
-                                      <span className="text-[10px] font-bold">{fmt(p.grossIncome)}</span>
+                                      <DollarSign className="h-2.5 w-2.5" />
+                                      <span className="text-[10px] font-bold">
+                                        {fmt(p.grossIncome)}
+                                      </span>
                                     </div>
                                   </div>
                                 </div>
                                 <div className="flex flex-col gap-1">
                                   <div className="flex items-center gap-2">
-                                    <span className="text-[9px] text-[#9CA3AF] w-12 flex-shrink-0">Total</span>
-                                    <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                      <div className="h-full rounded-full bg-[#06B6D4]" style={{ width: `${globalPct}%` }} />
+                                    <span className="w-12 flex-shrink-0 text-[9px] text-[#9CA3AF]">
+                                      Total
+                                    </span>
+                                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100">
+                                      <div
+                                        className="h-full rounded-full bg-[#06B6D4]"
+                                        style={{ width: `${globalPct}%` }}
+                                      />
                                     </div>
                                   </div>
                                   <div className="flex items-center gap-2">
-                                    <span className="text-[9px] text-[#9CA3AF] w-12 flex-shrink-0">Canción</span>
-                                    <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                      <div className="h-full rounded-full bg-[#F97316]" style={{ width: `${songPct}%` }} />
+                                    <span className="w-12 flex-shrink-0 text-[9px] text-[#9CA3AF]">
+                                      Canción
+                                    </span>
+                                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100">
+                                      <div
+                                        className="h-full rounded-full bg-[#F97316]"
+                                        style={{ width: `${songPct}%` }}
+                                      />
                                     </div>
                                   </div>
                                 </div>
@@ -554,42 +841,57 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
               </div>
 
               {/* History */}
-              <div className="flex-1 flex flex-col min-h-0">
-                <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
-                  <History className="w-3.5 h-3.5 text-[#F97316]" />
-                  <span className="text-[11px] font-bold text-[#374151] tracking-wider">HISTORIAL DE SPLITS</span>
+              <div className="flex min-h-0 flex-1 flex-col">
+                <div className="flex flex-shrink-0 items-center gap-1.5 border-b border-gray-100 px-4 py-2.5">
+                  <History className="h-3.5 w-3.5 text-[#F97316]" />
+                  <span className="text-[11px] font-bold tracking-wider text-[#374151]">
+                    HISTORIAL DE SPLITS
+                  </span>
                 </div>
                 <div className="flex-1 overflow-y-auto px-3 py-3">
                   {historyLoading ? (
-                    <div className="flex items-center justify-center h-full">
-                      <div className="w-5 h-5 border-2 border-[#F97316] border-t-transparent rounded-full animate-spin" />
+                    <div className="flex h-full items-center justify-center">
+                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#F97316] border-t-transparent" />
                     </div>
                   ) : history.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full gap-2 text-[#9CA3AF]">
-                      <History className="w-7 h-7" />
+                    <div className="flex h-full flex-col items-center justify-center gap-2 text-[#9CA3AF]">
+                      <History className="h-7 w-7" />
                       <p className="text-xs">Sin historial de splits</p>
                     </div>
                   ) : (
                     <div className="flex flex-col gap-2">
                       {history.map((entry) => {
-                        const style = ACTION_STYLES[entry.action] ?? ACTION_STYLES.update;
+                        const style =
+                          ACTION_STYLES[entry.action] ?? ACTION_STYLES.update;
                         return (
-                          <div key={entry._id} className="flex flex-col gap-1.5 px-3 py-2.5 bg-[#F9FAFB] rounded-xl border border-gray-100">
+                          <div
+                            key={entry._id}
+                            className="flex flex-col gap-1.5 rounded-xl border border-gray-100 bg-[#F9FAFB] px-3 py-2.5"
+                          >
                             <div className="flex items-center justify-between">
-                              <span className={`text-[10px] font-bold px-2 h-5 rounded-full flex items-center ${style.cls}`}>
+                              <span
+                                className={`flex h-5 items-center rounded-full px-2 text-[10px] font-bold ${style.cls}`}
+                              >
                                 {style.label}
                               </span>
                               {entry.percentage !== undefined && (
-                                <span className="text-xs font-bold text-[#F97316]">{entry.percentage}%</span>
+                                <span className="text-xs font-bold text-[#F97316]">
+                                  {entry.percentage}%
+                                </span>
                               )}
                             </div>
                             <div className="flex flex-col gap-0.5 text-[10px] text-[#6B7280]">
                               <div className="flex items-center gap-1">
-                                <Calendar className="w-2.5 h-2.5" />
+                                <Calendar className="h-2.5 w-2.5" />
                                 <span>{fmtDate(entry.createdAt)}</span>
                               </div>
                               {entry.updatedBy?.name && (
-                                <span className="truncate">Por: <span className="font-semibold text-[#374151]">{entry.updatedBy.name}</span></span>
+                                <span className="truncate">
+                                  Por:{" "}
+                                  <span className="font-semibold text-[#374151]">
+                                    {entry.updatedBy.name}
+                                  </span>
+                                </span>
                               )}
                             </div>
                           </div>
@@ -602,12 +904,12 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
             </div>
 
             {/* Footer */}
-            <div className="px-4 py-3 border-t border-gray-100 flex-shrink-0">
+            <div className="flex-shrink-0 border-t border-gray-100 px-4 py-3">
               <button
                 onClick={() => setSelectedSong(null)}
-                className="w-full h-9 flex items-center justify-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-[#111827] text-[12px] font-semibold rounded-lg transition-colors"
+                className="flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white text-[12px] font-semibold text-[#111827] transition-colors hover:bg-gray-50"
               >
-                <ArrowLeft className="w-3.5 h-3.5" />
+                <ArrowLeft className="h-3.5 w-3.5" />
                 Volver al perfil
               </button>
             </div>

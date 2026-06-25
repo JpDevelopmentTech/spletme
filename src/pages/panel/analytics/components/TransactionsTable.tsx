@@ -1,14 +1,20 @@
-import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import type { AnalyticsFilters, Transaction, PaginatedResult } from '../../../../types/analytics.types';
-import { analyticsService } from '../../../../services/analyticsService';
+import { useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import type {
+  AnalyticsFilters,
+  Transaction,
+  PaginatedResult,
+} from "../../../../types/analytics.types";
+import { analyticsService } from "../../../../services/analyticsService";
 
 interface Props {
   filters: AnalyticsFilters;
 }
 
 export default function TransactionsTable({ filters }: Props) {
-  const [result, setResult] = useState<PaginatedResult<Transaction> | null>(null);
+  const [result, setResult] = useState<PaginatedResult<Transaction> | null>(
+    null,
+  );
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
@@ -26,12 +32,14 @@ export default function TransactionsTable({ filters }: Props) {
   }, [filters, page]);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+      <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
         <div className="flex items-center gap-2.5">
-          <span className="text-sm font-semibold text-[#111827]">Transacciones</span>
+          <span className="text-sm font-semibold text-[#111827]">
+            Transacciones
+          </span>
           {result && (
-            <span className="px-2.5 py-0.5 bg-gray-100 text-[#6B7280] text-[11px] font-bold rounded-full">
+            <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[11px] font-bold text-[#6B7280]">
               {result.total}
             </span>
           )}
@@ -41,17 +49,19 @@ export default function TransactionsTable({ filters }: Props) {
             <button
               disabled={page === 1}
               onClick={() => setPage((p) => p - 1)}
-              className="p-1.5 rounded-md hover:bg-gray-100 disabled:opacity-40 transition-colors"
+              className="rounded-md p-1.5 transition-colors hover:bg-gray-100 disabled:opacity-40"
             >
-              <ChevronLeft className="w-3.5 h-3.5" />
+              <ChevronLeft className="h-3.5 w-3.5" />
             </button>
-            <span>{page} / {result.pages}</span>
+            <span>
+              {page} / {result.pages}
+            </span>
             <button
               disabled={page === result.pages}
               onClick={() => setPage((p) => p + 1)}
-              className="p-1.5 rounded-md hover:bg-gray-100 disabled:opacity-40 transition-colors"
+              className="rounded-md p-1.5 transition-colors hover:bg-gray-100 disabled:opacity-40"
             >
-              <ChevronRight className="w-3.5 h-3.5" />
+              <ChevronRight className="h-3.5 w-3.5" />
             </button>
           </div>
         )}
@@ -59,44 +69,65 @@ export default function TransactionsTable({ filters }: Props) {
 
       <div className="overflow-x-auto">
         {loading ? (
-          <div className="flex items-center justify-center h-40 text-sm text-[#9CA3AF]">
+          <div className="flex h-40 items-center justify-center text-sm text-[#9CA3AF]">
             Cargando transacciones...
           </div>
         ) : !result || result.data.length === 0 ? (
-          <div className="flex items-center justify-center h-40 text-sm text-[#9CA3AF]">
+          <div className="flex h-40 items-center justify-center text-sm text-[#9CA3AF]">
             Sin transacciones para los filtros seleccionados
           </div>
         ) : (
           <table className="w-full">
             <thead>
-              <tr className="bg-[#FAFAFA] border-b border-gray-100">
-                <th className="text-left px-4 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">Canción</th>
-                <th className="text-left px-4 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">Artista</th>
-                <th className="text-left px-4 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">Plataforma</th>
-                <th className="text-left px-4 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">País</th>
-                <th className="text-left px-4 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">Periodo</th>
-                <th className="text-right px-4 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">Streams</th>
-                <th className="text-right px-4 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">Ingreso Bruto</th>
-                <th className="text-right px-4 py-3 text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">Ingreso Neto</th>
+              <tr className="border-b border-gray-100 bg-[#FAFAFA]">
+                <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
+                  Canción
+                </th>
+                <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
+                  Artista
+                </th>
+                <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
+                  Plataforma
+                </th>
+                <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
+                  País
+                </th>
+                <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
+                  Periodo
+                </th>
+                <th className="px-4 py-3 text-right text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
+                  Streams
+                </th>
+                <th className="px-4 py-3 text-right text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
+                  Ingreso Bruto
+                </th>
+                <th className="px-4 py-3 text-right text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
+                  Ingreso Neto
+                </th>
               </tr>
             </thead>
             <tbody>
               {result.data.map((tx, i) => (
-                <tr key={i} className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 text-[13px] font-medium text-[#111827] max-w-[160px] truncate">
-                    {tx.trackTitle || '—'}
+                <tr
+                  key={i}
+                  className="border-b border-gray-100 transition-colors last:border-b-0 hover:bg-gray-50"
+                >
+                  <td className="max-w-[160px] truncate px-4 py-3 text-[13px] font-medium text-[#111827]">
+                    {tx.trackTitle || "—"}
                   </td>
-                  <td className="px-4 py-3 text-[12px] text-[#6B7280] max-w-[120px] truncate">
-                    {tx.artistName || '—'}
+                  <td className="max-w-[120px] truncate px-4 py-3 text-[12px] text-[#6B7280]">
+                    {tx.artistName || "—"}
                   </td>
                   <td className="px-4 py-3">
-                    <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-[11px] font-semibold rounded-full">
-                      {tx.platform || '—'}
+                    <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-700">
+                      {tx.platform || "—"}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-[12px] text-[#6B7280]">{tx.country || '—'}</td>
                   <td className="px-4 py-3 text-[12px] text-[#6B7280]">
-                    {tx.reportMonth?.slice(0, 7) || '—'}
+                    {tx.country || "—"}
+                  </td>
+                  <td className="px-4 py-3 text-[12px] text-[#6B7280]">
+                    {tx.reportMonth?.slice(0, 7) || "—"}
                   </td>
                   <td className="px-4 py-3 text-right text-[12px] text-[#6B7280]">
                     {(tx.quantity ?? 0).toLocaleString()}

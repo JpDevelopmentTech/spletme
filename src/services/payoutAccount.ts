@@ -16,7 +16,9 @@ class PayoutAccountService {
   };
 
   /** Campos requeridos por Wise para registrar una cuenta en la moneda dada. */
-  getRequirements = async (currency: string): Promise<ApiResponse<PayoutRequirement[]>> => {
+  getRequirements = async (
+    currency: string,
+  ): Promise<ApiResponse<PayoutRequirement[]>> => {
     const response = await apiClient.get(`${this.BASE}/requirements`, {
       params: { currency },
     });
@@ -26,15 +28,18 @@ class PayoutAccountService {
   /** Recalcula los campos requeridos a partir de los datos parciales capturados. */
   refreshRequirements = async (
     currency: string,
-    details: Record<string, unknown>
+    details: Record<string, unknown>,
   ): Promise<ApiResponse<PayoutRequirement[]>> => {
-    const response = await apiClient.post(`${this.BASE}/requirements`, { currency, details });
+    const response = await apiClient.post(`${this.BASE}/requirements`, {
+      currency,
+      details,
+    });
     return response.data;
   };
 
   /** Registra/actualiza la cuenta de recepción del usuario. */
   register = async (
-    payload: RegisterPayoutPayload
+    payload: RegisterPayoutPayload,
   ): Promise<ApiResponse<PayoutAccountStatus>> => {
     const response = await apiClient.post(this.BASE, payload);
     return response.data;

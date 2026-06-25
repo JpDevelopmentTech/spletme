@@ -42,22 +42,23 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
     setError(null);
     try {
       const response = await documentManagerService.getBySongId(songId);
-      
+
       if (response.success) {
         const data = response.data || [];
         let docsArray: Document[] = [];
         if (Array.isArray(data)) {
           docsArray = data;
-        } else if (data && typeof data === 'object') {
+        } else if (data && typeof data === "object") {
           docsArray = [data as Document];
         }
-        
+
         setDocuments(docsArray);
       } else {
         setError(response.message || "Error loading documents");
       }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : "Failed to load documents";
+      const errorMsg =
+        err instanceof Error ? err.message : "Failed to load documents";
       setError(errorMsg);
     } finally {
       setLoading(false);
@@ -94,10 +95,10 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
 
   const handleDelete = async () => {
     if (!selectedDoc?._id && !selectedDoc?.id) return;
-    
+
     const docId = (selectedDoc._id || selectedDoc.id) as string;
     const response = await documentManagerService.delete(docId);
-    
+
     if (response.success) {
       setDocuments(documents.filter((doc) => (doc._id || doc.id) !== docId));
       setShowDeletePopup(false);
@@ -143,20 +144,29 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
+
     const files = e.dataTransfer.files;
     if (files && files.length > 0) {
       await handleFileUpload(files[0]);
     }
   };
 
-  const ALLOWED_TYPES = ['pdf', 'doc', 'docx', 'xlsx', 'xls', 'jpg', 'jpeg', 'png'];
+  const ALLOWED_TYPES = [
+    "pdf",
+    "doc",
+    "docx",
+    "xlsx",
+    "xls",
+    "jpg",
+    "jpeg",
+    "png",
+  ];
   const MAX_SIZE_MB = 500;
 
   const validateFile = (file: File): string | null => {
-    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
     if (!ALLOWED_TYPES.includes(ext)) {
-      return `Tipo de archivo no permitido. Solo se aceptan: ${ALLOWED_TYPES.join(', ').toUpperCase()}`;
+      return `Tipo de archivo no permitido. Solo se aceptan: ${ALLOWED_TYPES.join(", ").toUpperCase()}`;
     }
     if (file.size > MAX_SIZE_MB * 1024 * 1024) {
       return `El archivo supera el límite de ${MAX_SIZE_MB} MB`;
@@ -197,8 +207,8 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
 
   return (
     <>
-      <div className="col-span-12 p-6 rounded-2xl shadow-lg h-full flex flex-col">
-        <div className="flex justify-between items-start mb-4">
+      <div className="col-span-12 flex h-full flex-col rounded-2xl p-6 shadow-lg">
+        <div className="mb-4 flex items-start justify-between">
           {/* Header */}
           <div>
             <span className="text-title font-bold">Gestor de Documentos</span>
@@ -208,34 +218,34 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
           <button
             onClick={() => setShowUploadModal(true)}
             disabled={uploading}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
           >
-            <Upload className="w-4 h-4" />
+            <Upload className="h-4 w-4" />
             Adjuntar
           </button>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
             {error}
           </div>
         )}
 
         {/* Table Container - Flex grow to fill available space */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex flex-1 flex-col">
           {loading ? (
-            <div className="flex items-center justify-center h-full">
+            <div className="flex h-full items-center justify-center">
               <div className="text-center">
-                <Loader className="w-8 h-8 mx-auto mb-2 text-blue-500 animate-spin" />
-                <p className="text-gray-500 text-sm">Cargando documentos...</p>
+                <Loader className="mx-auto mb-2 h-8 w-8 animate-spin text-blue-500" />
+                <p className="text-sm text-gray-500">Cargando documentos...</p>
               </div>
             </div>
           ) : documents.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="bg-gray-50 border-b border-gray-200">
+                  <tr className="border-b border-gray-200 bg-gray-50">
                     <th className="p-2 text-left font-semibold text-gray-700">
                       Documento
                     </th>
@@ -257,18 +267,18 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
                   {documents.map((doc) => (
                     <tr
                       key={doc._id || doc.id}
-                      className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                      className="border-b border-gray-100 transition-colors hover:bg-gray-50"
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           {getFileIcon(doc.type)}
-                          <span className="text-gray-700 text-xs">
+                          <span className="text-xs text-gray-700">
                             {doc.name}
                           </span>
                         </div>
                       </td>
                       <td className="p-2">
-                        <span className="text-xs bg-gray-100 text-gray-700 p-1 rounded">
+                        <span className="rounded bg-gray-100 p-1 text-xs text-gray-700">
                           {doc.type.toUpperCase()}
                         </span>
                       </td>
@@ -288,19 +298,19 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
                               setSelectedDoc(doc);
                               setShowPreview(true);
                             }}
-                            className="p-1 rounded text-blue-600 hover:bg-blue-50 transition-colors"
+                            className="rounded p-1 text-blue-600 transition-colors hover:bg-blue-50"
                             title="Ver vista previa"
                           >
-                            <Eye className="w-4 h-4" />
+                            <Eye className="h-4 w-4" />
                           </button>
 
                           {/* Download Button */}
                           <button
                             onClick={() => handleDownload(doc)}
-                            className="p-1 rounded text-green-600 hover:bg-green-50 transition-colors"
+                            className="rounded p-1 text-green-600 transition-colors hover:bg-green-50"
                             title="Descargar"
                           >
-                            <Download className="w-4 h-4" />
+                            <Download className="h-4 w-4" />
                           </button>
 
                           {/* Delete Button */}
@@ -309,10 +319,10 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
                               setSelectedDoc(doc);
                               setShowDeletePopup(true);
                             }}
-                            className="p-1 rounded text-red-600 hover:bg-red-50 transition-colors"
+                            className="rounded p-1 text-red-600 transition-colors hover:bg-red-50"
                             title="Eliminar"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
                       </td>
@@ -322,10 +332,10 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
               </table>
             </div>
           ) : (
-            <div className="flex items-center justify-center h-full">
+            <div className="flex h-full items-center justify-center">
               <div className="text-center">
-                <FileText className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                <p className="text-gray-500 text-sm">
+                <FileText className="mx-auto mb-2 h-8 w-8 text-gray-300" />
+                <p className="text-sm text-gray-500">
                   No hay documentos cargados
                 </p>
               </div>
@@ -336,19 +346,19 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
 
       {/* Upload Modal */}
       {showUploadModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden animate-in fade-in zoom-in duration-300">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="animate-in fade-in zoom-in w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl duration-300">
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center justify-between bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
               <h2 className="text-xl font-bold text-white">
                 Cargar Nuevo Documento
               </h2>
               <button
                 onClick={() => setShowUploadModal(false)}
                 disabled={uploading}
-                className="p-1 rounded-lg hover:bg-white/20 transition-colors disabled:opacity-50"
+                className="rounded-lg p-1 transition-colors hover:bg-white/20 disabled:opacity-50"
               >
-                <X className="w-6 h-6 text-white" />
+                <X className="h-6 w-6 text-white" />
               </button>
             </div>
 
@@ -359,19 +369,19 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
-                className={`border-3 border-dashed rounded-xl p-12 text-center transition-all duration-300 ${
+                className={`border-3 rounded-xl border-dashed p-12 text-center transition-all duration-300 ${
                   dragActive
                     ? "border-blue-500 bg-blue-50"
                     : "border-slate-300 hover:border-blue-400 hover:bg-slate-50"
                 }`}
               >
                 <Upload
-                  className={`w-16 h-16 mx-auto mb-4 ${dragActive ? "text-blue-500" : "text-slate-400"}`}
+                  className={`mx-auto mb-4 h-16 w-16 ${dragActive ? "text-blue-500" : "text-slate-400"}`}
                 />
-                <p className="text-lg font-semibold text-slate-700 mb-2">
+                <p className="mb-2 text-lg font-semibold text-slate-700">
                   Arrastra y suelta tu archivo aquí
                 </p>
-                <p className="text-sm text-slate-500 mb-4">o</p>
+                <p className="mb-4 text-sm text-slate-500">o</p>
                 <label className="inline-block">
                   <input
                     type="file"
@@ -380,10 +390,10 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
                     onChange={handleInputChange}
                     disabled={uploading}
                   />
-                  <span className="inline-flex items-center gap-2 px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium cursor-pointer transition-colors disabled:opacity-50">
+                  <span className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-slate-100 px-6 py-3 font-medium text-slate-700 transition-colors hover:bg-slate-200 disabled:opacity-50">
                     {uploading ? (
                       <>
-                        <Loader className="w-4 h-4 animate-spin" />
+                        <Loader className="h-4 w-4 animate-spin" />
                         Subiendo...
                       </>
                     ) : (
@@ -391,17 +401,18 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
                     )}
                   </span>
                 </label>
-                <p className="text-xs text-slate-400 mt-4">
-                  Formatos: PDF, DOC, DOCX, XLS, XLSX, JPG, JPEG, PNG · Máx. 500 MB
+                <p className="mt-4 text-xs text-slate-400">
+                  Formatos: PDF, DOC, DOCX, XLS, XLSX, JPG, JPEG, PNG · Máx. 500
+                  MB
                 </p>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center justify-end gap-3 mt-6">
+              <div className="mt-6 flex items-center justify-end gap-3">
                 <button
                   onClick={() => setShowUploadModal(false)}
                   disabled={uploading}
-                  className="px-6 py-2.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 font-medium transition-colors disabled:opacity-50"
+                  className="rounded-lg border border-slate-300 px-6 py-2.5 font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50"
                 >
                   Cancelar
                 </button>
@@ -413,24 +424,24 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
 
       {/* Delete Confirmation Popup */}
       {showDeletePopup && selectedDoc && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="animate-in fade-in zoom-in w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl duration-200">
             <div className="p-6">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="p-3 rounded-full bg-red-100">
-                  <AlertCircle className="w-6 h-6 text-red-600" />
+              <div className="mb-4 flex items-center gap-4">
+                <div className="rounded-full bg-red-100 p-3">
+                  <AlertCircle className="h-6 w-6 text-red-600" />
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-slate-900">
                     ¿Estás seguro?
                   </h3>
-                  <p className="text-sm text-slate-500 mt-1">
+                  <p className="mt-1 text-sm text-slate-500">
                     Esta acción no se puede deshacer
                   </p>
                 </div>
               </div>
 
-              <p className="text-slate-600 mb-6">
+              <p className="mb-6 text-slate-600">
                 ¿Deseas eliminar el documento{" "}
                 <span className="font-semibold">"{selectedDoc.name}"</span>?
               </p>
@@ -441,13 +452,13 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
                     setShowDeletePopup(false);
                     setSelectedDoc(null);
                   }}
-                  className="flex-1 px-6 py-2.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 font-medium transition-colors"
+                  className="flex-1 rounded-lg border border-slate-300 px-6 py-2.5 font-medium text-slate-700 transition-colors hover:bg-slate-50"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleDelete}
-                  className="flex-1 px-6 py-2.5 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition-colors"
+                  className="flex-1 rounded-lg bg-red-600 px-6 py-2.5 font-medium text-white transition-colors hover:bg-red-700"
                 >
                   Eliminar
                 </button>
@@ -459,9 +470,9 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
 
       {/* Preview Modal */}
       {showPreview && selectedDoc && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden animate-in fade-in zoom-in duration-300">
-            <div className="bg-gradient-to-r from-slate-700 to-slate-900 px-6 py-4 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="animate-in fade-in zoom-in w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-2xl duration-300">
+            <div className="flex items-center justify-between bg-gradient-to-r from-slate-700 to-slate-900 px-6 py-4">
               <h2 className="text-xl font-bold text-white">
                 Vista Previa: {selectedDoc.name}
               </h2>
@@ -470,9 +481,9 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
                   setShowPreview(false);
                   setSelectedDoc(null);
                 }}
-                className="p-1 rounded-lg hover:bg-white/20 transition-colors"
+                className="rounded-lg p-1 transition-colors hover:bg-white/20"
               >
-                <X className="w-6 h-6 text-white" />
+                <X className="h-6 w-6 text-white" />
               </button>
             </div>
 
@@ -491,23 +502,25 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
                   <img
                     src={selectedDoc.url}
                     alt={selectedDoc.name}
-                    className="max-w-full max-h-[560px] object-contain rounded-lg shadow"
+                    className="max-h-[560px] max-w-full rounded-lg object-contain shadow"
                   />
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center h-full p-8 gap-4">
-                  <div className="p-4 bg-white rounded-full shadow">
+                <div className="flex h-full flex-col items-center justify-center gap-4 p-8">
+                  <div className="rounded-full bg-white p-4 shadow">
                     {getFileIcon(selectedDoc.type)}
                   </div>
-                  <p className="text-slate-600 font-semibold">{selectedDoc.name}</p>
+                  <p className="font-semibold text-slate-600">
+                    {selectedDoc.name}
+                  </p>
                   <p className="text-sm text-slate-400">
                     Este tipo de archivo no admite vista previa
                   </p>
                   <button
                     onClick={() => handleDownload(selectedDoc)}
-                    className="inline-flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                    className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
                   >
-                    <Download className="w-4 h-4" />
+                    <Download className="h-4 w-4" />
                     Descargar archivo
                   </button>
                 </div>

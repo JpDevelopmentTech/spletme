@@ -170,18 +170,18 @@ const VerificationStep = ({
   return (
     <motion.div className="flex flex-col gap-5">
       {/* Header */}
-      <div className="text-center space-y-4">
+      <div className="space-y-4 text-center">
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.2 }}
-          className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-gray-400 to-gray-600 rounded-full text-white text-3xl shadow-lg"
+          className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-r from-gray-400 to-gray-600 text-3xl text-white shadow-lg"
         >
           📧
         </motion.div>
 
         <div>
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+          <h3 className="mb-2 text-xl font-bold text-gray-900 dark:text-white">
             Verifica tu cuenta
           </h3>
           <p className="text-gray-600 dark:text-gray-400">
@@ -206,7 +206,7 @@ const VerificationStep = ({
             onChange={(e) => handleInputChange(index, e.target.value)}
             onKeyDown={(e) => handleKeyDown(index, e)}
             onPaste={handlePaste}
-            className="text-center font-bold text-[22px] outline-none transition-colors"
+            className="text-center text-[22px] font-bold outline-none transition-colors"
             style={{
               width: 52,
               height: 60,
@@ -229,8 +229,8 @@ const VerificationStep = ({
           animate={{ opacity: 1, y: 0 }}
           className="text-center"
         >
-          <p className="text-sm text-red-600 dark:text-red-400 flex items-center justify-center space-x-1">
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <p className="flex items-center justify-center space-x-1 text-sm text-red-600 dark:text-red-400">
+            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
               <path
                 fillRule="evenodd"
                 d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
@@ -264,7 +264,7 @@ const VerificationStep = ({
           <button
             onClick={handleResendCode}
             disabled={isResending || isVerifying}
-            className="text-sm font-semibold text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors duration-200 disabled:opacity-50"
+            className="text-sm font-semibold text-gray-600 transition-colors duration-200 hover:text-gray-700 disabled:opacity-50 dark:text-gray-400 dark:hover:text-gray-300"
           >
             {isResending ? "Enviando..." : "Reenviar código"}
           </button>
@@ -282,12 +282,12 @@ const VerificationStep = ({
         }}
       >
         <div className="flex items-start space-x-3">
-          <div className="text-gray-500 text-xl">💡</div>
+          <div className="text-xl text-gray-500">💡</div>
           <div>
-            <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">
+            <h4 className="mb-1 font-semibold text-gray-900 dark:text-gray-100">
               Consejos para recibir el código
             </h4>
-            <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+            <ul className="space-y-1 text-sm text-gray-700 dark:text-gray-300">
               <li>• Revisa tu bandeja de entrada y spam</li>
               <li>• Verifica que tu correo sea correcto</li>
               <li>• Asegúrate de tener conexión a internet</li>
@@ -307,17 +307,17 @@ const VerificationStep = ({
         <button
           onClick={prevStep}
           disabled={isVerifying}
-          className="flex-1 py-3 px-6 rounded-xl font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-all duration-300"
+          className="flex-1 rounded-xl bg-gray-100 px-6 py-3 font-semibold text-gray-700 transition-all duration-300 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
         >
           Anterior
         </button>
         <button
           onClick={handleVerify}
           disabled={!isCodeComplete || isVerifying}
-          className={`flex-1 py-3 px-6 rounded-xl font-semibold text-white transition-all duration-300 ${
+          className={`flex-1 rounded-xl px-6 py-3 font-semibold text-white transition-all duration-300 ${
             isCodeComplete && !isVerifying
-              ? "bg-gradient-to-r from-gray-500 to-gray-700 hover:from-gray-600 hover:to-gray-800 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-              : "bg-gray-300 cursor-not-allowed dark:bg-gray-600"
+              ? "transform bg-gradient-to-r from-gray-500 to-gray-700 shadow-lg hover:-translate-y-0.5 hover:from-gray-600 hover:to-gray-800 hover:shadow-xl"
+              : "cursor-not-allowed bg-gray-300 dark:bg-gray-600"
           }`}
         >
           {isVerifying ? "Verificando..." : "Verificar →"}

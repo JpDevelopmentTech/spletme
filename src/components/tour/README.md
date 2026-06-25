@@ -16,7 +16,9 @@ The Dashboard Tour is an interactive guided tour that helps new users understand
 ## How It Works
 
 ### 1. First Visit
+
 When a user visits the dashboard for the first time:
+
 - Tour automatically starts after 1 second (to ensure page is loaded)
 - User sees a welcome message and introduction
 - Tour progresses through 8 key dashboard sections
@@ -33,12 +35,14 @@ When a user visits the dashboard for the first time:
 8. **Completion** - Tour summary and tips
 
 ### 3. User Controls
+
 - **Next/Previous**: Navigate between steps
 - **Skip**: Skip entire tour
 - **Close**: Close current step
 - **Progress**: Visual progress indicator
 
 ### 4. Persistence
+
 - Tour completion status is stored in `localStorage`
 - Users won't see the tour again unless they manually restart it
 - Tour can be reset for testing or re-education
@@ -48,14 +52,18 @@ When a user visits the dashboard for the first time:
 ### Components
 
 #### `DashboardTour.tsx`
+
 Main tour component that handles:
+
 - Tour state management
 - Step definitions
 - User interactions
 - Styling and animations
 
 #### `useDashboardTour.ts`
+
 Custom hook that manages:
+
 - Tour completion status
 - Local storage persistence
 - Tour state logic
@@ -81,6 +89,7 @@ The tour targets specific elements using `data-tour` attributes:
 ### Styling
 
 The tour uses custom styling that matches the dashboard design:
+
 - Purple/blue gradient theme
 - Rounded corners and shadows
 - Smooth animations
@@ -91,7 +100,7 @@ The tour uses custom styling that matches the dashboard design:
 ### Basic Implementation
 
 ```tsx
-import DashboardTour from '../components/tour/DashboardTour';
+import DashboardTour from "../components/tour/DashboardTour";
 
 function HomePage() {
   return (
@@ -108,7 +117,7 @@ function HomePage() {
 ```tsx
 function HomePage() {
   const handleTourComplete = () => {
-    console.log('Tour completed!');
+    console.log("Tour completed!");
     // Show success message, track analytics, etc.
   };
 
@@ -124,7 +133,7 @@ function HomePage() {
 ### Manual Tour Control
 
 ```tsx
-import { useDashboardTour } from '../hooks/useDashboardTour';
+import { useDashboardTour } from "../hooks/useDashboardTour";
 
 function HomePage() {
   const { startTour, resetTour } = useDashboardTour();
@@ -207,16 +216,19 @@ locale={{
 ## Troubleshooting
 
 ### Tour Not Starting
+
 - Check if `localStorage` is available
 - Verify `data-tour` attributes are present
 - Ensure component is properly mounted
 
 ### Styling Issues
+
 - Check z-index values
 - Verify CSS classes are applied
 - Test on different screen sizes
 
 ### Performance Issues
+
 - Tour only runs once per user
 - Minimal re-renders
 - Efficient state management

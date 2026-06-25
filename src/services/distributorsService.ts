@@ -1,11 +1,11 @@
-import { apiClient } from '../infrastructure/http/axiosClient';
+import { apiClient } from "../infrastructure/http/axiosClient";
 import type {
   Distributor,
   DistributorUpload,
   DistributorKpi,
   DistributorDashboard,
   CreateDistributorPayload,
-} from '../types/distributor.types';
+} from "../types/distributor.types";
 
 export interface RejectedSong {
   isrc: string;
@@ -23,7 +23,7 @@ export interface UploadSongsResult {
 
 export const distributorsService = {
   getAll(): Promise<Distributor[]> {
-    return apiClient.get('/distributors').then((r) => r.data.data);
+    return apiClient.get("/distributors").then((r) => r.data.data);
   },
 
   getById(id: string): Promise<Distributor> {
@@ -31,11 +31,16 @@ export const distributorsService = {
   },
 
   create(payload: CreateDistributorPayload): Promise<Distributor> {
-    return apiClient.post('/distributors', payload).then((r) => r.data.data);
+    return apiClient.post("/distributors", payload).then((r) => r.data.data);
   },
 
-  update(id: string, payload: Partial<CreateDistributorPayload>): Promise<Distributor> {
-    return apiClient.put(`/distributors/${id}`, payload).then((r) => r.data.data);
+  update(
+    id: string,
+    payload: Partial<CreateDistributorPayload>,
+  ): Promise<Distributor> {
+    return apiClient
+      .put(`/distributors/${id}`, payload)
+      .then((r) => r.data.data);
   },
 
   remove(id: string): Promise<void> {
@@ -43,7 +48,9 @@ export const distributorsService = {
   },
 
   getUploads(distributorId: string): Promise<DistributorUpload[]> {
-    return apiClient.get(`/distributors/${distributorId}/uploads`).then((r) => r.data.data);
+    return apiClient
+      .get(`/distributors/${distributorId}/uploads`)
+      .then((r) => r.data.data);
   },
 
   uploadSongs(
@@ -51,15 +58,15 @@ export const distributorsService = {
     file: File,
     quarter: string,
     year: number,
-    onUploadProgress?: (percent: number) => void
+    onUploadProgress?: (percent: number) => void,
   ): Promise<UploadSongsResult> {
     const form = new FormData();
-    form.append('csvFile', file);
-    form.append('quarter', quarter);
-    form.append('year', String(year));
+    form.append("csvFile", file);
+    form.append("quarter", quarter);
+    form.append("year", String(year));
     return apiClient
       .post(`/distributors/${distributorId}/upload`, form, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: { "Content-Type": "multipart/form-data" },
         onUploadProgress: (e) => {
           if (!onUploadProgress) return;
           const total = e.total ?? 0;
@@ -71,10 +78,12 @@ export const distributorsService = {
   },
 
   getKpis(): Promise<DistributorKpi[]> {
-    return apiClient.get('/distributors/kpis').then((r) => r.data.data);
+    return apiClient.get("/distributors/kpis").then((r) => r.data.data);
   },
 
   getDashboard(distributorId: string): Promise<DistributorDashboard> {
-    return apiClient.get(`/distributors/${distributorId}/dashboard`).then((r) => r.data.data);
+    return apiClient
+      .get(`/distributors/${distributorId}/dashboard`)
+      .then((r) => r.data.data);
   },
 };

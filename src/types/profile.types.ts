@@ -6,7 +6,11 @@ export interface SubprofileItem {
   email: string;
 }
 
-export type ActiveSection = "edit-profile" | "create-subprofile" | "change-password" | null;
+export type ActiveSection =
+  | "edit-profile"
+  | "create-subprofile"
+  | "change-password"
+  | null;
 
 export interface ProfileUserData {
   username: string;

@@ -4,68 +4,68 @@ import Title from "../../../../components/title/title";
 import { ApexOptions } from "apexcharts";
 
 const series = [
-    {
-      name: "Distribuidora 2",
-      data: [
-        {
-          x: "Ene",
-          y: 1000000,
-        },
-        {
-          x: "Feb",
-          y: 1200000,
-        },
-        {
-          x: "Mar",
-          y: 900000,
-        },
-        {
-          x: "Abr",
-          y: 1400000,
-        },
-        {
-          x: "May",
-          y: 1300000,
-        },
-        {
-          x: "Jun",
-          y: 1200000,
-        },
-      ],
-    },
-  ];
-  const options: ApexOptions = {
-    chart: {
-      type: 'bar',
-      height: 350
-    },
-    plotOptions: {
-      bar: {
-        horizontal: false,
-        columnWidth: '70%',
-        borderRadius: 15
+  {
+    name: "Distribuidora 2",
+    data: [
+      {
+        x: "Ene",
+        y: 1000000,
       },
+      {
+        x: "Feb",
+        y: 1200000,
+      },
+      {
+        x: "Mar",
+        y: 900000,
+      },
+      {
+        x: "Abr",
+        y: 1400000,
+      },
+      {
+        x: "May",
+        y: 1300000,
+      },
+      {
+        x: "Jun",
+        y: 1200000,
+      },
+    ],
+  },
+];
+const options: ApexOptions = {
+  chart: {
+    type: "bar",
+    height: 350,
+  },
+  plotOptions: {
+    bar: {
+      horizontal: false,
+      columnWidth: "70%",
+      borderRadius: 15,
     },
-    dataLabels: {
-      enabled: false
-    },
-    stroke: {
-      show: true,
-      width: 2,
-      colors: ['transparent']
-    },
-    xaxis: {
-      categories: ['Ene','Feb', 'Mar', 'Apr', 'May', 'Jun'],
-    },
-    fill: {
-      opacity: 1
-    },
-  }
+  },
+  dataLabels: {
+    enabled: false,
+  },
+  stroke: {
+    show: true,
+    width: 2,
+    colors: ["transparent"],
+  },
+  xaxis: {
+    categories: ["Ene", "Feb", "Mar", "Apr", "May", "Jun"],
+  },
+  fill: {
+    opacity: 1,
+  },
+};
 
 const Activity = () => {
   return (
-    <div className="rounded-2xl shadow-lg col-span-6 p-6 flex flex-col ">
-      <div className="flex justify-between items-center">
+    <div className="col-span-6 flex flex-col rounded-2xl p-6 shadow-lg">
+      <div className="flex items-center justify-between">
         <Title
           title="Actividad"
           subtitle="Escoge el año y analiza la actividad"
@@ -86,8 +86,11 @@ const Activity = () => {
         </div>
       </div>
       <div className="mt-3">
-        <ReactApexChart options={options} type="bar" 
-        series={series} height={200}
+        <ReactApexChart
+          options={options}
+          type="bar"
+          series={series}
+          height={200}
         />
       </div>
     </div>

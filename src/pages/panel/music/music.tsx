@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { Music as MusicIcon, Search, SlidersHorizontal, AlertCircle } from "lucide-react";
+import {
+  Music as MusicIcon,
+  Search,
+  SlidersHorizontal,
+  AlertCircle,
+} from "lucide-react";
 import UploadModal from "./components/UploadModal";
 import AlbumOwnerSplitModal from "./album/components/AlbumOwnerSplitModal";
 import Loading from "@/components/loading/loading";
@@ -11,7 +16,9 @@ import { useMusicLibrary } from "@/hooks/useMusicLibrary";
 import songService from "@/services/songs";
 
 export default function Music() {
-  const [songsWithoutSplits, setSongsWithoutSplits] = useState<number | null>(null);
+  const [songsWithoutSplits, setSongsWithoutSplits] = useState<number | null>(
+    null,
+  );
 
   useEffect(() => {
     songService
@@ -98,49 +105,50 @@ export default function Music() {
 
   return (
     <div className="min-h-screen">
-      <div className="px-6 lg:px-10 py-8">
+      <div className="px-6 py-8 lg:px-10">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Music Library</h1>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="mt-1 text-sm text-gray-500">
               Manage your songs and albums
             </p>
           </div>
-               {/* Stat card — songs without splits */}
-        {songsWithoutSplits !== null && songsWithoutSplits > 0 && (
-          <div className="mb-6">
-            <div className="inline-flex items-center gap-4 px-5 py-4 bg-white border border-amber-200 rounded-2xl shadow-sm">
-              <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
-                <AlertCircle size={20} className="text-amber-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900 leading-none">{songsWithoutSplits}</p>
-                <p className="text-sm text-gray-500 mt-0.5">
-                  {songsWithoutSplits === 1 ? "canción sin" : "canciones sin"} splits asignados
-                </p>
+          {/* Stat card — songs without splits */}
+          {songsWithoutSplits !== null && songsWithoutSplits > 0 && (
+            <div className="mb-6">
+              <div className="inline-flex items-center gap-4 rounded-2xl border border-amber-200 bg-white px-5 py-4 shadow-sm">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-amber-50">
+                  <AlertCircle size={20} className="text-amber-500" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold leading-none text-gray-900">
+                    {songsWithoutSplits}
+                  </p>
+                  <p className="mt-0.5 text-sm text-gray-500">
+                    {songsWithoutSplits === 1 ? "canción sin" : "canciones sin"}{" "}
+                    splits asignados
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
         </div>
 
-   
-
         {/* Controls */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-          <div className="bg-gray-100 rounded-[10px] p-1 flex">
+        <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+          <div className="flex rounded-[10px] bg-gray-100 p-1">
             {(["songs", "albums"] as const).map((key) => (
               <button
                 key={key}
                 onClick={() => setMode(key)}
-                className={`px-5 py-2 rounded-lg text-sm font-semibold transition-colors ${mode === key ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                className={`rounded-lg px-5 py-2 text-sm font-semibold transition-colors ${mode === key ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
               >
                 {key === "songs" ? "Songs" : "Albums"}
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="flex w-full items-center gap-2 sm:w-auto">
             <div className="relative flex-1 sm:w-72">
               <Search
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -155,24 +163,24 @@ export default function Music() {
                 }
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-10 py-2.5 bg-white border border-gray-200 rounded-[10px] text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                className="w-full rounded-[10px] border border-gray-200 bg-white py-2.5 pl-9 pr-10 text-sm text-gray-900 placeholder-gray-400 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
               {(isSearching && mode === "songs") ||
               (isAlbumSearching && mode === "albums") ? (
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500" />
+                  <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-orange-500" />
                 </div>
               ) : null}
             </div>
             <button
               type="button"
               onClick={() => setShowFilterPanel(true)}
-              className={`relative flex items-center gap-2 px-3.5 py-2.5 rounded-[10px] border text-sm font-medium transition-colors flex-shrink-0 ${activeFilterCount > 0 ? "bg-orange-50 border-orange-200 text-orange-600" : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"}`}
+              className={`relative flex flex-shrink-0 items-center gap-2 rounded-[10px] border px-3.5 py-2.5 text-sm font-medium transition-colors ${activeFilterCount > 0 ? "border-orange-200 bg-orange-50 text-orange-600" : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"}`}
             >
               <SlidersHorizontal size={16} />
               <span className="hidden sm:inline">Filtros</span>
               {activeFilterCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-orange-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-white">
                   {activeFilterCount}
                 </span>
               )}
@@ -182,12 +190,12 @@ export default function Music() {
 
         {/* Content */}
         {currentData.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-            <MusicIcon size={48} className="mx-auto text-gray-300 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">
+          <div className="rounded-xl border border-gray-200 bg-white p-12 text-center">
+            <MusicIcon size={48} className="mx-auto mb-4 text-gray-300" />
+            <h3 className="mb-2 text-lg font-semibold text-gray-700">
               No {mode === "songs" ? "songs" : "albums"} found
             </h3>
-            <p className="text-sm text-gray-400 mb-6">
+            <p className="mb-6 text-sm text-gray-400">
               {searchQuery
                 ? `No results for "${searchQuery}". Try different terms.`
                 : "Start by uploading your first track"}
@@ -195,7 +203,7 @@ export default function Music() {
             {!searchQuery && (
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-6 py-2.5 rounded-[10px] transition-colors"
+                className="rounded-[10px] bg-orange-500 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-orange-600"
               >
                 Upload Your First Track
               </button>

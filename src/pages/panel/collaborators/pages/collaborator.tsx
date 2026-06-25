@@ -15,13 +15,13 @@ const Collaborator = () => {
             <span className="text-title font-bold">Colaboradores</span>
             <span className="text-subtitle">Organiza tus colaboradores</span>
           </div>
-          <div className="bg-[#DEDEDE] rounded-full">
+          <div className="rounded-full bg-[#DEDEDE]">
             <button
               onClick={() => setTypeMoney("in")}
               className={
                 typeMoney === "in"
-                  ? "p-3 rounded-full bg-[#219EBC] text-white"
-                  : "p-3 rounded-full bg-[#DEDEDE] text-[#8A8A8A]"
+                  ? "rounded-full bg-[#219EBC] p-3 text-white"
+                  : "rounded-full bg-[#DEDEDE] p-3 text-[#8A8A8A]"
               }
             >
               Money in
@@ -30,8 +30,8 @@ const Collaborator = () => {
               onClick={() => setTypeMoney("out")}
               className={
                 typeMoney === "out"
-                  ? "p-3 rounded-full bg-[#219EBC] text-white"
-                  : "p-3 rounded-full bg-[#DEDEDE] text-[#8A8A8A]"
+                  ? "rounded-full bg-[#219EBC] p-3 text-white"
+                  : "rounded-full bg-[#DEDEDE] p-3 text-[#8A8A8A]"
               }
             >
               Money Out

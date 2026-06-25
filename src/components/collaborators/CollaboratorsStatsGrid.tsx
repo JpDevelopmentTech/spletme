@@ -17,39 +17,56 @@ export function CollaboratorsStatsGrid({
   activeSplits,
 }: CollaboratorsStatsGridProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
-      <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col gap-3">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-3">
+      <div className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-5">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-[#6B7280]">Total Colaboradores</span>
-          <div className="w-7 h-7 bg-gray-100 rounded-md flex items-center justify-center">
-            <Users className="w-3.5 h-3.5 text-[#6B7280]" />
+          <span className="text-xs font-medium text-[#6B7280]">
+            Total Colaboradores
+          </span>
+          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-gray-100">
+            <Users className="h-3.5 w-3.5 text-[#6B7280]" />
           </div>
         </div>
-        <p className="text-[26px] font-bold text-[#111827] leading-none">{totalCollaborators}</p>
-        <span className="text-[11px] font-medium text-green-500">+3 este mes</span>
+        <p className="text-[26px] font-bold leading-none text-[#111827]">
+          {totalCollaborators}
+        </p>
+        <span className="text-[11px] font-medium text-green-500">
+          +3 este mes
+        </span>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col gap-3">
+      <div className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-5">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-[#6B7280]">Pagos Enviados</span>
-          <div className="w-7 h-7 bg-red-50 rounded-md flex items-center justify-center">
-            <ArrowUp className="w-3.5 h-3.5 text-red-500" />
+          <span className="text-xs font-medium text-[#6B7280]">
+            Pagos Enviados
+          </span>
+          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-red-50">
+            <ArrowUp className="h-3.5 w-3.5 text-red-500" />
           </div>
         </div>
-        <p className="text-[26px] font-bold text-[#111827] leading-none">{totalSent}</p>
-        <span className="text-[11px] font-medium text-[#9CA3AF]">32 pagos en total</span>
+        <p className="text-[26px] font-bold leading-none text-[#111827]">
+          {totalSent}
+        </p>
+        <span className="text-[11px] font-medium text-[#9CA3AF]">
+          32 pagos en total
+        </span>
       </div>
 
-  
-      <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col gap-3">
+      <div className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-5">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-[#6B7280]">Splits Activos</span>
-          <div className="w-7 h-7 bg-orange-50 rounded-md flex items-center justify-center">
-            <Percent className="w-3.5 h-3.5 text-[#F97316]" />
+          <span className="text-xs font-medium text-[#6B7280]">
+            Splits Activos
+          </span>
+          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-orange-50">
+            <Percent className="h-3.5 w-3.5 text-[#F97316]" />
           </div>
         </div>
-        <p className="text-[26px] font-bold text-[#111827] leading-none">{activeSplits}</p>
-        <span className="text-[11px] font-medium text-[#9CA3AF]">En {totalCollaborators} canciones</span>
+        <p className="text-[26px] font-bold leading-none text-[#111827]">
+          {activeSplits}
+        </p>
+        <span className="text-[11px] font-medium text-[#9CA3AF]">
+          En {totalCollaborators} canciones
+        </span>
       </div>
     </div>
   );

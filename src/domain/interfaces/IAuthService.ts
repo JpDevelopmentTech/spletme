@@ -18,9 +18,22 @@ export interface IAuthService {
   register(payload: RegisterSchema): Promise<unknown>;
   logout(): Promise<void>;
   sentPasswordRecoveryRequest(email: string): Promise<PasswordRecoveryResponse>;
-  sentcodeForPasswordRecovery(email: string, code: string): Promise<CodeVerificationResponse>;
-  resetPasswordByCode(email: string, code: string, newPassword: string, newPasswordConfirmation: string): Promise<ResetPasswordResponse>;
-  changePassword(newPassword: string, newPasswordConfirmation: string, currentPassword?: string, token?: string): Promise<ChangePasswordResponse>;
+  sentcodeForPasswordRecovery(
+    email: string,
+    code: string,
+  ): Promise<CodeVerificationResponse>;
+  resetPasswordByCode(
+    email: string,
+    code: string,
+    newPassword: string,
+    newPasswordConfirmation: string,
+  ): Promise<ResetPasswordResponse>;
+  changePassword(
+    newPassword: string,
+    newPasswordConfirmation: string,
+    currentPassword?: string,
+    token?: string,
+  ): Promise<ChangePasswordResponse>;
   completeDashboardTour(completed: boolean): Promise<PlatformTourResponse>;
   switchAccount(targetUserId: string): Promise<SwitchAccountResponse>;
   unlinkSubuser(subuserId: string): Promise<UnlinkSubuserResponse>;

@@ -62,23 +62,27 @@ export default function DepositModal({ onClose }: Props) {
       />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl border border-gray-200 w-full max-w-md mx-4 p-6 flex flex-col gap-5">
+      <div className="relative mx-4 flex w-full max-w-md flex-col gap-5 rounded-2xl border border-gray-200 bg-white p-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-orange-50 flex items-center justify-center">
-              <Download className="w-4 h-4 text-orange-500" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-50">
+              <Download className="h-4 w-4 text-orange-500" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-gray-900">Deposit Funds</h2>
-              <p className="text-xs text-gray-400">You'll be redirected to Rapyd to complete the payment</p>
+              <h2 className="text-base font-bold text-gray-900">
+                Deposit Funds
+              </h2>
+              <p className="text-xs text-gray-400">
+                You'll be redirected to Rapyd to complete the payment
+              </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+            className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
           >
-            <X className="w-4 h-4" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
@@ -89,9 +93,13 @@ export default function DepositModal({ onClose }: Props) {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {/* Amount */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-gray-600">Amount</label>
-            <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg border border-gray-200 bg-[#F7F8FA] focus-within:border-orange-400 focus-within:bg-white transition-colors">
-              <span className="text-sm font-semibold text-gray-400">{currency}</span>
+            <label className="text-xs font-semibold text-gray-600">
+              Amount
+            </label>
+            <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-[#F7F8FA] px-3 py-2.5 transition-colors focus-within:border-orange-400 focus-within:bg-white">
+              <span className="text-sm font-semibold text-gray-400">
+                {currency}
+              </span>
               <input
                 type="number"
                 min="0.01"
@@ -99,7 +107,7 @@ export default function DepositModal({ onClose }: Props) {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
-                className="flex-1 bg-transparent text-sm font-semibold text-gray-900 outline-none placeholder-gray-300"
+                className="flex-1 bg-transparent text-sm font-semibold text-gray-900 placeholder-gray-300 outline-none"
               />
             </div>
           </div>
@@ -107,43 +115,52 @@ export default function DepositModal({ onClose }: Props) {
           {/* Currency + Country row */}
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-gray-600">Currency</label>
+              <label className="text-xs font-semibold text-gray-600">
+                Currency
+              </label>
               <select
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value)}
-                className="px-3 py-2.5 rounded-lg border border-gray-200 bg-[#F7F8FA] text-sm text-gray-700 outline-none cursor-pointer focus:border-orange-400 focus:bg-white transition-colors"
+                className="cursor-pointer rounded-lg border border-gray-200 bg-[#F7F8FA] px-3 py-2.5 text-sm text-gray-700 outline-none transition-colors focus:border-orange-400 focus:bg-white"
               >
                 {CURRENCIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
                 ))}
               </select>
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-gray-600">Country</label>
+              <label className="text-xs font-semibold text-gray-600">
+                Country
+              </label>
               <select
                 value={country}
                 onChange={(e) => setCountry(e.target.value)}
-                className="px-3 py-2.5 rounded-lg border border-gray-200 bg-[#F7F8FA] text-sm text-gray-700 outline-none cursor-pointer focus:border-orange-400 focus:bg-white transition-colors"
+                className="cursor-pointer rounded-lg border border-gray-200 bg-[#F7F8FA] px-3 py-2.5 text-sm text-gray-700 outline-none transition-colors focus:border-orange-400 focus:bg-white"
               >
                 {COUNTRIES.map((c) => (
-                  <option key={c.code} value={c.code}>{c.name}</option>
+                  <option key={c.code} value={c.code}>
+                    {c.name}
+                  </option>
                 ))}
               </select>
             </div>
           </div>
 
           {/* Info note */}
-          <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-blue-50 border border-blue-100">
-            <ExternalLink className="w-3.5 h-3.5 text-blue-400 mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-blue-600 leading-relaxed">
-              A Rapyd checkout page will open in a new tab. Complete the payment there and the balance will update automatically.
+          <div className="flex items-start gap-2 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2.5">
+            <ExternalLink className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-blue-400" />
+            <p className="text-xs leading-relaxed text-blue-600">
+              A Rapyd checkout page will open in a new tab. Complete the payment
+              there and the balance will update automatically.
             </p>
           </div>
 
           {/* Error */}
           {error && (
-            <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+            <p className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-xs text-red-500">
               {error}
             </p>
           )}
@@ -153,19 +170,23 @@ export default function DepositModal({ onClose }: Props) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+              className="flex-1 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading || !amount}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-orange-500 text-sm font-semibold text-white hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? (
-                <><Loader2 className="w-4 h-4 animate-spin" /> Processing...</>
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" /> Processing...
+                </>
               ) : (
-                <><ExternalLink className="w-4 h-4" /> Go to Checkout</>
+                <>
+                  <ExternalLink className="h-4 w-4" /> Go to Checkout
+                </>
               )}
             </button>
           </div>

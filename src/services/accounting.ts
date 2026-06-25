@@ -3,9 +3,9 @@ import type {
   Accounting,
   CreateAccountingDto,
   ApiResponse,
-} from '../types/accounting.types';
+} from "../types/accounting.types";
 
-const BASE_URL = '/accounting';
+const BASE_URL = "/accounting";
 
 // ─── Balance response type ──────────────────────────────────────────────────────
 
@@ -25,7 +25,10 @@ export const accountingApi = {
    * Crea un nuevo registro de costo para una canción.
    */
   create: async (data: CreateAccountingDto): Promise<Accounting> => {
-    const res = await apiClient.post<ApiResponse<Accounting>>(`${BASE_URL}`, data);
+    const res = await apiClient.post<ApiResponse<Accounting>>(
+      `${BASE_URL}`,
+      data,
+    );
     return res.data.data;
   },
 
@@ -35,7 +38,7 @@ export const accountingApi = {
    */
   getBySongId: async (songId: string): Promise<Accounting[]> => {
     const res = await apiClient.get<ApiResponse<Accounting[]>>(
-      `${BASE_URL}/song/${songId}`
+      `${BASE_URL}/song/${songId}`,
     );
     return res.data.data;
   },
@@ -47,7 +50,7 @@ export const accountingApi = {
    */
   getBalanceBySongId: async (songId: string): Promise<SongBalance> => {
     const res = await apiClient.get<ApiResponse<SongBalance>>(
-      `${BASE_URL}/balance/song/${songId}`
+      `${BASE_URL}/balance/song/${songId}`,
     );
     return res.data.data;
   },
@@ -64,8 +67,14 @@ export const accountingApi = {
    * PUT /accounting/:id
    * Actualiza un registro de costo.
    */
-  update: async (id: string, data: Partial<Accounting>): Promise<Accounting> => {
-    const res = await apiClient.put<ApiResponse<Accounting>>(`${BASE_URL}/${id}`, data);
+  update: async (
+    id: string,
+    data: Partial<Accounting>,
+  ): Promise<Accounting> => {
+    const res = await apiClient.put<ApiResponse<Accounting>>(
+      `${BASE_URL}/${id}`,
+      data,
+    );
     return res.data.data;
   },
 };

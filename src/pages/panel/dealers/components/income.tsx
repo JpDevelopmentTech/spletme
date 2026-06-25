@@ -65,42 +65,53 @@ export default function Income() {
   ];
   const options: ApexOptions = {
     chart: {
-      type: 'bar',
-      height: 350
+      type: "bar",
+      height: 350,
     },
     plotOptions: {
       bar: {
         horizontal: false,
-        columnWidth: '70%',
-        borderRadius: 15
+        columnWidth: "70%",
+        borderRadius: 15,
       },
     },
     dataLabels: {
-      enabled: false
+      enabled: false,
     },
     stroke: {
       show: true,
       width: 2,
-      colors: ['transparent']
+      colors: ["transparent"],
     },
     xaxis: {
-      categories: ['Ene','Feb', 'Mar', 'Apr', 'May', 'Jun'],
+      categories: ["Ene", "Feb", "Mar", "Apr", "May", "Jun"],
     },
     yaxis: {
       title: {
-        text: '$ (thousands)'
-      }
+        text: "$ (thousands)",
+      },
     },
     fill: {
-      opacity: 1
+      opacity: 1,
     },
-  }
+  };
   return (
-    <div id="income" className="col-span-6 p-6 rounded-2xl shadow-lg hover:scale-[1.01] duration-200">
-      <div className="flex justify-between  flex-col">
-        <Title title="Ingresos" subtitle="Mide el comportamiento por distribuidor" />
+    <div
+      id="income"
+      className="col-span-6 rounded-2xl p-6 shadow-lg duration-200 hover:scale-[1.01]"
+    >
+      <div className="flex flex-col justify-between">
+        <Title
+          title="Ingresos"
+          subtitle="Mide el comportamiento por distribuidor"
+        />
         <div>
-          <ReactApexChart series={series} type="bar" options={options} height={350}/>
+          <ReactApexChart
+            series={series}
+            type="bar"
+            options={options}
+            height={350}
+          />
         </div>
       </div>
     </div>

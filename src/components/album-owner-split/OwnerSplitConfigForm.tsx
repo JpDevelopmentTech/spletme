@@ -1,5 +1,12 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { Music, Crown, Globe, Percent, Settings, ChevronDown } from "lucide-react";
+import {
+  Music,
+  Crown,
+  Globe,
+  Percent,
+  Settings,
+  ChevronDown,
+} from "lucide-react";
 import Select from "react-select";
 import { amberSelectStyles } from "@/components/ui/selectStyles";
 import type { OwnerFormData } from "@/types/album-owner-split.types";
@@ -14,7 +21,10 @@ interface OwnerSplitConfigFormProps {
   countryOptions: SelectOption[];
   platformOptions: SelectOption[];
   onToggleExpanded: () => void;
-  onUpdateForm: (field: keyof OwnerFormData, value: string | readonly SelectOption[]) => void;
+  onUpdateForm: (
+    field: keyof OwnerFormData,
+    value: string | readonly SelectOption[],
+  ) => void;
 }
 
 const COUNTRY_TYPE_OPTIONS = [
@@ -52,40 +62,45 @@ export function OwnerSplitConfigForm({
       transition={{ delay: 0.3 }}
     >
       {/* Info Banner */}
-      <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-start gap-3">
-        <Settings className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+      <div className="flex items-start gap-3 rounded-2xl border border-blue-200 bg-blue-50 p-4">
+        <Settings className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600" />
         <div className="text-sm text-blue-900">
-          <p className="font-medium mb-1">Creación masiva de splits</p>
-          <p>La configuración que definas se aplicará a todas las {tracksCount} canciones de este álbum.</p>
+          <p className="mb-1 font-medium">Creación masiva de splits</p>
+          <p>
+            La configuración que definas se aplicará a todas las {tracksCount}{" "}
+            canciones de este álbum.
+          </p>
         </div>
       </div>
 
       <motion.div
-        className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
+        className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-lg"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         whileHover={{ boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)" }}
       >
         {/* Owner header — clickeable para colapsar */}
         <motion.div
-          className="p-6 bg-gradient-to-r from-amber-50 to-orange-50 border-b border-amber-100 cursor-pointer"
+          className="cursor-pointer border-b border-amber-100 bg-gradient-to-r from-amber-50 to-orange-50 p-6"
           onClick={onToggleExpanded}
           whileHover={{ backgroundColor: "rgba(245,158,11,0.05)" }}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <motion.div
-                className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white shadow-lg"
+                className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-lg"
                 whileHover={{ scale: 1.1 }}
               >
-                <Crown className="w-7 h-7" />
+                <Crown className="h-7 w-7" />
               </motion.div>
               <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1">{currentUser?.name ?? "Owner"}</h3>
-                <p className="text-gray-600 text-sm flex items-center gap-2">
+                <h3 className="mb-1 text-xl font-bold text-gray-900">
+                  {currentUser?.name ?? "Owner"}
+                </h3>
+                <p className="flex items-center gap-2 text-sm text-gray-600">
                   <span>{currentUser?.email}</span>
                   {ownerForm.percentage && (
-                    <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded-lg text-xs font-medium">
+                    <span className="rounded-lg bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">
                       {ownerForm.percentage}%
                     </span>
                   )}
@@ -95,9 +110,9 @@ export function OwnerSplitConfigForm({
             <motion.div
               animate={{ rotate: isExpanded ? 180 : 0 }}
               transition={{ duration: 0.3 }}
-              className="p-2 rounded-xl bg-amber-100 hover:bg-amber-200 transition-colors"
+              className="rounded-xl bg-amber-100 p-2 transition-colors hover:bg-amber-200"
             >
-              <ChevronDown className="w-5 h-5 text-amber-700" />
+              <ChevronDown className="h-5 w-5 text-amber-700" />
             </motion.div>
           </div>
         </motion.div>
@@ -112,19 +127,24 @@ export function OwnerSplitConfigForm({
               className="overflow-hidden"
             >
               <div className="p-6">
-                <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Settings className="w-6 h-6 text-amber-600" />
+                <div className="rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 p-6">
+                  <div className="mb-4 flex items-center gap-3">
+                    <Settings className="h-6 w-6 text-amber-600" />
                     <div>
-                      <h4 className="text-lg font-semibold text-gray-900">Configuración del Split</h4>
-                      <p className="text-sm text-gray-600">Porcentaje del owner y filtros opcionales de país y plataforma</p>
+                      <h4 className="text-lg font-semibold text-gray-900">
+                        Configuración del Split
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        Porcentaje del owner y filtros opcionales de país y
+                        plataforma
+                      </p>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                     <div className="space-y-2">
                       <label className="flex items-center gap-2 text-sm font-medium text-gray-900">
-                        <Percent className="w-4 h-4" />
+                        <Percent className="h-4 w-4" />
                         Porcentaje de Split
                       </label>
                       <div className="relative">
@@ -135,23 +155,27 @@ export function OwnerSplitConfigForm({
                           step="0.01"
                           placeholder="0.00"
                           value={ownerForm.percentage}
-                          onChange={(e) => onUpdateForm("percentage", e.target.value)}
-                          className="w-full pl-4 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all text-gray-900 font-medium"
+                          onChange={(e) =>
+                            onUpdateForm("percentage", e.target.value)
+                          }
+                          className="w-full rounded-xl border border-gray-200 py-3 pl-4 pr-12 font-medium text-gray-900 transition-all focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
                         />
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</div>
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                          %
+                        </div>
                       </div>
                     </div>
 
-                    <div className="space-y-3 col-span-2">
+                    <div className="col-span-2 space-y-3">
                       <label className="flex items-center gap-2 text-sm font-medium text-gray-900">
-                        <Globe className="w-4 h-4" />
+                        <Globe className="h-4 w-4" />
                         Configuración de Países
                       </label>
                       <div className="space-y-2">
                         {COUNTRY_TYPE_OPTIONS.map((opt) => (
                           <motion.label
                             key={opt.value}
-                            className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors"
+                            className="flex cursor-pointer items-center gap-3 rounded-xl border border-gray-200 p-3 transition-colors hover:bg-gray-50"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                           >
@@ -159,21 +183,30 @@ export function OwnerSplitConfigForm({
                               type="radio"
                               name="countries-type"
                               checked={ownerForm.countriesType === opt.value}
-                              onChange={() => onUpdateForm("countriesType", opt.value)}
-                              className="w-4 h-4 text-amber-500 focus:ring-amber-500/20"
+                              onChange={() =>
+                                onUpdateForm("countriesType", opt.value)
+                              }
+                              className="h-4 w-4 text-amber-500 focus:ring-amber-500/20"
                             />
-                            <span className="text-sm text-gray-900">{opt.label}</span>
+                            <span className="text-sm text-gray-900">
+                              {opt.label}
+                            </span>
                           </motion.label>
                         ))}
                       </div>
                       {ownerForm.countriesType !== "all" && (
-                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}>
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                        >
                           <Select
                             isMulti
                             isLoading={isLoadingFilters}
                             options={countryOptions}
                             value={ownerForm.selectedCountries}
-                            onChange={(selected) => onUpdateForm("selectedCountries", selected ?? [])}
+                            onChange={(selected) =>
+                              onUpdateForm("selectedCountries", selected ?? [])
+                            }
                             styles={amberSelectStyles}
                             placeholder="Seleccionar países..."
                             noOptionsMessage={() => "No hay países disponibles"}
@@ -184,14 +217,14 @@ export function OwnerSplitConfigForm({
 
                     <div className="space-y-3 lg:col-span-2">
                       <label className="flex items-center gap-2 text-sm font-medium text-gray-900">
-                        <Music className="w-4 h-4" />
+                        <Music className="h-4 w-4" />
                         Configuración de Plataformas
                       </label>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                      <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
                         {PLATFORM_TYPE_OPTIONS.map((opt) => (
                           <motion.label
                             key={opt.value}
-                            className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors"
+                            className="flex cursor-pointer items-center gap-3 rounded-xl border border-gray-200 p-3 transition-colors hover:bg-gray-50"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                           >
@@ -199,24 +232,35 @@ export function OwnerSplitConfigForm({
                               type="radio"
                               name="platforms-type"
                               checked={ownerForm.platformsType === opt.value}
-                              onChange={() => onUpdateForm("platformsType", opt.value)}
-                              className="w-4 h-4 text-amber-500 focus:ring-amber-500/20"
+                              onChange={() =>
+                                onUpdateForm("platformsType", opt.value)
+                              }
+                              className="h-4 w-4 text-amber-500 focus:ring-amber-500/20"
                             />
-                            <span className="text-sm text-gray-900">{opt.label}</span>
+                            <span className="text-sm text-gray-900">
+                              {opt.label}
+                            </span>
                           </motion.label>
                         ))}
                       </div>
                       {ownerForm.platformsType !== "all" && (
-                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}>
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                        >
                           <Select
                             isMulti
                             isLoading={isLoadingFilters}
                             options={platformOptions}
                             value={ownerForm.selectedPlatforms}
-                            onChange={(selected) => onUpdateForm("selectedPlatforms", selected ?? [])}
+                            onChange={(selected) =>
+                              onUpdateForm("selectedPlatforms", selected ?? [])
+                            }
                             styles={amberSelectStyles}
                             placeholder="Seleccionar plataformas..."
-                            noOptionsMessage={() => "No hay plataformas disponibles"}
+                            noOptionsMessage={() =>
+                              "No hay plataformas disponibles"
+                            }
                           />
                         </motion.div>
                       )}

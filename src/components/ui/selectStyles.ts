@@ -19,7 +19,7 @@ export const selectStyles = {
   }),
   option: (
     base: Record<string, unknown>,
-    { isSelected, isFocused }: { isSelected: boolean; isFocused: boolean }
+    { isSelected, isFocused }: { isSelected: boolean; isFocused: boolean },
   ) => ({
     ...base,
     backgroundColor: isSelected ? "#F97316" : isFocused ? "#fff7ed" : "white",
@@ -65,7 +65,7 @@ export const amberSelectStyles = {
   }),
   option: (
     base: Record<string, unknown>,
-    { isSelected, isFocused }: { isSelected: boolean; isFocused: boolean }
+    { isSelected, isFocused }: { isSelected: boolean; isFocused: boolean },
   ) => ({
     ...base,
     backgroundColor: isSelected ? "#f59e0b" : isFocused ? "#fef3c7" : "white",

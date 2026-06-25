@@ -5,7 +5,7 @@ export interface AnalyticsFilters {
   endDate?: string;
   artistName?: string;
   labelName?: string;
-  period?: 'month' | 'year';
+  period?: "month" | "year";
 }
 
 export interface AnalyticsKpis {

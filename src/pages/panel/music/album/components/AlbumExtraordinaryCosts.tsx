@@ -11,7 +11,12 @@ import {
 import Button from "../../../../../components/atoms/button";
 import { accountingApi } from "@/services/accounting";
 import AlbumService from "../../../../../services/albums";
-import type { AlbumBalance, Accounting, AccountingStatus, CreateAccountingDto } from "../../../../../types/accounting.types";
+import type {
+  AlbumBalance,
+  Accounting,
+  AccountingStatus,
+  CreateAccountingDto,
+} from "../../../../../types/accounting.types";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -58,7 +63,10 @@ const toNum = (v: unknown): number => {
 };
 
 const fmt = (v: unknown): string =>
-  toNum(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  toNum(v).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
 const fmtInput = (v: string) => {
   const s = v.replace(/,/g, "").replace(/[^\d.]/g, "");
@@ -77,7 +85,11 @@ const dateParts = (v?: string) => {
   const p = new Date(v);
   if (Number.isNaN(p.getTime())) return { date: "—", time: "—" };
   return {
-    date: p.toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" }),
+    date: p.toLocaleDateString("es-CO", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }),
     time: p.toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" }),
   };
 };
@@ -110,9 +122,13 @@ const StatPill = ({
   }[accent ?? "default"];
 
   return (
-    <div className="bg-gray-50 rounded-xl p-3 flex flex-col gap-0.5">
-      <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">{label}</p>
-      <p className={`text-base font-bold leading-tight ${valueClass}`}>{value}</p>
+    <div className="flex flex-col gap-0.5 rounded-xl bg-gray-50 p-3">
+      <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">
+        {label}
+      </p>
+      <p className={`text-base font-bold leading-tight ${valueClass}`}>
+        {value}
+      </p>
     </div>
   );
 };
@@ -146,18 +162,32 @@ const BalanceFace = ({
     setLoadingBalance(true);
     setBalanceError(false);
     AlbumService.getAlbumBalance(albumId)
-      .then((data) => { if (active) setBalance(data); })
-      .catch(() => { if (active) setBalanceError(true); })
-      .finally(() => { if (active) setLoadingBalance(false); });
-    return () => { active = false; };
+      .then((data) => {
+        if (active) setBalance(data);
+      })
+      .catch(() => {
+        if (active) setBalanceError(true);
+      })
+      .finally(() => {
+        if (active) setLoadingBalance(false);
+      });
+    return () => {
+      active = false;
+    };
   }, [albumId, balanceKey]);
 
   const localIngresos = useMemo(
-    () => costs.filter((c) => c.concept === "Ingreso").reduce((s, c) => s + toNum(c.amount), 0),
+    () =>
+      costs
+        .filter((c) => c.concept === "Ingreso")
+        .reduce((s, c) => s + toNum(c.amount), 0),
     [costs],
   );
   const localEgresos = useMemo(
-    () => costs.filter((c) => c.concept !== "Ingreso").reduce((s, c) => s + toNum(c.amount), 0),
+    () =>
+      costs
+        .filter((c) => c.concept !== "Ingreso")
+        .reduce((s, c) => s + toNum(c.amount), 0),
     [costs],
   );
 
@@ -168,11 +198,17 @@ const BalanceFace = ({
   const totalEntries = balance?.totalEntries ?? costs.length;
 
   const pendingIngresos = useMemo(
-    () => costs.filter((c) => c.concept === "Ingreso" && c.status === "pending").reduce((s, c) => s + toNum(c.amount), 0),
+    () =>
+      costs
+        .filter((c) => c.concept === "Ingreso" && c.status === "pending")
+        .reduce((s, c) => s + toNum(c.amount), 0),
     [costs],
   );
   const pendingEgresos = useMemo(
-    () => costs.filter((c) => c.concept !== "Ingreso" && c.status === "pending").reduce((s, c) => s + toNum(c.amount), 0),
+    () =>
+      costs
+        .filter((c) => c.concept !== "Ingreso" && c.status === "pending")
+        .reduce((s, c) => s + toNum(c.amount), 0),
     [costs],
   );
 
@@ -180,20 +216,24 @@ const BalanceFace = ({
   const ingPct = totalForBar > 0 ? (totalIngresos / totalForBar) * 100 : 50;
 
   return (
-    <div className="p-5 flex flex-col gap-4 h-full">
-      <div className="flex justify-between items-center shrink-0">
+    <div className="flex h-full flex-col gap-4 p-5">
+      <div className="flex shrink-0 items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-base font-semibold text-gray-900">Balance del Álbum</span>
-          <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+          <span className="text-base font-semibold text-gray-900">
+            Balance del Álbum
+          </span>
+          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
             {totalEntries} mov.
           </span>
-          {loadingBalance && <RefreshCw className="h-3 w-3 text-gray-400 animate-spin" />}
+          {loadingBalance && (
+            <RefreshCw className="h-3 w-3 animate-spin text-gray-400" />
+          )}
         </div>
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={onFlip}
-            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 transition-colors px-2.5 py-1.5 rounded-lg hover:bg-gray-100"
+            className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
           >
             <RefreshCw className="h-3.5 w-3.5" />
             Ver detalle
@@ -205,55 +245,74 @@ const BalanceFace = ({
       </div>
 
       {balanceError && (
-        <p className="shrink-0 text-xs text-yellow-600 bg-yellow-50 rounded-lg px-3 py-2">
-          No se pudo actualizar el balance desde el servidor. Mostrando datos locales.
+        <p className="shrink-0 rounded-lg bg-yellow-50 px-3 py-2 text-xs text-yellow-600">
+          No se pudo actualizar el balance desde el servidor. Mostrando datos
+          locales.
         </p>
       )}
 
       <div
-        className={`shrink-0 rounded-xl px-4 py-3 flex items-center justify-between ${
+        className={`flex shrink-0 items-center justify-between rounded-xl px-4 py-3 ${
           isPositive
-            ? "bg-green-50 border border-green-100"
-            : "bg-red-50 border border-red-100"
+            ? "border border-green-100 bg-green-50"
+            : "border border-red-100 bg-red-50"
         }`}
       >
         <div>
-          <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">Balance neto</p>
-          <p className={`text-2xl font-bold leading-tight ${isPositive ? "text-green-600" : "text-red-600"}`}>
+          <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">
+            Balance neto
+          </p>
+          <p
+            className={`text-2xl font-bold leading-tight ${isPositive ? "text-green-600" : "text-red-600"}`}
+          >
             {isPositive ? "+" : "-"}${fmt(Math.abs(netBalance))}
           </p>
         </div>
         <span
-          className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-            isPositive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+          className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+            isPositive
+              ? "bg-green-100 text-green-700"
+              : "bg-red-100 text-red-700"
           }`}
         >
           {isPositive ? "Superávit" : "Déficit"}
         </span>
       </div>
 
-      <div className="shrink-0 grid grid-cols-2 gap-3">
-        <div className="bg-gray-50 rounded-xl p-3">
-          <div className="flex items-center gap-1.5 mb-2">
+      <div className="grid shrink-0 grid-cols-2 gap-3">
+        <div className="rounded-xl bg-gray-50 p-3">
+          <div className="mb-2 flex items-center gap-1.5">
             <ArrowUpCircle className="h-3.5 w-3.5 text-green-500" />
-            <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">Ingresos</p>
+            <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">
+              Ingresos
+            </p>
           </div>
-          <p className="text-base font-bold text-gray-900">${fmt(totalIngresos)}</p>
+          <p className="text-base font-bold text-gray-900">
+            ${fmt(totalIngresos)}
+          </p>
           {/* {albumNetIncome > 0 && (
             <p className="text-[11px] text-blue-600 mt-0.5">Incl. ${fmt(albumNetIncome)} ganancia álbum</p>
           )} */}
           {pendingIngresos > 0 && (
-            <p className="text-[11px] text-yellow-600 mt-0.5">${fmt(pendingIngresos)} pendiente</p>
+            <p className="mt-0.5 text-[11px] text-yellow-600">
+              ${fmt(pendingIngresos)} pendiente
+            </p>
           )}
         </div>
-        <div className="bg-gray-50 rounded-xl p-3">
-          <div className="flex items-center gap-1.5 mb-2">
+        <div className="rounded-xl bg-gray-50 p-3">
+          <div className="mb-2 flex items-center gap-1.5">
             <ArrowDownCircle className="h-3.5 w-3.5 text-orange-500" />
-            <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">Egresos</p>
+            <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">
+              Egresos
+            </p>
           </div>
-          <p className="text-base font-bold text-gray-900">${fmt(totalEgresos)}</p>
+          <p className="text-base font-bold text-gray-900">
+            ${fmt(totalEgresos)}
+          </p>
           {pendingEgresos > 0 && (
-            <p className="text-[11px] text-yellow-600 mt-0.5">${fmt(pendingEgresos)} pendiente</p>
+            <p className="mt-0.5 text-[11px] text-yellow-600">
+              ${fmt(pendingEgresos)} pendiente
+            </p>
           )}
         </div>
       </div>
@@ -262,11 +321,11 @@ const BalanceFace = ({
         <>
           {totalForBar > 0 && (
             <div className="shrink-0">
-              <div className="flex justify-between text-[11px] text-gray-400 mb-1.5">
+              <div className="mb-1.5 flex justify-between text-[11px] text-gray-400">
                 <span>Ingresos {ingPct.toFixed(0)}%</span>
                 <span>Egresos {(100 - ingPct).toFixed(0)}%</span>
               </div>
-              <div className="w-full h-2 rounded-full bg-orange-200 overflow-hidden">
+              <div className="h-2 w-full overflow-hidden rounded-full bg-orange-200">
                 <div
                   className="h-full rounded-full bg-green-500 transition-all duration-500"
                   style={{ width: `${ingPct}%` }}
@@ -275,7 +334,7 @@ const BalanceFace = ({
             </div>
           )}
 
-          <div className="shrink-0 grid grid-cols-2 gap-3">
+          <div className="grid shrink-0 grid-cols-2 gap-3">
             <StatPill
               label="Pagados"
               value={`${costs.filter((c) => c.status === "paid").length} ítems`}
@@ -304,7 +363,10 @@ const BalanceFace = ({
 
 // ─── Main Component ─────────────────────────────────────────────────────────────
 
-const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsProps) => {
+const AlbumExtraordinaryCosts = ({
+  albumId,
+  tracks,
+}: AlbumExtraordinaryCostsProps) => {
   const trackMap = useMemo(
     () => new Map(tracks.map((t) => [t._id, t.trackTitle])),
     [tracks],
@@ -319,7 +381,9 @@ const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsPro
   const [markingPaid, setMarkingPaid] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState<FormState>(() => initialForm(tracks[0]?._id ?? ""));
+  const [form, setForm] = useState<FormState>(() =>
+    initialForm(tracks[0]?._id ?? ""),
+  );
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [balanceKey, setBalanceKey] = useState(0);
   const bumpBalance = useCallback(() => setBalanceKey((k) => k + 1), []);
@@ -337,9 +401,13 @@ const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsPro
         if (!active) return;
         const all: Accounting[] = [];
         for (const r of results) {
-          if (r.status === "fulfilled" && Array.isArray(r.value)) all.push(...r.value);
+          if (r.status === "fulfilled" && Array.isArray(r.value))
+            all.push(...r.value);
         }
-        all.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        all.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        );
         setCosts(all);
         setSelectedIds([]);
       } catch {
@@ -349,10 +417,15 @@ const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsPro
       }
     };
     load();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [tracks]);
 
-  const pendingCosts = useMemo(() => costs.filter((i) => i.status === "pending"), [costs]);
+  const pendingCosts = useMemo(
+    () => costs.filter((i) => i.status === "pending"),
+    [costs],
+  );
   const selectedCosts = useMemo(
     () => pendingCosts.filter((i) => selectedIds.includes(i._id)),
     [pendingCosts, selectedIds],
@@ -363,22 +436,29 @@ const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsPro
   );
   const tableIngresos = useMemo(
     () =>
-      costs.filter((c) => c.concept === "Ingreso").reduce((s, c) => s + toNum(c.amount), 0) +
-      0,
+      costs
+        .filter((c) => c.concept === "Ingreso")
+        .reduce((s, c) => s + toNum(c.amount), 0) + 0,
     [costs],
   );
   const tableEgresos = useMemo(
-    () => costs.filter((c) => c.concept !== "Ingreso").reduce((s, c) => s + toNum(c.amount), 0),
+    () =>
+      costs
+        .filter((c) => c.concept !== "Ingreso")
+        .reduce((s, c) => s + toNum(c.amount), 0),
     [costs],
   );
   const tableBalance = tableIngresos - tableEgresos;
   const tableBalancePositive = tableBalance >= 0;
-  const allSelected = pendingCosts.length > 0 && selectedIds.length === pendingCosts.length;
+  const allSelected =
+    pendingCosts.length > 0 && selectedIds.length === pendingCosts.length;
 
   const toggleSelection = (id: string) => {
     const t = costs.find((i) => i._id === id);
     if (!t || t.status !== "pending") return;
-    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
   };
 
   const toggleSelectAll = () =>
@@ -396,9 +476,15 @@ const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsPro
   const toggleExpand = () => (expanded ? collapse() : setExpanded(true));
 
   const handleCreate = async () => {
-    if (!form.songId) { setError("Selecciona una canción."); return; }
+    if (!form.songId) {
+      setError("Selecciona una canción.");
+      return;
+    }
     const amountValue = parseAmt(form.amount);
-    if (!isFinite(amountValue) || amountValue <= 0) { setError("El monto debe ser mayor a cero."); return; }
+    if (!isFinite(amountValue) || amountValue <= 0) {
+      setError("El monto debe ser mayor a cero.");
+      return;
+    }
     setSaving(true);
     setError(null);
     try {
@@ -438,9 +524,15 @@ const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsPro
     setMarkingPaid(true);
     setError(null);
     try {
-      await Promise.all(selectedCosts.map((i) => accountingApi.update(i._id, { status: "paid" })));
+      await Promise.all(
+        selectedCosts.map((i) =>
+          accountingApi.update(i._id, { status: "paid" }),
+        ),
+      );
       setCosts((prev) =>
-        prev.map((i) => (selectedIds.includes(i._id) ? { ...i, status: "paid" } : i)),
+        prev.map((i) =>
+          selectedIds.includes(i._id) ? { ...i, status: "paid" } : i,
+        ),
       );
       setSelectedIds([]);
       bumpBalance();
@@ -456,12 +548,17 @@ const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsPro
 
   return (
     <>
-      <div className="col-span-12 md:col-span-2" style={{ perspective: "1200px" }}>
+      <div
+        className="col-span-12 md:col-span-2"
+        style={{ perspective: "1200px" }}
+      >
         <div
           style={{
             position: "relative",
             transformStyle: "preserve-3d",
-            transition: suppressFlip ? "none" : "transform 0.5s cubic-bezier(0.4,0,0.2,1)",
+            transition: suppressFlip
+              ? "none"
+              : "transform 0.5s cubic-bezier(0.4,0,0.2,1)",
             transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
           }}
         >
@@ -476,12 +573,14 @@ const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsPro
               visibility: isFlipped ? "hidden" : "visible",
             }}
           >
-            <div className="p-5 flex flex-col gap-4">
-              <div className="flex justify-between items-center shrink-0">
+            <div className="flex flex-col gap-4 p-5">
+              <div className="flex shrink-0 items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-base font-semibold text-gray-900">Contabilidad del Álbum</span>
+                  <span className="text-base font-semibold text-gray-900">
+                    Contabilidad del Álbum
+                  </span>
                   {costs.length > 0 && (
-                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
                       {costs.length}
                     </span>
                   )}
@@ -491,7 +590,7 @@ const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsPro
                     <button
                       type="button"
                       onClick={() => setIsFlipped(true)}
-                      className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 transition-colors px-2.5 py-1.5 rounded-lg hover:bg-gray-100"
+                      className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
                     >
                       <RefreshCw className="h-3.5 w-3.5" />
                       Balance
@@ -505,34 +604,51 @@ const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsPro
 
               {expanded && (
                 <>
-                  <div className="flex items-center justify-between shrink-0">
-                    <div className="grid grid-cols-4 gap-3 flex-1 mr-3">
-                      <div className="bg-gray-50 rounded-xl p-3">
-                        <div className="flex items-center gap-1 mb-0.5">
-                          <ArrowUpCircle className="h-3 w-3 text-green-500 shrink-0" />
-                          <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">Ingresos</p>
+                  <div className="flex shrink-0 items-center justify-between">
+                    <div className="mr-3 grid flex-1 grid-cols-4 gap-3">
+                      <div className="rounded-xl bg-gray-50 p-3">
+                        <div className="mb-0.5 flex items-center gap-1">
+                          <ArrowUpCircle className="h-3 w-3 shrink-0 text-green-500" />
+                          <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">
+                            Ingresos
+                          </p>
                         </div>
-                        <p className="text-sm font-bold text-green-600">${fmt(tableIngresos)}</p>
+                        <p className="text-sm font-bold text-green-600">
+                          ${fmt(tableIngresos)}
+                        </p>
                       </div>
-                      <div className="bg-gray-50 rounded-xl p-3">
-                        <div className="flex items-center gap-1 mb-0.5">
-                          <ArrowDownCircle className="h-3 w-3 text-orange-500 shrink-0" />
-                          <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">Egresos</p>
+                      <div className="rounded-xl bg-gray-50 p-3">
+                        <div className="mb-0.5 flex items-center gap-1">
+                          <ArrowDownCircle className="h-3 w-3 shrink-0 text-orange-500" />
+                          <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">
+                            Egresos
+                          </p>
                         </div>
-                        <p className="text-sm font-bold text-orange-500">${fmt(tableEgresos)}</p>
+                        <p className="text-sm font-bold text-orange-500">
+                          ${fmt(tableEgresos)}
+                        </p>
                       </div>
                       <div
                         className={`rounded-xl p-3 ${tableBalancePositive ? "bg-green-50" : "bg-red-50"}`}
                       >
-                        <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide mb-0.5">Balance</p>
-                        <p className={`text-sm font-bold ${tableBalancePositive ? "text-green-600" : "text-red-600"}`}>
-                          {tableBalancePositive ? "+" : "-"}${fmt(Math.abs(tableBalance))}
+                        <p className="mb-0.5 text-[11px] font-medium uppercase tracking-wide text-gray-500">
+                          Balance
+                        </p>
+                        <p
+                          className={`text-sm font-bold ${tableBalancePositive ? "text-green-600" : "text-red-600"}`}
+                        >
+                          {tableBalancePositive ? "+" : "-"}$
+                          {fmt(Math.abs(tableBalance))}
                         </p>
                       </div>
-                      <div className="bg-gray-50 rounded-xl p-3">
-                        <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide mb-0.5">Selección</p>
+                      <div className="rounded-xl bg-gray-50 p-3">
+                        <p className="mb-0.5 text-[11px] font-medium uppercase tracking-wide text-gray-500">
+                          Selección
+                        </p>
                         <p className="text-sm font-bold text-gray-900">
-                          {selectedCosts.length > 0 ? `$${fmt(selectedTotal)}` : `${selectedCosts.length} ítems`}
+                          {selectedCosts.length > 0
+                            ? `$${fmt(selectedTotal)}`
+                            : `${selectedCosts.length} ítems`}
                         </p>
                       </div>
                     </div>
@@ -545,8 +661,8 @@ const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsPro
                   </div>
 
                   {selectedCosts.length > 0 && (
-                    <div className="shrink-0 flex items-center justify-between bg-primary-50 rounded-xl px-4 py-2.5">
-                      <span className="text-sm text-primary-700">
+                    <div className="bg-primary-50 flex shrink-0 items-center justify-between rounded-xl px-4 py-2.5">
+                      <span className="text-primary-700 text-sm">
                         {selectedCosts.length} ítem(s) seleccionado(s)
                       </span>
                       <Button onClick={handleMarkAsPaid} type="quinary">
@@ -559,56 +675,76 @@ const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsPro
                   )}
 
                   {error && (
-                    <div className="shrink-0 text-sm text-red-500 bg-red-50 rounded-lg px-3 py-2">
+                    <div className="shrink-0 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-500">
                       {error}
                     </div>
                   )}
 
-                  <div className="overflow-auto rounded-xl border border-gray-100 max-h-80">
-                    <table className="w-full text-sm text-left">
-                      <thead className="bg-gray-50 sticky top-0 z-10">
+                  <div className="max-h-80 overflow-auto rounded-xl border border-gray-100">
+                    <table className="w-full text-left text-sm">
+                      <thead className="sticky top-0 z-10 bg-gray-50">
                         <tr>
-                          <th className="p-3 w-10">
+                          <th className="w-10 p-3">
                             <input
                               type="checkbox"
                               checked={allSelected}
                               onChange={toggleSelectAll}
-                              className="w-4 h-4 rounded accent-primary-600"
+                              className="accent-primary-600 h-4 w-4 rounded"
                             />
                           </th>
-                          <th className="px-3 py-3 text-[11px] font-medium text-gray-500 uppercase tracking-wide">Concepto</th>
-                          <th className="px-3 py-3 text-[11px] font-medium text-gray-500 uppercase tracking-wide">Canción</th>
-                          <th className="px-3 py-3 text-[11px] font-medium text-gray-500 uppercase tracking-wide text-center">Tipo</th>
-                          <th className="px-3 py-3 text-[11px] font-medium text-gray-500 uppercase tracking-wide text-center">Fecha</th>
-                          <th className="px-3 py-3 text-[11px] font-medium text-gray-500 uppercase tracking-wide text-right">Monto</th>
-                          <th className="px-3 py-3 text-[11px] font-medium text-gray-500 uppercase tracking-wide text-center">Estado</th>
+                          <th className="px-3 py-3 text-[11px] font-medium uppercase tracking-wide text-gray-500">
+                            Concepto
+                          </th>
+                          <th className="px-3 py-3 text-[11px] font-medium uppercase tracking-wide text-gray-500">
+                            Canción
+                          </th>
+                          <th className="px-3 py-3 text-center text-[11px] font-medium uppercase tracking-wide text-gray-500">
+                            Tipo
+                          </th>
+                          <th className="px-3 py-3 text-center text-[11px] font-medium uppercase tracking-wide text-gray-500">
+                            Fecha
+                          </th>
+                          <th className="px-3 py-3 text-right text-[11px] font-medium uppercase tracking-wide text-gray-500">
+                            Monto
+                          </th>
+                          <th className="px-3 py-3 text-center text-[11px] font-medium uppercase tracking-wide text-gray-500">
+                            Estado
+                          </th>
                           <th className="w-10" />
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
                         {loading && (
                           <tr>
-                            <td colSpan={8} className="px-4 py-8 text-center text-gray-400 text-sm">
+                            <td
+                              colSpan={8}
+                              className="px-4 py-8 text-center text-sm text-gray-400"
+                            >
                               Cargando costos...
                             </td>
                           </tr>
                         )}
                         {!loading && costs.length === 0 && (
                           <tr>
-                            <td colSpan={8} className="px-4 py-8 text-center text-gray-400 text-sm">
+                            <td
+                              colSpan={8}
+                              className="px-4 py-8 text-center text-sm text-gray-400"
+                            >
                               No hay costos registrados para este álbum.
                             </td>
                           </tr>
                         )}
                         {!loading &&
                           costs.map((item) => {
-                            const { date, time } = dateParts(item.date || item.createdAt);
+                            const { date, time } = dateParts(
+                              item.date || item.createdAt,
+                            );
                             const isSelected = selectedIds.includes(item._id);
                             const songTitle = trackMap.get(item.songId) ?? "—";
                             return (
                               <tr
                                 key={item._id}
-                                className={`hover:bg-gray-50 transition-colors ${isSelected ? "bg-primary-50/50" : ""}`}
+                                className={`transition-colors hover:bg-gray-50 ${isSelected ? "bg-primary-50/50" : ""}`}
                               >
                                 <td className="p-3">
                                   <input
@@ -616,23 +752,30 @@ const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsPro
                                     checked={isSelected}
                                     onChange={() => toggleSelection(item._id)}
                                     disabled={item.status !== "pending"}
-                                    className="w-4 h-4 rounded accent-primary-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="accent-primary-600 h-4 w-4 rounded disabled:cursor-not-allowed disabled:opacity-50"
                                   />
                                 </td>
                                 <td className="px-3 py-3">
-                                  <p className="font-medium text-gray-900">{item.concept}</p>
+                                  <p className="font-medium text-gray-900">
+                                    {item.concept}
+                                  </p>
                                   {item.description && (
-                                    <p className="text-xs text-gray-500 mt-0.5">{item.description}</p>
+                                    <p className="mt-0.5 text-xs text-gray-500">
+                                      {item.description}
+                                    </p>
                                   )}
                                 </td>
                                 <td className="px-3 py-3">
-                                  <p className="text-xs text-gray-600 max-w-[120px] truncate" title={songTitle}>
+                                  <p
+                                    className="max-w-[120px] truncate text-xs text-gray-600"
+                                    title={songTitle}
+                                  >
                                     {songTitle}
                                   </p>
                                 </td>
                                 <td className="px-3 py-3 text-center">
                                   <span
-                                    className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${
+                                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
                                       item.concept === "Ingreso"
                                         ? "bg-green-100 text-green-800"
                                         : "bg-orange-100 text-orange-800"
@@ -641,15 +784,21 @@ const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsPro
                                     {item.concept}
                                   </span>
                                 </td>
-                                <td className="px-3 py-3 text-center whitespace-nowrap">
-                                  <p className="text-xs text-gray-600">{date}</p>
-                                  <p className="text-xs text-gray-400">{time}</p>
+                                <td className="whitespace-nowrap px-3 py-3 text-center">
+                                  <p className="text-xs text-gray-600">
+                                    {date}
+                                  </p>
+                                  <p className="text-xs text-gray-400">
+                                    {time}
+                                  </p>
                                 </td>
-                                <td className="px-3 py-3 text-right font-semibold text-gray-900 whitespace-nowrap">
+                                <td className="whitespace-nowrap px-3 py-3 text-right font-semibold text-gray-900">
                                   ${fmt(item.amount)}
                                 </td>
                                 <td className="px-3 py-3 text-center">
-                                  <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${STATUS_CLASSES[item.status]}`}>
+                                  <span
+                                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_CLASSES[item.status]}`}
+                                  >
                                     {STATUS_LABELS[item.status]}
                                   </span>
                                 </td>
@@ -657,7 +806,7 @@ const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsPro
                                   <button
                                     type="button"
                                     onClick={() => handleDelete(item._id)}
-                                    className="text-gray-400 hover:text-red-500 transition-colors p-1.5 rounded-lg hover:bg-red-50"
+                                    className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500"
                                   >
                                     <Trash2 className="h-4 w-4" />
                                   </button>
@@ -704,37 +853,45 @@ const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsPro
           onClick={() => setShowForm(false)}
         >
           <div
-            className="w-full max-w-md rounded-2xl bg-white shadow-2xl overflow-hidden"
+            className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+            <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
               <div className="flex items-center gap-2">
                 <Plus className="h-4 w-4" />
-                <span className="font-semibold text-gray-900 text-sm">Nuevo costo</span>
+                <span className="text-sm font-semibold text-gray-900">
+                  Nuevo costo
+                </span>
               </div>
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            <div className="px-5 py-4 flex flex-col gap-3">
+            <div className="flex flex-col gap-3 px-5 py-4">
               {error && (
-                <div className="text-sm text-red-500 bg-red-50 rounded-lg px-3 py-2">{error}</div>
+                <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-500">
+                  {error}
+                </div>
               )}
 
               <div className="flex flex-col gap-1">
                 <label className="text-xs text-gray-500">Canción</label>
                 <select
                   value={form.songId}
-                  onChange={(e) => setForm((p) => ({ ...p, songId: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, songId: e.target.value }))
+                  }
                   className={inputClass}
                 >
                   {tracks.map((t) => (
-                    <option key={t._id} value={t._id}>{t.trackTitle}</option>
+                    <option key={t._id} value={t._id}>
+                      {t.trackTitle}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -744,7 +901,9 @@ const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsPro
                   <label className="text-xs text-gray-500">Tipo</label>
                   <select
                     value={form.concept}
-                    onChange={(e) => setForm((p) => ({ ...p, concept: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, concept: e.target.value }))
+                    }
                     className={inputClass}
                   >
                     <option value="Ingreso">Ingreso</option>
@@ -755,7 +914,12 @@ const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsPro
                   <label className="text-xs text-gray-500">Estado</label>
                   <select
                     value={form.status}
-                    onChange={(e) => setForm((p) => ({ ...p, status: e.target.value as AccountingStatus }))}
+                    onChange={(e) =>
+                      setForm((p) => ({
+                        ...p,
+                        status: e.target.value as AccountingStatus,
+                      }))
+                    }
                     className={inputClass}
                   >
                     <option value="pending">Pendiente</option>
@@ -767,13 +931,20 @@ const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsPro
               <div className="flex flex-col gap-1">
                 <label className="text-xs text-gray-500">Monto</label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">
+                    $
+                  </span>
                   <input
                     type="text"
                     inputMode="decimal"
                     placeholder="0.00"
                     value={form.amount}
-                    onChange={(e) => setForm((p) => ({ ...p, amount: fmtInput(e.target.value) }))}
+                    onChange={(e) =>
+                      setForm((p) => ({
+                        ...p,
+                        amount: fmtInput(e.target.value),
+                      }))
+                    }
                     className={`${inputClass} pl-7`}
                   />
                 </div>
@@ -784,28 +955,40 @@ const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsPro
                 <input
                   type="date"
                   value={form.date}
-                  onChange={(e) => setForm((p) => ({ ...p, date: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, date: e.target.value }))
+                  }
                   className={inputClass}
                 />
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-gray-500">Descripción <span className="text-gray-400">(opcional)</span></label>
+                <label className="text-xs text-gray-500">
+                  Descripción <span className="text-gray-400">(opcional)</span>
+                </label>
                 <textarea
                   placeholder="Agrega una nota..."
                   value={form.description}
-                  onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, description: e.target.value }))
+                  }
                   className={`${inputClass} resize-none`}
                   rows={2}
                 />
               </div>
             </div>
 
-            <div className="flex items-center gap-2 px-5 py-4 border-t border-gray-100 bg-gray-50">
+            <div className="flex items-center gap-2 border-t border-gray-100 bg-gray-50 px-5 py-4">
               <Button onClick={handleCreate} type="primary">
                 {saving ? "Guardando..." : "Guardar costo"}
               </Button>
-              <Button onClick={() => { resetForm(); setShowForm(false); }} type="secondary">
+              <Button
+                onClick={() => {
+                  resetForm();
+                  setShowForm(false);
+                }}
+                type="secondary"
+              >
                 Cancelar
               </Button>
             </div>

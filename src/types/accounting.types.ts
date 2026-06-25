@@ -1,6 +1,6 @@
 // types/accounting.types.ts
 
-export type AccountingStatus = 'pending' | 'paid' | 'cancelled';
+export type AccountingStatus = "pending" | "paid" | "cancelled";
 
 export interface Accounting {
   _id: string;

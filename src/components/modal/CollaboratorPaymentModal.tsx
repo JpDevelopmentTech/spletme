@@ -9,7 +9,9 @@ import {
   ArrowRight,
   Music2,
 } from "lucide-react";
-import PaymentsService, { type CollaboratorReadiness } from "@/services/payments";
+import PaymentsService, {
+  type CollaboratorReadiness,
+} from "@/services/payments";
 import { formatCurrency } from "@/utils/format.utils";
 import type { CollaboratorPaymentModalProps } from "@/types";
 
@@ -29,14 +31,17 @@ export function CollaboratorPaymentModal({
   onPaymentSuccess,
 }: CollaboratorPaymentModalProps) {
   const [step, setStep] = useState<Step>("loading");
-  const [readiness, setReadiness] = useState<CollaboratorReadiness | null>(null);
+  const [readiness, setReadiness] = useState<CollaboratorReadiness | null>(
+    null,
+  );
   const [error, setError] = useState<string | null>(null);
 
   const loadReadiness = useCallback(async () => {
     setStep("loading");
     setError(null);
     setReadiness(null);
-    const response = await PaymentsService.getCollaboratorReadiness(collaboratorId);
+    const response =
+      await PaymentsService.getCollaboratorReadiness(collaboratorId);
     if (response.error || !response.data) {
       setError(response.message ?? "No se pudo calcular el monto a pagar.");
       setStep("confirm");
@@ -81,7 +86,7 @@ export function CollaboratorPaymentModal({
       <motion.div
         animate={{ rotate: 360 }}
         transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
-        className="w-12 h-12 border-4 border-orange-100 border-t-[#F97316] rounded-full"
+        className="h-12 w-12 rounded-full border-4 border-orange-100 border-t-[#F97316]"
       />
       <p className="text-sm text-gray-500">Calculando el monto pendiente...</p>
     </div>
@@ -94,9 +99,12 @@ export function CollaboratorPaymentModal({
         <p className="text-xs font-semibold uppercase tracking-wide text-[#F97316]">
           Total a pagar
         </p>
-        <p className="mt-1 text-3xl font-bold text-gray-900">{formatCurrency(total)}</p>
+        <p className="mt-1 text-3xl font-bold text-gray-900">
+          {formatCurrency(total)}
+        </p>
         <p className="mt-1 text-xs text-gray-500">
-          Se cobrará por débito ACH desde tu cuenta y se enviará a {collaboratorName} vía Wise.
+          Se cobrará por débito ACH desde tu cuenta y se enviará a{" "}
+          {collaboratorName} vía Wise.
         </p>
       </div>
 
@@ -207,8 +215,7 @@ export function CollaboratorPaymentModal({
         </p>
       </div>
       <p className="max-w-sm text-xs text-gray-400">
-        El débito ACH puede tardar algunos días en liquidar. Al confirmarse,
-        {" "}
+        El débito ACH puede tardar algunos días en liquidar. Al confirmarse,{" "}
         {collaboratorName} recibirá su pago vía Wise.
       </p>
     </div>
@@ -239,7 +246,9 @@ export function CollaboratorPaymentModal({
                   <CreditCard className="h-5 w-5 text-white" />
                 </div>
                 <div className="min-w-0">
-                  <h2 className="text-lg font-bold text-gray-900">Pagar colaborador</h2>
+                  <h2 className="text-lg font-bold text-gray-900">
+                    Pagar colaborador
+                  </h2>
                   <p className="truncate text-xs text-gray-500">
                     {collaboratorName} · {collaboratorEmail}
                   </p>

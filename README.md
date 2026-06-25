@@ -5,6 +5,7 @@ SplitMe es una aplicación web moderna para gestión musical que permite a los u
 ## 🚀 Características Principales
 
 ### 🎵 Gestión Musical
+
 - **Dashboard completo** con métricas de streaming y ingresos
 - **Gestión de canciones** con información detallada y metadatos
 - **Administración de colaboradores** y distribución de regalías
@@ -12,6 +13,7 @@ SplitMe es una aplicación web moderna para gestión musical que permite a los u
 - **Integración con plataformas** como Spotify, Apple Music, etc.
 
 ### 💰 Pagos entre Usuarios con Payoneer
+
 - **Transferencias gratuitas** entre usuarios con cuentas Payoneer
 - **Envío de pagos instantáneos** (procesamiento en ~2 horas)
 - **Solicitudes de pago** con fechas límite y descripciones
@@ -22,6 +24,7 @@ SplitMe es una aplicación web moderna para gestión musical que permite a los u
 ## 🛠️ Tecnologías
 
 ### Frontend
+
 - **React 18** con TypeScript
 - **Vite** para desarrollo y build rápido
 - **Tailwind CSS** para estilos modernos
@@ -30,6 +33,7 @@ SplitMe es una aplicación web moderna para gestión musical que permite a los u
 - **Axios** para peticiones HTTP
 
 ### Backend (Requerido)
+
 - **Node.js/Express** o framework de tu elección
 - **Base de datos** (PostgreSQL recomendado)
 - **Integración con Payoneer API** (Mass Payout & Services)
@@ -38,7 +42,8 @@ SplitMe es una aplicación web moderna para gestión musical que permite a los u
 ## 📦 Instalación
 
 ### Prerrequisitos
-- Node.js 18+ 
+
+- Node.js 18+
 - npm o yarn
 - Cuenta de Payoneer Business (para integración)
 
@@ -87,29 +92,34 @@ Ver la [Guía de Implementación de Payoneer](./PAYONEER_IMPLEMENTATION_GUIDE.md
 ### Para Usuarios
 
 #### Vincular Cuenta
+
 - Conectar cuenta de Payoneer existente
 - Verificación automática de identidad
 - Estado de cuenta en tiempo real
 
 #### Enviar Pagos
+
 1. Buscar usuario por email de Payoneer
 2. Especificar cantidad y moneda
 3. Agregar descripción del pago
 4. Confirmación instantánea
 
 #### Solicitar Pagos
+
 1. Enviar solicitud a otro usuario
 2. Establecer fecha límite (opcional)
 3. Seguimiento de estado de solicitud
 4. Notificaciones por email
 
 #### Gestión
+
 - **Dashboard** con balance actual
 - **Historial completo** de transacciones
 - **Solicitudes pendientes** con acciones
 - **Filtros avanzados** por tipo y fecha
 
 ### Beneficios
+
 - ✅ **Transferencias gratuitas** entre usuarios Payoneer
 - ✅ **Procesamiento rápido** (~2 horas típicamente)
 - ✅ **Múltiples monedas** soportadas
@@ -175,8 +185,9 @@ npm run lint
 ## 📱 Responsive Design
 
 La aplicación está completamente optimizada para:
+
 - 📱 **Móviles** (320px+)
-- 📱 **Tablets** (768px+)  
+- 📱 **Tablets** (768px+)
 - 💻 **Desktop** (1024px+)
 - 🖥️ **Pantallas grandes** (1440px+)
 

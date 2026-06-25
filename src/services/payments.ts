@@ -85,7 +85,10 @@ class PaymentsService {
   /** Procesa el pago de un split a un colaborador */
   async createPayment(collaboratorId: string, splitId: string) {
     try {
-      const response = await apiClient.post(`${this.BASE}/split/${splitId}/process-payment`, { recipientId: collaboratorId });
+      const response = await apiClient.post(
+        `${this.BASE}/split/${splitId}/process-payment`,
+        { recipientId: collaboratorId },
+      );
       return response.data;
     } catch {
       return { error: true, message: "Error creating payment" };
@@ -93,7 +96,11 @@ class PaymentsService {
   }
 
   /** Obtiene todos los pagos del usuario autenticado */
-  async getPayments(): Promise<{ error: boolean; data?: Payment[]; message?: string }> {
+  async getPayments(): Promise<{
+    error: boolean;
+    data?: Payment[];
+    message?: string;
+  }> {
     try {
       const response = await apiClient.get(`${this.BASE}/by-user`);
       return response.data;
@@ -103,7 +110,11 @@ class PaymentsService {
   }
 
   /** Historial de cobros ACH de regalías hechos a Stripe por el owner. */
-  async getRoyaltyPayments(): Promise<{ error: boolean; data?: RoyaltyPayment[]; message?: string }> {
+  async getRoyaltyPayments(): Promise<{
+    error: boolean;
+    data?: RoyaltyPayment[];
+    message?: string;
+  }> {
     try {
       const response = await apiClient.get("/payments");
       return response.data;
@@ -114,7 +125,7 @@ class PaymentsService {
 
   /** Pre-chequeo de si una canción está lista para pagar regalías (sin cobrar). */
   async getPaymentReadiness(
-    songId: string
+    songId: string,
   ): Promise<{ error: boolean; data?: PaymentReadiness; message?: string }> {
     try {
       const response = await apiClient.get(`/payments/readiness/${songId}`);
@@ -126,7 +137,7 @@ class PaymentsService {
 
   /** Histórico de todos los cobros realizados para una canción. */
   async getSongHistory(
-    songId: string
+    songId: string,
   ): Promise<{ error: boolean; data?: RoyaltyPayment[]; message?: string }> {
     try {
       const response = await apiClient.get(`/payments/song/${songId}/history`);
@@ -139,11 +150,15 @@ class PaymentsService {
   /** Histórico de pagos hechos a un colaborador en una canción. */
   async getCollaboratorHistory(
     songId: string,
-    collaboratorId: string
-  ): Promise<{ error: boolean; data?: CollaboratorPaymentHistoryItem[]; message?: string }> {
+    collaboratorId: string,
+  ): Promise<{
+    error: boolean;
+    data?: CollaboratorPaymentHistoryItem[];
+    message?: string;
+  }> {
     try {
       const response = await apiClient.get(
-        `/payments/song/${songId}/collaborator/${collaboratorId}/history`
+        `/payments/song/${songId}/collaborator/${collaboratorId}/history`,
       );
       return response.data;
     } catch {
@@ -152,9 +167,13 @@ class PaymentsService {
   }
 
   /** Obtiene los pagos de un colaborador específico */
-  async getPaymentsByCollaborator(idCollaborator: string): Promise<{ error: boolean; data?: Payment[]; message?: string }> {
+  async getPaymentsByCollaborator(
+    idCollaborator: string,
+  ): Promise<{ error: boolean; data?: Payment[]; message?: string }> {
     try {
-      const response = await apiClient.get(`${this.BASE}/by-collaborator/${idCollaborator}`);
+      const response = await apiClient.get(
+        `${this.BASE}/by-collaborator/${idCollaborator}`,
+      );
       return response.data;
     } catch {
       return { error: true, message: "Error getting payments by collaborator" };
@@ -167,13 +186,19 @@ class PaymentsService {
    */
   async payRoyalties(
     songId: string,
-    collaboratorId?: string
+    collaboratorId?: string,
   ): Promise<{ error: boolean; data?: unknown; message?: string }> {
     try {
-      const response = await apiClient.post("/payments/pay", { songId, collaboratorId });
+      const response = await apiClient.post("/payments/pay", {
+        songId,
+        collaboratorId,
+      });
       return response.data;
     } catch (error) {
-      return { error: true, message: extractErrorMessage(error, "Error al procesar el pago") };
+      return {
+        error: true,
+        message: extractErrorMessage(error, "Error al procesar el pago"),
+      };
     }
   }
 
@@ -181,14 +206,24 @@ class PaymentsService {
    * Pre-chequeo del pago completo a un colaborador (sin cobrar): total pendiente,
    * desglose por canción e issues que lo impiden.
    */
-  async getCollaboratorReadiness(
-    collaboratorId: string
-  ): Promise<{ error: boolean; data?: CollaboratorReadiness; message?: string }> {
+  async getCollaboratorReadiness(collaboratorId: string): Promise<{
+    error: boolean;
+    data?: CollaboratorReadiness;
+    message?: string;
+  }> {
     try {
-      const response = await apiClient.get(`/payments/readiness/collaborator/${collaboratorId}`);
+      const response = await apiClient.get(
+        `/payments/readiness/collaborator/${collaboratorId}`,
+      );
       return response.data;
     } catch (error) {
-      return { error: true, message: extractErrorMessage(error, "Error checking collaborator readiness") };
+      return {
+        error: true,
+        message: extractErrorMessage(
+          error,
+          "Error checking collaborator readiness",
+        ),
+      };
     }
   }
 
@@ -197,24 +232,36 @@ class PaymentsService {
    * un solo débito) y su reparto vía Wise. El backend calcula el monto.
    */
   async payCollaborator(
-    collaboratorId: string
+    collaboratorId: string,
   ): Promise<{ error: boolean; data?: unknown; message?: string }> {
     try {
-      const response = await apiClient.post("/payments/pay-collaborator", { collaboratorId });
+      const response = await apiClient.post("/payments/pay-collaborator", {
+        collaboratorId,
+      });
       return response.data;
     } catch (error) {
-      return { error: true, message: extractErrorMessage(error, "Error al procesar el pago") };
+      return {
+        error: true,
+        message: extractErrorMessage(error, "Error al procesar el pago"),
+      };
     }
   }
 
   /** Registra un pago manual para una canción */
-  async registerSongPayment(songId: string, amount: number, description?: string): Promise<{ error: boolean; data?: unknown; message?: string }> {
+  async registerSongPayment(
+    songId: string,
+    amount: number,
+    description?: string,
+  ): Promise<{ error: boolean; data?: unknown; message?: string }> {
     try {
-      const response = await apiClient.post(`${this.BASE}/song/${songId}/register-payment`, {
-        amount,
-        description,
-        paymentDate: new Date().toISOString(),
-      });
+      const response = await apiClient.post(
+        `${this.BASE}/song/${songId}/register-payment`,
+        {
+          amount,
+          description,
+          paymentDate: new Date().toISOString(),
+        },
+      );
       return response.data;
     } catch {
       return { error: true, message: "Error registering song payment" };

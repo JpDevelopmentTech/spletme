@@ -11,5 +11,11 @@ export default function ImageProfile({ id }: { id?: string }) {
     getArtist();
   }, [id]);
 
-  return <img className="w-10 h-10 rounded-full" src={img} alt="Rounded avatar"></img>;
+  return (
+    <img
+      className="h-10 w-10 rounded-full"
+      src={img}
+      alt="Rounded avatar"
+    ></img>
+  );
 }

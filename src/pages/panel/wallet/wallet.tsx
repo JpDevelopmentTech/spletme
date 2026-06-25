@@ -35,10 +35,25 @@ const STATUS_CONFIG: Record<
   RoyaltyPayment["status"],
   { label: string; color: string; bg: string; icon: typeof CheckCircle2 }
 > = {
-  succeeded: { label: "Completado", color: "#16A34A", bg: "#ECFDF5", icon: CheckCircle2 },
-  processing: { label: "En proceso", color: "#1D4ED8", bg: "#EFF6FF", icon: Clock },
+  succeeded: {
+    label: "Completado",
+    color: "#16A34A",
+    bg: "#ECFDF5",
+    icon: CheckCircle2,
+  },
+  processing: {
+    label: "En proceso",
+    color: "#1D4ED8",
+    bg: "#EFF6FF",
+    icon: Clock,
+  },
   pending: { label: "Pendiente", color: "#D97706", bg: "#FFFBEB", icon: Clock },
-  failed: { label: "Fallido", color: "#DC2626", bg: "#FFF1F2", icon: AlertCircle },
+  failed: {
+    label: "Fallido",
+    color: "#DC2626",
+    bg: "#FFF1F2",
+    icon: AlertCircle,
+  },
 };
 
 function formatDate(iso: string) {
@@ -56,9 +71,16 @@ function getSongTitle(songId: RoyaltyPayment["songId"]) {
 }
 
 /** Devuelve el nombre del colaborador destinatario (poblado o id). */
-function getCollaboratorName(collaboratorId: RoyaltyBreakdownItem["collaboratorId"]) {
+function getCollaboratorName(
+  collaboratorId: RoyaltyBreakdownItem["collaboratorId"],
+) {
   if (collaboratorId && typeof collaboratorId === "object")
-    return collaboratorId.name || collaboratorId.username || collaboratorId.email || "Colaborador";
+    return (
+      collaboratorId.name ||
+      collaboratorId.username ||
+      collaboratorId.email ||
+      "Colaborador"
+    );
   return "Colaborador";
 }
 
@@ -96,7 +118,9 @@ export default function WalletPage() {
     const matchesSearch =
       !search ||
       title.includes(search.toLowerCase()) ||
-      (p.stripePaymentIntentId ?? "").toLowerCase().includes(search.toLowerCase());
+      (p.stripePaymentIntentId ?? "")
+        .toLowerCase()
+        .includes(search.toLowerCase());
     return matchesStatus && matchesSearch;
   });
 
@@ -106,47 +130,65 @@ export default function WalletPage() {
   const accounts = wallet?.accounts ?? [];
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA] p-10 flex flex-col gap-6">
+    <div className="flex min-h-screen flex-col gap-6 bg-[#F7F8FA] p-10">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold text-gray-900">Wallet</h1>
-          <p className="text-sm text-gray-500">Tus saldos y el historial de pagos hechos a Stripe</p>
+          <p className="text-sm text-gray-500">
+            Tus saldos y el historial de pagos hechos a Stripe
+          </p>
         </div>
       </div>
 
       {/* Balance Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {loadingWallet ? (
           Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-white rounded-xl border border-gray-200 p-5 h-24 animate-pulse" />
+            <div
+              key={i}
+              className="h-24 animate-pulse rounded-xl border border-gray-200 bg-white p-5"
+            />
           ))
         ) : walletError ? (
-          <div className="col-span-4 bg-white rounded-xl border border-red-100 p-6 flex items-center gap-3 text-red-400">
-            <Wallet className="w-5 h-5" />
+          <div className="col-span-4 flex items-center gap-3 rounded-xl border border-red-100 bg-white p-6 text-red-400">
+            <Wallet className="h-5 w-5" />
             <span className="text-sm">{walletError}</span>
           </div>
         ) : accounts.length === 0 ? (
-          <div className="col-span-4 bg-white rounded-xl border border-gray-200 p-5 flex flex-col gap-2">
+          <div className="col-span-4 flex flex-col gap-2 rounded-xl border border-gray-200 bg-white p-5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">USD</span>
-              <Wallet className="w-4 h-4 text-orange-400" />
+              <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                USD
+              </span>
+              <Wallet className="h-4 w-4 text-orange-400" />
             </div>
             <span className="text-xl font-bold text-gray-900">0.00</span>
-            <span className="text-xs text-gray-400">No funds deposited yet</span>
+            <span className="text-xs text-gray-400">
+              No funds deposited yet
+            </span>
           </div>
         ) : (
           accounts.map((acc) => (
-            <div key={acc.currency} className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col gap-2.5">
+            <div
+              key={acc.currency}
+              className="flex flex-col gap-2.5 rounded-xl border border-gray-200 bg-white p-5"
+            >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{acc.currency}</span>
-                <Wallet className="w-4 h-4 text-orange-400" />
+                <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  {acc.currency}
+                </span>
+                <Wallet className="h-4 w-4 text-orange-400" />
               </div>
               <span className="text-xl font-bold text-gray-900">
-                {acc.balance.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                {acc.balance.toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                })}
               </span>
               {acc.on_hold_balance !== undefined && acc.on_hold_balance > 0 && (
-                <span className="text-xs text-gray-400">{acc.on_hold_balance.toLocaleString()} on hold</span>
+                <span className="text-xs text-gray-400">
+                  {acc.on_hold_balance.toLocaleString()} on hold
+                </span>
               )}
             </div>
           ))
@@ -160,24 +202,32 @@ export default function WalletPage() {
       <PayoutAccountSection />
 
       {/* Transaction Table */}
-      <div className="bg-white rounded-xl border border-gray-200 flex flex-col overflow-hidden">
+      <div className="flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white">
         {/* Table Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-          <span className="text-[15px] font-bold text-gray-900">Transaction History</span>
+        <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+          <span className="text-[15px] font-bold text-gray-900">
+            Transaction History
+          </span>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#F7F8FA] border border-gray-200 w-48">
-              <Search className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+            <div className="flex w-48 items-center gap-2 rounded-lg border border-gray-200 bg-[#F7F8FA] px-3 py-2">
+              <Search className="h-3.5 w-3.5 flex-shrink-0 text-gray-400" />
               <input
                 value={search}
-                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
                 placeholder="Buscar canción o ID..."
-                className="bg-transparent text-xs text-gray-700 placeholder-gray-400 outline-none w-full"
+                className="w-full bg-transparent text-xs text-gray-700 placeholder-gray-400 outline-none"
               />
             </div>
             <select
               value={statusFilter}
-              onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-              className="px-3 py-2 rounded-lg bg-[#F7F8FA] border border-gray-200 text-xs text-gray-700 outline-none cursor-pointer"
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(1);
+              }}
+              className="cursor-pointer rounded-lg border border-gray-200 bg-[#F7F8FA] px-3 py-2 text-xs text-gray-700 outline-none"
             >
               <option value="all">Todos los estados</option>
               <option value="processing">En proceso</option>
@@ -189,16 +239,18 @@ export default function WalletPage() {
         </div>
 
         {/* Column Headers */}
-        <div className="grid grid-cols-[120px_1fr_220px_140px_120px] gap-0 px-5 py-2.5 bg-[#F7F8FA] border-b border-gray-100">
+        <div className="grid grid-cols-[120px_1fr_220px_140px_120px] gap-0 border-b border-gray-100 bg-[#F7F8FA] px-5 py-2.5">
           {["Fecha", "Canción", "ID de cobro", "Estado", "Monto"].map((h) => (
-            <span key={h} className="text-xs font-semibold text-gray-500">{h}</span>
+            <span key={h} className="text-xs font-semibold text-gray-500">
+              {h}
+            </span>
           ))}
         </div>
 
         {/* Rows */}
         {loadingTx ? (
-          <div className="flex items-center justify-center py-16 gap-2 text-gray-400">
-            <Loader2 className="w-5 h-5 animate-spin" />
+          <div className="flex items-center justify-center gap-2 py-16 text-gray-400">
+            <Loader2 className="h-5 w-5 animate-spin" />
             <span className="text-sm">Cargando pagos...</span>
           </div>
         ) : paginated.length === 0 ? (
@@ -215,59 +267,76 @@ export default function WalletPage() {
             return (
               <div
                 key={p._id}
-                className={idx < paginated.length - 1 ? "border-b border-gray-50" : ""}
+                className={
+                  idx < paginated.length - 1 ? "border-b border-gray-50" : ""
+                }
               >
                 <div
                   onClick={() => setExpandedId(isOpen ? null : p._id)}
-                  className="grid grid-cols-[120px_1fr_220px_140px_120px] gap-0 px-5 py-3.5 items-center hover:bg-gray-50 transition-colors cursor-pointer"
+                  className="grid cursor-pointer grid-cols-[120px_1fr_220px_140px_120px] items-center gap-0 px-5 py-3.5 transition-colors hover:bg-gray-50"
                 >
-                  <span className="text-xs text-gray-500">{formatDate(p.createdAt)}</span>
-                  <span className="text-xs text-gray-700 font-medium truncate pr-4">
+                  <span className="text-xs text-gray-500">
+                    {formatDate(p.createdAt)}
+                  </span>
+                  <span className="truncate pr-4 text-xs font-medium text-gray-700">
                     {getSongTitle(p.songId)}
                   </span>
-                  <span className="text-xs text-gray-500 truncate pr-4" title={ref}>
+                  <span
+                    className="truncate pr-4 text-xs text-gray-500"
+                    title={ref}
+                  >
                     {ref}
                   </span>
                   <div className="flex items-center">
                     <span
-                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold"
+                      className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold"
                       style={{ background: cfg.bg, color: cfg.color }}
                     >
-                      <Icon className="w-2.5 h-2.5" />
+                      <Icon className="h-2.5 w-2.5" />
                       {cfg.label}
                     </span>
                   </div>
-                  <span className="text-xs font-bold text-gray-900 flex items-center justify-between gap-1">
+                  <span className="flex items-center justify-between gap-1 text-xs font-bold text-gray-900">
                     <span>
-                      ${p.amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}{" "}
+                      $
+                      {p.amount.toLocaleString("en-US", {
+                        minimumFractionDigits: 2,
+                      })}{" "}
                       {(p.currency || "usd").toUpperCase()}
                     </span>
                     <ChevronDown
-                      className={`w-3.5 h-3.5 text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
+                      className={`h-3.5 w-3.5 text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
                     />
                   </span>
                 </div>
 
                 {isOpen && (
-                  <div className="px-5 py-3 bg-[#FAFAFA] border-t border-gray-100">
-                    <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                  <div className="border-t border-gray-100 bg-[#FAFAFA] px-5 py-3">
+                    <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
                       Repartido a
                     </span>
                     <div className="mt-2 flex flex-col gap-1.5">
                       {recipients.length > 0 ? (
                         recipients.map((b, i) => (
-                          <div key={i} className="flex items-center justify-between text-xs">
-                            <span className="text-gray-700 font-medium">
+                          <div
+                            key={i}
+                            className="flex items-center justify-between text-xs"
+                          >
+                            <span className="font-medium text-gray-700">
                               {getCollaboratorName(b.collaboratorId)}
                             </span>
                             <span className="text-gray-500">
                               {b.percentage}% · $
-                              {b.amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                              {b.amount.toLocaleString("en-US", {
+                                minimumFractionDigits: 2,
+                              })}
                             </span>
                           </div>
                         ))
                       ) : (
-                        <span className="text-xs text-gray-400">Sin desglose disponible.</span>
+                        <span className="text-xs text-gray-400">
+                          Sin desglose disponible.
+                        </span>
                       )}
                     </div>
                   </div>
@@ -279,31 +348,34 @@ export default function WalletPage() {
 
         {/* Pagination */}
         {!loadingTx && filtered.length > 0 && (
-          <div className="flex items-center justify-between px-5 py-3.5 border-t border-gray-100">
+          <div className="flex items-center justify-between border-t border-gray-100 px-5 py-3.5">
             <span className="text-xs text-gray-400">
-              Mostrando {Math.min((page - 1) * PAGE_SIZE + 1, filtered.length)}–{Math.min(page * PAGE_SIZE, filtered.length)} de {filtered.length}
+              Mostrando {Math.min((page - 1) * PAGE_SIZE + 1, filtered.length)}–
+              {Math.min(page * PAGE_SIZE, filtered.length)} de {filtered.length}
             </span>
             <div className="flex items-center gap-1.5">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="p-1.5 rounded-md bg-[#F7F8FA] border border-gray-200 text-gray-500 disabled:opacity-40 hover:bg-gray-100 transition-colors"
+                className="rounded-md border border-gray-200 bg-[#F7F8FA] p-1.5 text-gray-500 transition-colors hover:bg-gray-100 disabled:opacity-40"
               >
-                <ChevronLeft className="w-3.5 h-3.5" />
+                <ChevronLeft className="h-3.5 w-3.5" />
               </button>
               {Array.from({ length: totalPages }, (_, i) => i + 1)
-                .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+                .filter(
+                  (p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1,
+                )
                 .map((p, i, arr) => (
                   <span key={p} className="flex items-center gap-1.5">
                     {i > 0 && arr[i - 1] !== p - 1 && (
-                      <span className="text-xs text-gray-400 px-1">…</span>
+                      <span className="px-1 text-xs text-gray-400">…</span>
                     )}
                     <button
                       onClick={() => setPage(p)}
-                      className={`min-w-[28px] h-7 rounded-md text-xs font-semibold transition-colors ${
+                      className={`h-7 min-w-[28px] rounded-md text-xs font-semibold transition-colors ${
                         p === page
                           ? "bg-orange-500 text-white"
-                          : "bg-[#F7F8FA] border border-gray-200 text-gray-600 hover:bg-gray-100"
+                          : "border border-gray-200 bg-[#F7F8FA] text-gray-600 hover:bg-gray-100"
                       }`}
                     >
                       {p}
@@ -313,9 +385,9 @@ export default function WalletPage() {
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="p-1.5 rounded-md bg-[#F7F8FA] border border-gray-200 text-gray-500 disabled:opacity-40 hover:bg-gray-100 transition-colors"
+                className="rounded-md border border-gray-200 bg-[#F7F8FA] p-1.5 text-gray-500 transition-colors hover:bg-gray-100 disabled:opacity-40"
               >
-                <ChevronRight className="w-3.5 h-3.5" />
+                <ChevronRight className="h-3.5 w-3.5" />
               </button>
             </div>
           </div>

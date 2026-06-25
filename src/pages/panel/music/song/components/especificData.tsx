@@ -5,17 +5,21 @@ export default function EspecificData({ song }: { song: any }) {
   const getDateLabel = (value: any) => {
     if (!value) return "N/A";
     const parsed = new Date(value);
-    return Number.isNaN(parsed.getTime()) ? String(value) : parsed.toLocaleDateString();
+    return Number.isNaN(parsed.getTime())
+      ? String(value)
+      : parsed.toLocaleDateString();
   };
 
   const getDurationLabel = () => {
-    const rawDuration = song?.duration || song?.durationMs || song?.spotifyData?.duration_ms;
+    const rawDuration =
+      song?.duration || song?.durationMs || song?.spotifyData?.duration_ms;
     if (!rawDuration && rawDuration !== 0) return "N/A";
 
     const value = Number(rawDuration);
     if (Number.isNaN(value)) return String(rawDuration);
 
-    const totalSeconds = value > 10000 ? Math.round(value / 1000) : Math.round(value);
+    const totalSeconds =
+      value > 10000 ? Math.round(value / 1000) : Math.round(value);
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
     return `${minutes}:${String(seconds).padStart(2, "0")}`;
@@ -24,7 +28,9 @@ export default function EspecificData({ song }: { song: any }) {
   const upc = song?.upc || song?.ean || song?.releases?.[0]?.upc || "N/A";
   const isrc = song?.isrc || "N/A";
   const releaseDate = getDateLabel(
-    song?.releaseDate || song?.releases?.[0]?.releaseDate || song?.releases?.[0]?.salesMonth
+    song?.releaseDate ||
+      song?.releases?.[0]?.releaseDate ||
+      song?.releases?.[0]?.salesMonth,
   );
   const duration = getDurationLabel();
   const label = song?.artisticLabel || song?.label || "N/A";
@@ -38,17 +44,23 @@ export default function EspecificData({ song }: { song: any }) {
     (Array.isArray(song?.producers) ? song.producers.join(", ") : null) ||
     "N/A";
   const currentDistributor =
-    song?.currentDistributor || song?.distributor || song?.distributorName || "N/A";
+    song?.currentDistributor ||
+    song?.distributor ||
+    song?.distributorName ||
+    "N/A";
   const previousDistributors = Array.isArray(song?.previousDistributors)
     ? song.previousDistributors
     : [];
-  const previousDistributorsRows = Array.from({ length: 4 }, (_, index) => previousDistributors[index] || null);
+  const previousDistributorsRows = Array.from(
+    { length: 4 },
+    (_, index) => previousDistributors[index] || null,
+  );
   const copyrightA = song?.copyright || "N/A";
   const copyrightB = song?.phonogramCopyright || song?.masterCopyright || "N/A";
 
   return (
-    <div className="col-span-12 p-6 h-full shadow-lg" id="data-valora">
-      <span className="text-title font-bold ">Data - Valora</span>
+    <div className="col-span-12 h-full p-6 shadow-lg" id="data-valora">
+      <span className="text-title font-bold">Data - Valora</span>
       <div className="flex items-center">
         <div className="mt-3 flex gap-6 pr-10">
           <div className="flex flex-col">
@@ -67,7 +79,9 @@ export default function EspecificData({ song }: { song: any }) {
             </span>
             <span className="inline-flex items-center gap-1.5">
               {isrc}
-              {isrc !== "N/A" && <CopyButton value={isrc} title="Copiar ISRC" />}
+              {isrc !== "N/A" && (
+                <CopyButton value={isrc} title="Copiar ISRC" />
+              )}
             </span>
             <span>{releaseDate}</span>
             <span>{duration}</span>
@@ -76,17 +90,19 @@ export default function EspecificData({ song }: { song: any }) {
             <span>{producer}</span>
           </div>
         </div>
-        <div className="px-10 border-l w-2/3 flex flex-col justify-between gap-6">
-          <div className="shadow-lg p-3 rounded-2xl flex gap-3 w-full">
-            <img src={img} alt="" className="w-16 h-16 rounded-full" />
+        <div className="flex w-2/3 flex-col justify-between gap-6 border-l px-10">
+          <div className="flex w-full gap-3 rounded-2xl p-3 shadow-lg">
+            <img src={img} alt="" className="h-16 w-16 rounded-full" />
             <div className="flex flex-col justify-center">
-              <span className="font-bold text-subtitle">{currentDistributor}</span>
+              <span className="text-subtitle font-bold">
+                {currentDistributor}
+              </span>
               <span className="text-normal">Distribuidor actual</span>
             </div>
           </div>
-          <div className="mt-3 ">
+          <div className="mt-3">
             <span className="font-bold">Distribuiodores anteriores</span>
-            <div className="mt-3 flex text-normal gap-6">
+            <div className="mt-3 flex gap-6 text-normal">
               <div className="flex flex-col">
                 {previousDistributorsRows.map((item: any, idx: number) => (
                   <span key={`distributor-name-${idx}`} className="font-bold">

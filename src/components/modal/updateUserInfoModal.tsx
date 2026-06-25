@@ -119,7 +119,7 @@ const FieldLabel = ({
   icon: React.ReactNode;
   label: string;
 }) => (
-  <label className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">
+  <label className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
     <span className="text-gray-300 dark:text-gray-600">{icon}</span>
     {label}
   </label>
@@ -153,7 +153,7 @@ const StyledSelect = ({
     >
       {children}
     </select>
-    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 dark:text-gray-600" />
+    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-300 dark:text-gray-600" />
   </div>
 );
 
@@ -234,22 +234,22 @@ const UpdateModal = ({ user, onClose, onSave }: UpdateModalProps) => {
 
         {/* Modal */}
         <motion.div
-          className="relative w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-800"
+          className="relative w-full max-w-md overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl dark:border-gray-800 dark:bg-gray-900"
           initial={{ scale: 0.95, opacity: 0, y: 16 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.95, opacity: 0, y: 16 }}
           transition={{ type: "spring", damping: 22, stiffness: 320 }}
         >
           {/* ── Header ── */}
-          <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100 dark:border-gray-800">
+          <div className="flex items-center justify-between border-b border-gray-100 px-6 pb-4 pt-5 dark:border-gray-800">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center shrink-0">
-                <span className="text-sm font-semibold text-violet-600 dark:text-violet-400 select-none">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-violet-100 dark:bg-violet-900/40">
+                <span className="select-none text-sm font-semibold text-violet-600 dark:text-violet-400">
                   {initials}
                 </span>
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-900 dark:text-white leading-tight">
+                <p className="text-sm font-semibold leading-tight text-gray-900 dark:text-white">
                   {fullName}
                 </p>
                 <p className="text-xs text-gray-400 dark:text-gray-500">
@@ -260,18 +260,18 @@ const UpdateModal = ({ user, onClose, onSave }: UpdateModalProps) => {
             <button
               onClick={onClose}
               aria-label="Cerrar"
-              className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
             >
-              <X className="w-4 h-4" />
+              <X className="h-4 w-4" />
             </button>
           </div>
 
           {/* ── Body ── */}
-          <div className="px-6 py-5 space-y-5 max-h-[62vh] overflow-y-auto">
+          <div className="max-h-[62vh] space-y-5 overflow-y-auto px-6 py-5">
             {/* Locked fields */}
-            <div className="rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800">
-              <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800/60 border-b border-gray-100 dark:border-gray-800">
-                <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+            <div className="overflow-hidden rounded-xl border border-gray-100 dark:border-gray-800">
+              <div className="border-b border-gray-100 bg-gray-50 px-4 py-2 dark:border-gray-800 dark:bg-gray-800/60">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
                   Información bloqueada
                 </p>
               </div>
@@ -283,15 +283,15 @@ const UpdateModal = ({ user, onClose, onSave }: UpdateModalProps) => {
                 ].map((item) => (
                   <div
                     key={item.label}
-                    className="flex items-center justify-between px-4 py-2.5 gap-4"
+                    className="flex items-center justify-between gap-4 px-4 py-2.5"
                   >
-                    <div className="flex items-center gap-2 shrink-0">
-                      <Lock className="w-3 h-3 text-gray-300 dark:text-gray-600" />
+                    <div className="flex shrink-0 items-center gap-2">
+                      <Lock className="h-3 w-3 text-gray-300 dark:text-gray-600" />
                       <span className="text-xs text-gray-400 dark:text-gray-500">
                         {item.label}
                       </span>
                     </div>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 truncate text-right">
+                    <span className="truncate text-right text-xs text-gray-500 dark:text-gray-400">
                       {item.value}
                     </span>
                   </div>
@@ -302,7 +302,7 @@ const UpdateModal = ({ user, onClose, onSave }: UpdateModalProps) => {
             {/* ── País ── */}
             <div>
               <FieldLabel
-                icon={<Globe className="w-3.5 h-3.5" />}
+                icon={<Globe className="h-3.5 w-3.5" />}
                 label="País"
               />
               <StyledSelect
@@ -326,7 +326,7 @@ const UpdateModal = ({ user, onClose, onSave }: UpdateModalProps) => {
             {/* ── Profesión ── */}
             <div>
               <FieldLabel
-                icon={<Briefcase className="w-3.5 h-3.5" />}
+                icon={<Briefcase className="h-3.5 w-3.5" />}
                 label="Profesión"
               />
               <StyledSelect
@@ -376,7 +376,7 @@ const UpdateModal = ({ user, onClose, onSave }: UpdateModalProps) => {
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: 0.18 }}
                   >
-                    <label className="block text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">
+                    <label className="mb-2 block text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
                       Profesión específica
                     </label>
                     <StyledSelect
@@ -408,7 +408,7 @@ const UpdateModal = ({ user, onClose, onSave }: UpdateModalProps) => {
             {/* ── Dirección ── */}
             <div>
               <FieldLabel
-                icon={<MapPin className="w-3.5 h-3.5" />}
+                icon={<MapPin className="h-3.5 w-3.5" />}
                 label="Dirección"
               />
               <input
@@ -429,7 +429,7 @@ const UpdateModal = ({ user, onClose, onSave }: UpdateModalProps) => {
           <AnimatePresence>
             {saveError && (
               <motion.div
-                className="mx-6 mb-3 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 text-xs text-red-600 dark:text-red-400"
+                className="mx-6 mb-3 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-xs text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400"
                 initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
@@ -440,11 +440,11 @@ const UpdateModal = ({ user, onClose, onSave }: UpdateModalProps) => {
           </AnimatePresence>
 
           {/* ── Footer ── */}
-          <div className="flex gap-2.5 px-6 py-4 border-t border-gray-100 dark:border-gray-800">
+          <div className="flex gap-2.5 border-t border-gray-100 px-6 py-4 dark:border-gray-800">
             <button
               onClick={onClose}
               disabled={loading}
-              className="flex-1 py-2.5 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+              className="flex-1 rounded-xl bg-gray-100 py-2.5 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-200 disabled:opacity-50 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
             >
               Cancelar
             </button>
@@ -452,16 +452,16 @@ const UpdateModal = ({ user, onClose, onSave }: UpdateModalProps) => {
               onClick={handleSubmit}
               disabled={loading}
               whileTap={{ scale: 0.97 }}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium text-white bg-violet-600 hover:bg-violet-700 transition-colors disabled:opacity-60"
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-violet-600 py-2.5 text-sm font-medium text-white transition-colors hover:bg-violet-700 disabled:opacity-60"
             >
               {loading ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                   Guardando…
                 </>
               ) : (
                 <>
-                  <Check className="w-4 h-4" />
+                  <Check className="h-4 w-4" />
                   Guardar cambios
                 </>
               )}

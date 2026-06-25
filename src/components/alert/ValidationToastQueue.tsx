@@ -55,7 +55,8 @@ const ValidationPopupQueue = ({
   onClearAll,
 }: ValidationPopupQueueProps) => {
   const isOpen = toasts.length > 0;
-  const clearAll = onClearAll ?? (() => toasts.forEach((toast) => onDequeue(toast.id)));
+  const clearAll =
+    onClearAll ?? (() => toasts.forEach((toast) => onDequeue(toast.id)));
 
   return (
     <AnimatePresence>
@@ -68,7 +69,7 @@ const ValidationPopupQueue = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[998]"
+            className="fixed inset-0 z-[998] bg-black/40 backdrop-blur-sm"
           />
 
           {/* Popup centrado */}
@@ -78,25 +79,26 @@ const ValidationPopupQueue = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.92, y: 24 }}
             transition={{ type: "spring", stiffness: 320, damping: 28 }}
-            className="fixed inset-0 flex items-center justify-center z-[999] pointer-events-none"
+            className="pointer-events-none fixed inset-0 z-[999] flex items-center justify-center"
           >
-            <div className="pointer-events-auto bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-4xl mx-4 overflow-hidden">
+            <div className="pointer-events-auto mx-4 w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-zinc-900">
               {/* Header */}
-              <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-200 dark:border-zinc-700">
+              <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-4 dark:border-zinc-700">
                 <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">
-                  {toasts.length} {toasts.length === 1 ? "validación" : "validaciones"}
+                  {toasts.length}{" "}
+                  {toasts.length === 1 ? "validación" : "validaciones"}
                 </span>
                 <button
                   type="button"
                   onClick={clearAll}
-                  className="text-xs font-medium text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
+                  className="text-xs font-medium text-zinc-400 transition-colors hover:text-zinc-600 dark:hover:text-zinc-200"
                 >
                   Cerrar todo
                 </button>
               </div>
 
               {/* Lista de mensajes */}
-              <ul className="flex flex-col gap-3 p-5 max-h-[80vh] overflow-y-auto">
+              <ul className="flex max-h-[80vh] flex-col gap-3 overflow-y-auto p-5">
                 <AnimatePresence initial={false}>
                   {toasts.map((toast) => {
                     const style = toastStyles[toast.type];
@@ -111,7 +113,7 @@ const ValidationPopupQueue = ({
                         exit={{ opacity: 0, x: 16, height: 0, marginBottom: 0 }}
                         transition={{ duration: 0.2 }}
                         role="alert"
-                        className={`${style.container} flex gap-4 p-4 rounded-xl`}
+                        className={`${style.container} flex gap-4 rounded-xl p-4`}
                       >
                         <div className="mt-0.5 flex-shrink-0">
                           <Icon className={`h-6 w-6 ${style.icon}`} />
@@ -120,11 +122,11 @@ const ValidationPopupQueue = ({
                         <div className="min-w-0 flex-1">
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
-                              <p className="text-sm font-semibold whitespace-normal break-words">
+                              <p className="whitespace-normal break-words text-sm font-semibold">
                                 {toast.title || toast.message}
                               </p>
                               {toast.email && (
-                                <p className="text-xs opacity-80 whitespace-normal break-words">
+                                <p className="whitespace-normal break-words text-xs opacity-80">
                                   {toast.email}
                                 </p>
                               )}
@@ -133,15 +135,15 @@ const ValidationPopupQueue = ({
                             <button
                               type="button"
                               onClick={() => onDequeue(toast.id)}
-                              className="shrink-0 p-1 rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+                              className="shrink-0 rounded p-1 transition-colors hover:bg-black/10 dark:hover:bg-white/10"
                             >
-                              <X className="w-4 h-4" />
+                              <X className="h-4 w-4" />
                             </button>
                           </div>
 
                           {toast.canPay ? (
-                            <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/70 dark:bg-white/10 px-2.5 py-1 text-xs font-semibold">
-                              <CircleCheck className="w-3.5 h-3.5" />
+                            <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/70 px-2.5 py-1 text-xs font-semibold dark:bg-white/10">
+                              <CircleCheck className="h-3.5 w-3.5" />
                               Se puede pagar
                             </div>
                           ) : (
@@ -153,7 +155,9 @@ const ValidationPopupQueue = ({
                                     className="flex items-start gap-2 text-xs leading-5"
                                   >
                                     <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-current opacity-70" />
-                                    <span className="flex-1 whitespace-normal break-words">{reason}</span>
+                                    <span className="flex-1 whitespace-normal break-words">
+                                      {reason}
+                                    </span>
                                   </li>
                                 ))}
                               </ul>

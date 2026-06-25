@@ -1,7 +1,16 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, DollarSign, CreditCard, AlertCircle, CheckCircle, Users, Clock, ArrowRight } from 'lucide-react';
-import PaymentsService from '../../services/payments';
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  X,
+  DollarSign,
+  CreditCard,
+  AlertCircle,
+  CheckCircle,
+  Users,
+  Clock,
+  ArrowRight,
+} from "lucide-react";
+import PaymentsService from "../../services/payments";
 
 interface Collaborator {
   id?: string;
@@ -22,23 +31,25 @@ interface StripePaymentModalProps {
   onPaymentSuccess?: () => void;
 }
 
-const StripePaymentModal = ({ 
-  isOpen, 
-  onClose, 
+const StripePaymentModal = ({
+  isOpen,
+  onClose,
   songTitle,
-  songId, 
+  songId,
   totalAmount = 0,
   collaborators = [],
-  onPaymentSuccess 
+  onPaymentSuccess,
 }: StripePaymentModalProps) => {
-  const [step, setStep] = useState<'confirm' | 'processing' | 'success'>('confirm');
+  const [step, setStep] = useState<"confirm" | "processing" | "success">(
+    "confirm",
+  );
   const [amount, setAmount] = useState<number>(totalAmount);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   // Reset modal state when closed
   useEffect(() => {
     if (!isOpen) {
-      setStep('confirm');
+      setStep("confirm");
       setAmount(totalAmount);
       setErrors({});
     }
@@ -48,11 +59,11 @@ const StripePaymentModal = ({
     setErrors({});
 
     if (!songId) {
-      setErrors({ general: 'No se encontró el ID de la canción' });
+      setErrors({ general: "No se encontró el ID de la canción" });
       return;
     }
 
-    setStep('processing');
+    setStep("processing");
 
     try {
       // Inicia el cobro ACH de regalías y el reparto a colaboradores vía Wise.
@@ -60,13 +71,13 @@ const StripePaymentModal = ({
       const response = await PaymentsService.payRoyalties(songId);
 
       if (response.error) {
-        setErrors({ general: response.message || 'Error al procesar el pago' });
-        setStep('confirm');
+        setErrors({ general: response.message || "Error al procesar el pago" });
+        setStep("confirm");
         return;
       }
 
       // Pago iniciado correctamente
-      setStep('success');
+      setStep("success");
 
       // Llamar al callback después de 2 segundos y cerrar el modal
       setTimeout(() => {
@@ -75,51 +86,56 @@ const StripePaymentModal = ({
         }
         handleClose();
       }, 2000);
-
     } catch (error) {
-      console.error('Error al procesar el pago:', error);
-      setErrors({ general: 'Error al procesar el pago. Por favor, intenta nuevamente.' });
-      setStep('confirm');
+      console.error("Error al procesar el pago:", error);
+      setErrors({
+        general: "Error al procesar el pago. Por favor, intenta nuevamente.",
+      });
+      setStep("confirm");
     }
   };
 
   const handleClose = () => {
-    setStep('confirm');
+    setStep("confirm");
     setAmount(totalAmount);
     setErrors({});
     onClose();
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
     }).format(value);
   };
 
   const renderConfirmStep = () => (
     <div className="space-y-6">
       {/* Payment Summary */}
-      <div className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-xl p-6 border border-indigo-200 dark:border-indigo-800">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
-            <DollarSign className="w-5 h-5 mr-2 text-indigo-600" />
+      <div className="rounded-xl border border-indigo-200 bg-gradient-to-r from-indigo-50 to-blue-50 p-6 dark:border-indigo-800 dark:from-indigo-900/20 dark:to-blue-900/20">
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="flex items-center text-lg font-semibold text-gray-900 dark:text-white">
+            <DollarSign className="mr-2 h-5 w-5 text-indigo-600" />
             Resumen del Pago
           </h3>
           <div className="flex items-center text-sm text-indigo-600 dark:text-indigo-400">
-            <Users className="w-4 h-4 mr-1" />
+            <Users className="mr-1 h-4 w-4" />
             {collaborators.length} colaboradores
           </div>
         </div>
-        
+
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Canción</p>
-            <p className="font-medium text-gray-900 dark:text-white">{songTitle}</p>
+            <p className="font-medium text-gray-900 dark:text-white">
+              {songTitle}
+            </p>
           </div>
           <div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Monto Total</p>
-            <p className="font-bold text-2xl text-indigo-600 dark:text-indigo-400">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Monto Total
+            </p>
+            <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
               {formatCurrency(amount)}
             </p>
           </div>
@@ -127,34 +143,47 @@ const StripePaymentModal = ({
       </div>
 
       {/* Info del cobro */}
-      <div className="rounded-lg border border-indigo-100 bg-indigo-50/50 dark:bg-indigo-900/10 p-4">
+      <div className="rounded-lg border border-indigo-100 bg-indigo-50/50 p-4 dark:bg-indigo-900/10">
         <p className="text-sm text-gray-700 dark:text-gray-300">
-          Se cobrará <span className="font-semibold">{formatCurrency(amount)}</span> desde tu cuenta
-          bancaria por débito ACH y se repartirá automáticamente a los colaboradores según sus splits.
-          El monto lo calcula el sistema a partir de los splits de la canción.
+          Se cobrará{" "}
+          <span className="font-semibold">{formatCurrency(amount)}</span> desde
+          tu cuenta bancaria por débito ACH y se repartirá automáticamente a los
+          colaboradores según sus splits. El monto lo calcula el sistema a
+          partir de los splits de la canción.
         </p>
       </div>
 
       {/* Collaborators Preview */}
       {collaborators.length > 0 && (
         <div>
-          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+          <h4 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
             Colaboradores ({collaborators.length})
           </h4>
-          <div className="max-h-32 overflow-y-auto space-y-2 bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-            {collaborators.slice(0, 3).map((collaborator: Collaborator, index: number) => (
-              <div key={index} className="flex items-center justify-between text-sm">
-                <span className="text-gray-700 dark:text-gray-300">
-                  {collaborator.name || collaborator.email || `Colaborador ${index + 1}`}
-                </span>
-                <span className="text-gray-500 dark:text-gray-400">
-                  {collaborator.percentage ? `${collaborator.percentage}%` : "0%"}
-                  {collaborator.amountToPay ? ` · $${collaborator.amountToPay}` : ""}
-                </span>
-              </div>
-            ))}
+          <div className="max-h-32 space-y-2 overflow-y-auto rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
+            {collaborators
+              .slice(0, 3)
+              .map((collaborator: Collaborator, index: number) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between text-sm"
+                >
+                  <span className="text-gray-700 dark:text-gray-300">
+                    {collaborator.name ||
+                      collaborator.email ||
+                      `Colaborador ${index + 1}`}
+                  </span>
+                  <span className="text-gray-500 dark:text-gray-400">
+                    {collaborator.percentage
+                      ? `${collaborator.percentage}%`
+                      : "0%"}
+                    {collaborator.amountToPay
+                      ? ` · $${collaborator.amountToPay}`
+                      : ""}
+                  </span>
+                </div>
+              ))}
             {collaborators.length > 3 && (
-              <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
+              <p className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
                 +{collaborators.length - 3} colaboradores más...
               </p>
             )}
@@ -164,9 +193,9 @@ const StripePaymentModal = ({
 
       {/* Error General */}
       {errors.general && (
-        <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-          <p className="text-sm text-red-600 dark:text-red-400 flex items-center">
-            <AlertCircle className="w-4 h-4 mr-2" />
+        <div className="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20">
+          <p className="flex items-center text-sm text-red-600 dark:text-red-400">
+            <AlertCircle className="mr-2 h-4 w-4" />
             {errors.general}
           </p>
         </div>
@@ -176,32 +205,32 @@ const StripePaymentModal = ({
       <div className="flex space-x-3 pt-4">
         <button
           onClick={handleClose}
-          className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          className="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-gray-700 transition-colors hover:bg-gray-50"
         >
           Cancelar
         </button>
         <button
           onClick={handlePayment}
           disabled={amount <= 0}
-          className="flex-1 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-semibold py-3 rounded-lg transition-all hover:from-indigo-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+          className="flex flex-1 items-center justify-center space-x-2 rounded-lg bg-gradient-to-r from-indigo-600 to-blue-600 py-3 font-semibold text-white transition-all hover:from-indigo-700 hover:to-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <span>Pagar a todos</span>
-          <ArrowRight className="w-5 h-5" />
+          <ArrowRight className="h-5 w-5" />
         </button>
       </div>
     </div>
   );
 
   const renderProcessingStep = () => (
-    <div className="text-center space-y-6 py-8">
+    <div className="space-y-6 py-8 text-center">
       <motion.div
         animate={{ rotate: 360 }}
         transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-        className="mx-auto w-16 h-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full"
+        className="mx-auto h-16 w-16 rounded-full border-4 border-indigo-200 border-t-indigo-600"
       />
-      
+
       <div>
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+        <h3 className="mb-2 text-xl font-bold text-gray-900 dark:text-white">
           Procesando pago
         </h3>
         <p className="text-gray-600 dark:text-gray-400">
@@ -209,12 +238,12 @@ const StripePaymentModal = ({
         </p>
       </div>
 
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+      <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
         <div className="flex items-center justify-center space-x-2 text-blue-800 dark:text-blue-300">
-          <Clock className="w-5 h-5" />
+          <Clock className="h-5 w-5" />
           <span className="font-medium">Enviando solicitud a Stripe</span>
         </div>
-        <p className="text-sm text-blue-600 dark:text-blue-400 mt-2">
+        <p className="mt-2 text-sm text-blue-600 dark:text-blue-400">
           Al liquidar el ACH, los colaboradores recibirán su parte vía Wise
         </p>
       </div>
@@ -222,37 +251,42 @@ const StripePaymentModal = ({
   );
 
   const renderSuccessStep = () => (
-    <div className="text-center space-y-6 py-8">
+    <div className="space-y-6 py-8 text-center">
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: "spring", stiffness: 200, damping: 10 }}
       >
-        <div className="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
-          <CheckCircle className="w-10 h-10 text-green-600" />
+        <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
+          <CheckCircle className="h-10 w-10 text-green-600" />
         </div>
       </motion.div>
-      
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+        <h3 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
           ¡Pago iniciado!
         </h3>
-        <p className="text-gray-600 dark:text-gray-400 mb-6">
+        <p className="mb-6 text-gray-600 dark:text-gray-400">
           El cobro por {formatCurrency(amount)} se está procesando por ACH
         </p>
 
-        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6 space-y-3 text-left">
+        <div className="space-y-3 rounded-lg border border-green-200 bg-green-50 p-6 text-left dark:border-green-800 dark:bg-green-900/20">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600 dark:text-gray-400">Estado:</span>
-            <span className="text-green-600 dark:text-green-400 font-medium">En proceso</span>
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              Estado:
+            </span>
+            <span className="font-medium text-green-600 dark:text-green-400">
+              En proceso
+            </span>
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            El débito ACH puede tardar algunos días en liquidar. Cuando se confirme,
-            los colaboradores recibirán automáticamente su parte vía Wise.
+            El débito ACH puede tardar algunos días en liquidar. Cuando se
+            confirme, los colaboradores recibirán automáticamente su parte vía
+            Wise.
           </p>
         </div>
       </motion.div>
@@ -270,14 +304,14 @@ const StripePaymentModal = ({
 
   const getModalTitle = () => {
     switch (step) {
-      case 'confirm':
-        return 'Pagar a todos';
-      case 'processing':
-        return 'Procesando pago';
-      case 'success':
-        return 'Pago iniciado';
+      case "confirm":
+        return "Pagar a todos";
+      case "processing":
+        return "Procesando pago";
+      case "success":
+        return "Pago iniciado";
       default:
-        return 'Pago';
+        return "Pago";
     }
   };
 
@@ -288,27 +322,27 @@ const StripePaymentModal = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-md flex items-center justify-center z-50 p-4"
-          onClick={step === 'confirm' ? handleClose : undefined}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-4 backdrop-blur-md"
+          onClick={step === "confirm" ? handleClose : undefined}
         >
           <motion.div
             initial={{ scale: 0.95, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden"
+            className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-gray-800"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20">
+            <div className="flex items-center justify-between border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-blue-50 p-6 dark:border-gray-700 dark:from-indigo-900/20 dark:to-blue-900/20">
               <div className="flex items-center space-x-3">
                 <motion.div
-                  className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-blue-600 rounded-lg flex items-center justify-center"
+                  className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-r from-indigo-500 to-blue-600"
                   initial={{ rotate: -10 }}
                   animate={{ rotate: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <CreditCard className="w-5 h-5 text-white" />
+                  <CreditCard className="h-5 w-5 text-white" />
                 </motion.div>
                 <div>
                   <h2 className="text-xl font-bold text-gray-900 dark:text-white">
@@ -319,21 +353,21 @@ const StripePaymentModal = ({
                   </p>
                 </div>
               </div>
-              {step === 'confirm' && (
+              {step === "confirm" && (
                 <button
                   onClick={handleClose}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  className="rounded-lg p-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
                 >
-                  <X className="w-5 h-5 text-gray-500" />
+                  <X className="h-5 w-5 text-gray-500" />
                 </button>
               )}
             </div>
 
             {/* Body */}
             <div className="p-6">
-              {step === 'confirm' && renderConfirmStep()}
-              {step === 'processing' && renderProcessingStep()}
-              {step === 'success' && renderSuccessStep()}
+              {step === "confirm" && renderConfirmStep()}
+              {step === "processing" && renderProcessingStep()}
+              {step === "success" && renderSuccessStep()}
             </div>
           </motion.div>
         </motion.div>
@@ -342,4 +376,4 @@ const StripePaymentModal = ({
   );
 };
 
-export default StripePaymentModal; 
+export default StripePaymentModal;

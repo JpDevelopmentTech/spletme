@@ -26,7 +26,8 @@ const OnboardingContainer = () => {
     const userStr = localStorage.getItem("user");
     if (userStr) {
       const user = JSON.parse(userStr);
-      const email = typeof user.email === "string" ? user.email.trim().toLowerCase() : "";
+      const email =
+        typeof user.email === "string" ? user.email.trim().toLowerCase() : "";
       const storedStep = Number(user.onboardingData?.currentStep || 1);
 
       if (email) {
@@ -55,7 +56,7 @@ const OnboardingContainer = () => {
 
   const updateOnboardingStep = async (
     stepData: Partial<OnboardingData>,
-    nextStepNumber?: number
+    nextStepNumber?: number,
   ) => {
     try {
       const updatedData: OnboardingData = {
@@ -82,17 +83,22 @@ const OnboardingContainer = () => {
       if (stepData) {
         if (nextStepNumber === 3) {
           if (!verificationEmail) {
-            setOnboardingError("No encontramos un correo para enviar el código de verificación.");
+            setOnboardingError(
+              "No encontramos un correo para enviar el código de verificación.",
+            );
             return;
           }
 
           try {
-            const requestResponse = await OnboardingService.requestAccountVerificationCode(
-              verificationEmail,
-            );
+            const requestResponse =
+              await OnboardingService.requestAccountVerificationCode(
+                verificationEmail,
+              );
 
             if (!requestResponse.accepted) {
-              setOnboardingError("No fue posible enviar el código de verificación.");
+              setOnboardingError(
+                "No fue posible enviar el código de verificación.",
+              );
               return;
             }
           } catch (error) {
@@ -117,7 +123,9 @@ const OnboardingContainer = () => {
             }
           }
         } else {
-          setOnboardingError("No pudimos guardar tu progreso. Intenta nuevamente.");
+          setOnboardingError(
+            "No pudimos guardar tu progreso. Intenta nuevamente.",
+          );
         }
       } else {
         setCurrentStep(nextStepNumber);
@@ -182,17 +190,17 @@ const OnboardingContainer = () => {
     <div className="min-h-screen bg-[#F7F8FA]">
       {/* Top Bar */}
       <div
-        className="w-full bg-white flex items-center justify-between px-10"
+        className="flex w-full items-center justify-between bg-white px-10"
         style={{ height: 64, borderBottom: "1px solid #E5E7EB" }}
       >
         <div className="flex items-center gap-2.5">
           <div
-            className="flex items-center justify-center bg-[#F97316] text-white font-bold text-lg"
+            className="flex items-center justify-center bg-[#F97316] text-lg font-bold text-white"
             style={{ width: 36, height: 36, borderRadius: 9 }}
           >
             S
           </div>
-          <span className="text-[#111827] font-bold text-lg">SplitMe</span>
+          <span className="text-lg font-bold text-[#111827]">SplitMe</span>
         </div>
         <span
           className="text-sm font-medium"
@@ -203,9 +211,9 @@ const OnboardingContainer = () => {
       </div>
 
       {/* Content */}
-      <div className="flex flex-col items-center pt-8 pb-16 px-4 gap-7">
+      <div className="flex flex-col items-center gap-7 px-4 pb-16 pt-8">
         {/* Stepper */}
-        <div className="flex items-center w-full" style={{ maxWidth: 640 }}>
+        <div className="flex w-full items-center" style={{ maxWidth: 640 }}>
           {Array.from({ length: TOTAL_STEPS }, (_, i) => {
             const stepNum = i + 1;
             const isDone = stepNum < currentStep;
@@ -260,21 +268,21 @@ const OnboardingContainer = () => {
         </div>
 
         {/* Contenido del paso actual */}
-        <div className="max-w-2xl mx-auto">
+        <div className="mx-auto max-w-2xl">
           <motion.div
             key={currentStep}
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
-            className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-100 dark:border-gray-700"
+            className="rounded-2xl border border-gray-100 bg-white p-8 shadow-xl dark:border-gray-700 dark:bg-gray-800"
           >
-            <div className="text-center mb-6">
+            <div className="mb-6 text-center">
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.2 }}
-                className="text-4xl mb-3"
+                className="mb-3 text-4xl"
               >
                 {currentStepData.icon}
               </motion.div>
@@ -282,7 +290,7 @@ const OnboardingContainer = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="text-2xl font-bold text-gray-900 dark:text-white mb-2"
+                className="mb-2 text-2xl font-bold text-gray-900 dark:text-white"
               >
                 {currentStepData.title}
               </motion.h2>
@@ -320,4 +328,4 @@ const OnboardingContainer = () => {
   );
 };
 
-export default OnboardingContainer; 
+export default OnboardingContainer;

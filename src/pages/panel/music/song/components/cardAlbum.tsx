@@ -13,24 +13,26 @@ const CardAlbum = ({ album }: { album: any }) => {
 
   const getAlbum = async (id: string) => {
     const response = await SpotifyService.getAlbum(id);
-    console.log(response)
+    console.log(response);
     setData(response);
-    
   };
   return (
-    <Link to={'/panel/album/' + data?.id} className="flex gap-6 items-center shadow-lg rounded-lg">
-      <img src={data?.images[0].url} alt="" className="w-48 h-48 rounded-lg" />
-      <div className="flex flex-col w-full">
-        <Title title={data?.name} subtitle={
-            data?.artists
-                ?.map((item: any) => {
-                return item.name;
-                })
-                .join(", ")
-        } />
-        <div className="flex -space-x-4 mt-3"></div>
-        <span className="text-3xl font-semibold my-3">$2.000,00</span>
-        
+    <Link
+      to={"/panel/album/" + data?.id}
+      className="flex items-center gap-6 rounded-lg shadow-lg"
+    >
+      <img src={data?.images[0].url} alt="" className="h-48 w-48 rounded-lg" />
+      <div className="flex w-full flex-col">
+        <Title
+          title={data?.name}
+          subtitle={data?.artists
+            ?.map((item: any) => {
+              return item.name;
+            })
+            .join(", ")}
+        />
+        <div className="mt-3 flex -space-x-4"></div>
+        <span className="my-3 text-3xl font-semibold">$2.000,00</span>
       </div>
     </Link>
   );

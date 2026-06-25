@@ -1,6 +1,15 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { X, Wallet, Mail, User, Phone, Globe, AlertCircle, Building2 } from "lucide-react";
+import {
+  X,
+  Wallet,
+  Mail,
+  User,
+  Phone,
+  Globe,
+  AlertCircle,
+  Building2,
+} from "lucide-react";
 
 interface CreateWalletModalProps {
   isOpen: boolean;
@@ -62,7 +71,7 @@ export default function CreateWalletModal({
   }, [isOpen]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -93,20 +102,20 @@ export default function CreateWalletModal({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-xl max-w-lg w-full mx-4 overflow-hidden flex flex-col border border-gray-200"
+        className="mx-4 flex w-full max-w-lg flex-col overflow-hidden rounded-xl border border-gray-200 bg-white"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-[#F97316] px-6 py-5 flex items-center justify-between flex-shrink-0">
+        <div className="flex flex-shrink-0 items-center justify-between bg-[#F97316] px-6 py-5">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center">
-              <Wallet className="w-5 h-5 text-white" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/20">
+              <Wallet className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h2 className="text-white font-semibold text-base leading-tight">
+              <h2 className="text-base font-semibold leading-tight text-white">
                 Crear Wallet
               </h2>
-              <p className="text-white/80 text-xs mt-0.5">
+              <p className="mt-0.5 text-xs text-white/80">
                 Configura tu wallet de pagos
               </p>
             </div>
@@ -114,17 +123,17 @@ export default function CreateWalletModal({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 transition-colors flex items-center justify-center"
+            className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20 transition-colors hover:bg-white/30"
           >
-            <X className="w-4 h-4 text-white" />
+            <X className="h-4 w-4 text-white" />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-5 space-y-4 bg-[#F7F8FA]">
+        <form onSubmit={handleSubmit} className="space-y-4 bg-[#F7F8FA] p-5">
           {error && (
-            <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-100 rounded-lg">
-              <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+            <div className="flex items-start gap-2 rounded-lg border border-red-100 bg-red-50 p-3">
+              <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />
               <p className="text-xs text-red-700">{error}</p>
             </div>
           )}
@@ -133,7 +142,7 @@ export default function CreateWalletModal({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={labelClass}>
-                <User className="w-3.5 h-3.5" /> Nombre
+                <User className="h-3.5 w-3.5" /> Nombre
               </label>
               <input
                 type="text"
@@ -147,7 +156,7 @@ export default function CreateWalletModal({
             </div>
             <div>
               <label className={labelClass}>
-                <User className="w-3.5 h-3.5" /> Apellido
+                <User className="h-3.5 w-3.5" /> Apellido
               </label>
               <input
                 type="text"
@@ -164,7 +173,7 @@ export default function CreateWalletModal({
           {/* Email */}
           <div>
             <label className={labelClass}>
-              <Mail className="w-3.5 h-3.5" /> Correo electrónico
+              <Mail className="h-3.5 w-3.5" /> Correo electrónico
             </label>
             <input
               type="email"
@@ -181,7 +190,7 @@ export default function CreateWalletModal({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={labelClass}>
-                <Phone className="w-3.5 h-3.5" /> Teléfono
+                <Phone className="h-3.5 w-3.5" /> Teléfono
               </label>
               <input
                 type="tel"
@@ -195,7 +204,7 @@ export default function CreateWalletModal({
             </div>
             <div>
               <label className={labelClass}>
-                <Globe className="w-3.5 h-3.5" /> País
+                <Globe className="h-3.5 w-3.5" /> País
               </label>
               <select
                 name="country"
@@ -216,9 +225,9 @@ export default function CreateWalletModal({
           {/* Contact type */}
           <div>
             <label className={labelClass}>
-              <Building2 className="w-3.5 h-3.5" /> Tipo de contacto
+              <Building2 className="h-3.5 w-3.5" /> Tipo de contacto
             </label>
-            <div className="flex rounded-lg border border-gray-200 bg-white p-0.5 gap-0.5">
+            <div className="flex gap-0.5 rounded-lg border border-gray-200 bg-white p-0.5">
               {(["personal", "business"] as const).map((type) => (
                 <button
                   key={type}
@@ -226,7 +235,7 @@ export default function CreateWalletModal({
                   onClick={() =>
                     setFormData((prev) => ({ ...prev, contact_type: type }))
                   }
-                  className={`flex-1 py-2 text-xs font-medium rounded-md transition-colors ${
+                  className={`flex-1 rounded-md py-2 text-xs font-medium transition-colors ${
                     formData.contact_type === type
                       ? "bg-[#F97316] text-white"
                       : "text-gray-500 hover:text-gray-700"
@@ -240,12 +249,12 @@ export default function CreateWalletModal({
         </form>
 
         {/* Footer */}
-        <div className="bg-white border-t border-gray-200 px-5 py-4 flex items-center justify-end gap-3 flex-shrink-0">
+        <div className="flex flex-shrink-0 items-center justify-end gap-3 border-t border-gray-200 bg-white px-5 py-4">
           <button
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-gray-900 disabled:opacity-50"
           >
             Cancelar
           </button>
@@ -254,12 +263,12 @@ export default function CreateWalletModal({
             form=""
             disabled={loading}
             onClick={handleSubmit}
-            className="flex items-center gap-2 px-5 py-2 bg-[#F97316] hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg transition-colors"
+            className="flex items-center gap-2 rounded-lg bg-[#F97316] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? (
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
             ) : (
-              <Wallet className="w-4 h-4" />
+              <Wallet className="h-4 w-4" />
             )}
             {loading ? "Creando..." : "Crear Wallet"}
           </button>

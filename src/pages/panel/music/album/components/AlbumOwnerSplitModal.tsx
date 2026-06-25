@@ -37,14 +37,14 @@ export default function AlbumOwnerSplitModal({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm w-full"
+          className="fixed inset-0 z-[9999] flex w-full items-center justify-center bg-black/50 backdrop-blur-sm"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={closeWithReset}
         >
           <motion.div
-            className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full mx-4 max-h-[95vh] overflow-hidden flex flex-col"
+            className="mx-4 flex max-h-[95vh] w-full max-w-4xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl"
             initial={{ scale: 0.9, y: 50, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
             exit={{ scale: 0.9, y: 50, opacity: 0 }}
@@ -52,7 +52,7 @@ export default function AlbumOwnerSplitModal({
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="relative bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 p-8 text-white overflow-hidden">
+            <div className="relative overflow-hidden bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 p-8 text-white">
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-amber-500/20 to-orange-500/20"
                 animate={{
@@ -67,15 +67,15 @@ export default function AlbumOwnerSplitModal({
               <div className="relative flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <motion.div
-                    className="p-3 rounded-2xl bg-white/20 backdrop-blur-sm"
+                    className="rounded-2xl bg-white/20 p-3 backdrop-blur-sm"
                     whileHover={{ scale: 1.1, rotate: 5 }}
                     transition={{ type: "spring", stiffness: 400 }}
                   >
-                    <Disc className="w-8 h-8 text-white" />
+                    <Disc className="h-8 w-8 text-white" />
                   </motion.div>
                   <div>
                     <motion.h2
-                      className="text-3xl font-bold mb-1"
+                      className="mb-1 text-3xl font-bold"
                       initial={{ x: -20, opacity: 0 }}
                       animate={{ x: 0, opacity: 1 }}
                       transition={{ delay: 0.1 }}
@@ -83,30 +83,34 @@ export default function AlbumOwnerSplitModal({
                       Configurar Split del Owner - Álbum
                     </motion.h2>
                     <motion.p
-                      className="text-white/80 text-lg"
+                      className="text-lg text-white/80"
                       initial={{ x: -20, opacity: 0 }}
                       animate={{ x: 0, opacity: 1 }}
                       transition={{ delay: 0.2 }}
                     >
-                      {album?.releaseTitle ?? album?.albumTitle ?? "Álbum"} — {album.tracks?.length ?? 0} canciones
+                      {album?.releaseTitle ?? album?.albumTitle ?? "Álbum"} —{" "}
+                      {album.tracks?.length ?? 0} canciones
                     </motion.p>
                   </div>
                 </div>
                 <motion.button
                   onClick={closeWithReset}
-                  className="p-2 rounded-xl bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-colors"
+                  className="rounded-xl bg-white/20 p-2 backdrop-blur-sm transition-colors hover:bg-white/30"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <X className="w-6 h-6 text-white" />
+                  <X className="h-6 w-6 text-white" />
                 </motion.button>
               </div>
             </div>
 
             {/* Body */}
-            <div className="flex-1 overflow-y-auto p-8 bg-gray-50">
+            <div className="flex-1 overflow-y-auto bg-gray-50 p-8">
               {showResults && progress ? (
-                <OwnerSplitResultsView progress={progress} autoCloseCountdown={autoCloseCountdown} />
+                <OwnerSplitResultsView
+                  progress={progress}
+                  autoCloseCountdown={autoCloseCountdown}
+                />
               ) : isLoading && progress ? (
                 <OwnerSplitProgressView progress={progress} />
               ) : (
@@ -125,7 +129,7 @@ export default function AlbumOwnerSplitModal({
             </div>
 
             {/* Footer */}
-            <div className="p-6 bg-white border-t border-gray-100">
+            <div className="border-t border-gray-100 bg-white p-6">
               <div className="flex items-center justify-between">
                 <div className="text-sm text-gray-600">
                   {showResults
@@ -135,7 +139,7 @@ export default function AlbumOwnerSplitModal({
                 <div className="flex items-center gap-3">
                   <motion.button
                     onClick={closeWithReset}
-                    className="px-6 py-3 text-gray-600 hover:text-gray-900 transition-colors font-medium"
+                    className="px-6 py-3 font-medium text-gray-600 transition-colors hover:text-gray-900"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
@@ -145,11 +149,11 @@ export default function AlbumOwnerSplitModal({
                   {!showResults && !isLoading && (
                     <motion.button
                       onClick={createBulkOwnerSplits}
-                      className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all"
+                      className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-8 py-3 font-medium text-white shadow-lg transition-all hover:shadow-xl"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
-                      <Save className="w-4 h-4" />
+                      <Save className="h-4 w-4" />
                       Crear Splits para Todas las Canciones
                     </motion.button>
                   )}
@@ -160,6 +164,6 @@ export default function AlbumOwnerSplitModal({
         </motion.div>
       )}
     </AnimatePresence>,
-    document.body
+    document.body,
   );
 }

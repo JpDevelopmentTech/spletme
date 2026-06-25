@@ -11,19 +11,30 @@ interface BehaviorProps {
 }
 
 export default function Behavior({ songId, compact = false }: BehaviorProps) {
-  const [dateType, setDateType] = useState<'day' | 'month' | 'year'>('month');
+  const [dateType, setDateType] = useState<"day" | "month" | "year">("month");
   const { metricsData, loading, error } = useMetricPayments(songId, dateType);
-  const [series, setSeries] = useState<Array<{name: string; data: Array<{x: string; y: string}>}>>([]);
+  const [series, setSeries] = useState<
+    Array<{ name: string; data: Array<{ x: string; y: string }> }>
+  >([]);
 
-  const transformDataToSeries = (data: Array<{name: string; totalNetIncome: number; totalStreams?: number}>) => {
+  const transformDataToSeries = (
+    data: Array<{
+      name: string;
+      totalNetIncome: number;
+      totalStreams?: number;
+    }>,
+  ) => {
     if (!data || data.length === 0) return [];
 
-    const hasStreams = data.some(item => (item.totalStreams ?? 0) > 0);
+    const hasStreams = data.some((item) => (item.totalStreams ?? 0) > 0);
 
-    const series: Array<{name: string; data: Array<{x: string; y: string}>}> = [
+    const series: Array<{
+      name: string;
+      data: Array<{ x: string; y: string }>;
+    }> = [
       {
         name: "Ingresos Netos",
-        data: data.map(item => ({
+        data: data.map((item) => ({
           x: item.name.substring(0, 10),
           y: item.totalNetIncome.toFixed(2),
         })),
@@ -33,7 +44,7 @@ export default function Behavior({ songId, compact = false }: BehaviorProps) {
     if (hasStreams) {
       series.push({
         name: "Streams",
-        data: data.map(item => ({
+        data: data.map((item) => ({
           x: item.name.substring(0, 10),
           y: String(item.totalStreams ?? 0),
         })),
@@ -50,7 +61,7 @@ export default function Behavior({ songId, compact = false }: BehaviorProps) {
     }
   }, [metricsData]);
 
-  const hasStreams = metricsData.some(item => (item.totalStreams ?? 0) > 0);
+  const hasStreams = metricsData.some((item) => (item.totalStreams ?? 0) > 0);
 
   const options: ApexOptions = {
     chart: {
@@ -74,7 +85,7 @@ export default function Behavior({ songId, compact = false }: BehaviorProps) {
       },
     },
     xaxis: {
-      categories: metricsData.map(item => item.name.substring(0, 10)),
+      categories: metricsData.map((item) => item.name.substring(0, 10)),
       labels: { style: { colors: "#9CA3AF", fontSize: "11px" } },
       axisBorder: { show: false },
       axisTicks: { show: false },
@@ -138,17 +149,16 @@ export default function Behavior({ songId, compact = false }: BehaviorProps) {
   // Si no hay songId, mostrar mensaje
   if (!songId) {
     return (
-      <div
-        id="behavior"
-        className={containerClass}
-      >
-        <div className="flex justify-between items-center">
-                  <Title
-          title="Comportamiento de Pagos"
-          subtitle={`Métricas de pagos por ${dateType === 'day' ? 'día' : dateType === 'month' ? 'mes' : 'año'}`}
-        />
+      <div id="behavior" className={containerClass}>
+        <div className="flex items-center justify-between">
+          <Title
+            title="Comportamiento de Pagos"
+            subtitle={`Métricas de pagos por ${dateType === "day" ? "día" : dateType === "month" ? "mes" : "año"}`}
+          />
         </div>
-        <div className={`flex items-center justify-center ${placeholderHeightClass} text-gray-500`}>
+        <div
+          className={`flex items-center justify-center ${placeholderHeightClass} text-gray-500`}
+        >
           Selecciona una canción para ver las métricas
         </div>
       </div>
@@ -156,32 +166,29 @@ export default function Behavior({ songId, compact = false }: BehaviorProps) {
   }
 
   return (
-    <div
-      id="behavior"
-      className={containerClass}
-    >
-      <div className="flex justify-between items-center">
+    <div id="behavior" className={containerClass}>
+      <div className="flex items-center justify-between">
         <Title
           title="Comportamiento de Pagos"
-          subtitle={`Métricas de pagos por ${dateType === 'day' ? 'día' : dateType === 'month' ? 'mes' : 'año'}`}
+          subtitle={`Métricas de pagos por ${dateType === "day" ? "día" : dateType === "month" ? "mes" : "año"}`}
         />
-        <div className="flex items-center space-x-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+        <div className="flex items-center space-x-1 rounded-lg bg-gray-100 p-1 dark:bg-gray-700">
           <button
-            onClick={() => setDateType('month')}
-            className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-              dateType === 'month'
-                ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+            onClick={() => setDateType("month")}
+            className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+              dateType === "month"
+                ? "bg-white text-gray-900 shadow-sm dark:bg-gray-600 dark:text-gray-100"
+                : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
             }`}
           >
             Mes
           </button>
           <button
-            onClick={() => setDateType('year')}
-            className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-              dateType === 'year'
-                ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+            onClick={() => setDateType("year")}
+            className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+              dateType === "year"
+                ? "bg-white text-gray-900 shadow-sm dark:bg-gray-600 dark:text-gray-100"
+                : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
             }`}
           >
             Año
@@ -190,11 +197,15 @@ export default function Behavior({ songId, compact = false }: BehaviorProps) {
       </div>
       <div>
         {loading ? (
-          <div className={`flex items-center justify-center ${placeholderHeightClass}`}>
+          <div
+            className={`flex items-center justify-center ${placeholderHeightClass}`}
+          >
             <Loading />
           </div>
         ) : error ? (
-          <div className={`flex items-center justify-center ${placeholderHeightClass} text-red-500`}>
+          <div
+            className={`flex items-center justify-center ${placeholderHeightClass} text-red-500`}
+          >
             {error}
           </div>
         ) : series.length > 0 ? (
@@ -205,7 +216,9 @@ export default function Behavior({ songId, compact = false }: BehaviorProps) {
             height={chartHeight}
           />
         ) : (
-          <div className={`flex items-center justify-center ${placeholderHeightClass} text-gray-500`}>
+          <div
+            className={`flex items-center justify-center ${placeholderHeightClass} text-gray-500`}
+          >
             No hay datos disponibles para mostrar
           </div>
         )}

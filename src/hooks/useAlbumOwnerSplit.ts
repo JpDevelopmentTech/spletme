@@ -3,7 +3,10 @@ import { songSplitsService } from "@/services/songSplits";
 import { useReleaseFiltersForSongs } from "@/hooks/useReleaseFiltersForSongs";
 import LocalStorageService from "@/services/localstorage";
 import type { Album } from "@/types";
-import type { OwnerFormData, CreationProgress } from "@/types/album-owner-split.types";
+import type {
+  OwnerFormData,
+  CreationProgress,
+} from "@/types/album-owner-split.types";
 
 const DEFAULT_FORM: OwnerFormData = {
   percentage: "",
@@ -22,7 +25,7 @@ export function useAlbumOwnerSplit(
   isOpen: boolean,
   album: Album,
   onClose: () => void,
-  onSplitsCreated?: () => void
+  onSplitsCreated?: () => void,
 ) {
   const [ownerForm, setOwnerForm] = useState<OwnerFormData>(DEFAULT_FORM);
   const [isExpanded, setIsExpanded] = useState(true);
@@ -30,7 +33,9 @@ export function useAlbumOwnerSplit(
   const [mounted, setMounted] = useState(false);
   const [progress, setProgress] = useState<CreationProgress | null>(null);
   const [showResults, setShowResults] = useState(false);
-  const [autoCloseCountdown, setAutoCloseCountdown] = useState<number | null>(null);
+  const [autoCloseCountdown, setAutoCloseCountdown] = useState<number | null>(
+    null,
+  );
 
   const currentUser = LocalStorageService.getItem("user");
 
@@ -58,7 +63,10 @@ export function useAlbumOwnerSplit(
       if (autoCloseCountdown === 0) closeWithReset();
       return;
     }
-    const timer = setTimeout(() => setAutoCloseCountdown(autoCloseCountdown - 1), 1000);
+    const timer = setTimeout(
+      () => setAutoCloseCountdown(autoCloseCountdown - 1),
+      1000,
+    );
     return () => clearTimeout(timer);
   }, [autoCloseCountdown]);
 
@@ -66,7 +74,7 @@ export function useAlbumOwnerSplit(
 
   const updateOwnerForm = (
     field: keyof OwnerFormData,
-    value: string | readonly { value: string; label: string }[]
+    value: string | readonly { value: string; label: string }[],
   ) => {
     setOwnerForm((prev) => ({ ...prev, [field]: value }));
   };
@@ -86,7 +94,9 @@ export function useAlbumOwnerSplit(
       return;
     }
     if (!currentUser?.id) {
-      alert("Error: No se pudo obtener la información del usuario. Por favor, inicia sesión de nuevo.");
+      alert(
+        "Error: No se pudo obtener la información del usuario. Por favor, inicia sesión de nuevo.",
+      );
       return;
     }
 
@@ -106,25 +116,51 @@ export function useAlbumOwnerSplit(
 
     setIsLoading(true);
     setShowResults(false);
-    setProgress({ total: album.tracks.length, completed: 0, failed: 0, current: "", errors: [] });
+    setProgress({
+      total: album.tracks.length,
+      completed: 0,
+      failed: 0,
+      current: "",
+      errors: [],
+    });
 
     let localFailed = 0;
 
     try {
       for (const track of album.tracks) {
-        setProgress((prev) => (prev ? { ...prev, current: track.trackTitle } : null));
+        setProgress((prev) =>
+          prev ? { ...prev, current: track.trackTitle } : null,
+        );
 
         try {
-          await songSplitsService.createOwnerSplit({ songId: track._id, ...payloadBase });
-          setProgress((prev) => (prev ? { ...prev, completed: prev.completed + 1 } : null));
+          await songSplitsService.createOwnerSplit({
+            songId: track._id,
+            ...payloadBase,
+          });
+          setProgress((prev) =>
+            prev ? { ...prev, completed: prev.completed + 1 } : null,
+          );
         } catch (err: unknown) {
-          const axiosErr = err as { response?: { data?: { message?: string } }; message?: string };
-          const msg = axiosErr.response?.data?.message ?? axiosErr.message ?? "Error desconocido";
+          const axiosErr = err as {
+            response?: { data?: { message?: string } };
+            message?: string;
+          };
+          const msg =
+            axiosErr.response?.data?.message ??
+            axiosErr.message ??
+            "Error desconocido";
           localFailed++;
           setProgress((prev) =>
             prev
-              ? { ...prev, failed: prev.failed + 1, errors: [...prev.errors, { songTitle: track.trackTitle, error: msg }] }
-              : null
+              ? {
+                  ...prev,
+                  failed: prev.failed + 1,
+                  errors: [
+                    ...prev.errors,
+                    { songTitle: track.trackTitle, error: msg },
+                  ],
+                }
+              : null,
           );
         }
       }
@@ -132,7 +168,8 @@ export function useAlbumOwnerSplit(
       setShowResults(true);
       if (localFailed === 0) setAutoCloseCountdown(3);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "No se pudieron crear los splits";
+      const msg =
+        err instanceof Error ? err.message : "No se pudieron crear los splits";
       alert(`Error: ${msg}`);
     } finally {
       setIsLoading(false);

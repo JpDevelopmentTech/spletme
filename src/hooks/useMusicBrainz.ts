@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import MusicBrainzService from '../services/musicbrainz';
+import { useState } from "react";
+import MusicBrainzService from "../services/musicbrainz";
 
 interface Recording {
   id: string;
@@ -13,7 +13,9 @@ const useMusicBrainz = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getRecordingByISRC = async (isrc: string): Promise<Recording | null> => {
+  const getRecordingByISRC = async (
+    isrc: string,
+  ): Promise<Recording | null> => {
     setLoading(true);
     setError(null);
     try {
@@ -33,7 +35,9 @@ const useMusicBrainz = () => {
       // Get cover art if available
       let coverArt;
       if (firstRecording.id) {
-        const coverArtData = await MusicBrainzService.getReleaseCoverArt(firstRecording.id);
+        const coverArtData = await MusicBrainzService.getReleaseCoverArt(
+          firstRecording.id,
+        );
         if (coverArtData?.images?.[0]) {
           coverArt = coverArtData.images[0].image;
         }
@@ -42,8 +46,8 @@ const useMusicBrainz = () => {
       return {
         id: firstRecording.id,
         title: firstRecording.title,
-        artist: firstRecording['artist-credit']?.[0]?.name || 'Unknown Artist',
-        release: firstRecording.releases?.[0]?.title || 'Unknown Release',
+        artist: firstRecording["artist-credit"]?.[0]?.name || "Unknown Artist",
+        release: firstRecording.releases?.[0]?.title || "Unknown Release",
         coverArt,
       };
     } catch (error) {

@@ -1,8 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
-import AlbumService from '../services/albums';
-import type { Album, AlbumsPagination } from '../models/album';
-
-
+import { useState, useEffect, useCallback } from "react";
+import AlbumService from "../services/albums";
+import type { Album, AlbumsPagination } from "../models/album";
 
 interface UseAlbumsReturn {
   // State
@@ -10,14 +8,14 @@ interface UseAlbumsReturn {
   loading: boolean;
   error: string | null;
   pagination: AlbumsPagination | null;
-  
+
   // Actions
   getAlbums: (skip?: number, limit?: number) => Promise<void>;
   getAlbumByUPC: (upc: string) => Promise<Album | null>;
   loadMoreAlbums: () => Promise<void>;
   refreshAlbums: () => Promise<void>;
   clearError: () => void;
-  
+
   // Computed
   hasMoreAlbums: boolean;
 }
@@ -28,11 +26,11 @@ export const useAlbums = (page: number, limit: number): UseAlbumsReturn => {
   const {
     autoLoad = true,
     initialSkip = 0,
-    initialLimit = limit
+    initialLimit = limit,
   } = {
     autoLoad: true,
     initialSkip: currentSkip,
-    initialLimit: limit
+    initialLimit: limit,
   };
 
   // State
@@ -42,62 +40,70 @@ export const useAlbums = (page: number, limit: number): UseAlbumsReturn => {
   const [pagination, setPagination] = useState<AlbumsPagination | null>(null);
 
   // Get albums with pagination
-  const getAlbums = useCallback(async (skip: number = initialSkip, limit: number = initialLimit) => {
-    setLoading(true);
-    setError(null);
+  const getAlbums = useCallback(
+    async (skip: number = initialSkip, limit: number = initialLimit) => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      const response = await AlbumService.getAlbums(skip, limit);
-      
-      if (response.success && 'data' in response) {
-        if (skip === 0) {
-          // Replace albums if starting from beginning
-          setAlbums(response.data);
-        } else {
-          // Append albums if loading more
-          setAlbums(prev => [...prev, ...response.data]);
+      try {
+        const response = await AlbumService.getAlbums(skip, limit);
+
+        if (response.success && "data" in response) {
+          if (skip === 0) {
+            // Replace albums if starting from beginning
+            setAlbums(response.data);
+          } else {
+            // Append albums if loading more
+            setAlbums((prev) => [...prev, ...response.data]);
+          }
+          setPagination(response.pagination);
+        } else if ("message" in response) {
+          setError(response.message);
         }
-        setPagination(response.pagination);
-      } else if ('message' in response) {
-        setError(response.message);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Error loading albums";
+        setError(errorMessage);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error loading albums';
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  }, [initialSkip, initialLimit]);
+    },
+    [initialSkip, initialLimit],
+  );
 
   // Get specific album by UPC
-  const getAlbumByUPC = useCallback(async (upc: string): Promise<Album | null> => {
-    setLoading(true);
-    setError(null);
+  const getAlbumByUPC = useCallback(
+    async (upc: string): Promise<Album | null> => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      const response = await AlbumService.getAlbumByUPC(upc);
-      
-      if (response.success && 'data' in response) {
-        return response.data;
-      } else if ('message' in response) {
-        setError(response.message);
+      try {
+        const response = await AlbumService.getAlbumByUPC(upc);
+
+        if (response.success && "data" in response) {
+          return response.data;
+        } else if ("message" in response) {
+          setError(response.message);
+          return null;
+        }
+
         return null;
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Error loading album";
+        setError(errorMessage);
+        return null;
+      } finally {
+        setLoading(false);
       }
-      
-      return null;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error loading album';
-      setError(errorMessage);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [],
+  );
 
   // Load more albums (pagination)
   const loadMoreAlbums = useCallback(async () => {
     if (!pagination || loading) return;
-    
+
     const nextSkip = pagination.skip + pagination.limit;
     await getAlbums(nextSkip, pagination.limit);
   }, [pagination, loading, getAlbums]);
@@ -128,14 +134,14 @@ export const useAlbums = (page: number, limit: number): UseAlbumsReturn => {
     loading,
     error,
     pagination,
-    
+
     // Actions
     getAlbums,
     getAlbumByUPC,
     loadMoreAlbums,
     refreshAlbums,
     clearError,
-    
+
     // Computed
     hasMoreAlbums,
   };

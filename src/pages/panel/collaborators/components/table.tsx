@@ -2,16 +2,16 @@ import { Link } from "react-router-dom";
 
 export default function Table() {
   return (
-    <div className="overflow-x-auto col-span-12">
-      <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-        <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+    <div className="col-span-12 overflow-x-auto">
+      <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
+        <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-400">
           <tr>
             <th scope="col" className="p-4">
               <div className="flex items-center">
                 <input
                   id="checkbox-all"
                   type="checkbox"
-                  className="w-4 h-4 text-primary-600 bg-gray-100 rounded border-gray-300 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                  className="text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 h-4 w-4 rounded border-gray-300 bg-gray-100 focus:ring-2 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800"
                 />
                 <label htmlFor="checkbox-all" className="sr-only">
                   checkbox
@@ -27,7 +27,7 @@ export default function Table() {
             <th scope="col" className="px-4 py-3 text-center">
               Rendimiento
             </th>
-            <th scope="col" className="px-4 py-3 min-w-[14rem] text-center">
+            <th scope="col" className="min-w-[14rem] px-4 py-3 text-center">
               Distribuidores
             </th>
             <th scope="col" className="px-4 py-3 text-center">
@@ -42,14 +42,14 @@ export default function Table() {
           </tr>
         </thead>
         <tbody>
-          <tr className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
-            <td className="px-4 py-2 w-4">
+          <tr className="border-b hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700">
+            <td className="w-4 px-4 py-2">
               <div className="flex items-center">
                 <input
                   id="checkbox-table-search-1"
                   type="checkbox"
                   onClick={() => null}
-                  className="w-4 h-4 text-primary-600 bg-gray-100 rounded border-gray-300 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                  className="text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 h-4 w-4 rounded border-gray-300 bg-gray-100 focus:ring-2 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800"
                 ></input>
                 <label htmlFor="checkbox-table-search-1" className="sr-only">
                   checkbox
@@ -58,55 +58,55 @@ export default function Table() {
             </td>
             <th
               scope="row"
-              className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+              className="whitespace-nowrap px-4 py-2 font-medium text-gray-900 dark:text-white"
             >
-              <Link to={'s'} className="flex items-center">
+              <Link to={"s"} className="flex items-center">
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
                 <span className="ml-3">Nombre del colaborador</span>
               </Link>
             </th>
-            <td className="px-4 py-2 whitespace-nowrap text-center">
-              <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
+            <td className="whitespace-nowrap px-4 py-2 text-center">
+              <span className="bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300 rounded px-2.5 py-0.5 text-center text-xs font-medium">
                 5
               </span>
             </td>
-            <td className="px-4 py-2 whitespace-nowrap text-center">
-              <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
+            <td className="whitespace-nowrap px-4 py-2 text-center">
+              <span className="bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300 rounded px-2.5 py-0.5 text-center text-xs font-medium">
                 10%
               </span>
             </td>
-            <td className="px-4 py-2 font-medium whitespace-nowrap">
-              <div className="flex -space-x-4 w-full justify-center">
+            <td className="whitespace-nowrap px-4 py-2 font-medium">
+              <div className="flex w-full justify-center -space-x-4">
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
               </div>
             </td>
-            <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+            <td className="whitespace-nowrap px-4 py-2 font-medium text-gray-900 dark:text-white">
               <div className="flex items-center justify-center">
                 <svg
-                  className="w-6 h-6 text-septenary dark:text-white"
+                  className="h-6 w-6 text-septenary dark:text-white"
                   aria-hidden="true"
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -123,10 +123,10 @@ export default function Table() {
                 </svg>
               </div>
             </td>
-            <td className="px-4 py-2 whitespace-nowrap font-medium text-gray-900 dark:text-white text-xs">
+            <td className="whitespace-nowrap px-4 py-2 text-xs font-medium text-gray-900 dark:text-white">
               <div className="flex items-center justify-center">
                 <svg
-                  className="w-6 h-6 text-green-500 dark:text-white"
+                  className="h-6 w-6 text-green-500 dark:text-white"
                   aria-hidden="true"
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -142,18 +142,18 @@ export default function Table() {
                 </svg>
               </div>
             </td>
-            <td className="px-4 py-2 whitespace-nowrap font-medium text-gray-900 dark:text-white text-xs text-center">
+            <td className="whitespace-nowrap px-4 py-2 text-center text-xs font-medium text-gray-900 dark:text-white">
               $00,00
             </td>
           </tr>
-          <tr className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
-            <td className="px-4 py-2 w-4">
+          <tr className="border-b hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700">
+            <td className="w-4 px-4 py-2">
               <div className="flex items-center">
                 <input
                   id="checkbox-table-search-1"
                   type="checkbox"
                   onClick={() => null}
-                  className="w-4 h-4 text-primary-600 bg-gray-100 rounded border-gray-300 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                  className="text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 h-4 w-4 rounded border-gray-300 bg-gray-100 focus:ring-2 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800"
                 ></input>
                 <label htmlFor="checkbox-table-search-1" className="sr-only">
                   checkbox
@@ -162,55 +162,55 @@ export default function Table() {
             </td>
             <th
               scope="row"
-              className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+              className="whitespace-nowrap px-4 py-2 font-medium text-gray-900 dark:text-white"
             >
-              <Link to={'s'} className="flex items-center">
+              <Link to={"s"} className="flex items-center">
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
                 <span className="ml-3">Nombre del colaborador</span>
               </Link>
             </th>
-            <td className="px-4 py-2 whitespace-nowrap text-center">
-              <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
+            <td className="whitespace-nowrap px-4 py-2 text-center">
+              <span className="bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300 rounded px-2.5 py-0.5 text-center text-xs font-medium">
                 5
               </span>
             </td>
-            <td className="px-4 py-2 whitespace-nowrap text-center">
-              <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
+            <td className="whitespace-nowrap px-4 py-2 text-center">
+              <span className="bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300 rounded px-2.5 py-0.5 text-center text-xs font-medium">
                 10%
               </span>
             </td>
-            <td className="px-4 py-2 font-medium whitespace-nowrap">
-              <div className="flex -space-x-4 w-full justify-center">
+            <td className="whitespace-nowrap px-4 py-2 font-medium">
+              <div className="flex w-full justify-center -space-x-4">
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
               </div>
             </td>
-            <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+            <td className="whitespace-nowrap px-4 py-2 font-medium text-gray-900 dark:text-white">
               <div className="flex items-center justify-center">
                 <svg
-                  className="w-6 h-6 text-septenary dark:text-white"
+                  className="h-6 w-6 text-septenary dark:text-white"
                   aria-hidden="true"
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -227,10 +227,10 @@ export default function Table() {
                 </svg>
               </div>
             </td>
-            <td className="px-4 py-2 whitespace-nowrap font-medium text-gray-900 dark:text-white text-xs">
+            <td className="whitespace-nowrap px-4 py-2 text-xs font-medium text-gray-900 dark:text-white">
               <div className="flex items-center justify-center">
                 <svg
-                  className="w-6 h-6 text-green-500 dark:text-white"
+                  className="h-6 w-6 text-green-500 dark:text-white"
                   aria-hidden="true"
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -246,18 +246,18 @@ export default function Table() {
                 </svg>
               </div>
             </td>
-            <td className="px-4 py-2 whitespace-nowrap font-medium text-gray-900 dark:text-white text-xs text-center">
+            <td className="whitespace-nowrap px-4 py-2 text-center text-xs font-medium text-gray-900 dark:text-white">
               $00,00
             </td>
           </tr>
-          <tr className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
-            <td className="px-4 py-2 w-4">
+          <tr className="border-b hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700">
+            <td className="w-4 px-4 py-2">
               <div className="flex items-center">
                 <input
                   id="checkbox-table-search-1"
                   type="checkbox"
                   onClick={() => null}
-                  className="w-4 h-4 text-primary-600 bg-gray-100 rounded border-gray-300 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                  className="text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 h-4 w-4 rounded border-gray-300 bg-gray-100 focus:ring-2 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800"
                 ></input>
                 <label htmlFor="checkbox-table-search-1" className="sr-only">
                   checkbox
@@ -266,55 +266,55 @@ export default function Table() {
             </td>
             <th
               scope="row"
-              className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+              className="whitespace-nowrap px-4 py-2 font-medium text-gray-900 dark:text-white"
             >
-              <Link to={'s'} className="flex items-center">
+              <Link to={"s"} className="flex items-center">
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
                 <span className="ml-3">Nombre del colaborador</span>
               </Link>
             </th>
-            <td className="px-4 py-2 whitespace-nowrap text-center">
-              <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
+            <td className="whitespace-nowrap px-4 py-2 text-center">
+              <span className="bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300 rounded px-2.5 py-0.5 text-center text-xs font-medium">
                 5
               </span>
             </td>
-            <td className="px-4 py-2 whitespace-nowrap text-center">
-              <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
+            <td className="whitespace-nowrap px-4 py-2 text-center">
+              <span className="bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300 rounded px-2.5 py-0.5 text-center text-xs font-medium">
                 10%
               </span>
             </td>
-            <td className="px-4 py-2 font-medium whitespace-nowrap">
-              <div className="flex -space-x-4 w-full justify-center">
+            <td className="whitespace-nowrap px-4 py-2 font-medium">
+              <div className="flex w-full justify-center -space-x-4">
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
               </div>
             </td>
-            <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+            <td className="whitespace-nowrap px-4 py-2 font-medium text-gray-900 dark:text-white">
               <div className="flex items-center justify-center">
                 <svg
-                  className="w-6 h-6 text-septenary dark:text-white"
+                  className="h-6 w-6 text-septenary dark:text-white"
                   aria-hidden="true"
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -331,10 +331,10 @@ export default function Table() {
                 </svg>
               </div>
             </td>
-            <td className="px-4 py-2 whitespace-nowrap font-medium text-gray-900 dark:text-white text-xs">
+            <td className="whitespace-nowrap px-4 py-2 text-xs font-medium text-gray-900 dark:text-white">
               <div className="flex items-center justify-center">
                 <svg
-                  className="w-6 h-6 text-green-500 dark:text-white"
+                  className="h-6 w-6 text-green-500 dark:text-white"
                   aria-hidden="true"
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -350,18 +350,18 @@ export default function Table() {
                 </svg>
               </div>
             </td>
-            <td className="px-4 py-2 whitespace-nowrap font-medium text-gray-900 dark:text-white text-xs text-center">
+            <td className="whitespace-nowrap px-4 py-2 text-center text-xs font-medium text-gray-900 dark:text-white">
               $00,00
             </td>
           </tr>
-          <tr className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
-            <td className="px-4 py-2 w-4">
+          <tr className="border-b hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700">
+            <td className="w-4 px-4 py-2">
               <div className="flex items-center">
                 <input
                   id="checkbox-table-search-1"
                   type="checkbox"
                   onClick={() => null}
-                  className="w-4 h-4 text-primary-600 bg-gray-100 rounded border-gray-300 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                  className="text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 h-4 w-4 rounded border-gray-300 bg-gray-100 focus:ring-2 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800"
                 ></input>
                 <label htmlFor="checkbox-table-search-1" className="sr-only">
                   checkbox
@@ -370,55 +370,55 @@ export default function Table() {
             </td>
             <th
               scope="row"
-              className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+              className="whitespace-nowrap px-4 py-2 font-medium text-gray-900 dark:text-white"
             >
-              <Link to={'s'} className="flex items-center">
+              <Link to={"s"} className="flex items-center">
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
                 <span className="ml-3">Nombre del colaborador</span>
               </Link>
             </th>
-            <td className="px-4 py-2 whitespace-nowrap text-center">
-              <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
+            <td className="whitespace-nowrap px-4 py-2 text-center">
+              <span className="bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300 rounded px-2.5 py-0.5 text-center text-xs font-medium">
                 5
               </span>
             </td>
-            <td className="px-4 py-2 whitespace-nowrap text-center">
-              <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
+            <td className="whitespace-nowrap px-4 py-2 text-center">
+              <span className="bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300 rounded px-2.5 py-0.5 text-center text-xs font-medium">
                 10%
               </span>
             </td>
-            <td className="px-4 py-2 font-medium whitespace-nowrap">
-              <div className="flex -space-x-4 w-full justify-center">
+            <td className="whitespace-nowrap px-4 py-2 font-medium">
+              <div className="flex w-full justify-center -space-x-4">
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
               </div>
             </td>
-            <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+            <td className="whitespace-nowrap px-4 py-2 font-medium text-gray-900 dark:text-white">
               <div className="flex items-center justify-center">
                 <svg
-                  className="w-6 h-6 text-septenary dark:text-white"
+                  className="h-6 w-6 text-septenary dark:text-white"
                   aria-hidden="true"
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -435,10 +435,10 @@ export default function Table() {
                 </svg>
               </div>
             </td>
-            <td className="px-4 py-2 whitespace-nowrap font-medium text-gray-900 dark:text-white text-xs">
+            <td className="whitespace-nowrap px-4 py-2 text-xs font-medium text-gray-900 dark:text-white">
               <div className="flex items-center justify-center">
                 <svg
-                  className="w-6 h-6 text-green-500 dark:text-white"
+                  className="h-6 w-6 text-green-500 dark:text-white"
                   aria-hidden="true"
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -454,18 +454,18 @@ export default function Table() {
                 </svg>
               </div>
             </td>
-            <td className="px-4 py-2 whitespace-nowrap font-medium text-gray-900 dark:text-white text-xs text-center">
+            <td className="whitespace-nowrap px-4 py-2 text-center text-xs font-medium text-gray-900 dark:text-white">
               $00,00
             </td>
           </tr>
-          <tr className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
-            <td className="px-4 py-2 w-4">
+          <tr className="border-b hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700">
+            <td className="w-4 px-4 py-2">
               <div className="flex items-center">
                 <input
                   id="checkbox-table-search-1"
                   type="checkbox"
                   onClick={() => null}
-                  className="w-4 h-4 text-primary-600 bg-gray-100 rounded border-gray-300 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                  className="text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 h-4 w-4 rounded border-gray-300 bg-gray-100 focus:ring-2 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800"
                 ></input>
                 <label htmlFor="checkbox-table-search-1" className="sr-only">
                   checkbox
@@ -474,55 +474,55 @@ export default function Table() {
             </td>
             <th
               scope="row"
-              className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+              className="whitespace-nowrap px-4 py-2 font-medium text-gray-900 dark:text-white"
             >
-              <Link to={'s'} className="flex items-center">
+              <Link to={"s"} className="flex items-center">
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
                 <span className="ml-3">Nombre del colaborador</span>
               </Link>
             </th>
-            <td className="px-4 py-2 whitespace-nowrap text-center">
-              <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
+            <td className="whitespace-nowrap px-4 py-2 text-center">
+              <span className="bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300 rounded px-2.5 py-0.5 text-center text-xs font-medium">
                 5
               </span>
             </td>
-            <td className="px-4 py-2 whitespace-nowrap text-center">
-              <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
+            <td className="whitespace-nowrap px-4 py-2 text-center">
+              <span className="bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300 rounded px-2.5 py-0.5 text-center text-xs font-medium">
                 10%
               </span>
             </td>
-            <td className="px-4 py-2 font-medium whitespace-nowrap">
-              <div className="flex -space-x-4 w-full justify-center">
+            <td className="whitespace-nowrap px-4 py-2 font-medium">
+              <div className="flex w-full justify-center -space-x-4">
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
               </div>
             </td>
-            <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+            <td className="whitespace-nowrap px-4 py-2 font-medium text-gray-900 dark:text-white">
               <div className="flex items-center justify-center">
                 <svg
-                  className="w-6 h-6 text-septenary dark:text-white"
+                  className="h-6 w-6 text-septenary dark:text-white"
                   aria-hidden="true"
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -539,10 +539,10 @@ export default function Table() {
                 </svg>
               </div>
             </td>
-            <td className="px-4 py-2 whitespace-nowrap font-medium text-gray-900 dark:text-white text-xs">
+            <td className="whitespace-nowrap px-4 py-2 text-xs font-medium text-gray-900 dark:text-white">
               <div className="flex items-center justify-center">
                 <svg
-                  className="w-6 h-6 text-green-500 dark:text-white"
+                  className="h-6 w-6 text-green-500 dark:text-white"
                   aria-hidden="true"
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -558,18 +558,18 @@ export default function Table() {
                 </svg>
               </div>
             </td>
-            <td className="px-4 py-2 whitespace-nowrap font-medium text-gray-900 dark:text-white text-xs text-center">
+            <td className="whitespace-nowrap px-4 py-2 text-center text-xs font-medium text-gray-900 dark:text-white">
               $00,00
             </td>
           </tr>
-          <tr className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
-            <td className="px-4 py-2 w-4">
+          <tr className="border-b hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700">
+            <td className="w-4 px-4 py-2">
               <div className="flex items-center">
                 <input
                   id="checkbox-table-search-1"
                   type="checkbox"
                   onClick={() => null}
-                  className="w-4 h-4 text-primary-600 bg-gray-100 rounded border-gray-300 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                  className="text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 h-4 w-4 rounded border-gray-300 bg-gray-100 focus:ring-2 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800"
                 ></input>
                 <label htmlFor="checkbox-table-search-1" className="sr-only">
                   checkbox
@@ -578,55 +578,55 @@ export default function Table() {
             </td>
             <th
               scope="row"
-              className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+              className="whitespace-nowrap px-4 py-2 font-medium text-gray-900 dark:text-white"
             >
-              <Link to={'s'} className="flex items-center">
+              <Link to={"s"} className="flex items-center">
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-1.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
                 <span className="ml-3">Nombre del colaborador</span>
               </Link>
             </th>
-            <td className="px-4 py-2 whitespace-nowrap text-center">
-              <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
+            <td className="whitespace-nowrap px-4 py-2 text-center">
+              <span className="bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300 rounded px-2.5 py-0.5 text-center text-xs font-medium">
                 5
               </span>
             </td>
-            <td className="px-4 py-2 whitespace-nowrap text-center">
-              <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 text-center">
+            <td className="whitespace-nowrap px-4 py-2 text-center">
+              <span className="bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300 rounded px-2.5 py-0.5 text-center text-xs font-medium">
                 10%
               </span>
             </td>
-            <td className="px-4 py-2 font-medium whitespace-nowrap">
-              <div className="flex -space-x-4 w-full justify-center">
+            <td className="whitespace-nowrap px-4 py-2 font-medium">
+              <div className="flex w-full justify-center -space-x-4">
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
                 <img
                   src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/avatar-10.png"
                   alt=""
-                  className="w-10 h-10 flex-shrink-0 border-2 border-white rounded-full dark:border-gray-800"
+                  className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-white dark:border-gray-800"
                 />
               </div>
             </td>
-            <td className="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+            <td className="whitespace-nowrap px-4 py-2 font-medium text-gray-900 dark:text-white">
               <div className="flex items-center justify-center">
                 <svg
-                  className="w-6 h-6 text-septenary dark:text-white"
+                  className="h-6 w-6 text-septenary dark:text-white"
                   aria-hidden="true"
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -643,10 +643,10 @@ export default function Table() {
                 </svg>
               </div>
             </td>
-            <td className="px-4 py-2 whitespace-nowrap font-medium text-gray-900 dark:text-white text-xs">
+            <td className="whitespace-nowrap px-4 py-2 text-xs font-medium text-gray-900 dark:text-white">
               <div className="flex items-center justify-center">
                 <svg
-                  className="w-6 h-6 text-green-500 dark:text-white"
+                  className="h-6 w-6 text-green-500 dark:text-white"
                   aria-hidden="true"
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -662,11 +662,10 @@ export default function Table() {
                 </svg>
               </div>
             </td>
-            <td className="px-4 py-2 whitespace-nowrap font-medium text-gray-900 dark:text-white text-xs text-center">
+            <td className="whitespace-nowrap px-4 py-2 text-center text-xs font-medium text-gray-900 dark:text-white">
               $00,00
             </td>
           </tr>
-         
         </tbody>
       </table>
     </div>

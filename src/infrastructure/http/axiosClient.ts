@@ -48,7 +48,12 @@ apiClient.interceptors.response.use(
     const status = error.response?.status;
     const url = error.config?.url ?? "";
 
-    if (status === 401 && !isAuthEndpoint(url) && !isPermissionEndpoint(url) && localStorage.getItem("token")) {
+    if (
+      status === 401 &&
+      !isAuthEndpoint(url) &&
+      !isPermissionEndpoint(url) &&
+      localStorage.getItem("token")
+    ) {
       // Sesión expirada — limpia y redirige al login
       clearSession();
       window.location.href = "/auth/email-login";
@@ -59,5 +64,5 @@ apiClient.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );

@@ -29,11 +29,13 @@ export default function ImgTop({ activeImg }: { activeImg: string }) {
         }
 
         const colorsSorted = Object.keys(colorsFrequency).sort(
-          (a, b) => colorsFrequency[b] - colorsFrequency[a]
+          (a, b) => colorsFrequency[b] - colorsFrequency[a],
         );
 
         setPrimaryColorDominant(`rgb(${colorsSorted[0]})`);
-        setSecondaryColorDominant(`rgb(${colorsSorted[colorsSorted.length - 1]})`);
+        setSecondaryColorDominant(
+          `rgb(${colorsSorted[colorsSorted.length - 1]})`,
+        );
       };
     };
 
@@ -43,40 +45,52 @@ export default function ImgTop({ activeImg }: { activeImg: string }) {
   return (
     <>
       <div
-        className="rounded-lg col-span-6 bg-blend-saturation bg-opacity-50 p-6 text-white shadow-lg flex flex-col justify-between gap-3 text-shadow-lg "
+        className="col-span-6 flex flex-col justify-between gap-3 rounded-lg bg-opacity-50 p-6 text-white bg-blend-saturation shadow-lg text-shadow-lg"
         style={{
           background: `linear-gradient(35deg, ${primary} 0%, ${secondary} 100%)`,
         }}
       >
-        <div className="flex justify-between items-center">
+        <div className="flex items-center justify-between">
           <div className="flex flex-col">
             <span className="text-title font-bold">El vega Life</span>
             <span className="text-normal">Fecha de vinculacion + ID</span>
           </div>
           <div>
-            <button className="text-normal bg-quinary px-5 py-1 rounded-full">Detalles</button>
+            <button className="rounded-full bg-quinary px-5 py-1 text-normal">
+              Detalles
+            </button>
           </div>
         </div>
         <div className="flex justify-between">
           <div className="flex flex-col items-center border-r border-white p-3 text-center">
-            <span className="text-title text-white font-bold">5</span>
-            <span className="text-subtitle text-white font-bold">Canciones</span>
-            <span className="text-normal text-white">Proyectos en conjunto</span>
+            <span className="text-title font-bold text-white">5</span>
+            <span className="text-subtitle font-bold text-white">
+              Canciones
+            </span>
+            <span className="text-normal text-white">
+              Proyectos en conjunto
+            </span>
           </div>
           <div className="flex flex-col items-center border-white p-3 text-center">
-            <span className="text-title text-white font-bold">39%</span>
-            <span className="text-subtitle text-white font-bold">Colaboracion</span>
+            <span className="text-title font-bold text-white">39%</span>
+            <span className="text-subtitle font-bold text-white">
+              Colaboracion
+            </span>
             <span className="text-normal text-white">Porcentaje general</span>
           </div>
           <div className="flex flex-col items-center border-l border-white p-3 text-center">
-            <span className="text-title text-white font-bold">$5.892,00</span>
-            <span className="text-subtitle text-white font-bold">Ganancias</span>
-            <span className="text-normal text-white">Desde la fecha de vinculacion</span>
+            <span className="text-title font-bold text-white">$5.892,00</span>
+            <span className="text-subtitle font-bold text-white">
+              Ganancias
+            </span>
+            <span className="text-normal text-white">
+              Desde la fecha de vinculacion
+            </span>
           </div>
         </div>
       </div>
       <div
-        className="w-full h-full overflow-hidden relative rounded-lg col-span-3 p-6 text-white"
+        className="relative col-span-3 h-full w-full overflow-hidden rounded-lg p-6 text-white"
         style={{
           background: `linear-gradient(0deg, ${primary} 0%, ${secondary} 100%)`,
         }}
@@ -86,14 +100,14 @@ export default function ImgTop({ activeImg }: { activeImg: string }) {
           <span className="text-normal">5 Estrellas</span>
           <span>🤍🤍🤍🤍🤍</span>
         </div>
-        <div className="flex absolute bottom-6 left-6 gap-3 items-center z-10 text-shadow-xl">
-          <span className="text-white text-5xl">Top</span>
-          <span className="text-white text-6xl font-bold">10</span>
+        <div className="absolute bottom-6 left-6 z-10 flex items-center gap-3 text-shadow-xl">
+          <span className="text-5xl text-white">Top</span>
+          <span className="text-6xl font-bold text-white">10</span>
         </div>
         <img
           src={activeImg}
           alt=""
-          className="absolute w-36 h-36 rounded-full -bottom-4 -right-4"
+          className="absolute -bottom-4 -right-4 h-36 w-36 rounded-full"
         />
       </div>
     </>

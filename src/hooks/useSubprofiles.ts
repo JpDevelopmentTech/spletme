@@ -23,7 +23,9 @@ export function useSubprofiles(parentUserId: string) {
     name: "",
     lastName: "",
   });
-  const [createErrors, setCreateErrors] = useState<Partial<RegisterSubuserSchema>>({});
+  const [createErrors, setCreateErrors] = useState<
+    Partial<RegisterSubuserSchema>
+  >({});
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState("");
   const [createSuccess, setCreateSuccess] = useState(false);
@@ -33,14 +35,19 @@ export function useSubprofiles(parentUserId: string) {
     setSubError("");
     try {
       const response = await AuthService.getSubUsersByUser();
-      if (!response) { setSubError("No se pudieron cargar los subperfiles."); return; }
+      if (!response) {
+        setSubError("No se pudieron cargar los subperfiles.");
+        return;
+      }
       const currentUser = LocalStorageService.getItem("user");
       const currentId = currentUser?.id ?? currentUser?._id ?? "";
       const currentEmail = (currentUser?.email ?? "").toLowerCase();
       const all = extractSubprofiles(response);
-      setSubprofiles(all.filter(
-        (s) => s.id !== currentId && s.email.toLowerCase() !== currentEmail
-      ));
+      setSubprofiles(
+        all.filter(
+          (s) => s.id !== currentId && s.email.toLowerCase() !== currentEmail,
+        ),
+      );
     } catch {
       setSubError("Error al cargar los subperfiles.");
     } finally {
@@ -48,7 +55,9 @@ export function useSubprofiles(parentUserId: string) {
     }
   }, []);
 
-  useEffect(() => { void loadSubprofiles(); }, [loadSubprofiles]);
+  useEffect(() => {
+    void loadSubprofiles();
+  }, [loadSubprofiles]);
 
   const handleUnlink = async (id: string) => {
     setUnlinkingId(id);
@@ -56,7 +65,10 @@ export function useSubprofiles(parentUserId: string) {
     setUnlinkSuccess("");
     try {
       const result = await AuthService.unlinkSubuser(id);
-      if (!result.success) { setSubError(result.message); return; }
+      if (!result.success) {
+        setSubError(result.message);
+        return;
+      }
       setSubprofiles((prev) => prev.filter((s) => s.id !== id));
       setConfirmingId(null);
       setUnlinkSuccess("Subperfil desvinculado correctamente.");
@@ -80,7 +92,10 @@ export function useSubprofiles(parentUserId: string) {
     return Object.keys(errs).length === 0;
   };
 
-  const handleCreateSubprofile = async (e: React.FormEvent, onDone: () => void) => {
+  const handleCreateSubprofile = async (
+    e: React.FormEvent,
+    onDone: () => void,
+  ) => {
     e.preventDefault();
     if (!validateCreate()) return;
     setCreateLoading(true);
@@ -90,14 +105,21 @@ export function useSubprofiles(parentUserId: string) {
       const response = await AuthService.registerSubuser(createForm);
       if (!response) throw new Error();
       setCreateSuccess(true);
-      setCreateForm({ parentUserId, username: "", email: "", name: "", lastName: "" });
+      setCreateForm({
+        parentUserId,
+        username: "",
+        email: "",
+        name: "",
+        lastName: "",
+      });
       setTimeout(() => {
         setCreateSuccess(false);
         onDone();
         void loadSubprofiles();
       }, 1500);
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      const msg = (err as { response?: { data?: { message?: string } } })
+        ?.response?.data?.message;
       setCreateError(msg ?? "Error al crear el subperfil.");
     } finally {
       setCreateLoading(false);
@@ -109,10 +131,13 @@ export function useSubprofiles(parentUserId: string) {
     subLoading,
     subError,
     unlinkingId,
-    confirmingId, setConfirmingId,
+    confirmingId,
+    setConfirmingId,
     unlinkSuccess,
-    createForm, setCreateForm,
-    createErrors, setCreateErrors,
+    createForm,
+    setCreateForm,
+    createErrors,
+    setCreateErrors,
     createLoading,
     createError,
     createSuccess,
