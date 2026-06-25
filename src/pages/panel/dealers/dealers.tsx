@@ -142,8 +142,11 @@ export default function Dealers() {
         <CreateDistributorModal
           onClose={() => setShowCreate(false)}
           onConfirm={async (payload) => {
-            await distributorsService.create(payload);
+            const created = await distributorsService.create(payload);
             await load();
+            // Abrir de inmediato el modal de carga del Q para el distribuidor
+            // recién creado. Al ser nuevo, no tiene cargas previas.
+            setUploadTarget({ distributor: created, existingUploads: [] });
           }}
         />
       )}
