@@ -6,6 +6,7 @@ import {
   countTotalSplits,
   countReleases,
 } from "@/utils/music.utils";
+import { CopyButton } from "@/components/ui/CopyButton";
 import type { SongItem } from "@/types/music.types";
 
 interface SongDetailsModalProps {
@@ -94,11 +95,17 @@ export function SongDetailsModal({
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
                   <p className="text-[11px] text-gray-500 uppercase tracking-wide">ISRC</p>
-                  <p className="text-sm font-semibold text-gray-900 font-mono truncate">{getField("isrc") ?? "N/A"}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-sm font-semibold text-gray-900 font-mono truncate">{getField("isrc") ?? "N/A"}</p>
+                    {getField("isrc") && <CopyButton value={String(getField("isrc"))} title="Copiar ISRC" />}
+                  </div>
                 </div>
                 <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
                   <p className="text-[11px] text-gray-500 uppercase tracking-wide">UPC / EAN</p>
-                  <p className="text-sm font-semibold text-gray-900 font-mono truncate">{String(upc)}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-sm font-semibold text-gray-900 font-mono truncate">{String(upc)}</p>
+                    {upc && String(upc) !== "N/A" && <CopyButton value={String(upc)} title="Copiar UPC" />}
+                  </div>
                 </div>
                 <div className="rounded-lg border border-green-200 bg-green-50 px-3 py-2">
                   <p className="text-[11px] text-green-700 uppercase tracking-wide">Splits asignados</p>

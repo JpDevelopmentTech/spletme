@@ -1,4 +1,5 @@
 import img from "../../../../../assets/images/collaborator2.jpg";
+import { CopyButton } from "@/components/ui/CopyButton";
 
 export default function EspecificData({ song }: { song: any }) {
   const getDateLabel = (value: any) => {
@@ -60,8 +61,14 @@ export default function EspecificData({ song }: { song: any }) {
             <span className="font-bold">Productor:</span>
           </div>
           <div className="flex flex-col">
-            <span>{upc}</span>
-            <span>{isrc}</span>
+            <span className="inline-flex items-center gap-1.5">
+              {upc}
+              {upc !== "N/A" && <CopyButton value={upc} title="Copiar UPC" />}
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              {isrc}
+              {isrc !== "N/A" && <CopyButton value={isrc} title="Copiar ISRC" />}
+            </span>
             <span>{releaseDate}</span>
             <span>{duration}</span>
             <span>{label}</span>

@@ -175,6 +175,8 @@ export default function SplitsModal({
                             value={form.selectedCountries}
                             onChange={(selected) => updateForm(collaborator.id, "selectedCountries", selected ?? [])}
                             styles={selectStyles}
+                            menuPortalTarget={document.body}
+                            menuPosition="fixed"
                             placeholder="Seleccionar países..."
                             noOptionsMessage={() => "No hay países disponibles"}
                           />
@@ -200,6 +202,8 @@ export default function SplitsModal({
                             value={form.selectedPlatforms}
                             onChange={(selected) => updateForm(collaborator.id, "selectedPlatforms", selected ?? [])}
                             styles={selectStyles}
+                            menuPortalTarget={document.body}
+                            menuPosition="fixed"
                             placeholder="Seleccionar plataformas..."
                             noOptionsMessage={() => "No hay plataformas disponibles"}
                           />

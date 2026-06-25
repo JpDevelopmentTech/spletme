@@ -30,6 +30,7 @@ import ValidationToastQueue, {
 } from "../../../../components/alert/ValidationToastQueue";
 import Behavior from "../../dealers/components/behavior";
 import DocumentManager from "./components/documentManager";
+import { CopyButton } from "@/components/ui/CopyButton";
 
 export default function Song() {
   const { id } = useParams();
@@ -120,6 +121,7 @@ export default function Song() {
   };
 
   const ownerAmount = getOwnerTotalOwed();
+  const totalNetIncome = song?.totalNetIncome || 0;
   // Usar collaboratorsEarnings del backend si está disponible, si no calcular
   // Total a pagar = lo PENDIENTE de los colaboradores (devengado − ya pagado).
   const totalToPay =
@@ -168,6 +170,12 @@ export default function Song() {
     emailMatchesOwner ||
     usernameMatchesOwner ||
     (!isSubuserSession && !hasOwnerIdentity && idMatchesOwner);
+
+  // El owner ve el Net Income completo. Un colaborador (no-owner) lo ve ya
+  // descontado por la parte que le corresponde al split del owner.
+  const displayNetIncome = isOwnerUser
+    ? totalNetIncome
+    : Math.max(0, totalNetIncome - ownerAmount);
 
   if (loading) return <Loading />;
 
@@ -257,8 +265,15 @@ export default function Song() {
                     {song?.artistName || "—"}
                   </p>
                 </div>
-                <span className="flex-shrink-0 bg-[#F97316] text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+                <span className="flex-shrink-0 inline-flex items-center gap-1.5 bg-[#F97316] text-white text-xs font-semibold px-3 py-1.5 rounded-full">
                   ISRC: {song?.isrc || "—"}
+                  {song?.isrc && (
+                    <CopyButton
+                      value={song.isrc}
+                      title="Copiar ISRC"
+                      className="text-white/80 hover:text-white hover:bg-white/20"
+                    />
+                  )}
                 </span>
               </div>
 
@@ -293,10 +308,10 @@ export default function Song() {
                   </div>
                   <p className="text-xl font-bold text-green-600">
                     $
-                    {song?.totalNetIncome?.toLocaleString("en-US", {
+                    {displayNetIncome.toLocaleString("en-US", {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
-                    }) || "0.00"}
+                    })}
                   </p>
                 </div>
 

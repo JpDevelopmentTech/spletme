@@ -28,6 +28,7 @@ import { ApexOptions } from "apexcharts";
 import AlbumService from "../../../../services/albums";
 import SongService from "../../../../services/songs";
 import Platforms from "../song/components/platforms";
+import { CopyButton } from "@/components/ui/CopyButton";
 
 interface ReproductionData {
   totalStreams: number;
@@ -419,6 +420,7 @@ export default function AlbumDetail() {
           <div className="inline-flex items-center gap-2 w-fit px-3 py-1.5 bg-gray-100 rounded-full">
             <span className="text-xs font-semibold text-gray-500">UPC</span>
             <span className="text-xs font-mono text-gray-900">{album.upc}</span>
+            {album.upc && <CopyButton value={album.upc} title="Copiar UPC" />}
           </div>
         </div>
       </div>
@@ -625,8 +627,9 @@ export default function AlbumDetail() {
 
                   {/* ISRC */}
                   <td className="px-4 py-4 hidden lg:table-cell">
-                    <span className="text-xs font-mono text-gray-500">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-mono text-gray-500">
                       {track.isrc || "—"}
+                      {track.isrc && <CopyButton value={track.isrc} title="Copiar ISRC" />}
                     </span>
                   </td>
 

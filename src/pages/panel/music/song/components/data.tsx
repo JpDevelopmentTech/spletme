@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { motion } from "framer-motion";
+import { CopyButton } from "@/components/ui/CopyButton";
 
 export default function Data({ song }: { song: any }) {
   return (
@@ -42,13 +43,13 @@ export default function Data({ song }: { song: any }) {
       
       <div className="mt-6 space-y-4">
         {[
-          { label: "UPC", value: song?.external_ids?.upc || "—" },
-          { label: "ISRC", value: song?.external_ids?.isrc || "—" },
-          { label: "Lanzamiento", value: song?.release_date || "—" },
-          { label: "Duración", value: song?.duration_ms || "—" },
-          { label: "Sello", value: song?.label || "—" }
+          { label: "UPC", value: song?.external_ids?.upc || "—", copyable: true },
+          { label: "ISRC", value: song?.external_ids?.isrc || "—", copyable: true },
+          { label: "Lanzamiento", value: song?.release_date || "—", copyable: false },
+          { label: "Duración", value: song?.duration_ms || "—", copyable: false },
+          { label: "Sello", value: song?.label || "—", copyable: false }
         ].map((item, index) => (
-          <motion.div 
+          <motion.div
             key={item.label}
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -56,12 +57,17 @@ export default function Data({ song }: { song: any }) {
             className="flex justify-between items-center py-2 px-3 rounded-lg hover:bg-gray-100 transition-colors"
           >
             <span className="font-medium text-gray-700">{item.label}:</span>
-            <motion.span 
-              whileHover={{ scale: 1.02 }}
-              className="text-gray-800 bg-gray-100 px-3 py-1 rounded-md"
-            >
-              {item.value}
-            </motion.span>
+            <span className="inline-flex items-center gap-1.5">
+              <motion.span
+                whileHover={{ scale: 1.02 }}
+                className="text-gray-800 bg-gray-100 px-3 py-1 rounded-md"
+              >
+                {item.value}
+              </motion.span>
+              {item.copyable && item.value !== "—" && (
+                <CopyButton value={String(item.value)} title={`Copiar ${item.label}`} />
+              )}
+            </span>
           </motion.div>
         ))}
       </div>

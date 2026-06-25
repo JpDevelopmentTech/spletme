@@ -2,6 +2,7 @@
 import { Link } from "react-router-dom";
 import { Disc, Music, DollarSign, TrendingUp, Play } from "lucide-react";
 import { motion } from "framer-motion";
+import { CopyButton } from "@/components/ui/CopyButton";
 import type { Album } from "../../../../../models/album";
 
 interface UpcAlbumCardProps {
@@ -72,8 +73,9 @@ const UpcAlbumCard = ({ album, index }: UpcAlbumCardProps) => {
 
             {/* UPC Badge */}
             <div className="flex justify-center mb-6">
-              <span className="inline-flex items-center px-4 py-2 rounded-full text-xs font-semibold bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
+              <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
                 UPC: {album.upc}
+                {album.upc && <CopyButton value={album.upc} title="Copiar UPC" />}
               </span>
             </div>
 

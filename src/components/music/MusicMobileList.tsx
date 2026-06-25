@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Music as MusicIcon, Disc, Crown } from "lucide-react";
 import { hasAnySplit } from "@/utils/music.utils";
 import { formatCurrency } from "@/utils/format.utils";
+import { CopyButton } from "@/components/ui/CopyButton";
 import type { MusicMode, SongItem, AlbumItem } from "@/types/music.types";
 
 interface MusicMobileListProps {
@@ -40,8 +41,12 @@ export function MusicMobileList({
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-gray-900 truncate">{song.trackTitle}</p>
                 <p className="text-xs text-gray-500 truncate">{song?.artistName ?? "Unknown Artist"}</p>
-                <p className="text-[11px] text-gray-400 truncate mt-0.5">
-                  ISRC: {song?.isrc ?? "N/A"} · {Number(song?.totalStreams ?? 0).toLocaleString()} streams · {formatCurrency(song?.totalNetIncome ?? 0)}
+                <span className="flex items-center gap-1 text-[11px] text-gray-400 mt-0.5">
+                  <span className="truncate">ISRC: {song?.isrc ?? "N/A"}</span>
+                  {song?.isrc && <CopyButton value={song.isrc} size={11} title="Copiar ISRC" />}
+                </span>
+                <p className="text-[11px] text-gray-400 truncate">
+                  {Number(song?.totalStreams ?? 0).toLocaleString()} streams · {formatCurrency(song?.totalNetIncome ?? 0)}
                 </p>
               </div>
               <span className={`inline-flex px-2 py-1 text-[11px] font-semibold rounded-full ${hasAnySplit(song) ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-500"}`}>

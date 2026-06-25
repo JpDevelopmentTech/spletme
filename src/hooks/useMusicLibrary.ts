@@ -48,7 +48,7 @@ export function useMusicLibrary() {
   const [filterPagination, setFilterPagination] = useState<{ total?: number; hasMore?: boolean; totalPages?: number } | null>(null);
   const [isFilterLoading, setIsFilterLoading] = useState(false);
 
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const debouncedSearchQuery = useDebounce(searchQuery, 600);
 
   const {
     songs,

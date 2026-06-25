@@ -4,6 +4,9 @@
  * amberSelectStyles → paleta ámbar (#f59e0b) para formularios de owner splits.
  */
 export const selectStyles = {
+  // Portado al body con z-index alto para que el menú no lo recorten los
+  // contenedores con overflow del modal de splits.
+  menuPortal: (base: Record<string, unknown>) => ({ ...base, zIndex: 10000 }),
   control: (base: Record<string, unknown>) => ({
     ...base,
     border: "1px solid #e5e7eb",
@@ -47,6 +50,7 @@ export const selectStyles = {
 };
 
 export const amberSelectStyles = {
+  menuPortal: (base: Record<string, unknown>) => ({ ...base, zIndex: 10000 }),
   control: (base: Record<string, unknown>) => ({
     ...base,
     border: "1px solid #e5e7eb",

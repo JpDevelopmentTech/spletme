@@ -107,9 +107,7 @@ export default function Music() {
               Manage your songs and albums
             </p>
           </div>
-        </div>
-
-        {/* Stat card — songs without splits */}
+               {/* Stat card — songs without splits */}
         {songsWithoutSplits !== null && songsWithoutSplits > 0 && (
           <div className="mb-6">
             <div className="inline-flex items-center gap-4 px-5 py-4 bg-white border border-amber-200 rounded-2xl shadow-sm">
@@ -125,6 +123,9 @@ export default function Music() {
             </div>
           </div>
         )}
+        </div>
+
+   
 
         {/* Controls */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">

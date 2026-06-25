@@ -2,7 +2,13 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Music as MusicIcon, Disc, Crown, Info, Tags, ArrowUpDown, Check } from "lucide-react";
 import { hasAnySplit } from "@/utils/music.utils";
+import { CopyButton } from "@/components/ui/CopyButton";
 import type { MusicMode, SongItem, AlbumItem, SortBy, SplitFilter } from "@/types/music.types";
+
+/** Formatea un monto en USD para las columnas de ingresos. */
+function formatIncome(value?: number): string {
+  return `$${(value ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
 
 const SPLIT_FILTER_OPTIONS: { value: SplitFilter; label: string }[] = [
   { value: "all",           label: "Todos" },
@@ -168,6 +174,7 @@ export function MusicTable({
                   <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <div className="flex items-center">Track <SortBtn column="track" /></div>
                   </th>
+                  <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ISRC</th>
                   <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <div className="flex items-center">Split Status <SortBtn column="split" /></div>
                   </th>
@@ -181,7 +188,7 @@ export function MusicTable({
                     <div className="flex items-center">Label <SortBtn column="label" /></div>
                   </th>
                   <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <div className="flex items-center">Status <SortBtn column="revenue" /></div>
+                    <div className="flex items-center">Ingresos <SortBtn column="revenue" /></div>
                   </th>
                   <th className="px-6 py-3.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
                 </>
@@ -190,9 +197,6 @@ export function MusicTable({
                   <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <div className="flex items-center">Album <SortBtn column="album" /></div>
                   </th>
-                  <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <div className="flex items-center">Artist <SortBtn column="artist" /></div>
-                  </th>
                   <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">UPC</th>
                   <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <div className="flex items-center">Label <SortBtn column="label" /></div>
@@ -200,7 +204,9 @@ export function MusicTable({
                   <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <div className="flex items-center">Release Date <SortBtn column="date" /></div>
                   </th>
-                  <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <div className="flex items-center">Ingresos <SortBtn column="revenue" /></div>
+                  </th>
                   <th className="px-6 py-3.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </>
               )}
@@ -230,6 +236,16 @@ export function MusicTable({
                             <p className="text-[11px] text-gray-400 truncate">{song?.artistName ?? "Unknown Artist"}</p>
                           </div>
                         </Link>
+                      </td>
+                      <td className="px-6 py-3">
+                        {song?.isrc ? (
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[12px] text-gray-700 font-mono">{song.isrc}</span>
+                            <CopyButton value={song.isrc} title="Copiar ISRC" />
+                          </div>
+                        ) : (
+                          <span className="text-[13px] text-gray-400">—</span>
+                        )}
                       </td>
                       <td className="px-6 py-3">
                         <span className={`inline-flex px-2.5 py-1 text-[11px] font-semibold rounded-full ${hasAnySplit(song) ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-500"}`}>
@@ -276,8 +292,8 @@ export function MusicTable({
                         </div>
                       </td>
                       <td className="px-6 py-3">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="text-[13px] text-gray-900 truncate max-w-[120px]" title={song?.artisticLabel ?? ""}>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[13px] text-gray-900" title={song?.artisticLabel ?? ""}>
                             {song?.artisticLabel ?? "Unknown"}
                           </span>
                           {(song?.labelCount ?? 0) > 0 && (
@@ -291,11 +307,8 @@ export function MusicTable({
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-3">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-green-50 text-green-700">
-                          <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-                          Active
-                        </span>
+                      <td className="px-6 py-3 text-[13px] font-semibold text-gray-900">
+                        {formatIncome(song?.totalNetIncome ?? song?.netIncome)}
                       </td>
                       <td className="px-6 py-3 text-center">
                         <button
@@ -312,7 +325,7 @@ export function MusicTable({
               : groupAlbumsByTrackCount
                 ? groupedAlbums.flatMap(([trackCount, albumsInGroup]) => [
                     <tr key={`group-${trackCount}`} className="bg-gray-50 border-b border-gray-100">
-                      <td colSpan={7} className="px-6 py-2 text-xs font-semibold text-gray-600">{trackCount} canciones</td>
+                      <td colSpan={6} className="px-6 py-2 text-xs font-semibold text-gray-600">{trackCount} canciones</td>
                     </tr>,
                     ...albumsInGroup.map((album) => (
                       <AlbumRow key={`${album.upc}-${trackCount}`} album={album} onOwnerSplitModal={onOwnerSplitModal} />
@@ -363,26 +376,34 @@ function AlbumRow({ album, onOwnerSplitModal }: { album: AlbumItem; onOwnerSplit
   return (
     <tr className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
       <td className="px-6 py-3">
-        <div className="flex items-center gap-3 group">
+        <div className="flex items-center gap-3 group min-w-0">
           <div className="flex-shrink-0 w-9 h-9">
             <AlbumCover album={album} />
           </div>
-          <Link to={`/panel/album/upc/${album.upc}`} className="text-[13px] font-semibold text-gray-900 group-hover:text-orange-500 transition-colors">
-            {album.releaseTitle ?? album.albumTitle}
-          </Link>
+          <div className="min-w-0">
+            <Link to={`/panel/album/upc/${album.upc}`} className="block text-[13px] font-semibold text-gray-900 group-hover:text-orange-500 transition-colors truncate" title={album.releaseTitle ?? album.albumTitle}>
+              {album.releaseTitle ?? album.albumTitle}
+            </Link>
+            <p className="text-[11px] text-gray-400 truncate">{album.artistName ?? "Unknown Artist"}</p>
+          </div>
         </div>
       </td>
-      <td className="px-6 py-3 text-[13px] text-gray-900">{album.artistName ?? "Unknown Artist"}</td>
-      <td className="px-6 py-3 text-[13px] text-gray-900 font-mono">{album.upc ?? "N/A"}</td>
+      <td className="px-6 py-3">
+        {album.upc ? (
+          <div className="flex items-center gap-1.5">
+            <span className="text-[13px] text-gray-900 font-mono">{album.upc}</span>
+            <CopyButton value={album.upc} title="Copiar UPC" />
+          </div>
+        ) : (
+          <span className="text-[13px] text-gray-400">N/A</span>
+        )}
+      </td>
       <td className="px-6 py-3 text-[13px] text-gray-900">{album.artisticLabel ?? "Unknown"}</td>
       <td className="px-6 py-3 text-[13px] text-gray-900">
         {album.releaseDate ? new Date(album.releaseDate).toLocaleDateString() : "N/A"}
       </td>
-      <td className="px-6 py-3">
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-green-50 text-green-700">
-          <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-          Active
-        </span>
+      <td className="px-6 py-3 text-[13px] font-semibold text-gray-900">
+        {formatIncome(album.totalNetIncome)}
       </td>
       <td className="px-6 py-3 text-center">
         <button
