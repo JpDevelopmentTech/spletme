@@ -14,6 +14,10 @@ export interface OnboardingData {
   profession?: string;
   otherProfession?: string;
   country?: string;
+  state?: string;
+  city?: string;
+  postalCode?: string;
+  phoneCode?: string;
   phone?: string;
   address?: string;
   identification?: string;
