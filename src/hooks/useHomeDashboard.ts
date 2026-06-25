@@ -8,56 +8,13 @@ import SongService from "@/services/songs";
 import type { TopSong } from "@/types";
 
 interface DataPoint {
-  label: Date;
+  date: string;
   streams: number;
   income: number;
 }
 
-const pad = (n: number) => String(n).padStart(2, "0");
-const fmtDate = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-
-interface PeriodSlice {
-  startDate: string;
-  endDate: string;
-  label: Date;
-}
-
-function buildPeriods(timeframe: string): PeriodSlice[] {
-  const now = new Date();
-  const periods: PeriodSlice[] = [];
-
-  if (timeframe === "7d") {
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
-      periods.push({ startDate: fmtDate(d), endDate: fmtDate(d), label: d });
-    }
-  } else if (timeframe === "30d") {
-    for (let i = 3; i >= 0; i--) {
-      const endD = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i * 7);
-      const startD = new Date(endD.getFullYear(), endD.getMonth(), endD.getDate() - 6);
-      periods.push({ startDate: fmtDate(startD), endDate: fmtDate(endD), label: new Date(startD) });
-    }
-  } else if (timeframe === "90d") {
-    for (let i = 2; i >= 0; i--) {
-      const start = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const end = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
-      periods.push({ startDate: fmtDate(start), endDate: fmtDate(end), label: new Date(start) });
-    }
-  } else {
-    // 1y — 12 months
-    for (let i = 11; i >= 0; i--) {
-      const start = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const end = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
-      periods.push({ startDate: fmtDate(start), endDate: fmtDate(end), label: new Date(start) });
-    }
-  }
-
-  return periods;
-}
-
 function xaxisLabel(timeframe: string): string {
-  if (timeframe === "7d") return "dd MMM";
-  if (timeframe === "30d") return "dd MMM";
+  if (timeframe === "7d" || timeframe === "30d") return "dd MMM";
   return "MMM yyyy";
 }
 
@@ -90,22 +47,13 @@ export function useHomeDashboard() {
   }, []);
 
   const fetchData = useCallback(async (timeframe: string) => {
-    const periods = buildPeriods(timeframe);
-    const results = await Promise.all(
-      periods.map(async ({ startDate, endDate, label }) => {
-        try {
-          const res = await SongService.getSongsByFilter("", "", startDate, endDate);
-          return {
-            label,
-            streams: res?.data?.summary?.totalStreams ?? 0,
-            income: res?.data?.summary?.totalNetIncome ?? 0,
-          };
-        } catch {
-          return { label, streams: 0, income: 0 };
-        }
-      })
-    );
-    setDataPoints(results);
+    const res = await SongService.getSongsByParams(timeframe);
+    const points: DataPoint[] = (res?.data ?? []).map((row) => ({
+      date:    row.date,
+      streams: row.totalStreams,
+      income:  row.totalNetIncome,
+    }));
+    setDataPoints(points);
   }, []);
 
   useEffect(() => {
@@ -113,7 +61,7 @@ export function useHomeDashboard() {
   }, [selectedTimeframe, fetchData]);
 
   const xCategories = useMemo(
-    () => dataPoints.map((p) => p.label.toISOString()),
+    () => dataPoints.map((p) => p.date),
     [dataPoints]
   );
 
@@ -122,12 +70,12 @@ export function useHomeDashboard() {
       {
         name: "Streams",
         type: "area",
-        data: dataPoints.length > 0 ? dataPoints.map((p) => p.streams) : [],
+        data: dataPoints.map((p) => p.streams),
       },
       {
         name: "Revenue",
         type: "area",
-        data: dataPoints.length > 0 ? dataPoints.map((p) => Number(p.income.toFixed(2))) : [],
+        data: dataPoints.map((p) => Number(p.income.toFixed(2))),
       },
     ],
     [dataPoints]
