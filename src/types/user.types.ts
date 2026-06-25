@@ -64,9 +64,14 @@ export interface UpdateUserSchema {
 }
 
 export interface UpdateProfileInfoSchema {
-  country?: string | null;
-  profession?: string | null;
-  address?: string | null;
+  country?:          string | null;
+  department?:       string | null;
+  city?:             string | null;
+  phoneCountryCode?: string | null;
+  phone?:            string | null;
+  address?:          string | null;
+  professions?:      string[] | null;
+  otherProfession?:  string | null;
 }
 
 export type UpdateSubuserSchema = UpdateUserSchema;

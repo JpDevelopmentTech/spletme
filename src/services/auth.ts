@@ -141,9 +141,16 @@ export const AuthService = {
         onboardingData: {
           ...(currentUser.onboardingData ?? {}),
           ...(updatedPayload.onboardingData ?? {}),
-          country: payload.country ?? currentUser.onboardingData?.country ?? null,
-          profession: payload.profession ?? currentUser.onboardingData?.profession ?? null,
-          address: payload.address ?? currentUser.onboardingData?.address ?? null,
+          country:          payload.country          ?? currentUser.onboardingData?.country          ?? null,
+          department:       payload.department       ?? currentUser.onboardingData?.department       ?? null,
+          city:             payload.city             ?? currentUser.onboardingData?.city             ?? null,
+          phoneCountryCode: payload.phoneCountryCode ?? currentUser.onboardingData?.phoneCountryCode ?? null,
+          phone:            payload.phone            ?? currentUser.onboardingData?.phone            ?? null,
+          address:          payload.address          ?? currentUser.onboardingData?.address          ?? null,
+          profession: payload.professions
+            ? payload.professions.join(",")
+            : currentUser.onboardingData?.profession ?? null,
+          otherProfession: payload.otherProfession ?? currentUser.onboardingData?.otherProfession ?? null,
         },
       };
       localStorage.setItem("user", JSON.stringify(updatedUser));

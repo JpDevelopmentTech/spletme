@@ -65,8 +65,13 @@ const ProfessionStep = ({ nextStep, initialData }: ProfessionStepProps) => {
 
   const handleSubmit = () => {
     if (!canContinue) return;
+    // Replace "otro" with the specific professions chosen inside it
+    const finalProfs = [
+      ...selected.filter((p) => p !== "otro"),
+      ...(showOther ? selectedOther : []),
+    ];
     nextStep({
-      profession:      selected.join(","),
+      profession:      finalProfs.join(","),
       otherProfession: showOther ? selectedOther.join(",") : undefined,
     });
   };
