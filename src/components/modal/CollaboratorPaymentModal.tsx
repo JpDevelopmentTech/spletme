@@ -88,7 +88,8 @@ export function CollaboratorPaymentModal({
         </p>
         <p className="mt-1 text-3xl font-bold text-gray-900">{formatCurrency(total)}</p>
         <p className="mt-1 text-xs text-gray-500">
-          Se cobrará por débito ACH desde tu cuenta y se enviará a {collaboratorName} vía Wise.
+          Se cobrará por pago bancario instantáneo desde tu cuenta y se enviará a {collaboratorName}{" "}
+          vía Wise.
         </p>
       </div>
 
@@ -166,7 +167,7 @@ export function CollaboratorPaymentModal({
       <div>
         <h3 className="text-lg font-bold text-gray-900">Procesando pago</h3>
         <p className="mt-1 text-sm text-gray-500">
-          Iniciando el cobro de {formatCurrency(total)} por débito ACH...
+          Iniciando el cobro de {formatCurrency(total)} por pago bancario instantáneo...
         </p>
       </div>
       <div className="flex items-center gap-2 rounded-lg bg-blue-50 px-4 py-2 text-blue-700">
@@ -189,12 +190,12 @@ export function CollaboratorPaymentModal({
       <div>
         <h3 className="text-xl font-bold text-gray-900">¡Pago iniciado!</h3>
         <p className="mt-1 text-sm text-gray-500">
-          El cobro por {formatCurrency(total)} se está procesando por ACH.
+          El cobro por {formatCurrency(total)} se está procesando.
         </p>
       </div>
       <p className="max-w-sm text-xs text-gray-400">
-        El débito ACH puede tardar algunos días en liquidar. Al confirmarse, {collaboratorName}{" "}
-        recibirá su pago vía Wise.
+        El pago bancario se confirma al instante y liquida en ~2 días hábiles. Al confirmarse,{" "}
+        {collaboratorName} recibirá su pago vía Wise.
       </p>
     </div>
   );

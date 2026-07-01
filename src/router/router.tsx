@@ -21,7 +21,6 @@ import WalletPage from "../pages/panel/wallet/wallet";
 import Profile from "../pages/panel/profile/profile";
 import AcceptCollaboration from "../pages/collabotarion/acceptCollaboration";
 import AcceptLabelCollaboration from "../pages/collabotarion/acceptLabelCollaboration";
-import Stripe from "../pages/panel/stripe/stripe";
 import LabelsTable from "../pages/panel/labels/labelsTable";
 import LabelDetail from "../pages/panel/labels/labelDetail";
 import CustomLabelDetail from "../pages/panel/labels/customLabelDetail";
@@ -79,10 +78,6 @@ const routes = [
       </GuardedRoute>
     ),
     children: [
-      {
-        path: "stripe/:status",
-        element: <Stripe />,
-      },
       {
         path: "home",
         element: <Home />,

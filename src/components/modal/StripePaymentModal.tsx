@@ -140,8 +140,8 @@ const StripePaymentModal = ({
       <div className="rounded-lg border border-indigo-100 bg-indigo-50/50 p-4 dark:bg-indigo-900/10">
         <p className="text-sm text-gray-700 dark:text-gray-300">
           Se cobrará <span className="font-semibold">{formatCurrency(amount)}</span> desde tu cuenta
-          bancaria por débito ACH y se repartirá automáticamente a los colaboradores según sus
-          splits. El monto lo calcula el sistema a partir de los splits de la canción.
+          bancaria por pago bancario instantáneo y se repartirá automáticamente a los colaboradores
+          según sus splits. El monto lo calcula el sistema a partir de los splits de la canción.
         </p>
       </div>
 
@@ -213,7 +213,7 @@ const StripePaymentModal = ({
       <div>
         <h3 className="mb-2 text-xl font-bold text-gray-900 dark:text-white">Procesando pago</h3>
         <p className="text-gray-600 dark:text-gray-400">
-          Iniciando el cobro de {formatCurrency(amount)} por débito ACH...
+          Iniciando el cobro de {formatCurrency(amount)} por pago bancario instantáneo...
         </p>
       </div>
 
@@ -223,7 +223,7 @@ const StripePaymentModal = ({
           <span className="font-medium">Enviando solicitud a Stripe</span>
         </div>
         <p className="mt-2 text-sm text-blue-600 dark:text-blue-400">
-          Al liquidar el ACH, los colaboradores recibirán su parte vía Wise
+          Al confirmarse el pago, los colaboradores recibirán su parte vía Wise
         </p>
       </div>
     </div>
@@ -248,7 +248,7 @@ const StripePaymentModal = ({
       >
         <h3 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">¡Pago iniciado!</h3>
         <p className="mb-6 text-gray-600 dark:text-gray-400">
-          El cobro por {formatCurrency(amount)} se está procesando por ACH
+          El cobro por {formatCurrency(amount)} se está procesando
         </p>
 
         <div className="space-y-3 rounded-lg border border-green-200 bg-green-50 p-6 text-left dark:border-green-800 dark:bg-green-900/20">
@@ -257,8 +257,8 @@ const StripePaymentModal = ({
             <span className="font-medium text-green-600 dark:text-green-400">En proceso</span>
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            El débito ACH puede tardar algunos días en liquidar. Cuando se confirme, los
-            colaboradores recibirán automáticamente su parte vía Wise.
+            El pago bancario se confirma al instante y liquida en ~2 días hábiles. Al confirmarse,
+            los colaboradores recibirán automáticamente su parte vía Wise.
           </p>
         </div>
       </motion.div>

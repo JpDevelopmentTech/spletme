@@ -1,6 +1,11 @@
 import { Landmark, CheckCircle2, Clock, AlertCircle, Loader2 } from "lucide-react";
+import { Elements } from "@stripe/react-stripe-js";
 import { useOwnerBankAccount } from "@/hooks/useOwnerBankAccount";
+import { getStripe } from "@/infrastructure/stripe/stripeClient";
+import BankAccountLinkForm from "@/components/bank-account/BankAccountLinkForm";
 import type { BankAccountStatusData } from "@/types/bank-account.types";
+
+const stripePromise = getStripe();
 
 const STATUS_CONFIG: Record<
   BankAccountStatusData["status"],
@@ -29,15 +34,27 @@ const FEEDBACK_COLOR: Record<string, string> = {
 
 /**
  * Sección del dashboard (Billetera) para que el Owner vincule su cuenta bancaria
- * US vía ACH (Stripe Financial Connections) y consulte su estado.
+ * US vía Instant Bank Payments (Stripe Link, Payment Element) y consulte su estado.
  */
 export default function BankAccountSection() {
-  const { status, accounts, loadingStatus, linking, feedback, linkBankAccount } =
-    useOwnerBankAccount();
+  const {
+    status,
+    accounts,
+    loadingStatus,
+    linking,
+    clientSecret,
+    setupIntentId,
+    billingDetails,
+    feedback,
+    startLinking,
+    cancelLinking,
+    finishLinking,
+  } = useOwnerBankAccount();
 
   const hasBankAccount = Boolean(status?.hasBankAccount);
   const cfg = status ? STATUS_CONFIG[status.status] : STATUS_CONFIG.pending;
   const StatusIcon = cfg.icon;
+  const isLinkingOpen = Boolean(clientSecret && setupIntentId);
 
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-5">
@@ -47,9 +64,9 @@ export default function BankAccountSection() {
             <Landmark className="h-5 w-5 text-orange-500" />
           </div>
           <div className="flex flex-col">
-            <span className="text-[15px] font-bold text-gray-900">Cuenta bancaria (ACH)</span>
+            <span className="text-[15px] font-bold text-gray-900">Cuenta bancaria</span>
             <span className="text-xs text-gray-500">
-              Vincula tu cuenta bancaria de EE. UU. para pagar regalías por débito ACH.
+              Vincula tu cuenta bancaria de EE. UU. para pagar regalías al instante.
             </span>
           </div>
         </div>
@@ -79,24 +96,38 @@ export default function BankAccountSection() {
           )}
         </div>
 
-        <button
-          onClick={linkBankAccount}
-          disabled={linking || loadingStatus}
-          className="flex items-center gap-2 rounded-lg bg-orange-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
-        >
-          {linking ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Procesando...
-            </>
-          ) : (
-            <>
-              <Landmark className="h-4 w-4" />
-              {hasBankAccount ? "Actualizar cuenta" : "Vincular cuenta"}
-            </>
-          )}
-        </button>
+        {!isLinkingOpen && (
+          <button
+            onClick={startLinking}
+            disabled={linking || loadingStatus}
+            className="flex items-center gap-2 rounded-lg bg-orange-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
+          >
+            {linking ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Procesando...
+              </>
+            ) : (
+              <>
+                <Landmark className="h-4 w-4" />
+                {hasBankAccount ? "Actualizar cuenta" : "Vincular cuenta"}
+              </>
+            )}
+          </button>
+        )}
       </div>
+
+      {isLinkingOpen && clientSecret && setupIntentId && (
+        <Elements stripe={stripePromise} options={{ clientSecret }}>
+          <BankAccountLinkForm
+            setupIntentId={setupIntentId}
+            defaultName={billingDetails.name}
+            defaultEmail={billingDetails.email}
+            onSuccess={finishLinking}
+            onCancel={cancelLinking}
+          />
+        </Elements>
+      )}
 
       {!loadingStatus && accounts.length > 0 && (
         <div className="flex flex-col gap-2 border-t border-gray-100 pt-4">

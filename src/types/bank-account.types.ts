@@ -5,11 +5,20 @@ export interface ApiResponse<T> {
   error: boolean;
 }
 
-/** Datos del SetupIntent ACH devueltos al iniciar la vinculación bancaria. */
+/** Datos del SetupIntent devueltos al iniciar la vinculación bancaria (Instant Bank). */
 export interface BankAccountSetupData {
   clientSecret: string;
   setupIntentId: string;
   customerId: string;
+}
+
+/** Props del formulario embebido de vinculación (dentro de <Elements>). */
+export interface BankAccountLinkFormProps {
+  setupIntentId: string;
+  defaultName?: string;
+  defaultEmail?: string;
+  onSuccess: (verified: boolean) => void;
+  onCancel: () => void;
 }
 
 /** Estado de la cuenta bancaria del Owner. */

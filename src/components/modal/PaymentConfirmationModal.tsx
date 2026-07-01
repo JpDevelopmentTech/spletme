@@ -137,8 +137,9 @@ export default function PaymentConfirmationModal({
               <div className="flex items-start gap-2 rounded-xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
                 <Landmark className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-600 dark:text-blue-400" />
                 <p className="text-sm text-blue-900 dark:text-blue-200">
-                  Se cobrará este monto desde tu cuenta bancaria por débito ACH y se enviará al
-                  colaborador vía Wise. El ACH puede tardar unos días en liquidar.
+                  Se cobrará este monto desde tu cuenta bancaria por pago bancario instantáneo y se
+                  enviará al colaborador vía Wise. El pago se confirma al instante y liquida en ~2
+                  días hábiles.
                 </p>
               </div>
 
