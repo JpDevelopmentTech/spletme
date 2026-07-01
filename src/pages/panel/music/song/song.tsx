@@ -31,6 +31,8 @@ import ValidationToastQueue, {
 import Behavior from "../../dealers/components/behavior";
 import DocumentManager from "./components/documentManager";
 import { CopyButton } from "@/components/ui/CopyButton";
+import RoyaltiesService from "@/services/royalties";
+import type { RoyaltyRequest } from "@/services/royalties";
 
 export default function Song() {
   const { id } = useParams();
@@ -46,6 +48,8 @@ export default function Song() {
   const [toasts, setToasts] = useState<ValidationToastItem[]>([]);
   const [paymentHistoryRefresh, setPaymentHistoryRefresh] = useState(0);
   const [readiness, setReadiness] = useState<PaymentReadiness | null>(null);
+  const [myRoyaltyRequest, setMyRoyaltyRequest] = useState<RoyaltyRequest | null>(null);
+  const [royaltyRequestLoading, setRoyaltyRequestLoading] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -53,6 +57,18 @@ export default function Song() {
       if (!res.error && res.data) setReadiness(res.data);
     });
   }, [id, paymentHistoryRefresh]);
+
+  useEffect(() => {
+    RoyaltiesService.getMyRequests().then((res) => {
+      if (!res.error && res.data) {
+        const match = res.data.find((r) => {
+          const songIdVal = typeof r.songId === "string" ? r.songId : r.songId._id;
+          return songIdVal === id;
+        });
+        setMyRoyaltyRequest(match ?? null);
+      }
+    });
+  }, [id]);
 
   const addToast = (
     type: ValidationToastType,
@@ -107,6 +123,27 @@ export default function Song() {
       "success",
       "¡Inicio de sesión exitoso! Te has conectado correctamente con Stripe Connect.",
     );
+  };
+
+  const handleRequestRoyalties = async () => {
+    if (!id) return;
+    setRoyaltyRequestLoading(true);
+    const res = await RoyaltiesService.requestRoyalties(id);
+    setRoyaltyRequestLoading(false);
+    if (res.error) {
+      addToast("error", res.message || "Error al solicitar regalías");
+    } else {
+      addToast("success", "¡Solicitud enviada! El owner recibirá un correo para aprobarla.");
+      // Refresh the request status
+      const listRes = await RoyaltiesService.getMyRequests();
+      if (!listRes.error && listRes.data) {
+        const match = listRes.data.find((r) => {
+          const songIdVal = typeof r.songId === "string" ? r.songId : r.songId._id;
+          return songIdVal === id;
+        });
+        setMyRoyaltyRequest(match ?? null);
+      }
+    }
   };
 
   const handlePaymentSuccess = () => {
@@ -214,9 +251,7 @@ export default function Song() {
         <div className="grid grid-cols-4 gap-4">
           {/* Hero Card */}
           <div
-            className={`flex gap-6 rounded-xl border border-gray-200 bg-white p-6 ${
-              isOwnerUser ? "col-span-3" : "col-span-4"
-            }`}
+            className="col-span-3 flex gap-6 rounded-xl border border-gray-200 bg-white p-6"
           >
             {/* Album Art */}
             <div className="flex h-48 w-48 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gray-100">
@@ -360,6 +395,91 @@ export default function Song() {
                       ))}
                     </ul>
                   </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Royalties Banner — visible only for collaborators / labels (non-owners) */}
+          {!isOwnerUser && (
+            <div className="relative col-span-1 flex flex-col justify-between overflow-hidden rounded-xl bg-gray-900 p-6">
+              <div className="pointer-events-none absolute -right-8 -top-8 h-36 w-36 rounded-full bg-white/5" />
+              <div className="pointer-events-none absolute -bottom-10 -left-6 h-28 w-28 rounded-full bg-white/5" />
+
+              <div className="relative z-10">
+                <div className="mb-3 flex items-center gap-2.5">
+                  <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-white/10">
+                    <Award className="h-4 w-4 text-gray-300" />
+                  </div>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+                    Mis regalías
+                  </span>
+                </div>
+                <p className="pl-10 text-base font-semibold text-gray-200">
+                  {myRoyaltyRequest
+                    ? `Solicitud ${
+                        myRoyaltyRequest.status === "pending"
+                          ? "pendiente"
+                          : myRoyaltyRequest.status === "accepted"
+                            ? "aceptada"
+                            : "rechazada"
+                      }`
+                    : "Sin solicitud activa"}
+                </p>
+              </div>
+
+              <div className="relative z-10 my-5 border-t border-white/10" />
+
+              <div className="relative z-10 space-y-4">
+                <div>
+                  <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-500">
+                    Mi parte calculada
+                  </p>
+                  <p className="text-3xl font-bold tracking-tight text-white">
+                    {myRoyaltyRequest
+                      ? `$${myRoyaltyRequest.calculatedAmount.toFixed(2)}`
+                      : `$${getUserDisplayAmount()}`}
+                  </p>
+                  <p className="mt-0.5 text-xs text-gray-500">
+                    {myRoyaltyRequest
+                      ? `${myRoyaltyRequest.splitPercentage}% del split`
+                      : `${getUserDisplayPercentage()}% del split`}
+                  </p>
+                </div>
+
+                {myRoyaltyRequest?.status === "pending" ? (
+                  <div className="space-y-1.5 rounded-xl border border-white/10 bg-white/5 p-3">
+                    <p className="flex items-center gap-1.5 text-xs font-semibold text-gray-300">
+                      <AlertCircle className="h-3.5 w-3.5" />
+                      Solicitud pendiente de aprobación
+                    </p>
+                    <p className="text-[11px] leading-snug text-gray-400">
+                      El owner recibirá un correo para aceptar o rechazar tu solicitud.
+                    </p>
+                  </div>
+                ) : myRoyaltyRequest?.status === "accepted" ? (
+                  <div className="space-y-1.5 rounded-xl border border-white/10 bg-white/5 p-3">
+                    <p className="flex items-center gap-1.5 text-xs font-semibold text-gray-300">
+                      <Award className="h-3.5 w-3.5" />
+                      Solicitud aceptada
+                    </p>
+                    <p className="text-[11px] leading-snug text-gray-400">
+                      Tu solicitud de regalías fue aprobada por el owner.
+                    </p>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleRequestRoyalties}
+                    disabled={royaltyRequestLoading || myRoyaltyRequest?.status === "rejected"}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-bold text-gray-900 transition-all hover:bg-gray-100 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100"
+                  >
+                    <DollarSign className="h-4 w-4" />
+                    {royaltyRequestLoading
+                      ? "Enviando..."
+                      : myRoyaltyRequest?.status === "rejected"
+                        ? "Solicitud rechazada"
+                        : "Solicitar regalías"}
+                  </button>
                 )}
               </div>
             </div>
