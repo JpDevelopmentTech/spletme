@@ -56,6 +56,16 @@ const STATUS_CLASSES: Record<AccountingStatus, string> = {
   cancelled: "bg-gray-100 text-gray-500",
 };
 
+const CONCEPT_LABELS: Record<string, string> = {
+  INCOME: "Ingreso",
+  EXPENSE: "Egreso",
+};
+
+const conceptLabel = (concept: string): string => CONCEPT_LABELS[concept.toUpperCase()] ?? concept;
+
+const isIncome = (concept: string): boolean =>
+  concept.toUpperCase() === "INCOME" || concept === "Ingreso";
+
 // ─── Helpers ────────────────────────────────────────────────────────────────────
 
 const toNum = (v: unknown): number => {
@@ -100,7 +110,7 @@ const dateParts = (v?: string) => {
 const initialForm = (firstTrackId: string): FormState => ({
   scope: "album",
   songId: firstTrackId,
-  concept: "Ingreso",
+  concept: "INCOME",
   amount: "",
   date: new Date().toISOString().split("T")[0],
   description: "",
@@ -177,11 +187,11 @@ const BalanceFace = ({
   }, [albumId, balanceKey]);
 
   const localIngresos = useMemo(
-    () => costs.filter((c) => c.concept === "Ingreso").reduce((s, c) => s + toNum(c.amount), 0),
+    () => costs.filter((c) => isIncome(c.concept)).reduce((s, c) => s + toNum(c.amount), 0),
     [costs],
   );
   const localEgresos = useMemo(
-    () => costs.filter((c) => c.concept !== "Ingreso").reduce((s, c) => s + toNum(c.amount), 0),
+    () => costs.filter((c) => !isIncome(c.concept)).reduce((s, c) => s + toNum(c.amount), 0),
     [costs],
   );
 
@@ -194,14 +204,14 @@ const BalanceFace = ({
   const pendingIngresos = useMemo(
     () =>
       costs
-        .filter((c) => c.concept === "Ingreso" && c.status === "pending")
+        .filter((c) => isIncome(c.concept) && c.status === "pending")
         .reduce((s, c) => s + toNum(c.amount), 0),
     [costs],
   );
   const pendingEgresos = useMemo(
     () =>
       costs
-        .filter((c) => c.concept !== "Ingreso" && c.status === "pending")
+        .filter((c) => !isIncome(c.concept) && c.status === "pending")
         .reduce((s, c) => s + toNum(c.amount), 0),
     [costs],
   );
@@ -401,11 +411,11 @@ const AlbumExtraordinaryCosts = ({ albumId, albumUpc, tracks }: AlbumExtraordina
     [selectedCosts],
   );
   const tableIngresos = useMemo(
-    () => costs.filter((c) => c.concept === "Ingreso").reduce((s, c) => s + toNum(c.amount), 0) + 0,
+    () => costs.filter((c) => isIncome(c.concept)).reduce((s, c) => s + toNum(c.amount), 0) + 0,
     [costs],
   );
   const tableEgresos = useMemo(
-    () => costs.filter((c) => c.concept !== "Ingreso").reduce((s, c) => s + toNum(c.amount), 0),
+    () => costs.filter((c) => !isIncome(c.concept)).reduce((s, c) => s + toNum(c.amount), 0),
     [costs],
   );
   const tableBalance = tableIngresos - tableEgresos;
@@ -447,7 +457,7 @@ const AlbumExtraordinaryCosts = ({ albumId, albumUpc, tracks }: AlbumExtraordina
       let created: Accounting;
       if (form.scope === "album") {
         const payload: CreateAlbumAccountingDto = {
-          concept: form.concept.trim(),
+          concept: form.concept.trim().toUpperCase(),
           amount: amountValue,
           albumUpc,
           date: form.date ? new Date(form.date).toISOString() : undefined,
@@ -457,7 +467,7 @@ const AlbumExtraordinaryCosts = ({ albumId, albumUpc, tracks }: AlbumExtraordina
         created = await accountingApi.createForAlbum(payload);
       } else {
         const payload: CreateAccountingDto = {
-          concept: form.concept.trim(),
+          concept: form.concept.trim().toUpperCase(),
           amount: amountValue,
           songId: form.songId,
           date: form.date ? new Date(form.date).toISOString() : undefined,
@@ -703,7 +713,9 @@ const AlbumExtraordinaryCosts = ({ albumId, albumUpc, tracks }: AlbumExtraordina
                                   />
                                 </td>
                                 <td className="px-3 py-3">
-                                  <p className="font-medium text-gray-900">{item.concept}</p>
+                                  <p className="font-medium text-gray-900">
+                                    {conceptLabel(item.concept)}
+                                  </p>
                                   {item.description && (
                                     <p className="mt-0.5 text-xs text-gray-500">
                                       {item.description}
@@ -721,12 +733,12 @@ const AlbumExtraordinaryCosts = ({ albumId, albumUpc, tracks }: AlbumExtraordina
                                 <td className="px-3 py-3 text-center">
                                   <span
                                     className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                                      item.concept === "Ingreso"
+                                      isIncome(item.concept)
                                         ? "bg-green-100 text-green-800"
                                         : "bg-orange-100 text-orange-800"
                                     }`}
                                   >
-                                    {item.concept}
+                                    {conceptLabel(item.concept)}
                                   </span>
                                 </td>
                                 <td className="whitespace-nowrap px-3 py-3 text-center">
@@ -862,8 +874,8 @@ const AlbumExtraordinaryCosts = ({ albumId, albumUpc, tracks }: AlbumExtraordina
                     onChange={(e) => setForm((p) => ({ ...p, concept: e.target.value }))}
                     className={inputClass}
                   >
-                    <option value="Ingreso">Ingreso</option>
-                    <option value="Egreso">Egreso</option>
+                    <option value="INCOME">Ingreso</option>
+                    <option value="EXPENSE">Egreso</option>
                   </select>
                 </div>
                 <div className="flex flex-col gap-1">
