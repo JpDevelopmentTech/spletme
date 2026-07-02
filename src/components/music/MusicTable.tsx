@@ -527,7 +527,7 @@ function AlbumRow({
           <div className="h-9 w-9 flex-shrink-0">
             <AlbumCover album={album} />
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 max-w-[260px]">
             <Link
               to={`/panel/album/upc/${album.upc}`}
               className="block truncate text-[13px] font-semibold text-gray-900 transition-colors group-hover:text-orange-500"
