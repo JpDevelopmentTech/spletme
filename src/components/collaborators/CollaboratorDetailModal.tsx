@@ -9,6 +9,7 @@ import {
   DollarSign,
   Headphones,
   ChevronRight,
+  ChevronDown,
   BarChart2,
   History,
   ArrowLeft,
@@ -74,6 +75,12 @@ interface PlatformEntry {
   streams: number;
   netIncome: number;
   grossIncome: number;
+  // % dentro de la canción (en byPlatform por canción)
+  streamsPctOfSong?: number;
+  netPctOfSong?: number;
+  // % del total de todas las canciones (en byPlatform de totals)
+  streamsPctOfTotal?: number;
+  netPctOfTotal?: number;
 }
 
 interface SongMetrics {
@@ -85,6 +92,8 @@ interface SongMetrics {
   totalStreams: number;
   totalNetIncome: number;
   totalGrossIncome: number;
+  streamsContributionPct: number;
+  netContributionPct: number;
   byPlatform: PlatformEntry[];
   split: {
     splitId: string;
@@ -113,6 +122,7 @@ interface CollaboratorMetrics {
 interface CollaboratorDetailModalProps {
   collaborator: Collaborator;
   onClose: () => void;
+  isOwner?: boolean;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -144,9 +154,27 @@ const ACTION_STYLES: Record<string, { label: string; cls: string }> = {
   delete: { label: "Eliminado", cls: "bg-red-50 text-red-500" },
 };
 
+// Barra con etiqueta y porcentaje exacto (2 decimales) a la derecha.
+function PctBar({ label, pct, color }: { label: string; pct: number; color: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="w-12 flex-shrink-0 text-[9px] text-[#9CA3AF]">{label}</span>
+      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100">
+        <div
+          className="h-full rounded-full"
+          style={{ width: `${Math.min(Math.max(pct, 0), 100)}%`, backgroundColor: color }}
+        />
+      </div>
+      <span className="w-11 flex-shrink-0 text-right text-[9px] font-semibold" style={{ color }}>
+        {pct.toFixed(2)}%
+      </span>
+    </div>
+  );
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorDetailModalProps) {
+export function CollaboratorDetailModal({ collaborator, onClose, isOwner = true }: CollaboratorDetailModalProps) {
   const [detail, setDetail] = useState<ApiCollaboratorDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -156,6 +184,7 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
   const [metricsLoading, setMetricsLoading] = useState(false);
   const [history, setHistory] = useState<SplitHistoryEntry[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [songsExpanded, setSongsExpanded] = useState(false);
 
   // Load collaborator detail
   useEffect(() => {
@@ -203,13 +232,16 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
     0;
   const songStreams = selectedSong?.totalStreams ?? 0;
   const songNet = selectedSong?.totalNetIncome ?? 0;
-  const maxStreams = Math.max(collaboratorTotalStreams, songStreams, 1);
 
   // Platform data from metrics endpoint
   const selectedSongMetrics = metrics?.songs.find((s) => s.songId === selectedSong?.songId);
+  // Muestra los valores de la canción desde la MISMA fuente que el porcentaje
+  // (endpoint de métricas) para que el número mostrado y el % siempre cuadren.
+  const songStreamsExact = selectedSongMetrics?.totalStreams ?? songStreams;
+  const songNetExact = selectedSongMetrics?.totalNetIncome ?? songNet;
+  const maxStreams = Math.max(collaboratorTotalStreams, songStreamsExact, 1);
   const songPlatforms = selectedSongMetrics?.byPlatform ?? [];
   const globalPlatforms = metrics?.totals.byPlatform ?? [];
-  const maxPlatformStreams = Math.max(...songPlatforms.map((p) => p.streams), 1);
 
   return (
     <div
@@ -503,26 +535,32 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
                     {[
                       {
                         label: "Streams canción",
-                        value: songStreams.toLocaleString("en-US"),
+                        value: songStreamsExact.toLocaleString("en-US"),
                         sub: "streams totales",
                         color: "#F97316",
                       },
                       {
-                        label: "Streams totales",
-                        value: collaboratorTotalStreams.toLocaleString("en-US"),
-                        sub: "todas sus canciones",
+                        label: "% del total streams",
+                        value:
+                          selectedSongMetrics?.streamsContributionPct != null
+                            ? `${selectedSongMetrics.streamsContributionPct.toFixed(2)}%`
+                            : "—",
+                        sub: "de todos sus streams",
                         color: "#06B6D4",
                       },
                       {
                         label: "Neto canción",
-                        value: fmt(songNet),
+                        value: fmt(songNetExact),
                         sub: "neto generado",
                         color: "#C084FC",
                       },
                       {
-                        label: "Neto total",
-                        value: fmt(collaboratorTotalNet),
-                        sub: "todas sus canciones",
+                        label: "% del total neto",
+                        value:
+                          selectedSongMetrics?.netContributionPct != null
+                            ? `${selectedSongMetrics.netContributionPct.toFixed(2)}%`
+                            : "—",
+                        sub: "del neto total del colaborador",
                         color: "#8B5CF6",
                       },
                     ].map(({ label, value, sub, color }) => (
@@ -607,12 +645,12 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
                           <div
                             className="h-full rounded-full bg-[#F97316]"
                             style={{
-                              width: `${(songStreams / maxStreams) * 100}%`,
+                              width: `${(songStreamsExact / maxStreams) * 100}%`,
                             }}
                           />
                         </div>
                         <span className="w-16 flex-shrink-0 text-right text-[9px] font-semibold text-[#F97316]">
-                          {songStreams.toLocaleString("en-US")}
+                          {songStreamsExact.toLocaleString("en-US")}
                         </span>
                       </div>
                     </div>
@@ -638,55 +676,15 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
                           <div
                             className="h-full rounded-full bg-[#C084FC]"
                             style={{
-                              width: `${(songNet / Math.max(collaboratorTotalNet, songNet, 1)) * 100}%`,
+                              width: `${(songNetExact / Math.max(collaboratorTotalNet, songNetExact, 1)) * 100}%`,
                             }}
                           />
                         </div>
                         <span className="w-16 flex-shrink-0 text-right text-[9px] font-semibold text-[#C084FC]">
-                          {fmt(songNet)}
+                          {fmt(songNetExact)}
                         </span>
                       </div>
                     </div>
-                  </div>
-
-                  {/* All songs ranking */}
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-[10px] font-bold tracking-wider text-[#9CA3AF]">
-                      CANCIONES DEL COLABORADOR
-                    </span>
-                    {detail?.songs
-                      .slice()
-                      .sort((a, b) => b.totalStreams - a.totalStreams)
-                      .map((song) => {
-                        const isThis = song.songId === selectedSong?.songId;
-                        const pct = (song.totalStreams / maxStreams) * 100;
-                        return (
-                          <div
-                            key={song.songId}
-                            className={`flex flex-col gap-1 rounded-lg border px-2.5 py-2 ${isThis ? "border-orange-200 bg-orange-50" : "border-gray-100 bg-[#F9FAFB]"}`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <span
-                                className={`max-w-[120px] truncate text-[10px] font-semibold ${isThis ? "text-[#F97316]" : "text-[#374151]"}`}
-                              >
-                                {song.trackTitle}
-                              </span>
-                              <span className="text-[10px] text-[#9CA3AF]">
-                                {song.totalStreams.toLocaleString("en-US")}
-                              </span>
-                            </div>
-                            <div className="h-1 w-full overflow-hidden rounded-full bg-gray-100">
-                              <div
-                                className="h-full rounded-full"
-                                style={{
-                                  width: `${pct}%`,
-                                  backgroundColor: isThis ? "#F97316" : "#34D399",
-                                }}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
                   </div>
 
                   {/* Platform breakdown from /metrics endpoint */}
@@ -712,11 +710,11 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
                             const globalEntry = globalPlatforms.find(
                               (g) => g.platform === p.platform,
                             );
-                            const globalPct =
-                              ((globalEntry?.streams ?? 0) /
-                                Math.max(...globalPlatforms.map((g) => g.streams), 1)) *
-                              100;
-                            const songPct = (p.streams / maxPlatformStreams) * 100;
+                            // Porcentajes exactos calculados en el backend.
+                            const streamsPctSong = p.streamsPctOfSong ?? 0;
+                            const netPctSong = p.netPctOfSong ?? 0;
+                            const streamsPctTotal = globalEntry?.streamsPctOfTotal ?? 0;
+                            const netPctTotal = globalEntry?.netPctOfTotal ?? 0;
                             return (
                               <div
                                 key={p.platform}
@@ -727,7 +725,7 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
                                     {p.platform}
                                   </span>
                                 </div>
-                                <div className="grid grid-cols-3 gap-1.5">
+                                <div className="grid grid-cols-2 gap-1.5">
                                   <div className="flex flex-col gap-0.5 rounded-lg border border-gray-100 bg-white px-2 py-1.5">
                                     <span className="text-[9px] uppercase tracking-wide text-[#9CA3AF]">
                                       Streams
@@ -750,41 +748,81 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
                                       </span>
                                     </div>
                                   </div>
-                                  <div className="flex flex-col gap-0.5 rounded-lg border border-gray-100 bg-white px-2 py-1.5">
-                                    <span className="text-[9px] uppercase tracking-wide text-[#9CA3AF]">
-                                      Bruto
-                                    </span>
-                                    <div className="flex items-center gap-1 text-[#C084FC]">
-                                      <DollarSign className="h-2.5 w-2.5" />
-                                      <span className="text-[10px] font-bold">
-                                        {fmt(p.grossIncome)}
-                                      </span>
-                                    </div>
-                                  </div>
                                 </div>
+                                {/* % de STREAMS: dentro de la canción y del total */}
                                 <div className="flex flex-col gap-1">
-                                  <div className="flex items-center gap-2">
-                                    <span className="w-12 flex-shrink-0 text-[9px] text-[#9CA3AF]">
-                                      Total
+                                  <div className="flex items-center gap-1">
+                                    <Headphones className="h-2.5 w-2.5 text-[#06B6D4]" />
+                                    <span className="text-[9px] font-bold uppercase tracking-wide text-[#06B6D4]">
+                                      Streams
                                     </span>
-                                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100">
-                                      <div
-                                        className="h-full rounded-full bg-[#06B6D4]"
-                                        style={{ width: `${globalPct}%` }}
-                                      />
-                                    </div>
                                   </div>
-                                  <div className="flex items-center gap-2">
-                                    <span className="w-12 flex-shrink-0 text-[9px] text-[#9CA3AF]">
-                                      Canción
+                                  <PctBar label="Canción" pct={streamsPctSong} color="#F97316" />
+                                  <PctBar label="Total" pct={streamsPctTotal} color="#06B6D4" />
+                                </div>
+                                {/* % de GANANCIA (neto): dentro de la canción y del total */}
+                                <div className="flex flex-col gap-1">
+                                  <div className="flex items-center gap-1">
+                                    <DollarSign className="h-2.5 w-2.5 text-[#8B5CF6]" />
+                                    <span className="text-[9px] font-bold uppercase tracking-wide text-[#8B5CF6]">
+                                      Ganancia
                                     </span>
-                                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100">
-                                      <div
-                                        className="h-full rounded-full bg-[#F97316]"
-                                        style={{ width: `${songPct}%` }}
-                                      />
-                                    </div>
                                   </div>
+                                  <PctBar label="Canción" pct={netPctSong} color="#F97316" />
+                                  <PctBar label="Total" pct={netPctTotal} color="#8B5CF6" />
+                                </div>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    )}
+                  </div>
+                  {/* All songs ranking — collapsible, closed by default */}
+                  <div className="flex flex-col gap-0">
+                    <button
+                      onClick={() => setSongsExpanded((v) => !v)}
+                      className="flex w-full items-center justify-between rounded-xl border border-gray-100 bg-[#F9FAFB] px-3 py-2.5 transition-colors hover:bg-gray-100"
+                    >
+                      <span className="text-[10px] font-bold tracking-wider text-[#9CA3AF]">
+                        CANCIONES DEL COLABORADOR
+                      </span>
+                      {songsExpanded ? (
+                        <ChevronDown className="h-3.5 w-3.5 text-[#9CA3AF]" />
+                      ) : (
+                        <ChevronRight className="h-3.5 w-3.5 text-[#9CA3AF]" />
+                      )}
+                    </button>
+                    {songsExpanded && (
+                      <div className="mt-1.5 flex flex-col gap-1.5">
+                        {detail?.songs
+                          .slice()
+                          .sort((a, b) => b.totalStreams - a.totalStreams)
+                          .map((song) => {
+                            const isThis = song.songId === selectedSong?.songId;
+                            const pct = (song.totalStreams / maxStreams) * 100;
+                            return (
+                              <div
+                                key={song.songId}
+                                className={`flex flex-col gap-1 rounded-lg border px-2.5 py-2 ${isThis ? "border-orange-200 bg-orange-50" : "border-gray-100 bg-[#F9FAFB]"}`}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span
+                                    className={`max-w-[120px] truncate text-[10px] font-semibold ${isThis ? "text-[#F97316]" : "text-[#374151]"}`}
+                                  >
+                                    {song.trackTitle}
+                                  </span>
+                                  <span className="text-[10px] text-[#9CA3AF]">
+                                    {song.totalStreams.toLocaleString("en-US")}
+                                  </span>
+                                </div>
+                                <div className="h-1 w-full overflow-hidden rounded-full bg-gray-100">
+                                  <div
+                                    className="h-full rounded-full"
+                                    style={{
+                                      width: `${pct}%`,
+                                      backgroundColor: isThis ? "#F97316" : "#34D399",
+                                    }}
+                                  />
                                 </div>
                               </div>
                             );
@@ -815,7 +853,7 @@ export function CollaboratorDetailModal({ collaborator, onClose }: CollaboratorD
                     </div>
                   ) : (
                     <div className="flex flex-col gap-2">
-                      {history.map((entry) => {
+                      {history.filter((e) => isOwner || e.role !== "owner").map((entry) => {
                         const style = ACTION_STYLES[entry.action] ?? ACTION_STYLES.update;
                         return (
                           <div

@@ -40,6 +40,14 @@ export function CollaboratorTableRow({
           </div>
         </div>
       </td>
+      <td className="px-3 py-4 text-center">
+        <span
+          className="inline-block max-w-[120px] truncate px-2 py-0.5 font-semibold text-xs "
+          title={collaborator.externalId ?? "—"}
+        >
+          {collaborator.externalId ?? "—"}
+        </span>
+      </td>
       <td className="px-3 py-4 text-center text-[13px] font-semibold text-[#111827]">
         {collaborator.songs}
       </td>

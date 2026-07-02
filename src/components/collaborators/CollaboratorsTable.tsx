@@ -47,6 +47,9 @@ export function CollaboratorsTable({
             <th className="px-6 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
               Colaborador
             </th>
+            <th className="w-[140px] px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
+              User ID
+            </th>
             <th className="w-[110px] px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
               Canciones
             </th>

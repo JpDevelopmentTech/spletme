@@ -8,6 +8,7 @@ export interface RecentSong {
 
 export interface Collaborator {
   id: string;
+  externalId?: string;
   name: string;
   email: string;
   initials: string;
