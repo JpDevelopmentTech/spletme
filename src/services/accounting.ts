@@ -1,5 +1,5 @@
 import { apiClient } from "@/infrastructure/http/axiosClient";
-import type { Accounting, CreateAccountingDto, ApiResponse } from "../types/accounting.types";
+import type { Accounting, CreateAccountingDto, CreateAlbumAccountingDto, ApiResponse } from "../types/accounting.types";
 
 const BASE_URL = "/accounting";
 
@@ -22,6 +22,24 @@ export const accountingApi = {
    */
   create: async (data: CreateAccountingDto): Promise<Accounting> => {
     const res = await apiClient.post<ApiResponse<Accounting>>(`${BASE_URL}`, data);
+    return res.data.data;
+  },
+
+  /**
+   * POST /accounting/album
+   * Crea un costo para un álbum (identificado por UPC), opcionalmente ligado a una canción.
+   */
+  createForAlbum: async (data: CreateAlbumAccountingDto): Promise<Accounting> => {
+    const res = await apiClient.post<ApiResponse<Accounting>>(`${BASE_URL}/album`, data);
+    return res.data.data;
+  },
+
+  /**
+   * GET /accounting/album/upc/:albumUpc
+   * Trae todos los costos de nivel álbum.
+   */
+  getByAlbumUpc: async (albumUpc: string): Promise<Accounting[]> => {
+    const res = await apiClient.get<ApiResponse<Accounting[]>>(`${BASE_URL}/album/upc/${encodeURIComponent(albumUpc)}`);
     return res.data.data;
   },
 

@@ -16,6 +16,7 @@ import type {
   Accounting,
   AccountingStatus,
   CreateAccountingDto,
+  CreateAlbumAccountingDto,
 } from "../../../../../types/accounting.types";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
@@ -27,10 +28,12 @@ interface TrackRef {
 
 interface AlbumExtraordinaryCostsProps {
   albumId: string;
+  albumUpc: string;
   tracks: TrackRef[];
 }
 
 type FormState = {
+  scope: "album" | "song";
   songId: string;
   concept: string;
   amount: string;
@@ -95,6 +98,7 @@ const dateParts = (v?: string) => {
 };
 
 const initialForm = (firstTrackId: string): FormState => ({
+  scope: "album",
   songId: firstTrackId,
   concept: "Ingreso",
   amount: "",
@@ -334,7 +338,7 @@ const BalanceFace = ({
 
 // ─── Main Component ─────────────────────────────────────────────────────────────
 
-const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsProps) => {
+const AlbumExtraordinaryCosts = ({ albumId, albumUpc, tracks }: AlbumExtraordinaryCostsProps) => {
   const trackMap = useMemo(() => new Map(tracks.map((t) => [t._id, t.trackTitle])), [tracks]);
 
   const [isFlipped, setIsFlipped] = useState(false);
@@ -352,20 +356,26 @@ const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsPro
   const bumpBalance = useCallback(() => setBalanceKey((k) => k + 1), []);
 
   useEffect(() => {
-    if (tracks.length === 0) return;
+    if (tracks.length === 0 && !albumUpc) return;
     let active = true;
     const load = async () => {
       setLoading(true);
       setError(null);
       try {
-        const results = await Promise.allSettled(
-          tracks.map((t) => accountingApi.getBySongId(t._id)),
-        );
+        const [songResults, albumResults] = await Promise.all([
+          tracks.length > 0
+            ? Promise.allSettled(tracks.map((t) => accountingApi.getBySongId(t._id)))
+            : Promise.resolve([]),
+          albumUpc
+            ? accountingApi.getByAlbumUpc(albumUpc).catch(() => [] as Accounting[])
+            : Promise.resolve([] as Accounting[]),
+        ]);
         if (!active) return;
         const all: Accounting[] = [];
-        for (const r of results) {
+        for (const r of songResults) {
           if (r.status === "fulfilled" && Array.isArray(r.value)) all.push(...r.value);
         }
+        all.push(...(albumResults as Accounting[]));
         all.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         setCosts(all);
         setSelectedIds([]);
@@ -379,7 +389,7 @@ const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsPro
     return () => {
       active = false;
     };
-  }, [tracks]);
+  }, [tracks, albumUpc]);
 
   const pendingCosts = useMemo(() => costs.filter((i) => i.status === "pending"), [costs]);
   const selectedCosts = useMemo(
@@ -422,7 +432,7 @@ const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsPro
   const toggleExpand = () => (expanded ? collapse() : setExpanded(true));
 
   const handleCreate = async () => {
-    if (!form.songId) {
+    if (form.scope === "song" && !form.songId) {
       setError("Selecciona una canción.");
       return;
     }
@@ -434,15 +444,28 @@ const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsPro
     setSaving(true);
     setError(null);
     try {
-      const payload: CreateAccountingDto = {
-        concept: form.concept.trim(),
-        amount: amountValue,
-        songId: form.songId,
-        date: form.date ? new Date(form.date).toISOString() : undefined,
-        description: form.description.trim() || undefined,
-        status: form.status,
-      };
-      const created = await accountingApi.create(payload);
+      let created: Accounting;
+      if (form.scope === "album") {
+        const payload: CreateAlbumAccountingDto = {
+          concept: form.concept.trim(),
+          amount: amountValue,
+          albumUpc,
+          date: form.date ? new Date(form.date).toISOString() : undefined,
+          description: form.description.trim() || undefined,
+          status: form.status,
+        };
+        created = await accountingApi.createForAlbum(payload);
+      } else {
+        const payload: CreateAccountingDto = {
+          concept: form.concept.trim(),
+          amount: amountValue,
+          songId: form.songId,
+          date: form.date ? new Date(form.date).toISOString() : undefined,
+          description: form.description.trim() || undefined,
+          status: form.status,
+        };
+        created = await accountingApi.create(payload);
+      }
       setCosts((prev) => [created, ...prev]);
       bumpBalance();
       resetForm();
@@ -662,7 +685,9 @@ const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsPro
                           costs.map((item) => {
                             const { date, time } = dateParts(item.date || item.createdAt);
                             const isSelected = selectedIds.includes(item._id);
-                            const songTitle = trackMap.get(item.songId) ?? "—";
+                            const songTitle = item.songId
+                              ? (trackMap.get(item.songId) ?? "—")
+                              : "Álbum";
                             return (
                               <tr
                                 key={item._id}
@@ -791,20 +816,43 @@ const AlbumExtraordinaryCosts = ({ albumId, tracks }: AlbumExtraordinaryCostsPro
                 <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-500">{error}</div>
               )}
 
+              {/* Scope — album completo o canción específica */}
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-gray-500">Canción</label>
-                <select
-                  value={form.songId}
-                  onChange={(e) => setForm((p) => ({ ...p, songId: e.target.value }))}
-                  className={inputClass}
-                >
-                  {tracks.map((t) => (
-                    <option key={t._id} value={t._id}>
-                      {t.trackTitle}
-                    </option>
+                <label className="text-xs text-gray-500">Aplica a</label>
+                <div className="flex overflow-hidden rounded-lg border border-gray-300">
+                  {(["album", "song"] as const).map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setForm((p) => ({ ...p, scope: s }))}
+                      className={`flex-1 py-2 text-sm font-medium transition-colors ${
+                        form.scope === s
+                          ? "bg-orange-500 text-white"
+                          : "bg-white text-gray-600 hover:bg-gray-50"
+                      }`}
+                    >
+                      {s === "album" ? "Álbum completo" : "Canción específica"}
+                    </button>
                   ))}
-                </select>
+                </div>
               </div>
+
+              {form.scope === "song" && (
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-gray-500">Canción</label>
+                  <select
+                    value={form.songId}
+                    onChange={(e) => setForm((p) => ({ ...p, songId: e.target.value }))}
+                    className={inputClass}
+                  >
+                    {tracks.map((t) => (
+                      <option key={t._id} value={t._id}>
+                        {t.trackTitle}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
