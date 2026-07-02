@@ -9,7 +9,8 @@ export interface Accounting {
   date: string;
   description: string | null;
   status: AccountingStatus;
-  songId: string;
+  songId: string | null;
+  albumUpc: string | null;
   createdById: {
     _id: string;
     name: string;
@@ -24,6 +25,16 @@ export interface CreateAccountingDto {
   concept: string;
   amount: number;
   songId: string;
+  date?: string;
+  description?: string;
+  status?: AccountingStatus;
+}
+
+export interface CreateAlbumAccountingDto {
+  concept: string;
+  amount: number;
+  albumUpc: string;
+  songId?: string | null;
   date?: string;
   description?: string;
   status?: AccountingStatus;

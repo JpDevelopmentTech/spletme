@@ -728,6 +728,7 @@ export default function AlbumDetail() {
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
         <AlbumExtraordinaryCosts
           albumId={album._id || album.id || ""}
+          albumUpc={upc || album.upc || ""}
           tracks={album.tracks.map((t) => ({
             _id: t._id,
             trackTitle: t.trackTitle,
