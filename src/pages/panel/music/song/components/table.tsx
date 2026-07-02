@@ -5,6 +5,7 @@ import OwnerSplitModal from "./ownerfrom";
 import RegisterPaymentModal from "../../../../../components/modal/RegisterPaymentModal";
 import PaymentConfirmationModal from "../../../../../components/modal/PaymentConfirmationModal";
 import CollaboratorPaymentHistoryModal from "../../../../../components/modal/CollaboratorPaymentHistoryModal";
+import { CollaboratorDetailModal } from "../../../../../components/collaborators/CollaboratorDetailModal";
 import { DollarSign, Plus, History, Wallet, Users, Music } from "lucide-react";
 import { User as UserType } from "../../../../../models/user";
 import PaymentsService from "@/services/payments";
@@ -15,6 +16,7 @@ import ValidationToastQueue, {
   ValidationToastItem,
   ValidationToastType,
 } from "../../../../../components/alert/ValidationToastQueue";
+import type { Collaborator } from "@/types";
 
 interface Song {
   id?: string;
@@ -90,6 +92,7 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
     songId: string;
   } | null>(null);
   const [toasts, setToasts] = useState<ValidationToastItem[]>([]);
+  const [detailCollaborator, setDetailCollaborator] = useState<Collaborator | null>(null);
 
   const { hasWallet } = useWallet();
   const currentUser = LocalStorageService.getItem("user");
@@ -163,6 +166,36 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
     setIsPaymentConfirmationOpen(true);
   };
 
+  const AVATAR_DETAIL_PALETTE = [
+    { bg: "#FED7AA", text: "#9A3412" },
+    { bg: "#DBEAFE", text: "#1E40AF" },
+    { bg: "#FCE7F3", text: "#9D174D" },
+    { bg: "#D1FAE5", text: "#065F46" },
+    { bg: "#EDE9FE", text: "#5B21B6" },
+    { bg: "#FEF3C7", text: "#92400E" },
+  ];
+
+  const openCollaboratorDetail = (collaborator: UserType, idx: number) => {
+    const palette = AVATAR_DETAIL_PALETTE[idx % AVATAR_DETAIL_PALETTE.length];
+    const adapted: Collaborator = {
+      id: String((collaborator as any)._id || collaborator.id || ""),
+      name: collaborator.name || "",
+      email: collaborator.email || "",
+      initials: getInitials(collaborator.name || "?"),
+      avatarBg: palette.bg,
+      avatarText: palette.text,
+      songs: 1,
+      songPresencePercentage: 0,
+      splitPercentage: collaborator.percentage ?? null,
+      paid: parseFloat(String((collaborator as any).amountPaid || 0)),
+      amountOwed: parseFloat(String((collaborator as any).amountToPay || 0)),
+      amountPending: parseFloat(String((collaborator as any).amountToPay || 0)),
+      status: "active",
+      roles: (collaborator as any).roles ?? [],
+    };
+    setDetailCollaborator(adapted);
+  };
+
   const paymentToCollaborator = async () => {
     if (!paymentData) return;
     // Cobro ACH dirigido a un solo colaborador (su pendiente) y payout vía Wise.
@@ -178,6 +211,13 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
   return (
     <>
       <ValidationToastQueue toasts={toasts} onDequeue={dequeueToast} />
+      {detailCollaborator && (
+        <CollaboratorDetailModal
+          collaborator={detailCollaborator}
+          onClose={() => setDetailCollaborator(null)}
+          isOwner={isOwner}
+        />
+      )}
       {/* Modals */}
       <SplitsModal
         collaborators={collaborators}
@@ -318,7 +358,11 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
               const avatarColor = AVATAR_COLORS[idx % AVATAR_COLORS.length];
 
               return (
-                <tr key={collaborator.id} className="transition-colors hover:bg-gray-50">
+                <tr
+                  key={collaborator.id}
+                  onClick={() => openCollaboratorDetail(collaborator, idx)}
+                  className="cursor-pointer transition-colors hover:bg-gray-50"
+                >
                   {/* Name */}
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -377,7 +421,7 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
                   </td>
 
                   {/* Actions */}
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() =>

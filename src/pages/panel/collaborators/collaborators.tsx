@@ -22,6 +22,7 @@ const AVATAR_PALETTE = [
 
 interface ApiCollaborator {
   userId: string;
+  id: string;
   name: string;
   email: string;
   roles: string[];
@@ -70,6 +71,7 @@ const adaptCollaborator = (raw: ApiCollaborator, idx: number): Collaborator => {
   const palette = AVATAR_PALETTE[idx % AVATAR_PALETTE.length];
   return {
     id: raw.userId,
+    externalId: raw.id,
     name: raw.name,
     email: raw.email,
     initials: getInitials(raw.name),
@@ -236,7 +238,7 @@ export default function Collaborators() {
       </div>
 
       {profileOpen && featured && (
-        <CollaboratorDetailModal collaborator={featured} onClose={() => setProfileOpen(false)} />
+        <CollaboratorDetailModal collaborator={featured} onClose={() => setProfileOpen(false)} isOwner />
       )}
 
       {featured && (
