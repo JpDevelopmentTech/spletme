@@ -17,67 +17,60 @@ export function CollaboratorsTable({
   onSelectCollaborator,
 }: CollaboratorsTableProps) {
   return (
-    <div className="flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white lg:col-span-8">
-      <div className="flex items-center justify-between gap-4 border-b border-gray-100 px-6 py-4">
+    <div className="flex flex-col overflow-hidden rounded-[28px] bg-[#F4F5F7] lg:col-span-8">
+      <div className="flex flex-wrap items-center gap-3 px-[22px] py-[18px]">
         <div className="flex items-center gap-2.5">
-          <span className="text-sm font-semibold text-[#111827]">Listado de Colaboradores</span>
-          <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[11px] font-bold text-[#6B7280]">
+          <span className="text-base font-semibold text-[#1C1D22]">Listado de colaboradores</span>
+          <span className="flex items-center rounded-full bg-white px-2.5 py-0.5 text-[11px] font-bold text-[#71757E] shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
             {collaborators.length}
           </span>
         </div>
-        <div className="flex items-center gap-2.5">
-          <div className="relative w-60">
-            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#9CA3AF]" />
-            <input
-              type="text"
-              placeholder="Buscar colaborador..."
-              className="h-9 w-full rounded-lg border border-gray-200 pl-9 pr-3 text-[13px] text-[#111827] placeholder-[#9CA3AF] transition-colors focus:border-[#F97316] focus:outline-none"
-            />
-          </div>
-          <button className="flex h-9 items-center gap-1.5 rounded-lg border border-gray-200 px-3 text-[12px] font-medium text-[#6B7280] transition-colors hover:bg-gray-50">
-            <SlidersHorizontal className="h-3.5 w-3.5" />
-            Filtros
-          </button>
+        <div className="ml-auto flex h-9 w-60 items-center gap-2 rounded-full bg-white px-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+          <Search className="h-[15px] w-[15px] text-[#A6AAB2]" />
+          <input
+            type="text"
+            placeholder="Buscar colaborador…"
+            className="w-full bg-transparent text-[12.5px] text-[#1C1D22] placeholder-[#A6AAB2] outline-none"
+          />
         </div>
+        <button className="flex h-9 items-center gap-1.5 rounded-full bg-white px-3.5 text-[12.5px] font-semibold text-[#1C1D22] shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+          <SlidersHorizontal className="h-3.5 w-3.5 text-[#71757E]" />
+          Filtros
+        </button>
       </div>
 
-      <table className="w-full">
-        <thead>
-          <tr className="border-b border-gray-100 bg-[#FAFAFA]">
-            <th className="px-6 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
-              Colaborador
-            </th>
-            <th className="w-[140px] px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
-              User ID
-            </th>
-            <th className="w-[110px] px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
-              Canciones
-            </th>
-            <th className="w-[90px] px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
-              % del Owner
-            </th>
-            <th className="w-[90px] px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
-              Role
-            </th>
-            <th className="w-[120px] px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
-              Adeudado
-            </th>
-            <th className="w-[120px] px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
-              Pagado
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {collaborators.map((collaborator) => (
-            <CollaboratorTableRow
-              key={collaborator.id}
-              collaborator={collaborator}
-              isActive={collaborator.id === featuredId}
-              onClick={onSelectCollaborator}
-            />
-          ))}
-        </tbody>
-      </table>
+      <div className="flex flex-col gap-2 px-5 pb-5">
+        <div className="hidden items-center gap-3 px-4 py-1.5 lg:flex">
+          <span className="flex-1 text-[10.5px] font-semibold uppercase tracking-wide text-[#A6AAB2]">
+            Colaborador
+          </span>
+          <span className="w-[84px] text-[10.5px] font-semibold uppercase tracking-wide text-[#A6AAB2]">
+            Canciones
+          </span>
+          <span className="w-[84px] text-[10.5px] font-semibold uppercase tracking-wide text-[#A6AAB2]">
+            % Owner
+          </span>
+          <span className="w-[116px] text-[10.5px] font-semibold uppercase tracking-wide text-[#A6AAB2]">
+            Role
+          </span>
+          <span className="w-[116px] text-[10.5px] font-semibold uppercase tracking-wide text-[#A6AAB2]">
+            Adeudado
+          </span>
+          <span className="w-[100px] text-[10.5px] font-semibold uppercase tracking-wide text-[#A6AAB2]">
+            Pagado
+          </span>
+        </div>
+
+        {collaborators.map((collaborator, i) => (
+          <CollaboratorTableRow
+            key={collaborator.id}
+            collaborator={collaborator}
+            isActive={collaborator.id === featuredId}
+            onClick={onSelectCollaborator}
+            index={i}
+          />
+        ))}
+      </div>
     </div>
   );
 }

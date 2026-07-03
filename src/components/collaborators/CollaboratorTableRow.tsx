@@ -1,10 +1,13 @@
 import { formatCurrency } from "@/utils/collaborators.utils";
 import type { Collaborator } from "@/types";
 
+const TINTS = ["#FF5C00", "#2FB37E", "#A6AAB2", "#101114"];
+
 interface CollaboratorTableRowProps {
   collaborator: Collaborator;
   isActive: boolean;
   onClick: (id: string) => void;
+  index: number;
 }
 
 /**
@@ -14,72 +17,73 @@ export function CollaboratorTableRow({
   collaborator,
   isActive,
   onClick,
+  index,
 }: CollaboratorTableRowProps) {
   return (
-    <tr
+    <div
       onClick={() => onClick(collaborator.id)}
-      className={`cursor-pointer border-b border-gray-100 transition-colors last:border-b-0 ${
-        isActive ? "bg-orange-50/40" : "hover:bg-gray-50"
-      }`}
+      className={
+        "flex cursor-pointer items-center gap-3 rounded-[16px] bg-white px-4 py-2.5 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors " +
+        (isActive ? "ring-[1.5px] ring-[#FF5C00]" : "hover:bg-[#FBFBFC]")
+      }
     >
-      <td className="px-6 py-4">
-        <div className="flex items-center gap-3">
-          <div
-            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full"
-            style={{ backgroundColor: collaborator.avatarBg }}
-          >
-            <span className="text-[12px] font-bold" style={{ color: collaborator.avatarText }}>
-              {collaborator.initials}
-            </span>
-          </div>
-          <div className="flex min-w-0 flex-col gap-0.5">
-            <span className="truncate text-[13px] font-semibold text-[#111827]">
-              {collaborator.name}
-            </span>
-            <span className="truncate text-[11px] text-[#9CA3AF]">{collaborator.email}</span>
-          </div>
-        </div>
-      </td>
-      <td className="px-3 py-4 text-center">
-        <span
-          className="inline-block max-w-[120px] truncate px-2 py-0.5 font-semibold text-xs "
-          title={collaborator.externalId ?? "—"}
+      <div className="flex min-w-0 flex-1 items-center gap-3">
+        <div
+          className="flex h-[34px] w-[34px] flex-shrink-0 items-center justify-center rounded-full"
+          style={{ backgroundColor: TINTS[index % TINTS.length] }}
         >
-          {collaborator.externalId ?? "—"}
-        </span>
-      </td>
-      <td className="px-3 py-4 text-center text-[13px] font-semibold text-[#111827]">
+          <span className="text-[11px] font-bold text-white">{collaborator.initials}</span>
+        </div>
+        <div className="flex min-w-0 flex-col">
+          <span className="truncate text-[13px] font-semibold text-[#1C1D22]">
+            {collaborator.name}
+          </span>
+          <span className="truncate text-[11.5px] text-[#A6AAB2]">{collaborator.email}</span>
+        </div>
+      </div>
+
+      <span className="hidden w-[84px] text-[13px] font-semibold text-[#1C1D22] lg:block">
         {collaborator.songs}
-      </td>
-      <td className="px-3 py-4 text-center text-[13px] font-semibold text-[#F97316]">
-        {`${collaborator.songPresencePercentage}%`}
-      </td>
-      <td className="px-3 py-4 text-center">
+      </span>
+
+      <span className="hidden w-[84px] text-[13px] font-semibold text-[#1C1D22] lg:block">
+        {collaborator.songPresencePercentage}%
+      </span>
+
+      <div className="hidden w-[116px] lg:block">
         {collaborator.roles && collaborator.roles.length > 0 ? (
-          <div className="flex flex-wrap items-center justify-center gap-1">
+          <div className="flex flex-wrap gap-1">
             {collaborator.roles.map((r) => (
               <span
                 key={r}
-                className="rounded-full bg-orange-50 px-2 py-0.5 text-[10px] font-bold capitalize text-[#F97316]"
+                className={
+                  "rounded-full px-2.5 py-1 text-[11px] font-semibold capitalize " +
+                  (r.toLowerCase().includes("label")
+                    ? "bg-[#E7E9EC] text-[#71757E]"
+                    : "bg-[#FFEADD] text-[#FF5C00]")
+                }
               >
                 {r}
               </span>
             ))}
           </div>
         ) : (
-          <span className="text-[13px] text-[#9CA3AF]">—</span>
+          <span className="text-[13px] text-[#A6AAB2]">—</span>
         )}
-      </td>
-      <td
-        className={`px-3 py-4 text-center text-[13px] font-semibold ${
-          collaborator.amountPending > 0 ? "text-[#F43F5E]" : "text-[#9CA3AF]"
-        }`}
+      </div>
+
+      <span
+        className={
+          "hidden w-[116px] text-[13px] font-semibold lg:block " +
+          (collaborator.amountPending > 0 ? "text-[#EF4444]" : "text-[#A6AAB2]")
+        }
       >
         {formatCurrency(collaborator.amountPending)}
-      </td>
-      <td className="px-3 py-4 text-center text-[13px] font-semibold text-green-500">
+      </span>
+
+      <span className="hidden w-[100px] text-[13px] font-medium text-[#71757E] lg:block">
         {formatCurrency(collaborator.paid)}
-      </td>
-    </tr>
+      </span>
+    </div>
   );
 }

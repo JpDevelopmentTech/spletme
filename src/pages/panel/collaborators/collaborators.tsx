@@ -180,23 +180,22 @@ export default function Collaborators() {
   const pendingPayments = collaborators.filter((c) => c.status === "pending").length;
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA]">
+    <div className="min-h-screen bg-white">
       <div className="flex flex-col gap-6 px-6 py-8 lg:px-10">
         <div className="flex items-center justify-between gap-4">
           <div className="flex flex-col gap-1">
-            <h1 className="text-2xl font-bold text-[#111827]">Colaboradores</h1>
-            <p className="text-sm text-[#6B7280]">
+            <h1 className="text-2xl font-bold text-[#1C1D22]">Colaboradores</h1>
+            <p className="text-sm text-[#A6AAB2]">
               Organiza y gestiona a las personas que comparten tus regalías
             </p>
-            <div className="mt-1 h-0.5 w-10 rounded-full bg-[#F97316]" />
           </div>
           {canAddCollaborator && (
             <button
               onClick={() => setSidebarOpen(true)}
-              className="flex h-10 items-center gap-2 rounded-lg bg-[#F97316] px-4 text-[13px] font-semibold text-white transition-colors hover:bg-orange-600"
+              className="flex items-center gap-2 rounded-full bg-[#FF5C00] px-[18px] py-[11px] text-[13px] font-semibold text-white transition-colors hover:bg-[#EA580C]"
             >
-              <Plus className="h-4 w-4" />
-              Agregar Colaborador
+              <Plus className="h-[15px] w-[15px]" />
+              Agregar colaborador
             </button>
           )}
         </div>
