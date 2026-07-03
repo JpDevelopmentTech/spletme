@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import Sidebar from "../../components/sidebar/sidebar";
+import Navbar from "../../components/navbar/navbar";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, X, LogOut, ChevronRight, Users } from "lucide-react";
 import SelectUser from "../../components/selectUser/selectUser";
@@ -23,7 +24,7 @@ export default function Panel() {
   }, [navigate]);
 
   return (
-    <div className="relative flex h-screen w-full bg-[#F7F8FA] font-custom">
+    <div className="relative flex h-screen w-full bg-white font-custom">
       {openSelectUser && (
         <SelectUser
           onClose={() => {
@@ -33,7 +34,8 @@ export default function Panel() {
         />
       )}
       <Sidebar />
-      <div className="ml-0 h-full w-full overflow-y-auto lg:ml-[260px]">
+      <div className="ml-0 flex h-full w-full flex-col overflow-y-auto lg:ml-[260px]">
+        <Navbar onSwitchUser={() => setOpenSelectUser(true)} />
         <Outlet />
       </div>
 

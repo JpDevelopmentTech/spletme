@@ -52,7 +52,7 @@ export function CollaboratorTableRow({
         {collaborator.songs}
       </td>
       <td className="px-3 py-4 text-center text-[13px] font-semibold text-[#F97316]">
-        {collaborator.splitPercentage != null ? `${collaborator.splitPercentage}%` : "—"}
+        {`${collaborator.songPresencePercentage}%`}
       </td>
       <td className="px-3 py-4 text-center">
         {collaborator.roles && collaborator.roles.length > 0 ? (

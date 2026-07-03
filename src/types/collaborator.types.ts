@@ -16,7 +16,6 @@ export interface Collaborator {
   avatarText: string;
   songs: number;
   songPresencePercentage: number;
-  splitPercentage: number | null;
   paid: number;
   amountOwed: number;
   amountPending: number;

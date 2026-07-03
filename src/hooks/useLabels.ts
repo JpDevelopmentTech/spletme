@@ -37,6 +37,7 @@ export const useLabels = () => {
             totalStreams: custom.stats?.totalStreams || 0,
             totalGrossIncome: custom.stats?.totalGrossIncome || 0,
             totalNetIncome: custom.stats?.totalNetIncome || 0,
+            ownerEarnings: custom.stats?.ownerEarnings || 0,
             topSongs: [],
             splitProgress: {
               total: 0,

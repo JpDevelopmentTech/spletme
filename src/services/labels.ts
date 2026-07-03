@@ -7,6 +7,7 @@ export interface Label {
   totalStreams: number;
   totalGrossIncome: number;
   totalNetIncome: number;
+  ownerEarnings: number;
   topSongs: Array<{
     _id: string;
     trackTitle: string;
@@ -34,6 +35,7 @@ export interface CustomLabel {
     totalStreams: number;
     totalGrossIncome: number;
     totalNetIncome: number;
+    ownerEarnings: number;
   };
 }
 

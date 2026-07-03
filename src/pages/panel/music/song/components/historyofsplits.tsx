@@ -1,6 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
-import Title from "../../../../../components/title/title";
-import Button from "../../../../../components/atoms/button";
+import {
+  GitBranch,
+  History,
+  ArrowRight,
+  X,
+  Globe,
+  Radio,
+  Hash,
+  User,
+  Calendar,
+  CheckCircle2,
+} from "lucide-react";
 import { songSplitsService } from "../../../../../services/songSplits";
 import type { SplitHistoryItem } from "../../../../../types/song-split.types";
 
@@ -33,6 +43,19 @@ const formatDateTime = (dateValue?: string) => {
 
 const getSplitDate = (split: SplitHistoryItem) => split.updatedAt || split.createdAt;
 
+const ACTION_VERB: Record<string, string> = {
+  create: "creado",
+  update: "actualizado",
+  delete: "eliminado",
+};
+
+const formatItemDate = (dateValue?: string) => {
+  if (!dateValue) return "—";
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" });
+};
+
 const getActionLabel = (action?: string) => {
   const actions: Record<string, string> = {
     create: "Creado",
@@ -42,17 +65,15 @@ const getActionLabel = (action?: string) => {
   return actions[action || ""] || "—";
 };
 
-const getActionColor = (action?: string) => {
-  const colors: Record<string, string> = {
-    create: "text-green-600 bg-green-50 dark:bg-green-900/20",
-    update: "text-blue-600 bg-blue-50 dark:bg-blue-900/20",
-    delete: "text-red-600 bg-red-50 dark:bg-red-900/20",
-  };
-  return colors[action || ""] || "text-gray-600 bg-gray-50 dark:bg-gray-900/20";
-};
+const getInitials = (name: string) =>
+  name
+    .split(" ")
+    .slice(0, 2)
+    .map((n) => n[0] ?? "")
+    .join("")
+    .toUpperCase() || "?";
 
 const Historyofsplits = ({ songId, isOwner = false }: HistoryOfSplitsProps) => {
-  const [viewData, setViewData] = useState(true);
   const [selectedSplitKey, setSelectedSplitKey] = useState<string | null>(null);
   const [historySplits, setHistorySplits] = useState<SplitHistoryItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -104,163 +125,183 @@ const Historyofsplits = ({ songId, isOwner = false }: HistoryOfSplitsProps) => {
   const selectedSplitData = selectedSplit;
   const collaboratorName = selectedSplitData?.updatedBy?.name || "—";
   const collaboratorEmail = selectedSplitData?.updatedBy?.email || "—";
+  const detailPct = selectedSplitData?.percentage ?? 0;
+  const detailActionIsCreate = selectedSplitData?.action === "create";
+  const detailRows = [
+    {
+      icon: Globe,
+      label: "Países",
+      value:
+        selectedSplitData?.countriesType === "all"
+          ? "Todos"
+          : selectedSplitData?.selectedCountries?.join(", ") || "—",
+    },
+    {
+      icon: Radio,
+      label: "Plataformas",
+      value:
+        selectedSplitData?.platformsType === "all"
+          ? "Todas"
+          : selectedSplitData?.selectedPlatforms?.join(", ") || "—",
+    },
+    {
+      icon: Hash,
+      label: "Versión",
+      value: selectedSplitData?.version != null ? `v${selectedSplitData.version}` : "—",
+    },
+    { icon: User, label: "Modificado por", value: selectedSplitData?.updatedBy?.name || "—" },
+    { icon: Calendar, label: "Fecha", value: formatDateTime(selectedSplitData?.updatedAt) },
+  ];
 
   return (
-    <div className="col-span-12 rounded-xl border border-gray-200 bg-white p-6">
-      <div className="flex w-full items-center justify-between">
-        <Title title="Historial de splits" />
-        <Button onClick={() => setViewData(!viewData)} type="primary">
-          {viewData ? "Ver menos" : "Ver más"}
-        </Button>
+    <div className="rounded-[28px] bg-[#F4F5F7] p-6">
+      <div className="flex items-center gap-2.5">
+        <GitBranch className="h-[19px] w-[19px] text-[#1C1D22]" />
+        <h3 className="text-base font-semibold text-[#1C1D22]">Historial de Splits</h3>
       </div>
 
-      {viewData && (
-        <div className="mt-4">
+      <div className="mt-4">
           {loading ? (
-            <div className="py-10 text-center text-sm text-gray-500">
-              Cargando historial de splits...
+            <div className="flex flex-col items-center gap-2 py-10 text-center">
+              <History className="h-6 w-6 text-[#A6AAB2]" />
+              <p className="text-sm text-[#71757E]">Cargando historial de splits...</p>
             </div>
           ) : allSplits.length === 0 ? (
-            <div className="py-10 text-center text-sm text-gray-500">
-              No hay historial de splits para mostrar.
+            <div className="flex flex-col items-center gap-2 py-10 text-center">
+              <History className="h-6 w-6 text-[#A6AAB2]" />
+              <p className="text-sm text-[#71757E]">No hay historial de splits para mostrar.</p>
             </div>
           ) : (
-            <>
-              <div className="space-y-2">
-                {allSplits.map((split, index) => {
-                  const splitKey = split._id || `split-history-${index}`;
-                  const splitDate = getSplitDate(split);
-                  const splitData = split;
+            <div className="flex flex-col gap-3">
+              {allSplits.map((split, index) => {
+                const splitKey = split._id || `split-history-${index}`;
+                const subject =
+                  split.role === "owner"
+                    ? "del owner"
+                    : split.updatedBy?.name
+                      ? `de ${split.updatedBy.name}`
+                      : "de colaborador";
+                const title = `Split ${subject} ${ACTION_VERB[split.action || ""] ?? "actualizado"}`;
 
-                  return (
-                    <button
-                      key={splitKey}
-                      type="button"
-                      onClick={() => setSelectedSplitKey(splitKey)}
-                      className="flex w-full items-center justify-between rounded-lg border border-gray-200 px-4 py-3 text-sm transition-colors hover:bg-gray-50"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="font-medium text-gray-700">{formatDate(splitDate)}</span>
-                        {splitData.action && (
-                          <span
-                            className={`rounded-full px-2 py-0.5 text-xs font-medium ${getActionColor(splitData.action)}`}
-                          >
-                            {getActionLabel(splitData.action)}
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-xs font-semibold text-orange-500">Ver detalle</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </>
+                return (
+                  <button
+                    key={splitKey}
+                    type="button"
+                    onClick={() => setSelectedSplitKey(splitKey)}
+                    className="flex w-full items-center gap-3 rounded-[16px] bg-white px-3.5 py-3 text-left shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:bg-[#FAFAFB]"
+                  >
+                    <span className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-[16px] bg-[#FFEADD]">
+                      <GitBranch className="h-4 w-4 text-[#FF5C00]" />
+                    </span>
+                    <span className="flex min-w-0 flex-1 flex-col">
+                      <span className="truncate text-[13px] font-semibold text-[#1C1D22]">{title}</span>
+                      <span className="truncate text-[11px] text-[#A6AAB2]">
+                        {formatItemDate(getSplitDate(split))}
+                        {split.percentage != null ? ` · ${split.percentage}%` : ""}
+                      </span>
+                    </span>
+                    <span className="flex shrink-0 items-center gap-1 text-[11.5px] font-semibold text-[#FF5C00]">
+                      Ver detalle
+                      <ArrowRight className="h-3 w-3" />
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           )}
         </div>
-      )}
 
       {selectedSplitData && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm"
           onClick={() => setSelectedSplitKey(null)}
         >
           <div
-            className="w-full max-w-[460px] overflow-hidden rounded-2xl border border-gray-200/60 bg-white dark:border-white/10 dark:bg-neutral-900"
+            className="w-full max-w-[468px] overflow-hidden rounded-[28px] bg-[#F4F5F7] shadow-[0_24px_60px_-12px_rgba(0,0,0,0.35)]"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-start justify-between border-b border-gray-100 px-6 pb-4 pt-5 dark:border-white/10">
-              <div>
-                <p className="mb-1 text-[11px] font-medium uppercase tracking-widest text-gray-400">
-                  Detalle del split
-                </p>
-                <p className="text-lg font-medium text-gray-900 dark:text-white">
-                  {collaboratorName}
-                </p>
-                <p className="mt-0.5 text-[13px] text-gray-400">{collaboratorEmail}</p>
+            <div className="flex items-center gap-3.5 px-[22px] pb-[18px] pt-[22px]">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#FF5C00]">
+                <span className="text-base font-bold text-white">{getInitials(collaboratorName)}</span>
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[17px] font-semibold text-[#1C1D22]">{collaboratorName}</p>
+                <p className="truncate text-[12.5px] text-[#A6AAB2]">{collaboratorEmail}</p>
               </div>
               <button
                 onClick={() => setSelectedSplitKey(null)}
-                className="flex h-7 w-7 items-center justify-center rounded-full border border-gray-200 text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-600 dark:border-white/10 dark:hover:bg-white/5"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-[#71757E] shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:text-[#1C1D22]"
                 aria-label="Cerrar"
               >
-                ✕
+                <X className="h-4 w-4" />
               </button>
             </div>
 
-            {/* Métricas destacadas */}
-            <div className="grid grid-cols-3 gap-2 px-6 pt-4">
-              <div className="rounded-xl bg-gray-50 px-4 py-3 dark:bg-white/5">
-                <p className="mb-1 text-[11px] font-medium uppercase tracking-wider text-gray-400">
-                  Porcentaje
-                </p>
-                <p className="text-2xl font-medium text-gray-900 dark:text-white">
-                  {selectedSplitData.percentage ?? 0}%
-                </p>
-              </div>
-              <div className="rounded-xl bg-gray-50 px-4 py-3 dark:bg-white/5">
-                <p className="mb-1 text-[11px] font-medium uppercase tracking-wider text-gray-400">
-                  Rol
-                </p>
-                <p className="text-lg font-medium capitalize text-gray-900 dark:text-white">
-                  {selectedSplitData.role || "—"}
-                </p>
-              </div>
-              <div className="rounded-xl bg-gray-50 px-4 py-3 dark:bg-white/5">
-                <p className="mb-1 text-[11px] font-medium uppercase tracking-wider text-gray-400">
-                  Acción
-                </p>
-                <p className="text-lg font-medium capitalize text-gray-900 dark:text-white">
-                  {getActionLabel(selectedSplitData.action)}
-                </p>
-              </div>
-            </div>
-
-            {/* Filas de datos */}
-            <div className="flex flex-col divide-y divide-gray-100 px-6 py-4 text-[13px] dark:divide-white/10">
-              {[
-                {
-                  label: "Países",
-                  value:
-                    selectedSplitData.countriesType === "all"
-                      ? "Todos"
-                      : selectedSplitData.selectedCountries?.join(", ") || "—",
-                },
-                {
-                  label: "Plataformas",
-                  value:
-                    selectedSplitData.platformsType === "all"
-                      ? "Todas"
-                      : selectedSplitData.selectedPlatforms?.join(", ") || "—",
-                },
-                {
-                  label: "Versión",
-                  value:
-                    selectedSplitData.version != null ? String(selectedSplitData.version) : "—",
-                },
-                {
-                  label: "Modificado por",
-                  value: selectedSplitData.updatedBy?.name || "—",
-                },
-                {
-                  label: "Fecha",
-                  value: formatDateTime(selectedSplitData.updatedAt),
-                },
-              ].map(({ label, value }) => (
-                <div key={label} className="flex items-center justify-between py-2.5">
-                  <span className="text-gray-400">{label}</span>
-                  <span className="max-w-[60%] text-right font-medium text-gray-900 dark:text-white">
-                    {value}
-                  </span>
+            {/* Body */}
+            <div className="flex flex-col gap-3.5 px-[22px]">
+              {/* Porcentaje hero */}
+              <div className="flex items-center gap-[18px] rounded-[22px] bg-white p-[18px] shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+                <div
+                  className="flex h-[86px] w-[86px] shrink-0 items-center justify-center rounded-full"
+                  style={{
+                    background: `conic-gradient(#FF5C00 ${detailPct * 3.6}deg, #EDEEF1 ${detailPct * 3.6}deg)`,
+                  }}
+                >
+                  <div className="flex h-[62px] w-[62px] items-center justify-center rounded-full bg-white">
+                    <span className="text-[20px] font-bold text-[#1C1D22]">{detailPct}%</span>
+                  </div>
                 </div>
-              ))}
+                <div className="flex flex-col gap-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-[#A6AAB2]">
+                    Porcentaje del split
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="rounded-full bg-[#FFEADD] px-2.5 py-1 text-[11.5px] font-semibold capitalize text-[#FF5C00]">
+                      {selectedSplitData.role || "—"}
+                    </span>
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11.5px] font-semibold ${
+                        detailActionIsCreate
+                          ? "bg-[#E4F5EC] text-[#2FB37E]"
+                          : "bg-[#FFEADD] text-[#FF5C00]"
+                      }`}
+                    >
+                      {detailActionIsCreate ? (
+                        <CheckCircle2 className="h-3 w-3" />
+                      ) : (
+                        <GitBranch className="h-3 w-3" />
+                      )}
+                      {getActionLabel(selectedSplitData.action)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Detalles */}
+              <div className="rounded-[22px] bg-white px-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+                {detailRows.map((row, i) => (
+                  <div
+                    key={row.label}
+                    className={`flex items-center gap-3 py-3 ${
+                      i > 0 ? "border-t border-[#1C1D22]/[0.06]" : ""
+                    }`}
+                  >
+                    <row.icon className="h-4 w-4 shrink-0 text-[#A6AAB2]" />
+                    <span className="text-[13px] text-[#71757E]">{row.label}</span>
+                    <span className="ml-auto max-w-[55%] truncate text-right text-[13px] font-semibold text-[#1C1D22]">
+                      {row.value}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Footer */}
-            <div className="px-6 pb-5">
+            <div className="px-[22px] pb-[22px] pt-4">
               <button
                 onClick={() => setSelectedSplitKey(null)}
-                className="w-full rounded-xl border border-gray-200 py-2.5 text-[14px] font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-white/10 dark:text-gray-300 dark:hover:bg-white/5"
+                className="w-full rounded-[16px] bg-[#101114] py-3 text-[13.5px] font-semibold text-white transition-colors hover:bg-[#26272c]"
               >
                 Cerrar
               </button>

@@ -186,7 +186,6 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
       avatarText: palette.text,
       songs: 1,
       songPresencePercentage: 0,
-      splitPercentage: collaborator.percentage ?? null,
       paid: parseFloat(String((collaborator as any).amountPaid || 0)),
       amountOwed: parseFloat(String((collaborator as any).amountToPay || 0)),
       amountPending: parseFloat(String((collaborator as any).amountToPay || 0)),
@@ -273,12 +272,12 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
       />
 
       {/* Actions bar */}
-      <div className="flex items-center gap-2 border-b border-gray-100 px-6 py-4">
+      <div className="flex items-center gap-2 px-1 pb-4">
         {/* Owner Split solo disponible para admin, label no puede crearlo */}
         {isOwner && song?.requesterRole === "admin" && (
           <button
             onClick={() => setIsOwnerSplitModalOpen(true)}
-            className="flex items-center gap-1.5 rounded-lg bg-[#F97316] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-orange-600"
+            className="flex items-center gap-1.5 rounded-[16px] bg-[#FF5C00] px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#EA580C]"
           >
             <Plus className="h-3.5 w-3.5" />
             Owner Split
@@ -288,7 +287,7 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
         {(song?.requesterRole === "admin" || song?.requesterRole === "label") && (
           <button
             onClick={handleOpenSplitsModal}
-            className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+            className="flex items-center gap-1.5 rounded-[16px] bg-white px-3.5 py-2 text-xs font-semibold text-[#1C1D22] shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:bg-[#FBFBFC]"
           >
             <Music className="h-3.5 w-3.5" />
             Configurar Splits
@@ -298,7 +297,7 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
           <>
             <button
               onClick={() => openPaymentHistoryModal(currentSplitId)}
-              className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+              className="flex items-center gap-1.5 rounded-[16px] bg-white px-3.5 py-2 text-xs font-semibold text-[#1C1D22] shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:bg-[#FBFBFC]"
             >
               <History className="h-3.5 w-3.5" />
               Historial
@@ -306,14 +305,14 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
             {hasWallet ? (
               <button
                 onClick={() => openRegisterPaymentModal(currentSplitId)}
-                className="flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-green-700"
+                className="flex items-center gap-1.5 rounded-[16px] bg-[#2FB37E] px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:brightness-95"
               >
                 <Plus className="h-3.5 w-3.5" />
                 Nuevo Pago
               </button>
             ) : (
               <Link to="/panel/home">
-                <button className="flex items-center gap-1.5 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-amber-600">
+                <button className="flex items-center gap-1.5 rounded-[16px] bg-[#FFEADD] px-3.5 py-2 text-xs font-semibold text-[#FF5C00] transition-colors hover:brightness-95">
                   <Wallet className="h-3.5 w-3.5" />
                   Vincular Wallet
                 </button>
@@ -325,160 +324,149 @@ export default function Table({ collaborators, songId, song, isOwner = false }: 
 
       {/* Table */}
       {collaborators && collaborators.length > 0 ? (
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-100 bg-gray-50">
-              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
-                Nombre
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
-                Email
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
-                Split %
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
-                Pagado
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
-                Pendiente
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
-                Estado
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500">
-                Acciones
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {collaborators.map((collaborator, idx) => {
-              const hasActiveSplit =
-                collaborator.percentage && parseFloat(String(collaborator.percentage)) > 0;
-              const avatarColor = AVATAR_COLORS[idx % AVATAR_COLORS.length];
+        <div className="flex flex-col gap-2">
+          {/* Header row */}
+          <div className="hidden items-center gap-3 px-4 py-2 lg:flex">
+            <span className="flex-1 text-[10.5px] font-semibold uppercase tracking-wide text-[#A6AAB2]">
+              Nombre
+            </span>
+            <span className="w-[220px] text-[10.5px] font-semibold uppercase tracking-wide text-[#A6AAB2]">
+              Email
+            </span>
+            <span className="w-[80px] text-[10.5px] font-semibold uppercase tracking-wide text-[#A6AAB2]">
+              Split %
+            </span>
+            <span className="w-[100px] text-[10.5px] font-semibold uppercase tracking-wide text-[#A6AAB2]">
+              Pagado
+            </span>
+            <span className="w-[110px] text-[10.5px] font-semibold uppercase tracking-wide text-[#A6AAB2]">
+              Pendiente
+            </span>
+            <span className="w-[100px] text-[10.5px] font-semibold uppercase tracking-wide text-[#A6AAB2]">
+              Estado
+            </span>
+            <span className="flex w-[184px] justify-end text-[10.5px] font-semibold uppercase tracking-wide text-[#A6AAB2]">
+              Acciones
+            </span>
+          </div>
 
-              return (
-                <tr
-                  key={collaborator.id}
-                  onClick={() => openCollaboratorDetail(collaborator, idx)}
-                  className="cursor-pointer transition-colors hover:bg-gray-50"
+          {collaborators.map((collaborator, idx) => {
+            const hasActiveSplit =
+              collaborator.percentage && parseFloat(String(collaborator.percentage)) > 0;
+            const avatarColor = AVATAR_COLORS[idx % AVATAR_COLORS.length];
+
+            return (
+              <div
+                key={collaborator.id}
+                onClick={() => openCollaboratorDetail(collaborator, idx)}
+                className="flex cursor-pointer items-center gap-3 rounded-[16px] bg-white px-4 py-2.5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]"
+              >
+                {/* Name */}
+                <div className="flex flex-1 items-center gap-3">
+                  <div
+                    className={`h-8 w-8 rounded-full ${avatarColor} flex flex-shrink-0 items-center justify-center`}
+                  >
+                    <span className="text-xs font-semibold text-white">
+                      {getInitials(collaborator.name || "?")}
+                    </span>
+                  </div>
+                  <span className="text-sm font-semibold text-[#1C1D22]">{collaborator.name}</span>
+                </div>
+
+                {/* Email */}
+                <span className="w-[220px] truncate text-sm text-[#71757E]">
+                  {collaborator.email}
+                </span>
+
+                {/* Split % */}
+                <span className="w-[80px] text-sm font-semibold text-[#1C1D22]">
+                  {collaborator.percentage ? `${collaborator.percentage}%` : "—"}
+                </span>
+
+                {/* Pagado */}
+                <span className="w-[100px] text-sm font-medium text-[#71757E]">
+                  {(collaborator as any).amountPaid
+                    ? `$${(collaborator as any).amountPaid}`
+                    : "$0.00"}
+                </span>
+
+                {/* Pendiente */}
+                <span className="w-[110px] text-sm font-semibold text-[#1C1D22]">
+                  {collaborator.amountToPay ? `$${collaborator.amountToPay}` : "—"}
+                </span>
+
+                {/* Status */}
+                <div className="w-[100px]">
+                  {hasActiveSplit ? (
+                    <span className="inline-flex rounded-full bg-[#E4F5EC] px-2.5 py-1 text-[10.5px] font-semibold text-[#2FB37E]">
+                      Activo
+                    </span>
+                  ) : (
+                    <span className="inline-flex rounded-full bg-[#FFEADD] px-2.5 py-1 text-[10.5px] font-semibold text-[#FF5C00]">
+                      Sin split
+                    </span>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div
+                  className="flex w-[184px] items-center justify-end gap-2"
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  {/* Name */}
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`h-8 w-8 rounded-full ${avatarColor} flex flex-shrink-0 items-center justify-center`}
-                      >
-                        <span className="text-xs font-semibold text-white">
-                          {getInitials(collaborator.name || "?")}
-                        </span>
-                      </div>
-                      <span className="text-sm font-semibold text-gray-900">
-                        {collaborator.name}
-                      </span>
-                    </div>
-                  </td>
+                  <button
+                    onClick={() =>
+                      setHistoryModal({
+                        open: true,
+                        id: String((collaborator as any)._id || collaborator.id || ""),
+                        name: collaborator.name || "",
+                      })
+                    }
+                    className="flex items-center gap-1.5 rounded-[16px] bg-[#F4F5F7] px-2.5 py-1.5 text-[11px] font-medium text-[#1C1D22] transition-colors hover:bg-[#E7E9EC]"
+                  >
+                    <History className="h-3 w-3" />
+                    Historial
+                  </button>
 
-                  {/* Email */}
-                  <td className="px-6 py-4">
-                    <span className="text-sm text-gray-500">{collaborator.email}</span>
-                  </td>
-
-                  {/* Split % */}
-                  <td className="px-4 py-4">
-                    <span className="text-sm font-semibold text-gray-900">
-                      {collaborator.percentage ? `${collaborator.percentage}%` : "—"}
+                  {Number(collaborator.amountToPay) > 0 ? (
+                    <button
+                      onClick={() =>
+                        openPaymentConfirmation(
+                          String((collaborator as any)._id || collaborator.id || ""),
+                          collaborator.name,
+                          collaborator.email,
+                          Number(collaborator.amountToPay) || 0,
+                          songId || "",
+                        )
+                      }
+                      className="flex items-center gap-1.5 rounded-[16px] bg-[#2FB37E] px-2.5 py-1.5 text-[11px] font-semibold text-white transition-colors hover:brightness-95"
+                    >
+                      <DollarSign className="h-3 w-3" />
+                      Pagar
+                    </button>
+                  ) : (
+                    <span className="text-[11.5px] font-medium text-[#A6AAB2]">
+                      Pagado
                     </span>
-                  </td>
-
-                  {/* Pagado */}
-                  <td className="px-4 py-4">
-                    <span className="text-sm font-medium text-gray-500">
-                      {(collaborator as any).amountPaid
-                        ? `$${(collaborator as any).amountPaid}`
-                        : "$0.00"}
-                    </span>
-                  </td>
-
-                  {/* Pendiente */}
-                  <td className="px-4 py-4">
-                    <span className="text-sm font-semibold text-gray-900">
-                      {collaborator.amountToPay ? `$${collaborator.amountToPay}` : "—"}
-                    </span>
-                  </td>
-
-                  {/* Status */}
-                  <td className="px-4 py-4">
-                    {hasActiveSplit ? (
-                      <span className="inline-flex rounded-full bg-green-50 px-2.5 py-1 text-xs font-semibold text-green-700">
-                        Activo
-                      </span>
-                    ) : (
-                      <span className="inline-flex rounded-full bg-orange-50 px-2.5 py-1 text-xs font-semibold text-orange-600">
-                        Sin split
-                      </span>
-                    )}
-                  </td>
-
-                  {/* Actions */}
-                  <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() =>
-                          setHistoryModal({
-                            open: true,
-                            id: String((collaborator as any)._id || collaborator.id || ""),
-                            name: collaborator.name || "",
-                          })
-                        }
-                        className="flex items-center gap-1 rounded-lg bg-gray-100 px-2.5 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200"
-                      >
-                        <History className="h-3.5 w-3.5" />
-                        Historial
-                      </button>
-
-                      {Number(collaborator.amountToPay) > 0 ? (
-                        <button
-                          onClick={() =>
-                            openPaymentConfirmation(
-                              String((collaborator as any)._id || collaborator.id || ""),
-                              collaborator.name,
-                              collaborator.email,
-                              Number(collaborator.amountToPay) || 0,
-                              songId || "",
-                            )
-                          }
-                          className="flex items-center gap-1 rounded-lg bg-green-600 px-2.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-green-700"
-                        >
-                          <DollarSign className="h-3.5 w-3.5" />
-                          Pagar
-                        </button>
-                      ) : (
-                        <span className="px-2.5 py-1.5 text-xs font-medium text-gray-400">
-                          Pagado
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       ) : (
         /* Empty state */
         <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100">
-            <Users className="h-6 w-6 text-gray-400" />
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-[16px] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+            <Users className="h-6 w-6 text-[#A6AAB2]" />
           </div>
-          <h3 className="mb-1 text-sm font-semibold text-gray-900">Sin colaboradores</h3>
-          <p className="mb-5 max-w-xs text-sm text-gray-500">
+          <h3 className="mb-1 text-sm font-semibold text-[#1C1D22]">Sin colaboradores</h3>
+          <p className="mb-5 max-w-xs text-sm text-[#71757E]">
             Agrega colaboradores para gestionar splits y pagos de esta canción.
           </p>
           {(song?.requesterRole === "admin" || song?.requesterRole === "label") && (
             <button
               onClick={handleOpenSplitsModal}
-              className="flex items-center gap-2 rounded-lg bg-[#F97316] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-orange-600"
+              className="flex items-center gap-2 rounded-[12px] bg-[#FF5C00] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#EA580C]"
             >
               <Plus className="h-4 w-4" />
               Configurar Splits

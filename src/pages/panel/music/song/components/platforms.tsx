@@ -414,7 +414,7 @@ const Platforms = ({ reproductions = [] }: PlatformsProps) => {
     const listOrder = isBackFace ? "order-1" : "order-2";
 
     return (
-      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2 bg-[#F4F5F7]">
         {/* Gráfica */}
         <div className={chartOrder}>
           {chartView === "bar" && (
@@ -502,7 +502,7 @@ const Platforms = ({ reproductions = [] }: PlatformsProps) => {
   return (
     <>
       <style>{flipStyles}</style>
-      <div className="h-full min-h-[420px] rounded-xl border border-gray-200 bg-white p-6">
+      <div className="h-full min-h-[420px] rounded-xl border border-gray-200 bg-[#F4F5F7] p-6">
         <div className="flex flex-col gap-4">
           {/* ── HEADER FIJO: título + badge + botón flip ─────────────────────── */}
           <div className="flex items-center justify-between">

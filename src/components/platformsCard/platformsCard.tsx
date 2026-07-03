@@ -285,16 +285,16 @@ const PlatformsCard = () => {
         )}
 
         {/* Lista de plataformas */}
-        <div className="flex flex-col border border-gray-100 rounded-lg px-3">
-          {data.map((platform, index) => (
+        <div className="flex flex-col gap-1.5">
+          {data.map((platform) => (
             <div
               key={platform.name}
-              className={`flex items-center justify-between py-2.5 ${index < data.length - 1 ? "border-b border-gray-100" : ""}`}
+              className="flex items-center justify-between rounded-[16px] bg-white px-3 py-2.5"
             >
               <div className="flex items-center gap-3">
                 <div
-                  className="w-7 h-7 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0"
-                  style={{ backgroundColor: platform.logo ? "#F3F4F6" : platform.color }}
+                  className="w-7 h-7 rounded-[10px] flex items-center justify-center overflow-hidden flex-shrink-0"
+                  style={{ backgroundColor: platform.logo ? "#F4F5F7" : platform.color }}
                 >
                   {platform.logo ? (
                     <img src={platform.logo} alt={platform.name} className="w-full h-full object-contain" />
@@ -303,13 +303,13 @@ const PlatformsCard = () => {
                   )}
                 </div>
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-[12px] font-semibold text-gray-900">{platform.name}</span>
-                  <span className="text-[11px] text-gray-400">
+                  <span className="text-[12px] font-semibold text-[#1C1D22]">{platform.name}</span>
+                  <span className="text-[11px] text-[#A6AAB2]">
                     {isIncome ? formatCurrency(platform.income) : `${formatNumber(platform.streams)} streams`}
                   </span>
                 </div>
               </div>
-              <span className="text-[12px] font-semibold text-gray-900">
+              <span className="text-[12px] font-semibold text-[#1C1D22]">
                 {isIncome ? platform.incomePercentage : platform.percentage}%
               </span>
             </div>
@@ -322,14 +322,14 @@ const PlatformsCard = () => {
   return (
     <>
       <style>{flipStyles}</style>
-      <div className="col-span-3 row-span-3 bg-white rounded-xl p-6 border border-gray-200 h-full">
+      <div className="h-full rounded-[36px] bg-[#F4F5F7] p-6">
         <div className="flex flex-col gap-4">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-semibold text-gray-900">Platforms</h2>
-              <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full transition-colors ${
-                isFlipped ? "bg-indigo-50 text-indigo-600" : "bg-emerald-50 text-emerald-600"
+              <h2 className="text-base font-semibold text-[#1C1D22]">Platforms</h2>
+              <span className={`text-[10.5px] font-semibold px-2.5 py-0.5 rounded-full transition-colors ${
+                isFlipped ? "bg-[#FFEADD] text-[#FF5C00]" : "bg-[#E4F5EC] text-[#2FB37E]"
               }`}>
                 {isFlipped ? "Streams" : "Ingresos"}
               </span>
@@ -337,7 +337,7 @@ const PlatformsCard = () => {
             <button
               onClick={() => setIsFlipped((f) => !f)}
               title={isFlipped ? "Ver ingresos" : "Ver streams"}
-              className="flex items-center gap-1.5 text-xs font-medium text-gray-400 hover:text-gray-700 transition-colors px-2 py-1 rounded-md hover:bg-gray-100"
+              className="flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1.5 text-[11px] font-medium text-[#71757E] transition-colors hover:text-[#1C1D22]"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               <span>{isFlipped ? "Ver ingresos" : "Ver streams"}</span>
@@ -345,14 +345,14 @@ const PlatformsCard = () => {
           </div>
 
           {/* Toggle tipo de gráfica */}
-          <div className="flex items-center justify-center bg-gray-100 rounded-lg p-0.5">
+          <div className="flex items-center justify-center gap-1 rounded-full bg-white p-1">
             {chartButtons.map(({ view, icon, label }) => (
               <button
                 key={view}
                 title={label}
                 onClick={() => setChartView(view)}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                  chartView === view ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
+                className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-2.5 py-2 text-xs font-medium transition-colors ${
+                  chartView === view ? "bg-[#FF5C00] text-white" : "text-[#71757E] hover:text-[#1C1D22]"
                 }`}
               >
                 {icon}
@@ -362,11 +362,11 @@ const PlatformsCard = () => {
 
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500" />
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#FF5C00]" />
             </div>
           ) : platformData.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 gap-2">
-              <p className="text-sm text-gray-400">No platform data yet</p>
+              <p className="text-sm text-[#A6AAB2]">Sin datos de plataformas aún</p>
             </div>
           ) : (
             <div className="pc-flip-wrapper">

@@ -54,7 +54,7 @@ export function CollaboratorsTable({
               Canciones
             </th>
             <th className="w-[90px] px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
-              Split %
+              % del Owner
             </th>
             <th className="w-[90px] px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
               Role

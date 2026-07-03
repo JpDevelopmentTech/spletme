@@ -27,7 +27,7 @@ import CreateLabelModal from "../../../components/labels/CreateLabelModal";
 import EditLabelModal from "../../../components/labels/EditLabelModal";
 import InviteCollaboratorToLabelModal from "../../../components/labels/InviteCollaboratorToLabelModal";
 
-type SortField = "label" | "count" | "totalStreams" | "totalNetIncome";
+type SortField = "label" | "count" | "totalStreams" | "totalNetIncome" | "ownerEarnings";
 type SortOrder = "asc" | "desc";
 
 interface ExtendedLabel extends Label {
@@ -315,6 +315,15 @@ export default function LabelsTable() {
                       <SortIcon field="totalNetIncome" />
                     </button>
                   </th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 lg:table-cell">
+                    <button
+                      onClick={() => handleSort("ownerEarnings")}
+                      className="flex items-center gap-1.5 transition-colors hover:text-gray-700"
+                    >
+                      Ganancia Owner
+                      <SortIcon field="ownerEarnings" />
+                    </button>
+                  </th>
                   <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500">
                     Acciones
                   </th>
@@ -382,6 +391,13 @@ export default function LabelsTable() {
                     <td className="hidden px-4 py-4 lg:table-cell">
                       <span className="text-sm font-semibold text-green-600">
                         {formatCurrency(label.totalNetIncome)}
+                      </span>
+                    </td>
+
+                    {/* Owner Earnings */}
+                    <td className="hidden px-4 py-4 lg:table-cell">
+                      <span className="text-sm font-semibold text-[#F97316]">
+                        {formatCurrency(label.ownerEarnings || 0)}
                       </span>
                     </td>
 

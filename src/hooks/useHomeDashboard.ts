@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import type { ApexOptions } from "apexcharts";
 import { useSplitPayments } from "@/hooks/useSplitPayments";
-import { useWallet } from "@/hooks/useWallet";
 import SongService from "@/services/songs";
 import type { TopSong } from "@/types";
 
@@ -28,7 +27,6 @@ export function useHomeDashboard() {
   const [apiSummary, setApiSummary] = useState({ totalStreams: 0, totalNetIncome: 0, matchingReleases: 0, songsWithMatches: 0 });
 
   const { totalAmount } = useSplitPayments();
-const { wallet, loading: walletLoading, hasWallet, createWallet, refreshWallet } = useWallet();
   const { user } = useAuth0();
 
   useEffect(() => {
@@ -96,7 +94,7 @@ const { wallet, loading: walletLoading, hasWallet, createWallet, refreshWallet }
       },
       markers: { size: [0, 0] },
       dataLabels: { enabled: false },
-      colors: ["#111827", "#22C55E"],
+      colors: ["#1C1D22", "#FF5C00"],
       grid: {
         borderColor: "#F3F4F6",
         strokeDashArray: 0,
@@ -130,7 +128,7 @@ const { wallet, loading: walletLoading, hasWallet, createWallet, refreshWallet }
           seriesName: "Revenue",
           opposite: true,
           labels: {
-            style: { colors: "#22C55E", fontSize: "11px" },
+            style: { colors: "#FF5C00", fontSize: "11px" },
             formatter: (val: number) => `$${val.toFixed(2)}`,
           },
         },
@@ -160,7 +158,6 @@ const { wallet, loading: walletLoading, hasWallet, createWallet, refreshWallet }
   );
 
   const netBalance = apiSummary.totalNetIncome - totalAmount;
-  const walletBalance = wallet?.accounts?.[0]?.balance ?? 0;
 
   return {
     user,
@@ -170,12 +167,6 @@ const { wallet, loading: walletLoading, hasWallet, createWallet, refreshWallet }
     summary: apiSummary,
     totalAmount,
     netBalance,
-    wallet,
-    walletBalance,
-    walletLoading,
-    hasWallet,
-    createWallet,
-    refreshWallet,
     series,
     chartOptions,
   };

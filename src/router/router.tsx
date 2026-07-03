@@ -1,9 +1,10 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import GuardedRoute, { PublicOnlyRoute } from "../guards/auth";
 import Login from "../pages/auth/login";
 import Panel from "../pages/panel/panel";
 import Home from "../pages/panel/home/home";
-import Music from "../pages/panel/music/music";
+import Songs from "../pages/panel/music/songs/songs";
+import Albums from "../pages/panel/music/albums/albums";
 import Last from "../pages/panel/last/last";
 import Collaborators from "../pages/panel/collaborators/collaborators";
 import Dealers from "../pages/panel/dealers/dealers";
@@ -84,7 +85,15 @@ const routes = [
       },
       {
         path: "music",
-        element: <Music />,
+        element: <Navigate to="/panel/music/songs" replace />,
+      },
+      {
+        path: "music/songs",
+        element: <Songs />,
+      },
+      {
+        path: "music/albums",
+        element: <Albums />,
       },
       {
         path: "song/:id",

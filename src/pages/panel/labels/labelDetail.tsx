@@ -16,7 +16,7 @@ import { useLabelSongs } from "../../../hooks/useLabels";
 import Loading from "../../../components/loading/loading";
 import { useState, useMemo } from "react";
 
-type SortField = "title" | "streams" | "revenue";
+type SortField = "title" | "streams" | "revenue" | "ownerEarnings";
 type SortDir = "asc" | "desc";
 
 export default function LabelDetail() {
@@ -63,6 +63,8 @@ export default function LabelDetail() {
         diff = (a.trackTitle || "").localeCompare(b.trackTitle || "");
       } else if (sortField === "streams") {
         diff = (a.totalStreams || 0) - (b.totalStreams || 0);
+      } else if (sortField === "ownerEarnings") {
+        diff = (a.ownerEarnings || 0) - (b.ownerEarnings || 0);
       } else {
         diff = (a.totalNetIncome || 0) - (b.totalNetIncome || 0);
       }
@@ -245,6 +247,15 @@ export default function LabelDetail() {
                   </button>
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  <button
+                    onClick={() => handleSort("ownerEarnings")}
+                    className="flex items-center gap-1.5 transition-colors hover:text-gray-700"
+                  >
+                    Ganancia Owner
+                    <SortIcon field="ownerEarnings" />
+                  </button>
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Split Owner
                 </th>
               </tr>
@@ -298,6 +309,13 @@ export default function LabelDetail() {
                     <td className="px-4 py-4">
                       <span className="text-sm font-semibold text-green-600">
                         {formatCurrency(song.totalNetIncome || 0)}
+                      </span>
+                    </td>
+
+                    {/* Owner Earnings */}
+                    <td className="px-4 py-4">
+                      <span className="text-sm font-semibold text-[#F97316]">
+                        {formatCurrency(song.ownerEarnings || 0)}
                       </span>
                     </td>
 

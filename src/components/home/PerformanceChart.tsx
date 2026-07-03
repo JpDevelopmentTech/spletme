@@ -16,7 +16,7 @@ const TIMEFRAME_OPTIONS = [
 ];
 
 /**
- * Gráfico de área (Streams + Revenue) con selector de período temporal.
+ * Gráfico de área (Streams + Ingresos) con selector de período temporal.
  */
 export function PerformanceChart({
   series,
@@ -25,24 +25,21 @@ export function PerformanceChart({
   onTimeframeChange,
 }: PerformanceChartProps) {
   return (
-    <div
-      className="col-span-9 row-span-2 flex-1 rounded-xl border border-gray-200 bg-white p-6"
-      data-tour="analytics-chart"
-    >
+    <div className="rounded-[36px] bg-[#F4F5F7] p-7" data-tour="analytics-chart">
       <div className="flex flex-col gap-5">
         <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
           <div className="flex flex-col gap-0.5">
-            <h2 className="text-base font-semibold text-gray-900">Rendimiento</h2>
-            <p className="text-xs text-gray-400">Streams e ingresos en el tiempo</p>
+            <h2 className="text-lg font-semibold text-[#1C1D22]">Rendimiento</h2>
+            <p className="text-[12.5px] text-[#71757E]">Streams e ingresos en el tiempo</p>
           </div>
-          <div className="flex items-center rounded-lg bg-gray-100 p-0.5">
+          <div className="flex items-center gap-1 rounded-full bg-white p-1">
             {TIMEFRAME_OPTIONS.map((option) => (
               <button
                 key={option.value}
-                className={`rounded-md px-3.5 py-1.5 text-xs font-medium transition-colors ${
+                className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors ${
                   selectedTimeframe === option.value
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
+                    ? "bg-[#FF5C00] text-white"
+                    : "text-[#71757E] hover:text-[#1C1D22]"
                 }`}
                 onClick={() => onTimeframeChange(option.value)}
               >
@@ -52,25 +49,19 @@ export function PerformanceChart({
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5">
-            <div className="h-2 w-2 rounded-sm bg-gray-900" />
-            <span className="text-[11px] text-gray-500">Streams</span>
+        <div className="flex items-center gap-[18px]">
+          <div className="flex items-center gap-[7px]">
+            <div className="h-[9px] w-[9px] rounded-[3px] bg-[#1C1D22]" />
+            <span className="text-[11.5px] text-[#71757E]">Streams</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <div className="h-2 w-2 rounded-sm bg-green-500" />
-            <span className="text-[11px] text-gray-500">Ingresos</span>
+          <div className="flex items-center gap-[7px]">
+            <div className="h-[9px] w-[9px] rounded-[3px] bg-[#FF5C00]" />
+            <span className="text-[11.5px] text-[#71757E]">Ingresos</span>
           </div>
         </div>
 
         <div className="h-[280px]">
-          <ReactApexChart
-            options={options}
-            series={series}
-            type="area"
-            height="100%"
-            width="100%"
-          />
+          <ReactApexChart options={options} series={series} type="area" height="100%" width="100%" />
         </div>
       </div>
     </div>

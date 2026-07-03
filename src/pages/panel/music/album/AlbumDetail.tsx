@@ -312,7 +312,7 @@ export default function AlbumDetail() {
       <div className="min-h-screen space-y-6 bg-[#F7F8FA] px-6 py-8 lg:px-10">
         <div className="flex items-center gap-4">
           <button
-            onClick={() => navigate("/panel/music")}
+            onClick={() => navigate("/panel/music/albums")}
             className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -333,7 +333,7 @@ export default function AlbumDetail() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <button
-            onClick={() => navigate("/panel/music")}
+            onClick={() => navigate("/panel/music/albums")}
             className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -348,7 +348,7 @@ export default function AlbumDetail() {
         {/* Breadcrumb + action */}
         <div className="flex items-center gap-4">
           <div className="hidden items-center gap-2 text-sm sm:flex">
-            <Link to="/panel/music" className="text-gray-400 hover:text-gray-600">
+            <Link to="/panel/music/albums" className="text-gray-400 hover:text-gray-600">
               Música
             </Link>
             <span className="text-gray-300">/</span>

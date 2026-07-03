@@ -3,7 +3,6 @@ import Title from "../../../../components/title/title";
 import { ApexOptions } from "apexcharts";
 import useMetricPayments from "../../../../hooks/useMetricPayments";
 import { useEffect, useState } from "react";
-import Loading from "../../../../components/loading/loading";
 
 interface BehaviorProps {
   songId?: string;
@@ -12,7 +11,7 @@ interface BehaviorProps {
 
 export default function Behavior({ songId, compact = false }: BehaviorProps) {
   const [dateType, setDateType] = useState<"day" | "month" | "year">("month");
-  const { metricsData, loading, error } = useMetricPayments(songId, dateType);
+  const { metricsData} = useMetricPayments(songId, dateType);
   const [series, setSeries] = useState<
     Array<{ name: string; data: Array<{ x: string; y: string }> }>
   >([]);
@@ -140,8 +139,8 @@ export default function Behavior({ songId, compact = false }: BehaviorProps) {
   };
 
   const containerClass = compact
-    ? "bg-white border border-gray-200 rounded-xl p-6 h-full"
-    : "col-span-12 row-span-2 p-6 rounded-2xl shadow-lg hover:scale-[1.01] duration-200 relative";
+    ? "bg-[#F4F5F7] border border-gray-200 rounded-xl p-6 h-full"
+    : "p-6 rounded-2xl shadow-lg hover:scale-[1.01] duration-200 relative";
 
   const chartHeight = compact ? 250 : 350;
   const placeholderHeightClass = compact ? "h-[250px]" : "h-64";
@@ -194,25 +193,9 @@ export default function Behavior({ songId, compact = false }: BehaviorProps) {
         </div>
       </div>
       <div>
-        {loading ? (
-          <div className={`flex items-center justify-center ${placeholderHeightClass}`}>
-            <Loading />
-          </div>
-        ) : error ? (
-          <div
-            className={`flex items-center justify-center ${placeholderHeightClass} text-red-500`}
-          >
-            {error}
-          </div>
-        ) : series.length > 0 ? (
+     
           <ReactApexChart type="area" options={options} series={series} height={chartHeight} />
-        ) : (
-          <div
-            className={`flex items-center justify-center ${placeholderHeightClass} text-gray-500`}
-          >
-            No hay datos disponibles para mostrar
-          </div>
-        )}
+     
       </div>
     </div>
   );

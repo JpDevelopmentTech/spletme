@@ -3,11 +3,14 @@ import {
   DollarSign,
   Music,
   Users,
-  Calendar,
-  BarChart3,
   Award,
   ArrowLeft,
   AlertCircle,
+  Play,
+  LayoutDashboard,
+  Receipt,
+  GitBranch,
+  FolderOpen,
 } from "lucide-react";
 import PaymentsService from "@/services/payments";
 import type { PaymentReadiness } from "@/services/payments";
@@ -18,7 +21,6 @@ import Platforms from "./components/platforms";
 import Historyofsplits from "./components/historyofsplits";
 import Extraordinarycosts from "./components/extraordinarycosts";
 import useSong from "../../../../hooks/useSong";
-import Loading from "../../../../components/loading/loading";
 import StripeConnectLoginModal from "../../../../components/modal/StripeConnectLoginModal";
 import StripePaymentModal from "../../../../components/modal/StripePaymentModal";
 import LocalStorageService from "../../../../services/localstorage";
@@ -31,6 +33,8 @@ import ValidationToastQueue, {
 import Behavior from "../../dealers/components/behavior";
 import DocumentManager from "./components/documentManager";
 import { CopyButton } from "@/components/ui/CopyButton";
+import { SongCollaboratorsSummary } from "@/components/music/SongCollaboratorsSummary";
+import { SongRecentPayments } from "@/components/music/SongRecentPayments";
 import RoyaltiesService from "@/services/royalties";
 import type { RoyaltyRequest } from "@/services/royalties";
 
@@ -50,6 +54,9 @@ export default function Song() {
   const [readiness, setReadiness] = useState<PaymentReadiness | null>(null);
   const [myRoyaltyRequest, setMyRoyaltyRequest] = useState<RoyaltyRequest | null>(null);
   const [royaltyRequestLoading, setRoyaltyRequestLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<
+    "resumen" | "colaboradores" | "pagos" | "splits" | "documentos"
+  >("resumen");
 
   useEffect(() => {
     if (!id) return;
@@ -203,7 +210,25 @@ export default function Song() {
   // descontado por la parte que le corresponde al split del owner.
   const displayNetIncome = isOwnerUser ? totalNetIncome : Math.max(0, totalNetIncome - ownerAmount);
 
-  if (loading) return <Loading />;
+  const streamsDisplay = (song?.totalStreams ?? 0).toLocaleString();
+  const netIncomeDisplay = `$${displayNetIncome.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+  const myAmount = myRoyaltyRequest
+    ? myRoyaltyRequest.calculatedAmount.toFixed(2)
+    : getUserDisplayAmount();
+  const myPercentage = myRoyaltyRequest
+    ? myRoyaltyRequest.splitPercentage
+    : getUserDisplayPercentage();
+
+  const TABS = [
+    { key: "resumen", label: "Resumen", icon: LayoutDashboard },
+    { key: "colaboradores", label: "Colaboradores", icon: Users },
+    { key: "pagos", label: "Pagos", icon: Receipt },
+    { key: "splits", label: "Splits", icon: GitBranch },
+    { key: "documentos", label: "Documentos", icon: FolderOpen },
+  ] as const;
 
   return (
     <React.Fragment>
@@ -222,316 +247,270 @@ export default function Song() {
         onPaymentSuccess={handlePaymentSuccess}
       />
       <ValidationToastQueue toasts={toasts} onDequeue={dequeueToast} />
-      <div className="min-h-screen space-y-6 bg-[#F7F8FA] px-10 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+      <div className="min-h-full bg-white">
+        <div className="flex flex-col gap-5 px-4 py-6 lg:px-8">
+          {/* Header */}
+          <div className="flex items-center justify-between">
             <button
               onClick={() => navigate(-1)}
-              className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50"
+              className="inline-flex items-center gap-2 rounded-[16px]  px-4 py-2 text-sm font-medium text-[#71757E] transition-colors hover:text-[#1C1D22]"
             >
               <ArrowLeft className="h-4 w-4" />
               Regresar
             </button>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Detalle de Canción</h1>
-              <p className="mt-0.5 text-sm text-gray-500">Información de la pista y regalías</p>
+            <div className="hidden items-center gap-2 text-[13px] sm:flex">
+              <span className="text-[#A6AAB2]">Inicio</span>
+              <span className="text-[#A6AAB2]">/</span>
+              <span className="text-[#A6AAB2]">Canciones</span>
+              <span className="text-[#A6AAB2]">/</span>
+              <span className="font-semibold text-[#1C1D22]">{song?.trackTitle || "Detalle"}</span>
             </div>
           </div>
 
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-sm">
-            <span className="cursor-pointer text-gray-400 hover:text-gray-600">Inicio</span>
-            <span className="text-gray-300">/</span>
-            <span className="cursor-pointer text-gray-400 hover:text-gray-600">Música</span>
-            <span className="text-gray-300">/</span>
-            <span className="font-semibold text-gray-900">Detalle de Canción</span>
-          </div>
-        </div>
-        <div className="grid grid-cols-4 gap-4">
-          {/* Hero Card */}
-          <div
-            className="col-span-3 flex gap-6 rounded-xl border border-gray-200 bg-white p-6"
-          >
-            {/* Album Art */}
-            <div className="flex h-48 w-48 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gray-100">
-              {song?.spotifyData?.album?.images?.length > 0 ? (
-                <img
-                  src={song.spotifyData.album.images[0].url}
-                  alt={`${song.trackTitle} cover`}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <Music className="h-12 w-12 text-gray-300" />
-              )}
-            </div>
-
-            {/* Song Info */}
-            <div className="flex flex-1 flex-col gap-5">
-              {/* Title row */}
-              <div className="flex items-start justify-between gap-4">
-                <div className="space-y-1.5">
-                  <h2 className="text-2xl font-bold text-gray-900">{song?.trackTitle || "—"}</h2>
-                  <p className="flex items-center gap-2 text-sm text-gray-500">
-                    <Users className="h-4 w-4" />
-                    {song?.artistName || "—"}
-                  </p>
+          {/* Hero */}
+          {loading ? (
+            <div className="flex items-center gap-5 rounded-[36px] bg-[#F4F5F7] p-6">
+              <div className="h-[104px] w-[104px] flex-shrink-0 animate-pulse rounded-[22px] bg-black/[0.06]" />
+              <div className="flex flex-1 flex-col gap-3">
+                <div className="h-5 w-1/3 animate-pulse rounded-full bg-black/[0.06]" />
+                <div className="h-3.5 w-1/5 animate-pulse rounded-full bg-black/[0.06]" />
+                <div className="mt-1 flex flex-wrap gap-2">
+                  <div className="h-7 w-28 animate-pulse rounded-full bg-black/[0.06]" />
+                  <div className="h-7 w-24 animate-pulse rounded-full bg-black/[0.06]" />
+                  <div className="h-7 w-24 animate-pulse rounded-full bg-black/[0.06]" />
                 </div>
-                <span className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full bg-[#F97316] px-3 py-1.5 text-xs font-semibold text-white">
-                  ISRC: {song?.isrc || "—"}
-                  {song?.isrc && (
-                    <CopyButton
-                      value={song.isrc}
-                      title="Copiar ISRC"
-                      className="text-white/80 hover:bg-white/20 hover:text-white"
-                    />
-                  )}
-                </span>
               </div>
-
-              {/* Stat Cards */}
-              <div className={`grid gap-2 ${isOwnerUser ? "grid-cols-3" : "grid-cols-2"}`}>
-                {/* Streams */}
-                <div className="space-y-2 rounded-xl bg-blue-50 p-4">
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100">
-                      <BarChart3 className="h-4 w-4 text-blue-600" />
-                    </div>
-                    <span className="text-xs font-medium text-gray-500">Total Streams</span>
-                  </div>
-                  <p className="text-xl font-bold text-gray-900">
-                    {song?.totalStreams?.toLocaleString() || "0"}
-                  </p>
-                </div>
-
-                {/* Net Income */}
-                <div className="space-y-2 rounded-xl bg-green-50 p-4">
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-100">
-                      <DollarSign className="h-4 w-4 text-green-600" />
-                    </div>
-                    <span className="text-xs font-medium text-gray-500">Net Income</span>
-                  </div>
-                  <p className="text-xl font-bold text-green-600">
-                    $
-                    {displayNetIncome.toLocaleString("en-US", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </p>
-                </div>
-
-                {/* My Percentage */}
-                {isOwnerUser && (
-                  <div className="space-y-2 rounded-xl bg-purple-50 p-4">
-                    <div className="flex items-center gap-2">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100">
-                        <Award className="h-4 w-4 text-purple-600" />
-                      </div>
-                      <span className="text-xs font-medium text-gray-500">Mi porcentaje</span>
-                    </div>
-                    <div className="flex items-baseline gap-1.5">
-                      <p className="text-xl font-bold text-purple-600">${getUserDisplayAmount()}</p>
-                      <span className="text-xs text-gray-400">{getUserDisplayPercentage()}%</span>
-                    </div>
-                  </div>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-5 rounded-[36px] bg-[#F4F5F7] p-6 lg:flex-row lg:items-center">
+            <div className="flex flex-1 items-center gap-5">
+              <div className="flex h-[104px] w-[104px] flex-shrink-0 items-center justify-center overflow-hidden rounded-[22px] bg-[#FF5C00]/15">
+                {song?.spotifyData?.album?.images?.length ? (
+                  <img
+                    src={song.spotifyData.album.images[0].url}
+                    alt={song.trackTitle}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <Music className="h-10 w-10 text-[#FF5C00]/50" />
                 )}
               </div>
-            </div>
-          </div>
-
-          {/* Payment Banner */}
-          {isOwnerUser && (
-            <div className="relative col-span-1 flex flex-col justify-between overflow-hidden rounded-xl bg-[#F97316] p-6">
-              {/* Decoración de fondo */}
-              <div className="pointer-events-none absolute -right-8 -top-8 h-36 w-36 rounded-full bg-white/10" />
-              <div className="pointer-events-none absolute -bottom-10 -left-6 h-28 w-28 rounded-full bg-white/10" />
-
-              {/* Próxima liquidación */}
-              <div className="relative z-10">
-                <div className="mb-3 flex items-center gap-2.5">
-                  <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-white/20">
-                    <Calendar className="h-4 w-4 text-white" />
-                  </div>
-                  <span className="text-xs font-semibold uppercase tracking-wider text-white/80">
-                    Próxima liquidación
+              <div className="flex min-w-0 flex-col gap-2">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <h1 className="text-[21px] font-bold text-[#1C1D22]">{song?.trackTitle.slice(0, 30) + "..." || "—"}</h1>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FF5C00] px-2.5 py-1 text-[11px] font-semibold text-white">
+                    ISRC: {song?.isrc || "—"}
+                    {song?.isrc && (
+                      <CopyButton
+                        value={song.isrc}
+                        title="Copiar ISRC"
+                        className="text-white/80 hover:bg-white/20 hover:text-white"
+                      />
+                    )}
                   </span>
                 </div>
-                <p className="pl-10 text-base font-semibold text-white">10 Julio 2024</p>
-              </div>
-
-              <div className="relative z-10 my-5 border-t border-white/20" />
-
-              {/* Total + botón */}
-              <div className="relative z-10 space-y-4">
-                <div>
-                  <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-white/70">
-                    Total a pagar
-                  </p>
-                  <p className="text-3xl font-bold tracking-tight text-white">
-                    ${totalToPay.toFixed(2)}
-                  </p>
+                <span className="flex items-center gap-1.5 text-sm text-[#71757E]">
+                  <Users className="h-3.5 w-3.5" />
+                  {song?.artistName || "—"}
+                </span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <StatPill
+                    icon={<Play className="h-3 w-3 text-[#A6AAB2]" />}
+                    text={`${streamsDisplay} streams`}
+                  />
+                  <StatPill
+                    icon={<DollarSign className="h-3 w-3 text-[#71757E]" />}
+                    text={netIncomeDisplay}
+                    valueClass="text-[#2FB37E]"
+                  />
+                  <StatPill
+                    icon={<Award className="h-3 w-3 text-[#FF5C00]" />}
+                    text={`Mi parte ${myPercentage}%`}
+                    valueClass="text-[#FF5C00]"
+                  />
                 </div>
+              </div>
+            </div>
+
+            {/* Payment / Royalties CTA */}
+            <div className="flex flex-shrink-0 items-center gap-4">
+              <div className="flex flex-col items-end">
+                <span className="text-[10.5px] font-semibold uppercase tracking-wider text-[#A6AAB2]">
+                  {isOwnerUser ? "Total a pagar" : "Mi parte"}
+                </span>
+                <span className="text-2xl font-bold text-[#1C1D22]">
+                  ${isOwnerUser ? totalToPay.toFixed(2) : myAmount}
+                </span>
+              </div>
+              {isOwnerUser ? (
                 <button
                   onClick={handlePayAllClick}
                   disabled={readiness !== null && !readiness.canPay}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-bold text-[#F97316] transition-all hover:bg-orange-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100"
+                  className="inline-flex items-center gap-2 rounded-[16px] bg-[#FF5C00] px-5 py-3 text-sm font-bold text-white shadow-[0_6px_16px_-4px_rgba(255,92,0,0.35)] transition-colors hover:bg-[#EA580C] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <DollarSign className="h-4 w-4" />
                   Pagar a todos
                 </button>
+              ) : myRoyaltyRequest?.status === "pending" ? (
+                <span className="inline-flex items-center gap-2 rounded-[16px] bg-white px-5 py-3 text-sm font-semibold text-[#71757E]">
+                  Solicitud pendiente
+                </span>
+              ) : myRoyaltyRequest?.status === "accepted" ? (
+                <span className="inline-flex items-center gap-2 rounded-[16px] bg-[#E4F5EC] px-5 py-3 text-sm font-semibold text-[#2FB37E]">
+                  <Award className="h-4 w-4" /> Aceptada
+                </span>
+              ) : (
+                <button
+                  onClick={handleRequestRoyalties}
+                  disabled={royaltyRequestLoading || myRoyaltyRequest?.status === "rejected"}
+                  className="inline-flex items-center gap-2 rounded-[16px] bg-[#FF5C00] px-5 py-3 text-sm font-bold text-white shadow-[0_6px_16px_-4px_rgba(255,92,0,0.35)] transition-colors hover:bg-[#EA580C] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <DollarSign className="h-4 w-4" />
+                  {royaltyRequestLoading
+                    ? "Enviando..."
+                    : myRoyaltyRequest?.status === "rejected"
+                      ? "Rechazada"
+                      : "Solicitar regalías"}
+                </button>
+              )}
+            </div>
+          </div>
+          )}
 
-                {readiness !== null && !readiness.canPay && (
-                  <div className="space-y-1.5 rounded-xl border border-white/20 bg-white/10 p-3">
-                    <p className="flex items-center gap-1.5 text-xs font-semibold text-white">
-                      <AlertCircle className="h-3.5 w-3.5" />
-                      Falta esto para poder pagar:
-                    </p>
-                    <ul className="list-inside list-disc space-y-1">
-                      {readiness.issues.map((issue) => (
-                        <li key={issue.code} className="text-[11px] leading-snug text-white/85">
-                          {issue.message}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+          {/* Alertas de estado */}
+          {isOwnerUser && readiness !== null && !readiness.canPay && (
+            <div className="rounded-[22px] border border-[#FF5C00]/20 bg-[#FFEADD] p-4">
+              <p className="flex items-center gap-2 text-sm font-semibold text-[#EA580C]">
+                <AlertCircle className="h-4 w-4" />
+                Falta esto para poder pagar:
+              </p>
+              <ul className="mt-2 list-inside list-disc space-y-1 pl-1">
+                {readiness.issues.map((issue) => (
+                  <li key={issue.code} className="text-[12.5px] leading-snug text-[#C2410C]">
+                    {issue.message}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {!isOwnerUser && myRoyaltyRequest?.status === "pending" && (
+            <div className="rounded-[22px] bg-[#F4F5F7] p-4">
+              <p className="flex items-center gap-2 text-sm font-semibold text-[#1C1D22]">
+                <AlertCircle className="h-4 w-4 text-[#71757E]" />
+                Solicitud de regalías pendiente de aprobación
+              </p>
+              <p className="mt-1 text-[12.5px] text-[#71757E]">
+                El owner recibirá un correo para aceptar o rechazar tu solicitud.
+              </p>
+            </div>
+          )}
+
+          {/* Tabs */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {TABS.map((t) => {
+              const active = activeTab === t.key;
+              const Icon = t.icon;
+              return (
+                <button
+                  key={t.key}
+                  onClick={() => setActiveTab(t.key)}
+                  className={`inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-[13px] font-medium transition-colors ${
+                    active ? "bg-[#FFEADD] text-[#FF5C00]" : "text-[#71757E] hover:text-[#1C1D22]"
+                  }`}
+                >
+                  <Icon
+                    className={`h-[15px] w-[15px] ${active ? "text-[#FF5C00]" : "text-[#A6AAB2]"}`}
+                  />
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Contenido según pestaña */}
+          {loading ? (
+            <div className="rounded-[28px] bg-[#F4F5F7] p-12 text-center">
+              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-[#FF5C00]" />
+              <p className="mt-4 text-sm text-[#A6AAB2]">Cargando…</p>
+            </div>
+          ) : (
+            <>
+          {activeTab === "resumen" && (
+            <div className="flex flex-col gap-5">
+              <div className="grid grid-cols-1 items-stretch gap-5 lg:grid-cols-2">
+                <Behavior songId={id} compact />
+                <Platforms reproductions={song?.reproductions} />
+              </div>
+              <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+                <SongCollaboratorsSummary
+                  collaborators={getCollaboratorsInfo()}
+                  onViewAll={() => setActiveTab("colaboradores")}
+                />
+                <SongRecentPayments
+                  songId={id}
+                  refreshTrigger={paymentHistoryRefresh}
+                  onViewAll={() => setActiveTab("pagos")}
+                />
               </div>
             </div>
           )}
 
-          {/* Royalties Banner — visible only for collaborators / labels (non-owners) */}
-          {!isOwnerUser && (
-            <div className="relative col-span-1 flex flex-col justify-between overflow-hidden rounded-xl bg-gray-900 p-6">
-              <div className="pointer-events-none absolute -right-8 -top-8 h-36 w-36 rounded-full bg-white/5" />
-              <div className="pointer-events-none absolute -bottom-10 -left-6 h-28 w-28 rounded-full bg-white/5" />
-
-              <div className="relative z-10">
-                <div className="mb-3 flex items-center gap-2.5">
-                  <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-white/10">
-                    <Award className="h-4 w-4 text-gray-300" />
-                  </div>
-                  <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-                    Mis regalías
-                  </span>
+          {activeTab === "colaboradores" && (
+            <div className="rounded-[28px] bg-[#F4F5F7] p-6">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <Users className="h-5 w-5 text-[#1C1D22]" />
+                  <h3 className="text-base font-semibold text-[#1C1D22]">Colaboradores</h3>
                 </div>
-                <p className="pl-10 text-base font-semibold text-gray-200">
-                  {myRoyaltyRequest
-                    ? `Solicitud ${
-                        myRoyaltyRequest.status === "pending"
-                          ? "pendiente"
-                          : myRoyaltyRequest.status === "accepted"
-                            ? "aceptada"
-                            : "rechazada"
-                      }`
-                    : "Sin solicitud activa"}
-                </p>
+                <AddCollaborator compact isOwner={isOwnerUser || song?.requesterRole === "label"} />
               </div>
-
-              <div className="relative z-10 my-5 border-t border-white/10" />
-
-              <div className="relative z-10 space-y-4">
-                <div>
-                  <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-500">
-                    Mi parte calculada
-                  </p>
-                  <p className="text-3xl font-bold tracking-tight text-white">
-                    {myRoyaltyRequest
-                      ? `$${myRoyaltyRequest.calculatedAmount.toFixed(2)}`
-                      : `$${getUserDisplayAmount()}`}
-                  </p>
-                  <p className="mt-0.5 text-xs text-gray-500">
-                    {myRoyaltyRequest
-                      ? `${myRoyaltyRequest.splitPercentage}% del split`
-                      : `${getUserDisplayPercentage()}% del split`}
-                  </p>
-                </div>
-
-                {myRoyaltyRequest?.status === "pending" ? (
-                  <div className="space-y-1.5 rounded-xl border border-white/10 bg-white/5 p-3">
-                    <p className="flex items-center gap-1.5 text-xs font-semibold text-gray-300">
-                      <AlertCircle className="h-3.5 w-3.5" />
-                      Solicitud pendiente de aprobación
-                    </p>
-                    <p className="text-[11px] leading-snug text-gray-400">
-                      El owner recibirá un correo para aceptar o rechazar tu solicitud.
-                    </p>
-                  </div>
-                ) : myRoyaltyRequest?.status === "accepted" ? (
-                  <div className="space-y-1.5 rounded-xl border border-white/10 bg-white/5 p-3">
-                    <p className="flex items-center gap-1.5 text-xs font-semibold text-gray-300">
-                      <Award className="h-3.5 w-3.5" />
-                      Solicitud aceptada
-                    </p>
-                    <p className="text-[11px] leading-snug text-gray-400">
-                      Tu solicitud de regalías fue aprobada por el owner.
-                    </p>
-                  </div>
-                ) : (
-                  <button
-                    onClick={handleRequestRoyalties}
-                    disabled={royaltyRequestLoading || myRoyaltyRequest?.status === "rejected"}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-bold text-gray-900 transition-all hover:bg-gray-100 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100"
-                  >
-                    <DollarSign className="h-4 w-4" />
-                    {royaltyRequestLoading
-                      ? "Enviando..."
-                      : myRoyaltyRequest?.status === "rejected"
-                        ? "Solicitud rechazada"
-                        : "Solicitar regalías"}
-                  </button>
-                )}
-              </div>
+              <Table
+                collaborators={getCollaboratorsInfo()}
+                songId={song?._id || song?.id}
+                song={song}
+                isOwner={isOwnerUser}
+              />
             </div>
           )}
-        </div>
-        {/* Collaborators Card */}
-        <div className="overflow-hidden rounded-xl border border-gray-100 bg-white">
-          <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
-            <div className="flex items-center gap-2.5">
-              <Users className="h-5 w-5 text-gray-900" />
-              <h3 className="text-base font-bold text-gray-900">Colaboradores</h3>
+
+          {activeTab === "pagos" && (
+            <SongPaymentsHistory
+              songId={id}
+              refreshTrigger={paymentHistoryRefresh}
+              pendingAmount={totalToPay}
+            />
+          )}
+
+          {activeTab === "splits" && (
+            <div className="grid grid-cols-2 items-start gap-5 lg:grid-cols-2">
+              <Historyofsplits songId={id} isOwner={isOwnerUser} />
+              <Extraordinarycosts songId={id || ""} />
             </div>
-            <AddCollaborator compact isOwner={isOwnerUser || song?.requesterRole === "label"} />
-          </div>
-          <Table
-            collaborators={getCollaboratorsInfo()}
-            songId={song?._id || song?.id}
-            song={song}
-            isOwner={isOwnerUser}
-          />
-        </div>
-        {/* Behavior / Revenue Chart */}
-        <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
-          <Behavior songId={id} compact />
-          {/*Platforms */}
-          <Platforms reproductions={song?.reproductions} />
-        </div>
-        {/* Payment History + Platforms */}
+          )}
 
-        <SongPaymentsHistory songId={id} refreshTrigger={paymentHistoryRefresh} />
-
-        <div className="grid grid-cols-4 gap-4">
-          {/* History of Splits */}
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden col-span-1 lg:col-span-2">
-            <Historyofsplits songId={id} isOwner={isOwnerUser} />
-          </div>
-          {/* Extraordinary Costs */}
-          <div className="col-span-1 overflow-hidden rounded-xl border border-gray-200 bg-white lg:col-span-2">
-            <Extraordinarycosts songId={id || ""} />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-4 gap-4">
-          {/* Specific Data */}
-          {/* <div className="bg-white border border-gray-200 rounded-xl overflow-hidden col-span-1 lg:col-span-2">
-            <EspecificData song={song} />
-          </div> */}
-          <div className="col-span-1 overflow-hidden rounded-xl border border-gray-200 bg-white lg:col-span-4">
-            <DocumentManager songId={id || ""} />
-          </div>
+          {activeTab === "documentos" && <DocumentManager songId={id || ""} />}
+            </>
+          )}
         </div>
       </div>
     </React.Fragment>
+  );
+}
+
+/** Pill de estadística del hero (streams, ingresos, mi parte). */
+function StatPill({
+  icon,
+  text,
+  valueClass = "text-[#1C1D22]",
+}: {
+  icon: React.ReactNode;
+  text: string;
+  valueClass?: string;
+}) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-semibold shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+      {icon}
+      <span className={valueClass}>{text}</span>
+    </span>
   );
 }

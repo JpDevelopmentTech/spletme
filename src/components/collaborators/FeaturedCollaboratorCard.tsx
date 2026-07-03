@@ -60,9 +60,9 @@ export function FeaturedCollaboratorCard({
           </div>
           <div className="flex flex-col items-center gap-1 border-x border-gray-100 py-3">
             <span className="text-xl font-bold text-[#F97316]">
-              {collaborator.splitPercentage != null ? `${collaborator.splitPercentage}%` : "—"}
+              {`${collaborator.songPresencePercentage}%`}
             </span>
-            <span className="text-[10px] text-[#6B7280]">Split avg</span>
+            <span className="text-[10px] text-[#6B7280]">% del Owner</span>
           </div>
           <div className="flex flex-col items-center gap-1 py-3">
             <span

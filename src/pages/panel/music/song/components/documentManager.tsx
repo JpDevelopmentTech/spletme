@@ -8,6 +8,7 @@ import {
   FileText,
   File,
   FileImage,
+  Folder,
   AlertCircle,
   Loader,
 } from "lucide-react";
@@ -68,27 +69,23 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
     const iconClass = "w-5 h-5";
     switch (type?.toLowerCase()) {
       case "pdf":
-        return <FileText className={`${iconClass} text-red-500`} />;
+        return <FileText className={`${iconClass} text-[#EF4444]`} />;
+      case "mp3":
+      case "wav":
+      case "aac":
+      case "flac":
+      case "ogg":
+      case "audio":
+        return <File className={`${iconClass} text-[#FF5C00]`} />;
       case "png":
       case "jpg":
       case "jpeg":
       case "gif":
+      case "webp":
       case "image":
-        return <FileImage className={`${iconClass} text-blue-500`} />;
-      case "xlsx":
-      case "xls":
-      case "excel":
-        return <File className={`${iconClass} text-green-600`} />;
-      case "docx":
-      case "doc":
-      case "word":
-        return <File className={`${iconClass} text-blue-600`} />;
-      case "pptx":
-      case "ppt":
-      case "powerpoint":
-        return <File className={`${iconClass} text-orange-600`} />;
+        return <FileImage className={`${iconClass} text-[#2FB37E]`} />;
       default:
-        return <File className={`${iconClass} text-gray-500`} />;
+        return <File className={`${iconClass} text-[#71757E]`} />;
     }
   };
 
@@ -197,27 +194,30 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
 
   return (
     <>
-      <div className="col-span-12 flex h-full flex-col rounded-2xl p-6 shadow-lg">
-        <div className="mb-4 flex items-start justify-between">
+      <div className="col-span-12 flex h-full flex-col rounded-[28px] bg-[#F4F5F7] p-6">
+        <div className="mb-4 flex items-center justify-between">
           {/* Header */}
-          <div>
-            <span className="text-title font-bold">Gestor de Documentos</span>
+          <div className="flex items-center gap-3">
+            <div className="grid h-9 w-9 place-items-center rounded-[12px] bg-white text-[#FF5C00] shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+              <Folder className="h-5 w-5" />
+            </div>
+            <span className="text-base font-semibold text-[#1C1D22]">Gestor de Documentos</span>
           </div>
 
           {/* Upload Button */}
           <button
             onClick={() => setShowUploadModal(true)}
             disabled={uploading}
-            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-[12px] bg-[#FF5C00] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#EA580C] disabled:opacity-50"
           >
             <Upload className="h-4 w-4" />
-            Adjuntar
+            Cargar Nuevo Documento
           </button>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <div className="mb-4 rounded-[16px] bg-white px-4 py-3 text-sm text-[#EF4444] shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
             {error}
           </div>
         )}
@@ -227,93 +227,107 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({ songId }) => {
           {loading ? (
             <div className="flex h-full items-center justify-center">
               <div className="text-center">
-                <Loader className="mx-auto mb-2 h-8 w-8 animate-spin text-blue-500" />
-                <p className="text-sm text-gray-500">Cargando documentos...</p>
+                <Loader className="mx-auto mb-2 h-8 w-8 animate-spin text-[#A6AAB2]" />
+                <p className="text-sm text-[#71757E]">Cargando documentos...</p>
               </div>
             </div>
           ) : documents.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b border-gray-200 bg-gray-50">
-                    <th className="p-2 text-left font-semibold text-gray-700">Documento</th>
-                    <th className="p-2 text-left font-semibold text-gray-700">Tipo</th>
-                    <th className="p-2 text-left font-semibold text-gray-700">Tamaño</th>
-                    <th className="p-2 text-left font-semibold text-gray-700">Fecha</th>
-                    <th className="p-2 text-center font-semibold text-gray-700">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {documents.map((doc) => (
-                    <tr
-                      key={doc._id || doc.id}
-                      className="border-b border-gray-100 transition-colors hover:bg-gray-50"
+            <div className="flex flex-col gap-2">
+              {/* Column labels */}
+              <div className="hidden items-center gap-3 px-4 py-2 lg:flex">
+                <span className="flex-1 text-[10.5px] font-semibold uppercase tracking-wide text-[#A6AAB2]">
+                  Documento
+                </span>
+                <span className="w-[140px] text-[10.5px] font-semibold uppercase tracking-wide text-[#A6AAB2]">
+                  Tipo
+                </span>
+                <span className="w-[120px] text-[10.5px] font-semibold uppercase tracking-wide text-[#A6AAB2]">
+                  Tamaño
+                </span>
+                <span className="w-[150px] text-[10.5px] font-semibold uppercase tracking-wide text-[#A6AAB2]">
+                  Fecha
+                </span>
+                <span className="flex w-[110px] justify-end text-[10.5px] font-semibold uppercase tracking-wide text-[#A6AAB2]">
+                  Acciones
+                </span>
+              </div>
+
+              {/* Rows */}
+              {documents.map((doc) => (
+                <div
+                  key={doc._id || doc.id}
+                  className="flex flex-wrap items-center gap-3 rounded-[16px] bg-white px-4 py-3 shadow-[0_1px_2px_rgba(0,0,0,0.04)]"
+                >
+                  {/* Documento */}
+                  <div className="flex min-w-[180px] flex-1 items-center gap-3">
+                    <div className="grid h-9 w-9 place-items-center rounded-[12px] bg-[#F4F5F7]">
+                      {getFileIcon(doc.type)}
+                    </div>
+                    <span className="text-xs font-semibold text-[#1C1D22]">{doc.name}</span>
+                  </div>
+
+                  {/* Tipo */}
+                  <div className="w-[140px]">
+                    <span className="rounded-full bg-[#F4F5F7] px-2.5 py-0.5 text-[11px] font-semibold text-[#71757E]">
+                      {doc.type.toUpperCase()}
+                    </span>
+                  </div>
+
+                  {/* Tamaño */}
+                  <div className="w-[120px] text-xs text-[#A6AAB2]">{doc.size}</div>
+
+                  {/* Fecha */}
+                  <div className="w-[150px] text-xs text-[#71757E]">
+                    {new Date(doc.uploadDate).toLocaleDateString("es-ES", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </div>
+
+                  {/* Acciones */}
+                  <div className="flex w-[110px] items-center justify-end gap-2">
+                    {/* Preview Button */}
+                    <button
+                      onClick={() => {
+                        setSelectedDoc(doc);
+                        setShowPreview(true);
+                      }}
+                      className="grid h-8 w-8 place-items-center rounded-[12px] bg-[#F4F5F7] text-[#71757E] transition-colors hover:bg-[#E9EAEE]"
+                      title="Ver vista previa"
                     >
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          {getFileIcon(doc.type)}
-                          <span className="text-xs text-gray-700">{doc.name}</span>
-                        </div>
-                      </td>
-                      <td className="p-2">
-                        <span className="rounded bg-gray-100 p-1 text-xs text-gray-700">
-                          {doc.type.toUpperCase()}
-                        </span>
-                      </td>
-                      <td className="p-2 text-xs text-gray-600">{doc.size}</td>
-                      <td className="p-2 text-xs text-gray-600">
-                        {new Date(doc.uploadDate).toLocaleDateString("es-ES", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center justify-center gap-2">
-                          {/* Preview Button */}
-                          <button
-                            onClick={() => {
-                              setSelectedDoc(doc);
-                              setShowPreview(true);
-                            }}
-                            className="rounded p-1 text-blue-600 transition-colors hover:bg-blue-50"
-                            title="Ver vista previa"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </button>
+                      <Eye className="h-4 w-4" />
+                    </button>
 
-                          {/* Download Button */}
-                          <button
-                            onClick={() => handleDownload(doc)}
-                            className="rounded p-1 text-green-600 transition-colors hover:bg-green-50"
-                            title="Descargar"
-                          >
-                            <Download className="h-4 w-4" />
-                          </button>
+                    {/* Download Button */}
+                    <button
+                      onClick={() => handleDownload(doc)}
+                      className="grid h-8 w-8 place-items-center rounded-[12px] bg-[#F4F5F7] text-[#71757E] transition-colors hover:bg-[#E9EAEE]"
+                      title="Descargar"
+                    >
+                      <Download className="h-4 w-4" />
+                    </button>
 
-                          {/* Delete Button */}
-                          <button
-                            onClick={() => {
-                              setSelectedDoc(doc);
-                              setShowDeletePopup(true);
-                            }}
-                            className="rounded p-1 text-red-600 transition-colors hover:bg-red-50"
-                            title="Eliminar"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                    {/* Delete Button */}
+                    <button
+                      onClick={() => {
+                        setSelectedDoc(doc);
+                        setShowDeletePopup(true);
+                      }}
+                      className="grid h-8 w-8 place-items-center rounded-[12px] bg-[#F4F5F7] text-[#EF4444] transition-colors hover:bg-[#E9EAEE]"
+                      title="Eliminar"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <div className="flex h-full items-center justify-center">
               <div className="text-center">
-                <FileText className="mx-auto mb-2 h-8 w-8 text-gray-300" />
-                <p className="text-sm text-gray-500">No hay documentos cargados</p>
+                <FileText className="mx-auto mb-2 h-8 w-8 text-[#A6AAB2]" />
+                <p className="text-sm text-[#71757E]">No hay documentos cargados</p>
               </div>
             </div>
           )}
