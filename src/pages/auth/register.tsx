@@ -1,14 +1,8 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Mail, Lock, Eye, EyeOff, User, AtSign } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, User, AtSign, ArrowRight } from "lucide-react";
 import { AuthService } from "../../services/auth";
 import { WelcomeModal } from "../../components/modal/WelcomeModal";
-
-const FEATURES = [
-  "Rastrea streams en todas las plataformas",
-  "Divide regalías con colaboradores",
-  "Gestiona billeteras y retiros de pagos",
-];
 
 export default function Register() {
   const navigate = useNavigate();
@@ -53,324 +47,214 @@ export default function Register() {
     setShowWelcome(true);
   };
 
-  const inputBase: React.CSSProperties = {
-    width: "100%",
-    height: 46,
-    borderRadius: 10,
-    border: "1px solid #E5E7EB",
-    backgroundColor: "#FFFFFF",
-    paddingLeft: 40,
-    paddingRight: 14,
-    fontSize: 14,
-    color: "#111827",
-    outline: "none",
-  };
+  const inputClass =
+    "peer h-12 w-full rounded-[14px] border border-transparent bg-[#F4F5F7] text-[13.5px] text-[#1C1D22] placeholder-[#A6AAB2] outline-none transition-colors focus:border-[#FF5C00] focus:bg-white focus:ring-2 focus:ring-[#FF5C00]/20";
+  const iconClass =
+    "pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#A6AAB2] transition-colors peer-focus:text-[#FF5C00]";
 
   return (
     <>
-    <WelcomeModal
-      isOpen={showWelcome}
-      userName={formData.name}
-      onContinue={() => navigate("/auth/email-login")}
-    />
-    <div className="flex min-h-screen">
-      {/* Panel izquierdo */}
-      <div
-        className="hidden flex-shrink-0 flex-col justify-center gap-9 lg:flex"
-        style={{ width: 500, backgroundColor: "#0F172A", padding: "60px 50px" }}
-      >
-        {/* Logo */}
-        <div className="flex items-center gap-3">
-          <div
-            className="flex flex-shrink-0 items-center justify-center text-xl font-bold text-white"
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 10,
-              backgroundColor: "#F97316",
-            }}
-          >
-            S
-          </div>
-          <span className="text-xl font-bold text-white">SplitMe</span>
-        </div>
+      <WelcomeModal
+        isOpen={showWelcome}
+        userName={formData.name}
+        onContinue={() => navigate("/auth/email-login")}
+      />
+      <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-b from-white to-[#FFF4EC] px-4 py-10">
+        {/* Resplandores de fondo */}
+        <div className="pointer-events-none absolute -left-32 -top-32 h-[460px] w-[460px] rounded-full bg-[#FF5C00] opacity-[0.10] blur-[150px]" />
+        <div className="pointer-events-none absolute -bottom-24 -right-24 h-[460px] w-[460px] rounded-full bg-[#FF5C00] opacity-[0.09] blur-[150px]" />
 
-        {/* Encabezado */}
-        <div className="flex flex-col gap-4">
-          <h1 className="font-bold text-white" style={{ fontSize: 42, lineHeight: 1.2 }}>
-            Gestiona tus
-            <br />
-            regalías musicales.
-          </h1>
-          <p className="text-sm text-[#94A3B8]" style={{ lineHeight: 1.6 }}>
-            Rastrea streams, divide pagos y gestiona colaboradores en un solo lugar.
-          </p>
-        </div>
-
-        {/* Acento naranja */}
-        <div
-          style={{
-            width: 48,
-            height: 3,
-            borderRadius: 2,
-            backgroundColor: "#F97316",
-          }}
-        />
-
-        {/* Características */}
-        <div className="flex flex-col gap-3.5">
-          {FEATURES.map((feat) => (
-            <div key={feat} className="flex items-center gap-2.5">
-              <div
-                className="flex-shrink-0 rounded-full"
-                style={{ width: 8, height: 8, backgroundColor: "#F97316" }}
-              />
-              <span className="text-sm text-[#CBD5E1]">{feat}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Panel derecho */}
-      <div
-        className="flex flex-1 items-center justify-center overflow-y-auto p-6"
-        style={{ backgroundColor: "#F7F8FA" }}
-      >
-        {/* Tarjeta del formulario */}
-        <div
-          className="my-6 flex w-full flex-col gap-5"
-          style={{
-            maxWidth: 420,
-            backgroundColor: "#FFFFFF",
-            borderRadius: 16,
-            border: "1px solid #E5E7EB",
-            padding: 40,
-          }}
-        >
-          {/* Logo de la tarjeta */}
-          <div
-            className="flex items-center justify-center self-start text-[22px] font-bold text-white"
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 11,
-              backgroundColor: "#F97316",
-            }}
-          >
-            S
-          </div>
-
-          {/* Encabezado */}
-          <div className="flex flex-col gap-1">
-            <h2 className="text-[26px] font-bold text-[#111827]">Crea tu cuenta</h2>
-            <p className="text-sm text-[#6B7280]">
-              Únete a SplitMe y comienza a gestionar tus regalías
-            </p>
-          </div>
-
-          {/* Alertas */}
-          {errorMessage && (
-            <div
-              className="text-sm text-red-700"
-              style={{
-                backgroundColor: "#FEF2F2",
-                border: "1px solid #FECACA",
-                borderRadius: 10,
-                padding: "10px 14px",
-              }}
-            >
-              {errorMessage}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {/* Usuario */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-[#374151]">Nombre de usuario</label>
-              <div className="relative">
-                <AtSign
-                  size={16}
-                  color="#9CA3AF"
-                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2"
-                />
-                <input
-                  type="text"
-                  name="username"
-                  value={formData.username}
-                  onChange={(e) => set("username", e.target.value)}
-                  placeholder="Elige un nombre de usuario"
-                  required
-                  style={inputBase}
-                />
-              </div>
-            </div>
-
-            {/* Nombre + Apellido */}
-            <div className="flex gap-3">
-              <div className="flex flex-1 flex-col gap-1.5">
-                <label className="text-sm font-medium text-[#374151]">Nombre</label>
-                <div className="relative">
-                  <User
-                    size={16}
-                    color="#9CA3AF"
-                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2"
-                  />
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={(e) => set("name", e.target.value)}
-                    placeholder="Tu nombre"
-                    required
-                    style={inputBase}
-                  />
-                </div>
-              </div>
-              <div className="flex flex-1 flex-col gap-1.5">
-                <label className="text-sm font-medium text-[#374151]">Apellido</label>
-                <div className="relative">
-                  <User
-                    size={16}
-                    color="#9CA3AF"
-                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2"
-                  />
-                  <input
-                    type="text"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={(e) => set("lastName", e.target.value)}
-                    placeholder="Tu apellido"
-                    required
-                    style={inputBase}
-                  />
+        <div className="relative z-10 flex w-full max-w-[444px] flex-col items-center gap-6">
+          {/* Tarjeta */}
+          <div className="flex w-full flex-col gap-5 rounded-[32px] bg-white px-[38px] pb-8 pt-10 shadow-[0_24px_56px_-16px_rgba(28,29,34,0.14)]">
+            {/* Logo con halo */}
+            <div className="flex justify-center">
+              <div className="flex h-[66px] w-[66px] items-center justify-center rounded-full bg-[#FFEADD]">
+                <div className="flex h-[46px] w-[46px] items-center justify-center rounded-[15px] bg-[#FF5C00] text-[22px] font-bold text-white shadow-[0_6px_16px_-2px_rgba(255,92,0,0.35)]">
+                  S
                 </div>
               </div>
             </div>
 
-            {/* Correo */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-[#374151]">Correo electrónico</label>
-              <div className="relative">
-                <Mail
-                  size={16}
-                  color="#9CA3AF"
-                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2"
-                />
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={(e) => set("email", e.target.value)}
-                  placeholder="Ingresa tu correo"
-                  required
-                  style={inputBase}
-                />
-              </div>
+            {/* Encabezado */}
+            <div className="flex flex-col items-center gap-1.5">
+              <h2 className="text-[26px] font-bold text-[#1C1D22]">Crea tu cuenta</h2>
+              <p className="text-sm text-[#71757E]">Únete a SplitMe y gestiona tus regalías</p>
             </div>
 
-            {/* Contraseña */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-[#374151]">Contraseña</label>
-              <div className="relative">
-                <Lock
-                  size={16}
-                  color="#9CA3AF"
-                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2"
-                />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={formData.password}
-                  onChange={(e) => set("password", e.target.value)}
-                  placeholder="Crea una contraseña"
-                  required
-                  style={{ ...inputBase, paddingRight: 40 }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] transition-colors hover:text-[#6B7280]"
-                >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
+            {/* Alerta */}
+            {errorMessage && (
+              <div className="rounded-[14px] border border-[#FADADA] bg-[#FEECEC] px-3.5 py-2.5 text-sm text-[#EF4444]">
+                {errorMessage}
               </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
+              {/* Usuario */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[13px] font-medium text-[#71757E]">Nombre de usuario</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="username"
+                    value={formData.username}
+                    onChange={(e) => set("username", e.target.value)}
+                    placeholder="Elige un nombre de usuario"
+                    required
+                    className={`${inputClass} pl-[42px] pr-4`}
+                  />
+                  <AtSign className={iconClass} />
+                </div>
+              </div>
+
+              {/* Nombre + Apellido */}
+              <div className="flex gap-3">
+                <div className="flex flex-1 flex-col gap-1.5">
+                  <label className="text-[13px] font-medium text-[#71757E]">Nombre</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={(e) => set("name", e.target.value)}
+                      placeholder="Tu nombre"
+                      required
+                      className={`${inputClass} pl-[42px] pr-3`}
+                    />
+                    <User className={iconClass} />
+                  </div>
+                </div>
+                <div className="flex flex-1 flex-col gap-1.5">
+                  <label className="text-[13px] font-medium text-[#71757E]">Apellido</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={(e) => set("lastName", e.target.value)}
+                      placeholder="Tu apellido"
+                      required
+                      className={`${inputClass} pl-[42px] pr-3`}
+                    />
+                    <User className={iconClass} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Correo */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[13px] font-medium text-[#71757E]">Correo electrónico</label>
+                <div className="relative">
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={(e) => set("email", e.target.value)}
+                    placeholder="tucorreo@ejemplo.com"
+                    required
+                    className={`${inputClass} pl-[42px] pr-4`}
+                  />
+                  <Mail className={iconClass} />
+                </div>
+              </div>
+
+              {/* Contraseña */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[13px] font-medium text-[#71757E]">Contraseña</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={formData.password}
+                    onChange={(e) => set("password", e.target.value)}
+                    placeholder="Crea una contraseña"
+                    required
+                    className={`${inputClass} pl-[42px] pr-[42px]`}
+                  />
+                  <Lock className={iconClass} />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#A6AAB2] transition-colors hover:text-[#71757E]"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Confirmar contraseña */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[13px] font-medium text-[#71757E]">Confirmar contraseña</label>
+                <div className="relative">
+                  <input
+                    type={showConfirm ? "text" : "password"}
+                    name="passwordConfirmation"
+                    value={formData.passwordConfirmation}
+                    onChange={(e) => set("passwordConfirmation", e.target.value)}
+                    placeholder="Confirma tu contraseña"
+                    required
+                    className={`${inputClass} pl-[42px] pr-[42px]`}
+                  />
+                  <Lock className={iconClass} />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirm((v) => !v)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#A6AAB2] transition-colors hover:text-[#71757E]"
+                  >
+                    {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Botón */}
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="mt-1 flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-[#FF5C00] text-[15px] font-semibold text-white shadow-[0_10px_24px_-6px_rgba(255,92,0,0.5)] transition hover:brightness-105 disabled:opacity-60"
+              >
+                {isSubmitting ? "Creando cuenta..." : "Crear cuenta"}
+                {!isSubmitting && <ArrowRight className="h-4 w-4" />}
+              </button>
+
+              {/* Términos */}
+              <p className="text-center text-[11.5px] leading-relaxed text-[#A6AAB2]">
+                Al crear una cuenta aceptas nuestros{" "}
+                <a href="#" className="font-semibold text-[#FF5C00] hover:opacity-80">
+                  Términos de Servicio
+                </a>{" "}
+                y la{" "}
+                <a href="#" className="font-semibold text-[#FF5C00] hover:opacity-80">
+                  Política de Privacidad
+                </a>
+              </p>
+            </form>
+
+            {/* Divisor */}
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-[#1C1D22]/[0.08]" />
+              <span className="text-xs text-[#A6AAB2]">o</span>
+              <div className="h-px flex-1 bg-[#1C1D22]/[0.08]" />
             </div>
 
-            {/* Confirmar contraseña */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-[#374151]">Confirmar contraseña</label>
-              <div className="relative">
-                <Lock
-                  size={16}
-                  color="#9CA3AF"
-                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2"
-                />
-                <input
-                  type={showConfirm ? "text" : "password"}
-                  name="passwordConfirmation"
-                  value={formData.passwordConfirmation}
-                  onChange={(e) => set("passwordConfirmation", e.target.value)}
-                  placeholder="Confirma tu contraseña"
-                  required
-                  style={{ ...inputBase, paddingRight: 40 }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirm((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] transition-colors hover:text-[#6B7280]"
-                >
-                  {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
+            {/* Iniciar sesión */}
+            <div className="flex items-center justify-center gap-1.5">
+              <span className="text-[13.5px] text-[#71757E]">¿Ya tienes cuenta?</span>
+              <Link
+                to="/auth/email-login"
+                className="text-[13.5px] font-semibold text-[#FF5C00] transition-opacity hover:opacity-80"
+              >
+                Inicia sesión
+              </Link>
             </div>
-
-            {/* Botón crear cuenta */}
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full text-[15px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-              style={{
-                height: 46,
-                borderRadius: 10,
-                backgroundColor: "#F97316",
-              }}
-            >
-              {isSubmitting ? "Creando cuenta..." : "Crear cuenta"}
-            </button>
-
-            {/* Términos */}
-            <p className="text-center text-xs text-[#9CA3AF]">
-              Al crear una cuenta aceptas nuestros{" "}
-              <a href="#" className="text-[#F97316] hover:opacity-80">
-                Términos de Servicio
-              </a>{" "}
-              y la{" "}
-              <a href="#" className="text-[#F97316] hover:opacity-80">
-                Política de Privacidad
-              </a>
-            </p>
-          </form>
-
-          {/* Divisor */}
-          <div className="flex items-center gap-3">
-            <div className="h-px flex-1 bg-[#E5E7EB]" />
-            <span className="text-xs text-[#9CA3AF]">o</span>
-            <div className="h-px flex-1 bg-[#E5E7EB]" />
           </div>
 
-          {/* Iniciar sesión */}
-          <div className="flex items-center justify-center gap-1">
-            <span className="text-sm text-[#6B7280]">¿Ya tienes cuenta?</span>
-            <Link
-              to="/auth/email-login"
-              className="text-sm font-semibold text-[#F97316] transition-opacity hover:opacity-80"
-            >
-              Inicia sesión
-            </Link>
+          {/* Confianza */}
+          <div className="flex items-center gap-1.5 text-[11.5px] text-[#A6AAB2]">
+            <Lock className="h-3 w-3" />
+            <span>Conexión segura · Stripe &amp; Wise</span>
           </div>
         </div>
       </div>
-    </div>
     </>
   );
 }

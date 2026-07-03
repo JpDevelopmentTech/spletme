@@ -1,15 +1,9 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { AuthService } from "../../services/auth";
 import { setAuth } from "../../store/states/authSlice";
-
-const FEATURES = [
-  "Rastrea streams en todas las plataformas",
-  "Divide regalías con colaboradores",
-  "Gestiona billeteras y retiros de pagos",
-];
 
 export default function EmailLogin() {
   const navigate = useNavigate();
@@ -55,157 +49,69 @@ export default function EmailLogin() {
     }
   };
 
-  const inputBase: React.CSSProperties = {
-    width: "100%",
-    height: 46,
-    borderRadius: 10,
-    border: "1px solid #E5E7EB",
-    backgroundColor: "#FFFFFF",
-    paddingLeft: 40,
-    paddingRight: 14,
-    fontSize: 14,
-    color: "#111827",
-    outline: "none",
-  };
+  const inputClass =
+    "peer h-[50px] w-full rounded-[14px] border border-transparent bg-[#F4F5F7] text-sm text-[#1C1D22] placeholder-[#A6AAB2] outline-none transition-colors focus:border-[#FF5C00] focus:bg-white focus:ring-2 focus:ring-[#FF5C00]/20";
 
   return (
-    <div className="flex min-h-screen">
-      {/* Panel izquierdo */}
-      <div
-        className="hidden flex-shrink-0 flex-col justify-center gap-9 lg:flex"
-        style={{ width: 500, backgroundColor: "#0F172A", padding: "60px 50px" }}
-      >
-        {/* Logo */}
-        <div className="flex items-center gap-3">
-          <div
-            className="flex flex-shrink-0 items-center justify-center text-xl font-bold text-white"
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 10,
-              backgroundColor: "#F97316",
-            }}
-          >
-            S
-          </div>
-          <span className="text-xl font-bold text-white">SplitMe</span>
-        </div>
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-b from-white to-[#FFF4EC] px-4 py-10">
+      {/* Resplandores de fondo */}
+      <div className="pointer-events-none absolute -left-32 -top-32 h-[460px] w-[460px] rounded-full bg-[#FF5C00] opacity-[0.10] blur-[150px]" />
+      <div className="pointer-events-none absolute -bottom-24 -right-24 h-[460px] w-[460px] rounded-full bg-[#FF5C00] opacity-[0.09] blur-[150px]" />
 
-        {/* Encabezado */}
-        <div className="flex flex-col gap-4">
-          <h1 className="font-bold text-white" style={{ fontSize: 42, lineHeight: 1.2 }}>
-            Gestiona tus
-            <br />
-            regalías musicales.
-          </h1>
-          <p className="text-sm text-[#94A3B8]" style={{ lineHeight: 1.6 }}>
-            Rastrea streams, divide pagos y gestiona colaboradores en un solo lugar.
-          </p>
-        </div>
-
-        {/* Acento naranja */}
-        <div
-          style={{
-            width: 48,
-            height: 3,
-            borderRadius: 2,
-            backgroundColor: "#F97316",
-          }}
-        />
-
-        {/* Características */}
-        <div className="flex flex-col gap-3.5">
-          {FEATURES.map((feat) => (
-            <div key={feat} className="flex items-center gap-2.5">
-              <div
-                className="flex-shrink-0 rounded-full"
-                style={{ width: 8, height: 8, backgroundColor: "#F97316" }}
-              />
-              <span className="text-sm text-[#CBD5E1]">{feat}</span>
+      <div className="relative z-10 flex w-full max-w-[432px] flex-col items-center gap-6">
+        {/* Tarjeta */}
+        <div className="flex w-full flex-col gap-[22px] rounded-[32px] bg-white px-10 pb-9 pt-[42px] shadow-[0_24px_56px_-16px_rgba(28,29,34,0.14)]">
+          {/* Logo con halo */}
+          <div className="flex justify-center">
+            <div className="flex h-[66px] w-[66px] items-center justify-center rounded-full bg-[#FFEADD]">
+              <div className="flex h-[46px] w-[46px] items-center justify-center rounded-[15px] bg-[#FF5C00] text-[22px] font-bold text-white shadow-[0_6px_16px_-2px_rgba(255,92,0,0.35)]">
+                S
+              </div>
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Panel derecho */}
-      <div
-        className="flex flex-1 items-center justify-center p-6"
-        style={{ backgroundColor: "#F7F8FA" }}
-      >
-        {/* Tarjeta del formulario */}
-        <div
-          className="flex w-full flex-col gap-5"
-          style={{
-            maxWidth: 420,
-            backgroundColor: "#FFFFFF",
-            borderRadius: 16,
-            border: "1px solid #E5E7EB",
-            padding: 40,
-          }}
-        >
-          {/* Logo de la tarjeta */}
-          <div
-            className="flex items-center justify-center self-start text-[22px] font-bold text-white"
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 11,
-              backgroundColor: "#F97316",
-            }}
-          >
-            S
           </div>
 
           {/* Encabezado */}
-          <div className="flex flex-col gap-1">
-            <h2 className="text-[26px] font-bold text-[#111827]">Bienvenido de nuevo</h2>
-            <p className="text-sm text-[#6B7280]">Inicia sesión para continuar</p>
+          <div className="flex flex-col items-center gap-1.5">
+            <h2 className="text-[27px] font-bold text-[#1C1D22]">Bienvenido de nuevo</h2>
+            <p className="text-sm text-[#71757E]">Inicia sesión para continuar en SplitMe</p>
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {/* Correo */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-[#374151]">Correo electrónico</label>
+              <label className="text-[13px] font-medium text-[#71757E]">Correo electrónico</label>
               <div className="relative">
-                <Mail
-                  size={16}
-                  color="#9CA3AF"
-                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2"
-                />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Ingresa tu correo"
+                  placeholder="tucorreo@ejemplo.com"
                   required
-                  style={inputBase}
+                  className={`${inputClass} pl-[42px] pr-4`}
                 />
+                <Mail className="pointer-events-none absolute left-4 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-[#A6AAB2] transition-colors peer-focus:text-[#FF5C00]" />
               </div>
             </div>
 
             {/* Contraseña */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-[#374151]">Contraseña</label>
+              <label className="text-[13px] font-medium text-[#71757E]">Contraseña</label>
               <div className="relative">
-                <Lock
-                  size={16}
-                  color="#9CA3AF"
-                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2"
-                />
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Ingresa tu contraseña"
                   required
-                  style={{ ...inputBase, paddingRight: 40 }}
+                  className={`${inputClass} pl-[42px] pr-[42px]`}
                 />
+                <Lock className="pointer-events-none absolute left-4 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-[#A6AAB2] transition-colors peer-focus:text-[#FF5C00]" />
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] transition-colors hover:text-[#6B7280]"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#A6AAB2] transition-colors hover:text-[#71757E]"
                 >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showPassword ? <EyeOff className="h-[17px] w-[17px]" /> : <Eye className="h-[17px] w-[17px]" />}
                 </button>
               </div>
             </div>
@@ -213,62 +119,55 @@ export default function EmailLogin() {
             {/* Opciones */}
             <div className="flex items-center justify-between">
               <label className="flex cursor-pointer items-center gap-2">
-                <div
-                  className="flex-shrink-0"
-                  style={{
-                    width: 16,
-                    height: 16,
-                    borderRadius: 4,
-                    border: "1.5px solid #D1D5DB",
-                    backgroundColor: "#FFFFFF",
-                  }}
-                />
-                <span className="text-sm text-[#6B7280]">Recuérdame</span>
+                <span className="h-[18px] w-[18px] flex-shrink-0 rounded-md border-[1.5px] border-[#D6D8DC] bg-white" />
+                <span className="text-[13.5px] text-[#71757E]">Recuérdame</span>
               </label>
               <button
                 type="button"
                 onClick={() => navigate("/auth/password-recovery")}
-                className="text-sm font-medium text-[#F97316] transition-opacity hover:opacity-80"
+                className="text-[13.5px] font-semibold text-[#FF5C00] transition-opacity hover:opacity-80"
               >
                 ¿Olvidaste tu contraseña?
               </button>
             </div>
 
             {/* Error */}
-            {error && <p className="text-center text-sm text-red-500">{error}</p>}
+            {error && <p className="text-center text-sm text-[#EF4444]">{error}</p>}
 
-            {/* Botón iniciar sesión */}
+            {/* Botón */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full text-[15px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-              style={{
-                height: 46,
-                borderRadius: 10,
-                backgroundColor: "#F97316",
-              }}
+              className="flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-[#FF5C00] text-[15px] font-semibold text-white shadow-[0_10px_24px_-6px_rgba(255,92,0,0.5)] transition hover:brightness-105 disabled:opacity-60"
             >
               {loading ? "Iniciando sesión..." : "Iniciar sesión"}
+              {!loading && <ArrowRight className="h-4 w-4" />}
             </button>
           </form>
 
           {/* Divisor */}
           <div className="flex items-center gap-3">
-            <div className="h-px flex-1 bg-[#E5E7EB]" />
-            <span className="text-xs text-[#9CA3AF]">o</span>
-            <div className="h-px flex-1 bg-[#E5E7EB]" />
+            <div className="h-px flex-1 bg-[#1C1D22]/[0.08]" />
+            <span className="text-xs text-[#A6AAB2]">o</span>
+            <div className="h-px flex-1 bg-[#1C1D22]/[0.08]" />
           </div>
 
           {/* Registro */}
-          <div className="flex items-center justify-center gap-1">
-            <span className="text-sm text-[#6B7280]">¿No tienes cuenta?</span>
+          <div className="flex items-center justify-center gap-1.5">
+            <span className="text-[13.5px] text-[#71757E]">¿No tienes cuenta?</span>
             <Link
               to="/auth/register"
-              className="text-sm font-semibold text-[#F97316] transition-opacity hover:opacity-80"
+              className="text-[13.5px] font-semibold text-[#FF5C00] transition-opacity hover:opacity-80"
             >
               Regístrate
             </Link>
           </div>
+        </div>
+
+        {/* Confianza */}
+        <div className="flex items-center gap-1.5 text-[11.5px] text-[#A6AAB2]">
+          <Lock className="h-3 w-3" />
+          <span>Conexión segura · Stripe &amp; Wise</span>
         </div>
       </div>
     </div>
