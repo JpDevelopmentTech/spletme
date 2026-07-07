@@ -40,8 +40,8 @@ export default function Navbar({ onSwitchUser }: NavbarProps) {
   };
 
   return (
-    <header className="sticky top-0 z-20 flex items-center gap-4 bg-white/80 px-4 py-3.5 backdrop-blur-xl lg:px-8">
-      <div className="hidden items-center gap-3 rounded-full bg-[#F4F5F7] px-5 py-3 sm:flex sm:w-[320px] lg:w-[380px]">
+    <header className="sticky top-0 z-20 flex items-center gap-4 border-b border-white/40 bg-white/55 px-4 py-3.5 backdrop-blur-xl lg:px-8">
+      <div className="hidden items-center gap-3 rounded-full border border-white/60 bg-white/55 px-5 py-3 backdrop-blur-md sm:flex sm:w-[320px] lg:w-[380px]">
         <Search className="h-[19px] w-[19px] flex-shrink-0 text-[#A6AAB2]" />
         <input
           type="text"
@@ -52,13 +52,13 @@ export default function Navbar({ onSwitchUser }: NavbarProps) {
 
       <div className="flex-1" />
 
-      <button className="flex items-center gap-2 rounded-full bg-[#F4F5F7] px-4 py-2.5 transition-colors hover:bg-[#E7E9EC]">
+      <button className="flex items-center gap-2 rounded-full border border-white/60 bg-white/55 px-4 py-2.5 backdrop-blur-md transition-colors hover:bg-white/75">
         <Globe className="h-[18px] w-[18px] text-[#71757E]" />
         <span className="text-[13px] font-medium text-[#1C1D22]">ES</span>
         <ChevronDown className="h-3.5 w-3.5 text-[#A6AAB2]" />
       </button>
 
-      <button className="relative flex h-11 w-11 items-center justify-center rounded-full bg-[#F4F5F7] transition-colors hover:bg-[#E7E9EC]">
+      <button className="relative flex h-11 w-11 items-center justify-center rounded-full border border-white/60 bg-white/55 backdrop-blur-md transition-colors hover:bg-white/75">
         <Bell className="h-5 w-5 text-[#71757E]" />
         <span className="absolute right-2.5 top-2.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-[#FF5C00]" />
       </button>
@@ -66,7 +66,7 @@ export default function Navbar({ onSwitchUser }: NavbarProps) {
       <div className="relative" ref={menuRef}>
         <button
           onClick={() => setOpen((v) => !v)}
-          className="flex items-center gap-2.5 rounded-full bg-[#F4F5F7] py-1.5 pl-1.5 pr-3.5 transition-colors hover:bg-[#E7E9EC]"
+          className="flex items-center gap-2.5 rounded-full border border-white/60 bg-white/55 py-1.5 pl-1.5 pr-3.5 backdrop-blur-md transition-colors hover:bg-white/75"
         >
           <span className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-[#FF5C00] text-xs font-bold text-white">
             {initials}
@@ -79,7 +79,7 @@ export default function Navbar({ onSwitchUser }: NavbarProps) {
         </button>
 
         {open && (
-          <div className="absolute right-0 top-[calc(100%+10px)] w-56 rounded-[22px] bg-white p-2 shadow-[0_12px_32px_-6px_rgba(15,23,42,0.16)]">
+          <div className="absolute right-0 top-[calc(100%+10px)] w-56 rounded-[22px] border border-white/60 bg-white/80 p-2 shadow-[0_16px_40px_-12px_rgba(255,92,0,0.16)] backdrop-blur-2xl">
             <div className="flex items-center gap-2.5 px-2.5 py-2">
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FF5C00] text-[13px] font-bold text-white">
                 {initials}

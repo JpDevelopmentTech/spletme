@@ -10,6 +10,7 @@ import CompletionStep from "./steps/CompletionStep";
 import { OnboardingService, OnboardingData } from "../../services/onboarding";
 import { setAuth } from "@/store/states/authSlice";
 import { AuthService } from "@/services/auth";
+import logo from "../../assets/images/2 - BLANCO.png";
 
 const TOTAL_STEPS = 4;
 
@@ -180,13 +181,7 @@ const OnboardingContainer = () => {
         style={{ height: 64, borderBottom: "1px solid #E5E7EB" }}
       >
         <div className="flex items-center gap-2.5">
-          <div
-            className="flex items-center justify-center bg-[#F97316] text-lg font-bold text-white"
-            style={{ width: 36, height: 36, borderRadius: 9 }}
-          >
-            S
-          </div>
-          <span className="text-lg font-bold text-[#111827]">SplitMe</span>
+          <img src={logo} alt="SplitMe" className="h-7 w-auto" />
         </div>
         <div className="flex items-center gap-4">
           <span

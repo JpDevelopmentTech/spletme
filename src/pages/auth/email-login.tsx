@@ -4,6 +4,7 @@ import { useDispatch } from "react-redux";
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { AuthService } from "../../services/auth";
 import { setAuth } from "../../store/states/authSlice";
+import logo from "../../assets/images/2 - BLANCO.png";
 
 export default function EmailLogin() {
   const navigate = useNavigate();
@@ -61,13 +62,9 @@ export default function EmailLogin() {
       <div className="relative z-10 flex w-full max-w-[432px] flex-col items-center gap-6">
         {/* Tarjeta */}
         <div className="flex w-full flex-col gap-[22px] rounded-[32px] bg-white px-10 pb-9 pt-[42px] shadow-[0_24px_56px_-16px_rgba(28,29,34,0.14)]">
-          {/* Logo con halo */}
+          {/* Logo */}
           <div className="flex justify-center">
-            <div className="flex h-[66px] w-[66px] items-center justify-center rounded-full bg-[#FFEADD]">
-              <div className="flex h-[46px] w-[46px] items-center justify-center rounded-[15px] bg-[#FF5C00] text-[22px] font-bold text-white shadow-[0_6px_16px_-2px_rgba(255,92,0,0.35)]">
-                S
-              </div>
-            </div>
+            <img src={logo} alt="SplitMe" className="h-10 w-auto" />
           </div>
 
           {/* Encabezado */}

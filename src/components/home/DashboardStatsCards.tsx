@@ -68,7 +68,7 @@ interface StatCardProps {
 /** Tarjeta individual de métrica con etiqueta, icono, valor y variación opcional. */
 function StatCard({ label, icon, value, valueClassName = "text-[#1C1D22]", delta, footer }: StatCardProps) {
   return (
-    <div className="rounded-[28px] bg-[#F4F5F7] p-[22px]">
+    <div className="rounded-[28px] border border-white/60 bg-white/55 p-[22px] shadow-[0_12px_30px_-14px_rgba(255,92,0,0.14)] backdrop-blur-2xl">
       <div className="mb-3 flex items-center justify-between">
         <span className="text-[12.5px] font-medium text-[#71757E]">{label}</span>
         <span className="flex h-8 w-8 items-center justify-center rounded-[16px] bg-white">{icon}</span>

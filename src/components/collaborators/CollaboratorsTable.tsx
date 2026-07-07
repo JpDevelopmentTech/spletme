@@ -30,7 +30,7 @@ export function CollaboratorsTable({
           <input
             type="text"
             placeholder="Buscar colaborador…"
-            className="w-full bg-transparent text-[12.5px] text-[#1C1D22] placeholder-[#A6AAB2] outline-none"
+            className="w-full bg-transparent text-[12.5px] text-[#1C1D22] placeholder-[#A6AAB2] outline-none border-none focus:ring-0" 
           />
         </div>
         <button className="flex h-9 items-center gap-1.5 rounded-full bg-white px-3.5 text-[12.5px] font-semibold text-[#1C1D22] shadow-[0_1px_2px_rgba(0,0,0,0.04)]">

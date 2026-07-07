@@ -192,15 +192,16 @@ export function CollaboratorDetailModal({
     });
   }, [collaborator.id]);
 
-  // Load metrics once a song is opened
+  // Load metrics (montos ajustados por split): se usan tanto en el resumen del
+  // perfil como en el drill-down de cada canción, por eso se cargan junto con
+  // el detalle en vez de esperar a que se abra una canción.
   useEffect(() => {
-    if (!selectedSong || metrics) return;
     setMetricsLoading(true);
     CollaboratorService.getSongMetrics(collaborator.id)
       .then((res) => setMetrics(res?.data ?? null))
       .catch(() => setMetrics(null))
       .finally(() => setMetricsLoading(false));
-  }, [selectedSong]);
+  }, [collaborator.id]);
 
   // Load history when a song is selected
   useEffect(() => {
@@ -215,7 +216,12 @@ export function CollaboratorDetailModal({
   }, [selectedSong?.songId]);
 
   const totalStreams = detail?.songs.reduce((s, x) => s + (x.totalStreams ?? 0), 0) ?? 0;
-  const totalNet = detail?.songs.reduce((s, x) => s + (x.totalNetIncome ?? 0), 0) ?? 0;
+  // Neto ajustado al split de este colaborador (neto de la canción, ya
+  // descontada la parte del split owner), no el neto bruto de la canción.
+  const totalOwed = metrics?.totals.totalOwed ?? 0;
+  const owedBySongId = new Map(
+    (metrics?.songs ?? []).map((s) => [s.songId, s.split?.totalOwed ?? 0]),
+  );
 
   const songStreams = selectedSong?.totalStreams ?? 0;
   const songNet = selectedSong?.totalNetIncome ?? 0;
@@ -509,7 +515,7 @@ export function CollaboratorDetailModal({
                   {
                     icon: <DollarSign className="h-[18px] w-[18px] text-[#2FB37E]" />,
                     label: "Neto total",
-                    value: fmt(totalNet),
+                    value: fmt(totalOwed),
                     color: "#2FB37E",
                   },
                 ].map(({ icon, label, value, color }) => (
@@ -601,7 +607,7 @@ export function CollaboratorDetailModal({
                       </span>
                     </span>
                     <span className="hidden w-[88px] text-[13px] font-bold text-[#2FB37E] sm:block">
-                      {fmt(song.totalNetIncome)}
+                      {fmt(owedBySongId.get(song.songId) ?? 0)}
                     </span>
                     {song.split ? (
                       <span className="rounded-full bg-[#FFEADD] px-2.5 py-1 text-[12px] font-bold text-[#FF5C00]">

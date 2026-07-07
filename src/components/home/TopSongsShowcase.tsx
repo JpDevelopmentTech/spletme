@@ -110,7 +110,7 @@ function CompactSong({ song, rank }: { song: TopSong; rank: number }) {
   return (
     <Link
       to={`/panel/song/${song._id}`}
-      className="flex flex-col gap-2.5 rounded-[22px] bg-white p-3 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-transform hover:-translate-y-0.5"
+      className="flex flex-col gap-2.5 rounded-[22px] border border-white/60 bg-white/70 p-3 shadow-[0_4px_14px_-6px_rgba(255,92,0,0.12)] backdrop-blur-md transition-transform hover:-translate-y-0.5"
     >
       <div className="relative h-[104px] w-full overflow-hidden rounded-[16px] bg-[#FF5C00]/15">
         {cover ? (

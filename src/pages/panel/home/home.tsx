@@ -29,7 +29,7 @@ export default function Home() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-full bg-white">
+    <div className="min-h-full">
       <div className="flex flex-col gap-5 px-4 py-6 lg:px-8">
         <DashboardStatsCards
           totalStreams={summary.totalStreams}
@@ -48,7 +48,7 @@ export default function Home() {
               onTimeframeChange={setSelectedTimeframe}
             />
 
-            <div className="rounded-[36px] bg-[#F4F5F7] p-7">
+            <div className="rounded-[36px] border border-white/60 bg-white/55 p-7 shadow-[0_16px_40px_-16px_rgba(255,92,0,0.15)] backdrop-blur-2xl">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-[#1C1D22]">Canciones Principales</h2>
                 <a

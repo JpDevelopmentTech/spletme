@@ -25,14 +25,14 @@ export function PerformanceChart({
   onTimeframeChange,
 }: PerformanceChartProps) {
   return (
-    <div className="rounded-[36px] bg-[#F4F5F7] p-7" data-tour="analytics-chart">
+    <div className="rounded-[36px] border border-white/60 bg-white/55 p-7 shadow-[0_16px_40px_-16px_rgba(255,92,0,0.15)] backdrop-blur-2xl" data-tour="analytics-chart">
       <div className="flex flex-col gap-5">
         <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
           <div className="flex flex-col gap-0.5">
             <h2 className="text-lg font-semibold text-[#1C1D22]">Rendimiento</h2>
             <p className="text-[12.5px] text-[#71757E]">Streams e ingresos en el tiempo</p>
           </div>
-          <div className="flex items-center gap-1 rounded-full bg-white p-1">
+          <div className="flex items-center gap-1 rounded-full border border-white/60 bg-white/60 p-1 backdrop-blur-md">
             {TIMEFRAME_OPTIONS.map((option) => (
               <button
                 key={option.value}

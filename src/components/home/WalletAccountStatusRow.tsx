@@ -12,7 +12,7 @@ interface WalletAccountStatusRowProps {
  */
 export function WalletAccountStatusRow({ icon: Icon, label, active }: WalletAccountStatusRowProps) {
   return (
-    <div className="flex items-center justify-between rounded-[22px] bg-white px-4 py-3.5">
+    <div className="flex items-center justify-between rounded-[22px] border border-white/60 bg-white/70 px-4 py-3.5 backdrop-blur-md">
       <div className="flex items-center gap-2.5">
         <Icon className="h-[18px] w-[18px] text-[#71757E]" />
         <span className="text-[13px] font-medium text-[#1C1D22]">{label}</span>

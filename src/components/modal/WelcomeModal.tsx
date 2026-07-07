@@ -3,6 +3,7 @@ import {
   BarChart2, SplitSquareHorizontal, Wallet,
   Users, Globe, ShieldCheck, ArrowRight,
 } from "lucide-react";
+import logo from "../../assets/images/2 - BLANCO.png";
 
 interface WelcomeModalProps {
   isOpen: boolean;
@@ -69,13 +70,12 @@ export function WelcomeModal({ isOpen, userName, onContinue }: WelcomeModalProps
             {/* Header */}
             <div className="bg-gradient-to-br from-[#0F172A] to-[#1E293B] px-7 pt-8 pb-7 text-white">
               <div className="flex items-center gap-3 mb-5">
-                <div
-                  className="flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
-                  style={{ width: 38, height: 38, borderRadius: 9, backgroundColor: "#F97316" }}
-                >
-                  S
-                </div>
-                <span className="font-bold text-lg">SplitMe</span>
+                <img
+                  src={logo}
+                  alt="SplitMe"
+                  className="h-7 w-auto"
+                  style={{ filter: "brightness(0) invert(1)" }}
+                />
               </div>
 
               <motion.div

@@ -16,6 +16,7 @@ import {
 import { useAuth0 } from "@auth0/auth0-react";
 import { useState, useEffect } from "react";
 import LocalStorageService from "../../services/localstorage";
+import logo from "../../assets/images/2 - BLANCO.png";
 
 interface UserData {
   name: string;
@@ -121,18 +122,13 @@ export default function Sidebar() {
 
       {/* Sidebar */}
       <div
-        className={`fixed left-0 top-0 z-40 flex h-full w-[260px] flex-col bg-white px-5 pb-6 pt-7 transition-transform duration-300 ${
+        className={`fixed left-0 top-0 z-40 flex h-full w-[260px] flex-col border-r border-white/50 bg-white/65 px-5 pb-6 pt-7 shadow-[8px_0_40px_-16px_rgba(15,23,42,0.10)] backdrop-blur-2xl transition-transform duration-300 ${
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
         {/* Brand */}
         <div className="flex items-center justify-between px-2">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-[13px] bg-[#FF5C00] text-xl font-bold text-white">
-              S
-            </div>
-            <span className="text-lg font-semibold text-[#1C1D22]">SplitMe</span>
-          </div>
+          <img src={logo} alt="SplitMe" className="h-7 w-auto" />
           <button
             onClick={() => setIsMobileMenuOpen(false)}
             className="rounded-lg p-1.5 text-[#A6AAB2] transition-colors hover:bg-[#F4F5F7] lg:hidden"

@@ -23,7 +23,7 @@ export function WalletSection({
 
   return (
     <div
-      className="flex flex-col gap-[18px] rounded-[36px] bg-[#F4F5F7] p-6"
+      className="flex flex-col gap-[18px] rounded-[36px] border border-white/60 bg-white/55 p-6 shadow-[0_16px_40px_-16px_rgba(255,92,0,0.15)] backdrop-blur-2xl"
       data-tour="balance-section"
     >
       <h2 className="text-base font-semibold text-[#1C1D22]">Billetera</h2>
@@ -42,7 +42,7 @@ export function WalletSection({
           {bothActive ? (
             <button
               onClick={onGoToBank}
-              className="flex w-full items-center justify-between rounded-[22px] bg-white px-4 py-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:bg-[#FBFBFC]"
+              className="flex w-full items-center justify-between rounded-[22px] border border-white/60 bg-white/70 px-4 py-3.5 shadow-[0_2px_8px_-2px_rgba(255,92,0,0.10)] backdrop-blur-md transition-colors hover:bg-white/85"
             >
               <span className="text-[13px] font-medium text-[#1C1D22]">Gestionar en Banco</span>
               <ChevronRight className="h-[15px] w-[15px] text-[#A6AAB2]" />

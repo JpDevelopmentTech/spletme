@@ -3,6 +3,7 @@ import {
   Tag,
   Play,
   DollarSign,
+  Crown,
   ArrowRight,
   Disc3,
   Layers,
@@ -97,6 +98,7 @@ export default function LabelsTable() {
   const totalSongs = allLabels.reduce((sum, l) => sum + l.count, 0);
   const totalStreams = allLabels.reduce((sum, l) => sum + l.totalStreams, 0);
   const totalIncome = allLabels.reduce((sum, l) => sum + l.totalNetIncome, 0);
+  const totalOwnerEarnings = allLabels.reduce((sum, l) => sum + (l.ownerEarnings || 0), 0);
 
   const handleLabelClick = (labelName: string, isCustom = false) => {
     if (isCustom) {
@@ -201,7 +203,7 @@ export default function LabelsTable() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
         <div className="rounded-xl border border-gray-200 bg-white p-5">
           <div className="mb-3 flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50">
@@ -243,6 +245,16 @@ export default function LabelsTable() {
             <span className="text-xs font-medium text-gray-500">Total Ingresos</span>
           </div>
           <p className="text-2xl font-bold text-green-600">{formatCurrency(totalIncome)}</p>
+        </div>
+
+        <div className="rounded-xl border border-gray-200 bg-white p-5">
+          <div className="mb-3 flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50">
+              <Crown className="h-4 w-4 text-[#F97316]" />
+            </div>
+            <span className="text-xs font-medium text-gray-500">Ganancias del Owner</span>
+          </div>
+          <p className="text-2xl font-bold text-[#F97316]">{formatCurrency(totalOwnerEarnings)}</p>
         </div>
       </div>
 
