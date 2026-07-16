@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
-import { Search, Globe, Bell, ChevronDown, User, Users, LogOut } from "lucide-react";
+import { Globe, Bell, ChevronDown, User, Users, LogOut } from "lucide-react";
 import LocalStorageService from "../../services/localstorage";
 import { AuthService } from "@/services/auth";
+import GlobalSearch from "./GlobalSearch";
 
 interface NavbarProps {
   onSwitchUser?: () => void;
@@ -41,14 +42,7 @@ export default function Navbar({ onSwitchUser }: NavbarProps) {
 
   return (
     <header className="sticky top-0 z-20 flex items-center gap-4 border-b border-white/40 bg-white/55 px-4 py-3.5 backdrop-blur-xl lg:px-8">
-      <div className="hidden items-center gap-3 rounded-full border border-white/60 bg-white/55 px-5 py-3 backdrop-blur-md sm:flex sm:w-[320px] lg:w-[380px]">
-        <Search className="h-[19px] w-[19px] flex-shrink-0 text-[#A6AAB2]" />
-        <input
-          type="text"
-          placeholder="Buscar canciones, plataformas…"
-          className="w-full bg-transparent text-[13.5px] text-[#1C1D22] placeholder:text-[#A6AAB2] focus:outline-none focus:border-none outline-none focus-visible:outline-none border-none focus:ring-0"
-        />
-      </div>
+      <GlobalSearch />
 
       <div className="flex-1" />
 
