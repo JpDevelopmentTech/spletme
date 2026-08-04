@@ -25,15 +25,6 @@ export default function Panel() {
 
   return (
     <div className="relative isolate flex h-screen w-full bg-white font-custom">
-      {/* Detalles de degradado naranja de fondo (glassmorphism) */}
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute -left-40 -top-40 h-[520px] w-[520px] rounded-full bg-[#FF5C00] opacity-[0.16] blur-[150px]" />
-        <div className="absolute -right-32 -top-48 h-[480px] w-[480px] rounded-full bg-[#FF8A3D] opacity-[0.13] blur-[150px]" />
-        <div className="absolute left-[8%] top-[34%] h-[440px] w-[440px] rounded-full bg-[#FF5C00] opacity-[0.08] blur-[160px]" />
-        <div className="absolute right-[4%] top-[46%] h-[460px] w-[460px] rounded-full bg-[#FF8A3D] opacity-[0.10] blur-[160px]" />
-        <div className="absolute -left-24 bottom-[-12%] h-[500px] w-[500px] rounded-full bg-[#FF5C00] opacity-[0.11] blur-[160px]" />
-        <div className="absolute left-[42%] bottom-[-16%] h-[520px] w-[520px] rounded-full bg-[#FF8A3D] opacity-[0.09] blur-[160px]" />
-      </div>
       {openSelectUser && (
         <SelectUser
           onClose={() => {

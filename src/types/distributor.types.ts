@@ -5,6 +5,8 @@ export type UploadStatus = "processing" | "done" | "error";
 export interface Distributor {
   _id: string;
   name: string;
+  /** Nombre oficial del distribuidor seleccionado del catálogo de Spotify. */
+  provider: string | null;
   currency: Currency;
   photoUrl: string | null;
   ownerId: string;
@@ -76,6 +78,11 @@ export interface DistributorDashboard {
 }
 
 export interface CreateDistributorPayload {
+  /** Alias que el usuario le da al distribuidor. */
   name: string;
   currency: Currency;
+  /** Nombre oficial del distribuidor seleccionado del catálogo de Spotify. */
+  provider?: string | null;
+  /** Logo del distribuidor seleccionado. */
+  photoUrl?: string | null;
 }

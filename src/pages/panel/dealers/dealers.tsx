@@ -344,17 +344,33 @@ export default function Dealers() {
                       >
                         <td className="px-4 py-4">
                           <div className="flex items-center gap-3">
-                            <div
-                              className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full"
-                              style={{ backgroundColor: pal.bg }}
-                            >
-                              <span className="text-[12px] font-bold" style={{ color: pal.color }}>
-                                {initials}
+                            {d.photoUrl ? (
+                              <img
+                                src={d.photoUrl}
+                                alt={d.name}
+                                className="h-9 w-9 flex-shrink-0 rounded-full bg-white object-contain ring-1 ring-gray-100"
+                              />
+                            ) : (
+                              <div
+                                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full"
+                                style={{ backgroundColor: pal.bg }}
+                              >
+                                <span
+                                  className="text-[12px] font-bold"
+                                  style={{ color: pal.color }}
+                                >
+                                  {initials}
+                                </span>
+                              </div>
+                            )}
+                            <div className="flex flex-col">
+                              <span className="text-[13px] font-semibold text-[#111827]">
+                                {d.name}
                               </span>
+                              {d.provider && d.provider !== d.name && (
+                                <span className="text-[11px] text-[#9CA3AF]">{d.provider}</span>
+                              )}
                             </div>
-                            <span className="text-[13px] font-semibold text-[#111827]">
-                              {d.name}
-                            </span>
                           </div>
                         </td>
                         <td className="px-4 py-4 text-center">

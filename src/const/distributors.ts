@@ -1,0 +1,117 @@
+/**
+ * Catálogo de distribuidores/proveedores de música oficiales de Spotify.
+ * Fuente: https://artists.spotify.com/es-419/providers (Directorio de proveedores).
+ * Cada logo se sirve desde el CDN público de Contentful de Spotify.
+ *
+ * Se usa en el modal de creación de distribuidores para que el usuario
+ * seleccione el distribuidor (nombre + logo) además de asignarle un alias.
+ */
+
+export interface SpotifyDistributor {
+  /** Identificador estable en kebab-case, derivado del nombre. */
+  id: string;
+  /** Nombre oficial del distribuidor. */
+  name: string;
+  /** URL absoluta del logo (CDN de Contentful). */
+  logo: string;
+}
+
+const BASE = "https://images.ctfassets.net/lnhrh9gqejzl/";
+
+export const SPOTIFY_DISTRIBUTORS: SpotifyDistributor[] = [
+  { id: "distrokid", name: "DistroKid", logo: BASE + "57vOXZG9uhtMEkVI8PT8nP/7985b973964f4f0c6fe0e17a5b5dea53/distrokid.png" },
+  { id: "cd-baby", name: "CD Baby", logo: BASE + "3Enqa15uVMvViK3c8eBYaS/241985cb61b2b2d85732c7d61dda70f2/CDB_LogoFull_BlackMedium.png" },
+  { id: "emubands", name: "EmuBands", logo: BASE + "7DXCuI3KbGY1WOinEEZDZ9/5ced2429cc2f668caf143516961f0b18/emubands.png" },
+  { id: "record-union", name: "Record Union", logo: BASE + "5QZjo7FlYQGC3Vrh7MZr9k/94f8d27ff50e0aab64ff903c25ff9f92/recordunion.png" },
+  { id: "amuse", name: "Amuse", logo: BASE + "6O3TPhVTUCvVZAQ7La1NUn/235d5472121877a8195498ace4c6f342/amuse_logo.png" },
+  { id: "routenote", name: "RouteNote", logo: BASE + "35Mm6ggmPBWcy220I7sj7G/6cca032db00d0fcdc0101e202bd2bc13/routenote.png" },
+  { id: "soundon", name: "SoundOn", logo: BASE + "3q6lu5j8Xn3MWZPMrd6thy/89e3b87045a5f6381ea56f471825a867/soundon_logo.png" },
+  { id: "recordjet", name: "recordJet", logo: BASE + "3IEojqZwoo8qhhllLzgAht/c496afa3831409750ee6f387c0328089/RJ-Short_RGB_spotify.jpg" },
+  { id: "landr", name: "LANDR", logo: BASE + "5FImFPj6SSTxMaZ7ElmmSK/cf28dcf1dc2d3f28a8367ac4fc2ce61a/landr_logo_new.png" },
+  { id: "mugo", name: "MUGO", logo: BASE + "jGTYZ0zzcnIsUput199uE/dfa077d8bc5ab3da9515f8ac56f1953d/mugo_logo.png" },
+  { id: "vieent", name: "VIEENT", logo: BASE + "2wGzpjLPZXiOpYDrauWW7a/f5ca269bb85dadb7f141cc9b14af458e/VIEENT_logo.png" },
+  { id: "too-lost", name: "Too Lost", logo: BASE + "5w9cU25wTODvd6IZCq6J4X/1ac07ec60e762d18d87cea3e69b95be2/too_lost_logo.jpeg" },
+  { id: "tunecore", name: "TuneCore", logo: BASE + "XmcOOWRWDxrEQEQueNVGR/8a36d9db84b62ff9e3f347c6e710ab0f/tunecore_logo.png" },
+  { id: "proton", name: "Proton", logo: BASE + "16V5YH4pdgxXdZIWkmi1bi/6f3bd358a1daa04a778e285516a3784b/proton.jpeg" },
+  { id: "random-sounds", name: "Random Sounds", logo: BASE + "5xuNHQ10j2i9VyUCdDObld/84a02ff4cb5ed4054ea4b73ae463d3f3/random_logo.png" },
+  { id: "roc-nation-distribution", name: "ROC Nation Distribution", logo: BASE + "64kej70hz1Rgz4CHUeW14f/f4dee1fc7b5711a4b8c2a37660672a5c/rocnation_logo.jpg" },
+  { id: "horus-music", name: "Horus Music", logo: BASE + "39Ozr6u5kOYDNFynAokrkR/33f0c123c4b0c0cb8d198b57f263680a/unnamed__3_.png" },
+  { id: "wiseband", name: "Wiseband", logo: BASE + "tAtF476ESdPUsRwqZPyVv/d59aa3a124d633255010093584d8b853/wiseband_logo.jpg" },
+  { id: "catapult", name: "Catapult", logo: BASE + "6PodYAtFOjCnywl96Lseya/045a84933bbf048cbe3196e642734690/unnamed__5_.png" },
+  { id: "g-y-r-o", name: "G.Y.R.O.", logo: BASE + "7GcaCCv5MBnD0yiWzftJsA/d551a188d72d0282f813f2c4aa399553/400x400_WhiteGyroLogo__1_.png" },
+  { id: "ditto-music", name: "Ditto Music", logo: BASE + "1gNoQUO8RJkiyBOaI7aLCL/47d9487cbbebdc1eba5459264058aafe/ditto-logo-square-400px.jpg" },
+  { id: "the-orchard", name: "The Orchard", logo: BASE + "9yh6nJHhjcRKXO2KdC9rt/4c72650e454a948cc9ccb9cb07fbba0e/the_orchard__updated_.png" },
+  { id: "believe", name: "Believe", logo: BASE + "1HxgOpKfFPLCDRWEfshMvK/154668f89469b6c030ca3cad4595dd03/believe.png" },
+  { id: "fuga", name: "FUGA", logo: BASE + "5UIKaQQ7Lfr06heEreRYCq/77423ea3ba20cd57b9838b7143b062e2/fuga__updated_.png" },
+  { id: "innercat-music-group", name: "InnerCat Music Group", logo: BASE + "4ibjLHwRCA9W7IuZ2uufgV/a3abe94bd2a108df598d84e6414958d6/Avatar-Innercat.jpg" },
+  { id: "soulspazm", name: "Soulspazm", logo: BASE + "krkxVNZFymZG8rk5ZGyV5/2f748edf61dd122d8da22d5c45763622/soulspazm.png" },
+  { id: "ampsuite", name: "ampsuite", logo: BASE + "4f5VxAfiOUtYD5sJOfahaf/9d2eed1af64c36ce8fb9bec7bf36e695/ampsuite.png" },
+  { id: "vydia", name: "Vydia", logo: BASE + "6PqC8IcbpxYCKye4Mkf6zm/30a6395a04b44289e66618006431936c/VydiaLogo-2021-Final_Vertical-Gradient-BlackText-1000x1000.png" },
+  { id: "idol", name: "IDOL", logo: BASE + "71hgPH9uPjwXFrt1hMkyGs/e8e0079f205d405ba039e1fbc4a5e8c7/logo-ID_2x.png" },
+  { id: "kontor-new-media", name: "Kontor New Media", logo: BASE + "3VCtePEtIm57CIwCZjoetQ/0ce46e47fdd74987d42fac5ce53443a7/KontorNewMedia.png" },
+  { id: "onerpm", name: "ONErpm", logo: BASE + "5PIMKfjkDCd2se2STiwS7D/fe813bd7947309c2114f7294fa83a3a4/onerpm.png" },
+  { id: "e-muzyka", name: "e-Muzyka", logo: BASE + "4lKJsVnCMPzhGI9OZgxj7e/29134ecf231933f99903f921bd55c5c7/unnamed__3_.jpg" },
+  { id: "zebralution", name: "ZEBRALUTION", logo: BASE + "2Lplxtn0xnZN6pBWW0zynA/f217d5b43b5386ad616b1a5df0a48465/zebralution-logo2.jpg" },
+  { id: "symphonic", name: "Symphonic", logo: BASE + "5YBJqwctac24Gu8r14nmJc/f8f58ce2ced023dd460b8f88fa6a3a8c/symphonic_logo.png" },
+  { id: "secretly-distribution", name: "Secretly Distribution", logo: BASE + "3dHejgNRWXu9FRUDdIWo0m/fd7304139d2a7eddebafea3386c55677/sc_distribution.png" },
+  { id: "cinq-music-group", name: "Cinq Music Group", logo: BASE + "6NpQJcKvdwqPq7T6o12JUD/71eda07d51e04d611ab4e4d3820407d5/Cinq_Music_Group.jpeg" },
+  { id: "syntax-creative", name: "Syntax Creative", logo: BASE + "ZAZKoOOSchPEE2O3uzzCZ/dfb9cf2a7038d279f6a3942bf98f1e48/syntax.png" },
+  { id: "dig-dis", name: "dig dis!", logo: BASE + "6zhmib496541cOE0T81qe9/8bfa53180a16802a96800321e5f75a92/digdis_ppp_logo.png" },
+  { id: "redeye-worldwide", name: "Redeye Worldwide", logo: BASE + "4NbgYacV9YEM1G04kvlxe4/a4b5e7925bb99bbd2dcec5178508bd12/redeye_logo.png" },
+  { id: "black-hole-recordings", name: "Black Hole Recordings", logo: BASE + "4Nae32jvBvAo12ijKZNqzf/06d7e7b083db93731f3a8a0d1c157495/blackhole_logo.png" },
+  { id: "downtown-artist-label-services", name: "Downtown Artist & Label Services", logo: BASE + "1vajr4HwZOWV1Y7zzO6IbA/72937b3dca1e272b2d24d6da62f8e82e/downtown_logo.jpeg" },
+  { id: "absolute-label-services", name: "Absolute Label Services", logo: BASE + "3b00jvkPuweAoTqYb96LBA/eeb270563f6defe0af0baf0dda366b55/absolute__updated_.png" },
+  { id: "label-engine", name: "Label Engine", logo: BASE + "2Wh9arwgjI2BKapnyXPLtt/c56d6ece2538242ca5021b582cba5e63/label-engine-icon.png" },
+  { id: "ewway", name: "EWWAY", logo: BASE + "7h4gryEFmU5vBTzSTgLh9o/a57737ef0147ca220c90aeb2b8a3339a/_EWWAY_LOGO__2_.png" },
+  { id: "identity-music-ltd", name: "Identity Music Ltd", logo: BASE + "3d4Nlq3yyQYCbWiVrzlJGZ/b3f4d70a08d8b9e8510b29509b3ee7d5/identity_logo.png" },
+  { id: "musicadders", name: "MUSICADDERS", logo: BASE + "2zd62h8wlA0xMnRGoxlZ5A/77a4556474197d43e145e087c78a9144/musicadders_logo.png" },
+  { id: "euphoria", name: "Euphoria", logo: BASE + "6HgzteT892RZS5o2q87XMo/d06302509e2b4fadd99cf0198fb7d7c4/euphoria_logo.png" },
+  { id: "xelon-digital", name: "Xelon Digital", logo: BASE + "13psGL7sNVch2KtUaaykXy/931644b5ae1cdc21536d2353ebda2cf8/Xelon-Logo-Black-Blue.png" },
+  { id: "igroove", name: "iGroove", logo: BASE + "135dyCkztEYZDQ1vyB2Ts8/25362c1219f8de62231ccf9d96867037/igroove.png" },
+  { id: "republic-of-music", name: "Republic of Music", logo: BASE + "yQuZDAQApYqEtxbAySr0H/6a9fdfb540759fbe685df24d97203435/republicofmusic_logo.jpg" },
+  { id: "fole-publishing", name: "FOLE PUBLISHING", logo: BASE + "4iEjBN5nDcK2FUbJ5zOg7d/3affb96335635e49e737cfcfeb1c7d04/fole_logo.jpg" },
+  { id: "wide-awake-music", name: "Wide Awake Music", logo: BASE + "1vL5fi0pqfBEMpX7RMC9nF/b6466d5bde3bfa73a9455aec8db31a08/wideawake_logo.png" },
+  { id: "dstro7-inc", name: "DSTRO7, Inc.", logo: BASE + "5i5d92cyIQChod758ShVXS/0fb6963b1214973bb2a3dee000a38274/dstro7.jpg" },
+  { id: "cargo-records-uk", name: "Cargo Records UK", logo: BASE + "1hFG1vlhKDmrI1EMxB20EF/48b6c33677d42e5fb0124688a9843386/cargorecordsuk_logo.png" },
+  { id: "takwene", name: "TAKWENE", logo: BASE + "7BlYi3pPzHkww6hEFhjzsw/9355f6335f7cb74121ad1a3e6329a00b/takwene_logo.jpg" },
+  { id: "pirames-international", name: "Pirames International", logo: BASE + "7jbX1rq951CpfVyUgq9n0o/8af744030e96e10af61afc6038cb0231/pirames_logo.png" },
+  { id: "labelworx", name: "LabelWorx", logo: BASE + "1YbwjndwbfxSV9x8DrzNL3/c4a65e6c9e9efc85e677dbfe7e85ea48/labelworks_logo.jpg" },
+  { id: "news-nv", name: "NEWS NV", logo: BASE + "4NBC0enH7WBmppKffMxUkB/e8f41b65faa4810fafc228d432c6d012/newsnv_logo.png" },
+  { id: "farolatino", name: "FaroLatino", logo: BASE + "3geWb18432NPECxxTT45z4/0ba5221cb0a8d3d666b930b40d4d620b/F_Logo_FaroLatino_2022_naranja.png" },
+  { id: "armada-distribution", name: "Armada Distribution", logo: BASE + "3emwPQ4sJWiTlDwx6UIdHy/dc546c4945ce3128cd143b013182fa10/WHITE.png" },
+  { id: "entertainment-factory-eglence-fabrikas", name: "Entertainment Factory / Eğlence Fabrikası", logo: BASE + "4bLmVBykV9gDEIwkePI0v0/4eb80d268720c9a263c607f6443d48a0/unnamed__1_.png" },
+  { id: "precise-digital", name: "Precise Digital", logo: BASE + "729thxyEjR4TlArh1Wgiy5/128ce78e6f4e9647b83d067675b13910/unnamed.png" },
+  { id: "k7-music", name: "!K7 Music", logo: BASE + "6vLtiIwXkj6QG1VUsHgZNu/9e7f4668c1e45cdc1a1e9cbfbf1c614f/1k7.png" },
+  { id: "diskover-co", name: "Diskover Co.", logo: BASE + "4tJSjBIEAq8YMBXLrenUC/6fe74ca925081c7a41ef5b9b665f3cbe/unnamed.jpg" },
+  { id: "alter-k", name: "Alter K", logo: BASE + "6r1wsYp8s1yHpK2jnzeuc6/2db07e4abade6579b09c59bf8443b6e4/Alter_K.png" },
+  { id: "watary", name: "Watary", logo: BASE + "PpmuqhtOtWOgSmoGcLlza/72d33ab172328c033ae26fd295d2cbe2/Asset_1__1_.png" },
+  { id: "audiosalad", name: "AudioSalad", logo: BASE + "18TbW6Jikw709ag1jN2XX0/f8eab1fccf31552801360f75c20166f2/audiosalad__updated_.png" },
+  { id: "bquate-music", name: "Bquate Music", logo: BASE + "4hwCYNEkgG9L8pYpid5uBN/f877493e932d2916a10085d1ea229b56/bquate.png" },
+  { id: "feiyr", name: "Feiyr", logo: BASE + "4dI5yUo9rMlp4Z4dxBE7In/715a0cb1fca08341f04b777d910cf83f/Feiyr-Signet-400x400.jpg" },
+  { id: "zvonko-digital", name: "ZVONKO digital", logo: BASE + "2rvXgtkCgnsE99NJNDKwkL/a7225b257e7262a3946187dd9d35ef1a/spotify.jpg" },
+  { id: "revelator", name: "Revelator", logo: BASE + "6kkrZaAHRjQtcNm4RUV8Sm/41df7deabb90b0da2551e390384c4b99/revelator_logo.png" },
+  { id: "kartel-music-group", name: "Kartel Music Group", logo: BASE + "7DrCgbnylhYNhFiv9SoCGL/61e10c931bcb90db1387e31f19e2477b/kartel_logo.png" },
+  { id: "danmark", name: "DANMARK", logo: BASE + "736jbLgRHohXsPvbndA1st/cb5c7f0b1569520c55b13c3cf612339e/danmark__updated_.png" },
+  { id: "uniqueopia-gmbh", name: "Uniqueopia GmbH", logo: BASE + "KWnZj67rVMPWYD7hM8Zae/ea12366ea474c3c6259efd1a85280e80/unique.jpg" },
+  { id: "independent-digital", name: "Independent Digital", logo: BASE + "5ikre4UxoiJ88JCe3HF2Rm/5d4b3f23f3d26835b6769fb614e10738/ID_Logo_400x400.jpg" },
+  { id: "jamvana", name: "Jamvana", logo: BASE + "DzKJpxxuH4ZKJGbEhbnQk/1206b73d6255eafc2bc4e86456a090a6/Jamvana_logo.jpeg" },
+  { id: "next-music", name: "Next Music", logo: BASE + "5tjGpxOFl7S7qfKlQFNNRV/3e3d47abb4cc246fa047def02aab0d28/unnamed__4_.png" },
+  { id: "rebeat-digital", name: "Rebeat Digital", logo: BASE + "KZ9Y0IuIcdpGB5lkdFcB6/74036d9de9d256e43dfe7036fbdf18c4/rebeat_logo.jpeg" },
+  { id: "sundesire-media-worx", name: "Sundesire Media Worx", logo: BASE + "32mOI4yn8CfI3DLrJXr9Z7/697126db9558ac1772bee4f1995e0654/sundesire_logo.png" },
+  { id: "integral", name: "[Integral]", logo: BASE + "3PnGXA1LUyBzGVIT6Hkc8b/e625d404885a6c6834c368e4bd3f28a8/integral_logo.jpeg" },
+  { id: "aloaded", name: "ALOADED", logo: BASE + "6iXIjg5C9E9WMnEQB4gqOR/d0d4eb1fb69dd9ff2f0eee838bbfdb9e/aloaded_logo.png" },
+  { id: "metropolitan-groove-merchants", name: "Metropolitan Groove Merchants", logo: BASE + "6nyBUzX1CEAPvmnPQKsuo6/871716ecd0a1e8488dd77e3564f67839/mgm_logo.png" },
+  { id: "nudacy", name: "Nudacy", logo: BASE + "1autgzLlNBV5ZNehvLB5Kw/533dac6fdb98243f137cdb07bd3e8ffc/nudacy_logo.png" },
+  { id: "aei-music", name: "AEI Music", logo: BASE + "6iWYj5NNvmNkUhU9OdJ9fq/7abe3a68048a51bd68de5da0c1501508/aei_logo.jpg" },
+  { id: "streambay-by-one-digital-entertainment", name: "Streambay by One Digital Entertainment", logo: BASE + "1HKFg6ctF7Bf62wKD2JlVk/6f791334bfb4f77ec5a58b11e9feae69/streambay_logo.png" },
+  { id: "tustreams", name: "TuStreams", logo: BASE + "7BnBxF4x1n9TU1xTVelmfY/f9aea1e9d37b387d9ee2e86888ef7487/tustreams_logo.png" },
+  { id: "yg-plus", name: "YG PLUS", logo: BASE + "DOEFcVOtqBzMpYlQ0OsVx/9d23b2f5bb8ca42009ce3e4a01436173/YGP_logo_400px.png" },
+  { id: "platoon", name: "PLATOON", logo: BASE + "3wkRJccZ8KYZxRwBIN6Rjt/03bb7266c49d0733aab85a2705b6159e/platoon_logo.png" },
+  { id: "disetti-music", name: "Disetti Music", logo: BASE + "1QNrBPdUd23lyoIz6ckpL5/e15f7366c296ef2e38f01f28f9bbfc29/unnamed__2_.jpg" },
+  { id: "co-brand", name: "co:brand", logo: BASE + "6zToW3WPCVI3KcIJg9wIPf/922d1b6c72d09f3a7407bc490b6cb084/Cobrand_Profile.jpg" },
+  { id: "digital-diystribution", name: "Digital DIYstribution", logo: BASE + "2YiYx8tswcdUza6lQnjNMP/0b5f6472427de98070cf3301ee6934fb/DD-icon-RGB-300x300.png" },
+  { id: "ems", name: "EMS", logo: BASE + "4oxWPZNyXvxwDtUs2HtxeY/cd4785b6eae4f47b97c05251137ac01c/ems.png" },
+  { id: "labelcamp", name: "Labelcamp", logo: BASE + "7lhOBCmFVCIttEmytxzJ8a/8abe63a927e162d8d3ff1dd3f2464f7d/labelcamp-tente-logo_2x.png" },
+  { id: "sonosuite", name: "SonoSuite", logo: BASE + "708Nc9pQqaEu4JFCS4T2l0/7318a5efdd4339578983950fb084e640/sonosuite_logo.png" },
+  { id: "labelgrid", name: "LabelGrid", logo: BASE + "2mj2kpD5NbLTBi2ZiyDxIC/55b3de834791f54b3e2de77f798089fa/labelgrid_logo.png" },
+];

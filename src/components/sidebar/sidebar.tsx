@@ -122,7 +122,7 @@ export default function Sidebar() {
 
       {/* Sidebar */}
       <div
-        className={`fixed left-0 top-0 z-40 flex h-full w-[260px] flex-col border-r border-white/50 bg-white/65 px-5 pb-6 pt-7 shadow-[8px_0_40px_-16px_rgba(15,23,42,0.10)] backdrop-blur-2xl transition-transform duration-300 ${
+        className={`fixed left-0 top-0 z-40 flex h-full w-[260px] flex-col border-r border-[#ECEEF1] bg-white px-5 pb-6 pt-7 transition-transform duration-300 ${
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
