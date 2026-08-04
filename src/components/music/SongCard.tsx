@@ -23,7 +23,7 @@ export function SongCard({ song, onQuickView }: SongCardProps) {
 
   return (
     <div className="flex flex-col overflow-hidden rounded-[28px] bg-[#F4F5F7]">
-      <div className="relative h-[168px] w-full bg-[#FF5C00]/15">
+      <div className="relative aspect-square w-full bg-[#FF5C00]/15">
         <Link to={to} className="block h-full w-full">
           {cover ? (
             <img src={cover} alt={song.trackTitle} className="h-full w-full object-cover" />

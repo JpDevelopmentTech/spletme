@@ -157,7 +157,7 @@ const PlatformsCard = () => {
 
   const incomeBarOptions: ApexOptions = useMemo(() => ({
     chart: { toolbar: { show: false }, background: "transparent" },
-    plotOptions: { bar: { borderRadius: 5, columnWidth: "55%", borderRadiusApplication: "end" } },
+    plotOptions: { bar: { borderRadius: 5, columnWidth: "55%", borderRadiusApplication: "end", distributed: true } },
     dataLabels: { enabled: false },
     colors: visibleByIncome.map((p) => p.color),
     xaxis: {
@@ -188,7 +188,7 @@ const PlatformsCard = () => {
 
   const incomeHorizontalOptions: ApexOptions = useMemo(() => ({
     chart: { toolbar: { show: false }, background: "transparent" },
-    plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: "55%", borderRadiusApplication: "end" } },
+    plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: "55%", borderRadiusApplication: "end", distributed: true } },
     dataLabels: { enabled: false },
     colors: visibleByIncome.map((p) => p.color),
     xaxis: {
@@ -208,7 +208,7 @@ const PlatformsCard = () => {
 
   const streamsBarOptions: ApexOptions = useMemo(() => ({
     chart: { toolbar: { show: false }, background: "transparent" },
-    plotOptions: { bar: { borderRadius: 5, columnWidth: "55%", borderRadiusApplication: "end" } },
+    plotOptions: { bar: { borderRadius: 5, columnWidth: "55%", borderRadiusApplication: "end", distributed: true } },
     dataLabels: { enabled: false },
     colors: visibleByStreams.map((p) => p.color),
     xaxis: {
@@ -239,7 +239,7 @@ const PlatformsCard = () => {
 
   const streamsHorizontalOptions: ApexOptions = useMemo(() => ({
     chart: { toolbar: { show: false }, background: "transparent" },
-    plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: "55%", borderRadiusApplication: "end" } },
+    plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: "55%", borderRadiusApplication: "end", distributed: true } },
     dataLabels: { enabled: false },
     colors: visibleByStreams.map((p) => p.color),
     xaxis: {
