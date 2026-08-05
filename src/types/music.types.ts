@@ -17,6 +17,7 @@ export type SortBy =
   | "split_asc"
   | "split_desc";
 export type SplitFilter = "all" | "with_split" | "without_split";
+export type CollaboratorsFilter = "all" | "with_collaborators" | "without_collaborators";
 
 export interface SplitData {
   _id?: string;

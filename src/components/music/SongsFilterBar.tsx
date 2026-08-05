@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { SlidersHorizontal, ArrowUpDown, ChevronDown, XCircle } from "lucide-react";
-import type { SortBy, SplitFilter } from "@/types/music.types";
+import type { SortBy, SplitFilter, CollaboratorsFilter } from "@/types/music.types";
 
 interface SongsFilterBarProps {
   splitFilter: SplitFilter;
   onSplitFilterChange: (v: SplitFilter) => void;
+  collaboratorsFilter: CollaboratorsFilter;
+  onCollaboratorsFilterChange: (v: CollaboratorsFilter) => void;
   sortBy: SortBy;
   onSortChange: (v: SortBy) => void;
   artistFilter: string;
@@ -30,6 +32,12 @@ const SPLIT_CHIPS: { value: SplitFilter; label: string }[] = [
   { value: "without_split", label: "Sin split" },
 ];
 
+const COLLABORATORS_CHIPS: { value: CollaboratorsFilter; label: string }[] = [
+  { value: "all", label: "Todas" },
+  { value: "with_collaborators", label: "Con colaboradores" },
+  { value: "without_collaborators", label: "Sin colaboradores" },
+];
+
 const ORDER_OPTIONS: { value: SortBy; label: string }[] = [
   { value: "alpha", label: "Nombre (A–Z)" },
   { value: "title_desc", label: "Nombre (Z–A)" },
@@ -51,6 +59,8 @@ const controlBase =
 export function SongsFilterBar({
   splitFilter,
   onSplitFilterChange,
+  collaboratorsFilter,
+  onCollaboratorsFilterChange,
   sortBy,
   onSortChange,
   artistFilter,
@@ -86,18 +96,35 @@ export function SongsFilterBar({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-        <div className="flex items-center gap-1 rounded-full bg-[#F4F5F7] p-1">
-          {SPLIT_CHIPS.map(({ value, label }) => (
-            <button
-              key={value}
-              onClick={() => onSplitFilterChange(value)}
-              className={`rounded-full px-4 py-2 text-[12.5px] font-medium transition-colors ${
-                splitFilter === value ? "bg-[#FF5C00] text-white" : "text-[#71757E] hover:text-[#1C1D22]"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1 rounded-full bg-[#F4F5F7] p-1">
+            {SPLIT_CHIPS.map(({ value, label }) => (
+              <button
+                key={value}
+                onClick={() => onSplitFilterChange(value)}
+                className={`rounded-full px-4 py-2 text-[12.5px] font-medium transition-colors ${
+                  splitFilter === value ? "bg-[#FF5C00] text-white" : "text-[#71757E] hover:text-[#1C1D22]"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-1 rounded-full bg-[#F4F5F7] p-1">
+            {COLLABORATORS_CHIPS.map(({ value, label }) => (
+              <button
+                key={value}
+                onClick={() => onCollaboratorsFilterChange(value)}
+                className={`rounded-full px-4 py-2 text-[12.5px] font-medium transition-colors ${
+                  collaboratorsFilter === value
+                    ? "bg-[#FF5C00] text-white"
+                    : "text-[#71757E] hover:text-[#1C1D22]"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="flex items-center gap-2.5">

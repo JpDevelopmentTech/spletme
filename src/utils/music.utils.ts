@@ -50,6 +50,10 @@ export const countAssignedSplits = (song: SongItem): number => {
 /** Cuenta total de splits (colaboradores con split asignado) */
 export const countTotalSplits = (song: SongItem): number => song?.collaborators?.length ?? 0;
 
+/** Indica si la canción tiene al menos un colaborador asociado. */
+export const hasCollaborators = (song: SongItem): boolean =>
+  Array.isArray(song?.collaborators) && song.collaborators.length > 0;
+
 /** Cuenta releases de la canción */
 export const countReleases = (song: SongItem): number => {
   if (Array.isArray(song?.releases)) return song.releases.length;
