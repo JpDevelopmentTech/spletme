@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { SlidersHorizontal, ArrowUpDown, ChevronDown, XCircle } from "lucide-react";
-import type { SortBy, SplitFilter, CollaboratorsFilter } from "@/types/music.types";
+import type { SortBy, SplitFilter, CollaboratorsFilter, OwnerSplitFilter } from "@/types/music.types";
 
 interface SongsFilterBarProps {
   splitFilter: SplitFilter;
   onSplitFilterChange: (v: SplitFilter) => void;
   collaboratorsFilter: CollaboratorsFilter;
   onCollaboratorsFilterChange: (v: CollaboratorsFilter) => void;
+  ownerSplitFilter: OwnerSplitFilter;
+  onOwnerSplitFilterChange: (v: OwnerSplitFilter) => void;
   sortBy: SortBy;
   onSortChange: (v: SortBy) => void;
   artistFilter: string;
@@ -38,6 +40,12 @@ const COLLABORATORS_CHIPS: { value: CollaboratorsFilter; label: string }[] = [
   { value: "without_collaborators", label: "Sin colaboradores" },
 ];
 
+const OWNER_SPLIT_CHIPS: { value: OwnerSplitFilter; label: string }[] = [
+  { value: "all", label: "Todas" },
+  { value: "with_owner_split", label: "Con split owner" },
+  { value: "without_owner_split", label: "Sin split owner" },
+];
+
 const ORDER_OPTIONS: { value: SortBy; label: string }[] = [
   { value: "alpha", label: "Nombre (A–Z)" },
   { value: "title_desc", label: "Nombre (Z–A)" },
@@ -61,6 +69,8 @@ export function SongsFilterBar({
   onSplitFilterChange,
   collaboratorsFilter,
   onCollaboratorsFilterChange,
+  ownerSplitFilter,
+  onOwnerSplitFilterChange,
   sortBy,
   onSortChange,
   artistFilter,
@@ -117,6 +127,21 @@ export function SongsFilterBar({
                 onClick={() => onCollaboratorsFilterChange(value)}
                 className={`rounded-full px-4 py-2 text-[12.5px] font-medium transition-colors ${
                   collaboratorsFilter === value
+                    ? "bg-[#FF5C00] text-white"
+                    : "text-[#71757E] hover:text-[#1C1D22]"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-1 rounded-full bg-[#F4F5F7] p-1">
+            {OWNER_SPLIT_CHIPS.map(({ value, label }) => (
+              <button
+                key={value}
+                onClick={() => onOwnerSplitFilterChange(value)}
+                className={`rounded-full px-4 py-2 text-[12.5px] font-medium transition-colors ${
+                  ownerSplitFilter === value
                     ? "bg-[#FF5C00] text-white"
                     : "text-[#71757E] hover:text-[#1C1D22]"
                 }`}

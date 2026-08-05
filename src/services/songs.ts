@@ -361,6 +361,8 @@ class SongService {
   /** Filtra canciones en el servidor por splits, fechas, país y porcentaje */
   async filterSongs(params: {
     hasSplits?: boolean;
+    hasCollaborators?: boolean;
+    hasOwnerSplit?: boolean;
     dateFrom?: string;
     dateTo?: string;
     country?: string;

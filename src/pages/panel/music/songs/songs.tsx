@@ -39,6 +39,8 @@ export default function Songs() {
     setSplitFilter,
     collaboratorsFilter,
     setCollaboratorsFilter,
+    ownerSplitFilter,
+    setOwnerSplitFilter,
     artistFilter,
     setArtistFilter,
     isrcFilter,
@@ -125,6 +127,8 @@ export default function Songs() {
           onSplitFilterChange={setSplitFilter}
           collaboratorsFilter={collaboratorsFilter}
           onCollaboratorsFilterChange={setCollaboratorsFilter}
+          ownerSplitFilter={ownerSplitFilter}
+          onOwnerSplitFilterChange={setOwnerSplitFilter}
           sortBy={sortBy}
           onSortChange={setSortBy}
           artistFilter={artistFilter}

@@ -4,8 +4,14 @@ import UseSongs from "@/hooks/useSongs";
 import useDebounce from "@/hooks/useDebounce";
 import { useLabels } from "@/hooks/useLabels";
 import SongService from "@/services/songs";
-import { hasAnySplit, hasCollaborators, looksLikeISRC, looksLikeUPC } from "@/utils/music.utils";
-import type { SortBy, SplitFilter, CollaboratorsFilter, SongItem } from "@/types/music.types";
+import { hasAnySplit, hasCollaborators, hasOwnerSplit, looksLikeISRC, looksLikeUPC } from "@/utils/music.utils";
+import type {
+  SortBy,
+  SplitFilter,
+  CollaboratorsFilter,
+  OwnerSplitFilter,
+  SongItem,
+} from "@/types/music.types";
 
 /**
  * Centraliza el estado, efectos, filtros y paginación de la sección de canciones.
@@ -25,6 +31,7 @@ export function useSongsLibrary() {
   const [sortBy, setSortBy] = useState<SortBy>("alpha");
   const [splitFilter, setSplitFilter] = useState<SplitFilter>("all");
   const [collaboratorsFilter, setCollaboratorsFilter] = useState<CollaboratorsFilter>("all");
+  const [ownerSplitFilter, setOwnerSplitFilter] = useState<OwnerSplitFilter>("all");
   const [artistFilter, setArtistFilter] = useState("");
   const [isrcFilter, setIsrcFilter] = useState("");
   const [countryFilter, setCountryFilter] = useState("");
@@ -81,6 +88,7 @@ export function useSongsLibrary() {
       dateTo ||
       splitFilter !== "all" ||
       collaboratorsFilter !== "all" ||
+      ownerSplitFilter !== "all" ||
       percentageMin !== "" ||
       percentageMax !== "",
     );
@@ -95,6 +103,8 @@ export function useSongsLibrary() {
     else if (splitFilter === "without_split") params.hasSplits = false;
     if (collaboratorsFilter === "with_collaborators") params.hasCollaborators = true;
     else if (collaboratorsFilter === "without_collaborators") params.hasCollaborators = false;
+    if (ownerSplitFilter === "with_owner_split") params.hasOwnerSplit = true;
+    else if (ownerSplitFilter === "without_owner_split") params.hasOwnerSplit = false;
     if (dateFrom) params.dateFrom = dateFrom;
     if (dateTo) params.dateTo = dateTo;
     if (countryFilter.trim()) params.country = countryFilter.trim();
@@ -118,6 +128,7 @@ export function useSongsLibrary() {
     limit,
     splitFilter,
     collaboratorsFilter,
+    ownerSplitFilter,
     countryFilter,
     dateFrom,
     dateTo,
@@ -134,6 +145,7 @@ export function useSongsLibrary() {
     sortBy,
     splitFilter,
     collaboratorsFilter,
+    ownerSplitFilter,
     artistFilter,
     isrcFilter,
     countryFilter,
@@ -193,6 +205,7 @@ export function useSongsLibrary() {
       dateTo ||
       splitFilter !== "all" ||
       collaboratorsFilter !== "all" ||
+      ownerSplitFilter !== "all" ||
       percentageMin !== "" ||
       percentageMax !== "",
     );
@@ -205,6 +218,9 @@ export function useSongsLibrary() {
       ];
       if (splitFilter === "with_split") list = list.filter(hasAnySplit);
       else if (splitFilter === "without_split") list = list.filter((s) => !hasAnySplit(s));
+      if (ownerSplitFilter === "with_owner_split") list = list.filter(hasOwnerSplit);
+      else if (ownerSplitFilter === "without_owner_split")
+        list = list.filter((s) => !hasOwnerSplit(s));
       if (countryFilter.trim()) {
         const country = normalize(countryFilter.trim());
         list = list.filter((s) => normalize(s?.country).includes(country));
@@ -282,6 +298,7 @@ export function useSongsLibrary() {
     songs,
     splitFilter,
     collaboratorsFilter,
+    ownerSplitFilter,
     artistFilter,
     isrcFilter,
     countryFilter,
@@ -300,6 +317,7 @@ export function useSongsLibrary() {
     dateTo ||
     splitFilter !== "all" ||
     collaboratorsFilter !== "all" ||
+    ownerSplitFilter !== "all" ||
     percentageMin !== "" ||
     percentageMax !== "",
   );
@@ -374,6 +392,7 @@ export function useSongsLibrary() {
     setSortBy("alpha");
     setSplitFilter("all");
     setCollaboratorsFilter("all");
+    setOwnerSplitFilter("all");
     setArtistFilter("");
     setIsrcFilter("");
     setCountryFilter("");
@@ -387,6 +406,7 @@ export function useSongsLibrary() {
     sortBy !== "alpha",
     splitFilter !== "all",
     collaboratorsFilter !== "all",
+    ownerSplitFilter !== "all",
     artistFilter.trim() !== "",
     isrcFilter.trim() !== "",
     countryFilter.trim() !== "",
@@ -420,6 +440,8 @@ export function useSongsLibrary() {
     setSplitFilter,
     collaboratorsFilter,
     setCollaboratorsFilter,
+    ownerSplitFilter,
+    setOwnerSplitFilter,
     artistFilter,
     setArtistFilter,
     isrcFilter,
