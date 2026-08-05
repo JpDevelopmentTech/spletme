@@ -20,7 +20,7 @@ const LIST_COLUMNS: { label: string; width: string }[] = [
 ];
 
 export default function Songs() {
-  const [view, setView] = useState<ViewMode>("grid");
+  const [view, setView] = useState<ViewMode>("list");
   const kpis = useSongsKpis();
   const {
     setPage,
