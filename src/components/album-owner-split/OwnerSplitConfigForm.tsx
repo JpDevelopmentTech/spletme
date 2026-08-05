@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { Music, Crown, Globe, Percent, Settings, ChevronDown } from "lucide-react";
+import { Music, Crown, Globe, Percent, Settings, ChevronDown, Info, AlertCircle } from "lucide-react";
 import Select from "react-select";
 import { amberSelectStyles } from "@/components/ui/selectStyles";
 import type { OwnerFormData } from "@/types/album-owner-split.types";
@@ -151,6 +151,49 @@ export function OwnerSplitConfigForm({
                           %
                         </div>
                       </div>
+
+                      {/* Resumen en vivo del porcentaje del owner */}
+                      {(() => {
+                        const owner = parseFloat(ownerForm.percentage) || 0;
+                        if (owner <= 0) return null;
+                        const remaining = 100 - owner;
+                        const overflow = remaining < 0;
+                        const fmt = (n: number) => {
+                          const r = Math.round(n * 100) / 100;
+                          return Number.isInteger(r) ? String(r) : r.toFixed(2);
+                        };
+                        return (
+                          <div
+                            className={`flex items-start gap-2 rounded-xl border p-3 text-xs leading-relaxed ${
+                              overflow
+                                ? "border-red-100 bg-red-50 text-red-700"
+                                : "border-amber-200 bg-amber-50 text-amber-900"
+                            }`}
+                          >
+                            {overflow ? (
+                              <AlertCircle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
+                            ) : (
+                              <Info className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
+                            )}
+                            <p>
+                              Te estás asignando{" "}
+                              <span className="font-semibold">{fmt(owner)}%</span>.{" "}
+                              {overflow ? (
+                                <>
+                                  Ese porcentaje supera el 100% disponible en{" "}
+                                  <span className="font-semibold">{fmt(Math.abs(remaining))}%</span>.
+                                </>
+                              ) : (
+                                <>
+                                  Por lo tanto, a los colaboradores les quedará un total de{" "}
+                                  <span className="font-semibold">{fmt(remaining)}%</span> para
+                                  repartir entre ellos.
+                                </>
+                              )}
+                            </p>
+                          </div>
+                        );
+                      })()}
                     </div>
 
                     <div className="col-span-2 space-y-3">

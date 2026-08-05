@@ -135,6 +135,12 @@ export function useSplitsModal({ isOpen, collaborators, songId }: UseSplitsModal
     (f) => f.percentage && parseFloat(f.percentage) > 0,
   ).length;
 
+  /** Suma de todos los porcentajes que se están asignando a colaboradores. */
+  const totalAssignedPercentage = Object.values(collaboratorForms).reduce(
+    (sum, f) => sum + (parseFloat(f.percentage) || 0),
+    0,
+  );
+
   const hasAnySavedSplit = collaborators.some((c) => Boolean(c.split));
 
   return {
@@ -147,6 +153,7 @@ export function useSplitsModal({ isOpen, collaborators, songId }: UseSplitsModal
     collaboratorForms,
     expandedCollaborators,
     configuredCount,
+    totalAssignedPercentage,
     hasAnySavedSplit,
     getForm,
     toggleExpanded,

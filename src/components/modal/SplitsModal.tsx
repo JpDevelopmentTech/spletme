@@ -1,4 +1,14 @@
-import { Music, X, Globe, Percent, Users, ChevronDown, Save, AlertCircle } from "lucide-react";
+import {
+  Music,
+  X,
+  Globe,
+  Percent,
+  Users,
+  ChevronDown,
+  Save,
+  AlertCircle,
+  Info,
+} from "lucide-react";
 import Select from "react-select";
 import { createPortal } from "react-dom";
 import { FilterSegment } from "@/components/ui/FilterSegment";
@@ -34,6 +44,7 @@ export default function SplitsModal({ collaborators, isOpen, onClose, songId }: 
     errorMessage,
     expandedCollaborators,
     configuredCount,
+    totalAssignedPercentage,
     hasAnySavedSplit,
     getForm,
     toggleExpanded,
@@ -42,6 +53,12 @@ export default function SplitsModal({ collaborators, isOpen, onClose, songId }: 
   } = useSplitsModal({ isOpen, collaborators, songId });
 
   if (!mounted || !isOpen) return null;
+
+  /** Formatea un porcentaje evitando decimales innecesarios (100, 33.33). */
+  const fmtPct = (n: number) => {
+    const rounded = Math.round(n * 100) / 100;
+    return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2);
+  };
 
   return createPortal(
     <div
@@ -161,6 +178,54 @@ export default function SplitsModal({ collaborators, isOpen, onClose, songId }: 
                             %
                           </span>
                         </div>
+
+                        {/* Resumen en vivo de lo que se está asignando */}
+                        {hasPercentage &&
+                          (() => {
+                            const current = parseFloat(form.percentage) || 0;
+                            const total = totalAssignedPercentage;
+                            const remaining = 100 - total;
+                            const overflow = remaining < 0;
+                            return (
+                              <div
+                                className={`mt-2 flex items-start gap-2 rounded-lg border p-3 text-xs leading-relaxed ${
+                                  overflow
+                                    ? "border-red-100 bg-red-50 text-red-700"
+                                    : "border-blue-100 bg-blue-50 text-blue-800"
+                                }`}
+                              >
+                                {overflow ? (
+                                  <AlertCircle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
+                                ) : (
+                                  <Info className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
+                                )}
+                                <p>
+                                  Estás creando un split de{" "}
+                                  <span className="font-semibold">{fmtPct(current)}%</span> para{" "}
+                                  <span className="font-semibold">{collaborator.name}</span>.{" "}
+                                  {overflow ? (
+                                    <>
+                                      El total asignado a colaboradores es{" "}
+                                      <span className="font-semibold">{fmtPct(total)}%</span>, es
+                                      decir{" "}
+                                      <span className="font-semibold">
+                                        {fmtPct(Math.abs(remaining))}%
+                                      </span>{" "}
+                                      por encima del 100% disponible.
+                                    </>
+                                  ) : (
+                                    <>
+                                      En total llevas asignado{" "}
+                                      <span className="font-semibold">{fmtPct(total)}%</span> y solo
+                                      quedará disponible{" "}
+                                      <span className="font-semibold">{fmtPct(remaining)}%</span>{" "}
+                                      para los demás colaboradores.
+                                    </>
+                                  )}
+                                </p>
+                              </div>
+                            );
+                          })()}
                       </div>
 
                       <div className="space-y-2">
