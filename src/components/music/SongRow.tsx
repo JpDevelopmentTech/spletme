@@ -111,7 +111,7 @@ export function SongRow({ song, onQuickView }: SongRowProps) {
       </div>
 
       {/* Acciones */}
-      <div className="flex w-[132px] items-center justify-end gap-2">
+      <div className="flex w-[150px] items-center justify-end gap-2">
         <button
           onClick={() => onQuickView(song)}
           title="Vista rápida"
@@ -121,10 +121,10 @@ export function SongRow({ song, onQuickView }: SongRowProps) {
         </button>
         <Link
           to={to}
-          className="inline-flex items-center gap-1.5 rounded-full bg-[#FF5C00] px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#EA580C]"
+          className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-[#FF5C00] px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#EA580C]"
         >
           Ver detalle
-          <ArrowRight className="h-3 w-3" />
+          <ArrowRight className="h-3 w-3 shrink-0" />
         </Link>
       </div>
     </div>
