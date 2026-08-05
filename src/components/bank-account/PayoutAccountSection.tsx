@@ -13,6 +13,47 @@ const FEEDBACK_COLOR: Record<string, string> = {
 const inputClass =
   "w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-400";
 
+/** Etiquetas legibles para los tipos de cuenta (recipient type) de Wise. */
+const TYPE_LABELS: Record<string, string> = {
+  aba: "Cuenta bancaria (ABA/ACH)",
+  iban: "IBAN",
+  swift_code: "Transferencia SWIFT",
+  sort_code: "Sort code (Reino Unido)",
+  clabe: "CLABE (México)",
+  interac: "Interac (Canadá)",
+  email: "Correo electrónico",
+};
+
+/** Convierte el tipo técnico de Wise en una etiqueta legible. */
+const formatType = (type: string | null): string | null => {
+  if (!type) return null;
+  return TYPE_LABELS[type] ?? type.replace(/_/g, " ").toUpperCase();
+};
+
+/** Muestra el nombre del país a partir del código ISO cuando es posible. */
+const formatCountry = (country: string | null): string | null => {
+  if (!country) return null;
+  try {
+    const name = new Intl.DisplayNames(["es"], { type: "region" }).of(
+      country.toUpperCase(),
+    );
+    return name ? `${name} (${country.toUpperCase()})` : country.toUpperCase();
+  } catch {
+    return country.toUpperCase();
+  }
+};
+
+/** Fila etiqueta/valor dentro del resumen de la cuenta. Se oculta si no hay valor. */
+function DetailItem({ label, value }: { label: string; value: string | null | undefined }) {
+  if (!value) return null;
+  return (
+    <div className="flex flex-col">
+      <dt className="text-[11px] font-medium uppercase tracking-wide text-gray-400">{label}</dt>
+      <dd className="truncate text-sm font-semibold text-gray-800">{value}</dd>
+    </div>
+  );
+}
+
 /**
  * Sección del dashboard (Billetera) donde cualquier usuario registra la cuenta
  * bancaria donde quiere recibir su dinero. Si ya hay una cuenta, se muestra su
@@ -107,22 +148,42 @@ export default function PayoutAccountSection() {
       {hasRecipient && !showForm && (
         <div className="flex flex-col gap-3">
           {status?.account && (
-            <div className="flex items-center justify-between rounded-lg border border-emerald-100 bg-emerald-50/40 px-3 py-2.5">
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-md border border-gray-200 bg-white">
-                  <Banknote className="h-4 w-4 text-emerald-500" />
+            <div className="flex flex-col gap-3 rounded-lg border border-emerald-100 bg-emerald-50/40 p-4">
+              {/* Encabezado: banco + número enmascarado */}
+              <div className="flex items-center gap-3 border-b border-emerald-100 pb-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-md border border-gray-200 bg-white">
+                  <Banknote className="h-5 w-5 text-emerald-500" />
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-sm font-semibold text-gray-800">
+                <div className="flex min-w-0 flex-col">
+                  <span className="truncate text-sm font-semibold text-gray-800">
                     {status.account.bankIdentifier || "Cuenta bancaria"}
-                    {status.account.last4 ? ` ····${status.account.last4}` : ""}
                   </span>
                   <span className="text-xs text-gray-500">
-                    {status.account.accountHolderName || "—"} · {status.account.currency}
-                    {status.account.accountType ? ` · ${status.account.accountType}` : ""}
+                    {status.account.last4
+                      ? `Cuenta terminada en ····${status.account.last4}`
+                      : "Cuenta registrada"}
                   </span>
                 </div>
               </div>
+
+              {/* Detalles de la cuenta guardada */}
+              <dl className="grid grid-cols-1 gap-x-4 gap-y-2.5 sm:grid-cols-2">
+                <DetailItem label="Titular" value={status.account.accountHolderName} />
+                <DetailItem label="Moneda" value={status.account.currency} />
+                <DetailItem label="País" value={formatCountry(status.account.country)} />
+                <DetailItem
+                  label="Tipo de cuenta"
+                  value={status.account.accountType || formatType(status.account.type)}
+                />
+                <DetailItem
+                  label="Banco / Identificador"
+                  value={status.account.bankIdentifier}
+                />
+                <DetailItem
+                  label="N.º de cuenta"
+                  value={status.account.last4 ? `····${status.account.last4}` : null}
+                />
+              </dl>
             </div>
           )}
           <button
