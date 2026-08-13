@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
+import Select from "react-select";
 import { ArrowDownCircle, ArrowUpCircle, Coins, Plus, Trash2, X } from "lucide-react";
 import { accountingApi } from "@/services/accounting";
+import { selectStyles } from "@/components/ui/selectStyles";
 import type {
   Accounting,
   AccountingStatus,
@@ -39,6 +41,16 @@ const CONCEPT_LABELS: Record<string, string> = {
   INCOME: "Ingreso",
   EXPENSE: "Egreso",
 };
+
+const CONCEPT_OPTIONS = [
+  { value: "INCOME", label: "Ingreso" },
+  { value: "EXPENSE", label: "Egreso" },
+];
+
+const STATUS_OPTIONS: { value: AccountingStatus; label: string }[] = [
+  { value: "pending", label: "Pendiente" },
+  { value: "paid", label: "Pagado" },
+];
 
 const conceptLabel = (concept: string): string => CONCEPT_LABELS[concept.toUpperCase()] ?? concept;
 
@@ -308,27 +320,25 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
                   <label className="text-[11px] text-[#71757E]">Tipo</label>
-                  <select
-                    value={form.concept}
-                    onChange={(e) => setForm((p) => ({ ...p, concept: e.target.value }))}
-                    className={INPUT_CLASS}
-                  >
-                    <option value="INCOME">Ingreso</option>
-                    <option value="EXPENSE">Egreso</option>
-                  </select>
+                  <Select
+                    value={CONCEPT_OPTIONS.find((o) => o.value === form.concept) ?? null}
+                    onChange={(opt) => setForm((p) => ({ ...p, concept: opt?.value || p.concept }))}
+                    options={CONCEPT_OPTIONS}
+                    styles={selectStyles}
+                    menuPortalTarget={document.body}
+                  />
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-[11px] text-[#71757E]">Estado</label>
-                  <select
-                    value={form.status}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, status: e.target.value as AccountingStatus }))
+                  <Select
+                    value={STATUS_OPTIONS.find((o) => o.value === form.status) ?? null}
+                    onChange={(opt) =>
+                      setForm((p) => ({ ...p, status: opt?.value ?? p.status }))
                     }
-                    className={INPUT_CLASS}
-                  >
-                    <option value="pending">Pendiente</option>
-                    <option value="paid">Pagado</option>
-                  </select>
+                    options={STATUS_OPTIONS}
+                    styles={selectStyles}
+                    menuPortalTarget={document.body}
+                  />
                 </div>
               </div>
               <div className="flex flex-col gap-1">

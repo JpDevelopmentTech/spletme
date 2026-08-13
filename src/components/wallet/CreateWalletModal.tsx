@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X, Wallet, Mail, User, Phone, Globe, AlertCircle, Building2 } from "lucide-react";
+import Select from "react-select";
+import { selectStyles } from "@/components/ui/selectStyles";
 
 interface CreateWalletModalProps {
   isOpen: boolean;
@@ -187,19 +189,20 @@ export default function CreateWalletModal({ isOpen, onClose, onSubmit }: CreateW
               <label className={labelClass}>
                 <Globe className="h-3.5 w-3.5" /> País
               </label>
-              <select
-                name="country"
-                value={formData.country}
-                onChange={handleChange}
-                required
-                className={inputClass}
-              >
-                {COUNTRIES.map((c) => (
-                  <option key={c.code} value={c.code}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+              <Select
+                value={
+                  formData.country
+                    ? {
+                        value: formData.country,
+                        label: COUNTRIES.find((c) => c.code === formData.country)?.name || formData.country,
+                      }
+                    : null
+                }
+                onChange={(opt) => setFormData({ ...formData, country: opt?.value || "" })}
+                options={COUNTRIES.map((c) => ({ value: c.code, label: c.name }))}
+                styles={selectStyles}
+                menuPortalTarget={document.body}
+              />
             </div>
           </div>
 

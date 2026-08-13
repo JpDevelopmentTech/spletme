@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { SlidersHorizontal, ArrowUpDown, ChevronDown, XCircle } from "lucide-react";
+import Select from "react-select";
+import { SlidersHorizontal, ArrowUpDown, XCircle } from "lucide-react";
 import type { SortBy, SplitFilter, CollaboratorsFilter, OwnerSplitFilter } from "@/types/music.types";
+import { selectStyles } from "@/components/ui/selectStyles";
 
 interface SongsFilterBarProps {
   splitFilter: SplitFilter;
@@ -153,20 +155,22 @@ export function SongsFilterBar({
         </div>
 
         <div className="flex items-center gap-2.5">
-          <div className="relative">
-            <ArrowUpDown className="pointer-events-none absolute left-3.5 top-1/2 h-[15px] w-[15px] -translate-y-1/2 text-[#71757E]" />
-            <select
-              value={sortBy}
-              onChange={(e) => onSortChange(e.target.value as SortBy)}
-              className="appearance-none rounded-full bg-white py-2.5 pl-9 pr-9 text-[12.5px] font-medium text-[#1C1D22] shadow-[0_1px_2px_rgba(0,0,0,0.04)] focus:outline-none focus:ring-2 focus:ring-[#FF5C00]/40"
-            >
-              {ORDER_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-[13px] w-[13px] -translate-y-1/2 text-[#A6AAB2]" />
+          <div className="relative w-[220px]">
+            <ArrowUpDown className="pointer-events-none absolute left-3.5 top-1/2 z-10 h-[15px] w-[15px] -translate-y-1/2 text-[#71757E]" />
+            <Select
+              value={ORDER_OPTIONS.find((o) => o.value === sortBy) ?? null}
+              onChange={(opt) => onSortChange((opt?.value ?? sortBy) as SortBy)}
+              options={ORDER_OPTIONS}
+              styles={{
+                ...selectStyles,
+                control: (base: Record<string, unknown>) => ({
+                  ...selectStyles.control(base),
+                  borderRadius: "9999px",
+                  paddingLeft: "22px",
+                }),
+              }}
+              menuPortalTarget={document.body}
+            />
           </div>
 
           <button

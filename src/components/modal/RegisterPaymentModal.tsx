@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, DollarSign, Calendar, Globe, Music, AlertCircle, Check, Loader2 } from "lucide-react";
+import Select from "react-select";
 import { useSplits } from "../../hooks/useSplits";
+import { selectStyles } from "../ui/selectStyles";
 
 interface RegisterPaymentModalProps {
   isOpen: boolean;
@@ -240,19 +242,16 @@ const RegisterPaymentModal = ({
                       <Music className="mr-2 inline h-4 w-4" />
                       Plataforma (Opcional)
                     </label>
-                    <select
-                      value={platform}
-                      onChange={(e) => setPlatform(e.target.value)}
-                      disabled={paymentLoading}
-                      className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 transition-all duration-300 hover:border-gray-300 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:border-gray-500 dark:focus:border-green-400"
-                    >
-                      <option value="">Seleccionar plataforma...</option>
-                      {platforms.map((p) => (
-                        <option key={p} value={p}>
-                          {p}
-                        </option>
-                      ))}
-                    </select>
+                    <Select
+                      value={platform ? { value: platform, label: platform } : null}
+                      onChange={(opt) => setPlatform(opt?.value || "")}
+                      options={platforms.map((p) => ({ value: p, label: p }))}
+                      placeholder="Seleccionar plataforma..."
+                      isDisabled={paymentLoading}
+                      styles={selectStyles}
+                      menuPortalTarget={document.body}
+                      isClearable
+                    />
                     <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                       Especifica la plataforma si el pago proviene de una fuente específica
                     </p>
@@ -264,19 +263,16 @@ const RegisterPaymentModal = ({
                       <Globe className="mr-2 inline h-4 w-4" />
                       País (Opcional)
                     </label>
-                    <select
-                      value={country}
-                      onChange={(e) => setCountry(e.target.value)}
-                      disabled={paymentLoading}
-                      className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 transition-all duration-300 hover:border-gray-300 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:border-gray-500 dark:focus:border-green-400"
-                    >
-                      <option value="">Seleccionar país...</option>
-                      {countries.map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
-                    </select>
+                    <Select
+                      value={country ? { value: country, label: country } : null}
+                      onChange={(opt) => setCountry(opt?.value || "")}
+                      options={countries.map((c) => ({ value: c, label: c }))}
+                      placeholder="Seleccionar país..."
+                      isDisabled={paymentLoading}
+                      styles={selectStyles}
+                      menuPortalTarget={document.body}
+                      isClearable
+                    />
                     <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                       Especifica el país si el pago tiene restricciones geográficas
                     </p>

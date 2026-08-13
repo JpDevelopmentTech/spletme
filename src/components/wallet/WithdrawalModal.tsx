@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Wallet, DollarSign, AlertTriangle, CheckCircle, ArrowDownToLine } from "lucide-react";
+import Select from "react-select";
 import WalletService from "@/services/wallet";
+import { selectStyles } from "@/components/ui/selectStyles";
 
 interface WithdrawalModalProps {
   isOpen: boolean;
@@ -290,26 +292,38 @@ export default function WithdrawalModal({
                     <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-green-500"></div>
                   </div>
                 ) : (
-                  <select
-                    value={formData.payoutMethodType}
-                    onChange={(e) => handlePayoutMethodChange(e.target.value)}
-                    required
-                    className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 transition-all focus:border-transparent focus:ring-2 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                    disabled={loading || success}
-                  >
-                    <option value="">Select a payout method</option>
-                    {payoutMethods.map((method) => {
+                  <Select
+                    value={
+                      formData.payoutMethodType
+                        ? {
+                            value: formData.payoutMethodType,
+                            label:
+                              (payoutMethods.find(
+                                (method) =>
+                                  (method as { payout_method_type: string }).payout_method_type ===
+                                  formData.payoutMethodType,
+                              ) as { name?: string; payout_method_type: string } | undefined)?.name ||
+                              formData.payoutMethodType.replace(/_/g, " ").toUpperCase(),
+                          }
+                        : null
+                    }
+                    onChange={(opt) => handlePayoutMethodChange(opt?.value || "")}
+                    options={payoutMethods.map((method) => {
                       const m = method as {
                         payout_method_type: string;
                         name?: string;
                       };
-                      return (
-                        <option key={m.payout_method_type} value={m.payout_method_type}>
-                          {m.name || m.payout_method_type.replace(/_/g, " ").toUpperCase()}
-                        </option>
-                      );
+                      return {
+                        value: m.payout_method_type,
+                        label: m.name || m.payout_method_type.replace(/_/g, " ").toUpperCase(),
+                      };
                     })}
-                  </select>
+                    placeholder="Select a payout method"
+                    isDisabled={loading || success}
+                    styles={selectStyles}
+                    menuPortalTarget={document.body}
+                    isClearable
+                  />
                 )}
               </div>
 

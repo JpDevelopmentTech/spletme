@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Check, Loader2, Lock, Globe, Briefcase, MapPin, ChevronDown } from "lucide-react";
+import { X, Check, Loader2, Lock, Globe, Briefcase, MapPin } from "lucide-react";
+import Select from "react-select";
+import { selectStyles } from "@/components/ui/selectStyles";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -124,22 +126,16 @@ const ErrorMsg = ({ message }: { message?: string | null }) => (
   </AnimatePresence>
 );
 
-const StyledSelect = ({
-  hasError,
-  className = "",
-  children,
-  ...props
-}: React.SelectHTMLAttributes<HTMLSelectElement> & { hasError?: boolean }) => (
-  <div className="relative">
-    <select
-      {...props}
-      className={`${inputBase} pr-10 ${hasError ? inputError : inputNormal} ${className}`}
-    >
-      {children}
-    </select>
-    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-300 dark:text-gray-600" />
-  </div>
-);
+const errorSelectStyles = (hasError: boolean) => ({
+  ...selectStyles,
+  control: (base: Record<string, unknown>) => {
+    const s = selectStyles.control(base);
+    return {
+      ...s,
+      border: hasError ? "1px solid #f87171" : s.border,
+    };
+  },
+});
 
 // ── Main Modal ─────────────────────────────────────────────────────────────
 
@@ -274,32 +270,28 @@ const UpdateModal = ({ user, onClose, onSave }: UpdateModalProps) => {
             {/* ── País ── */}
             <div>
               <FieldLabel icon={<Globe className="h-3.5 w-3.5" />} label="País" />
-              <StyledSelect
-                value={form.country ?? ""}
-                hasError={!!errors.country}
-                onChange={(e) => {
-                  setForm((prev) => ({ ...prev, country: e.target.value }));
+              <Select
+                value={form.country ? { value: form.country, label: COUNTRIES.find((c) => c.code === form.country)?.name } : null}
+                onChange={(opt) => {
+                  setForm((prev) => ({ ...prev, country: opt?.value || "" }));
                   clearError("country");
                 }}
-              >
-                <option value="">Selecciona tu país</option>
-                {COUNTRIES.map((c) => (
-                  <option key={c.code} value={c.code}>
-                    {c.name}
-                  </option>
-                ))}
-              </StyledSelect>
+                options={COUNTRIES.map((c) => ({ value: c.code, label: c.name }))}
+                placeholder="Selecciona tu país"
+                styles={errorSelectStyles(!!errors.country)}
+                menuPortalTarget={document.body}
+                isClearable
+              />
               <ErrorMsg message={errors.country} />
             </div>
 
             {/* ── Profesión ── */}
             <div>
               <FieldLabel icon={<Briefcase className="h-3.5 w-3.5" />} label="Profesión" />
-              <StyledSelect
-                value={form.profession ?? ""}
-                hasError={!!errors.profession}
-                onChange={(e) => {
-                  const value = e.target.value;
+              <Select
+                value={form.profession ? { value: form.profession, label: PROFESSIONS.find((p) => p.id === form.profession)?.name } : null}
+                onChange={(opt) => {
+                  const value = opt?.value || "";
                   setForm((prev) => ({
                     ...prev,
                     profession: value,
@@ -307,14 +299,12 @@ const UpdateModal = ({ user, onClose, onSave }: UpdateModalProps) => {
                   }));
                   clearError("profession");
                 }}
-              >
-                <option value="">Selecciona tu profesión</option>
-                {PROFESSIONS.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </StyledSelect>
+                options={PROFESSIONS.map((p) => ({ value: p.id, label: p.name }))}
+                placeholder="Selecciona tu profesión"
+                styles={errorSelectStyles(!!errors.profession)}
+                menuPortalTarget={document.body}
+                isClearable
+              />
 
               <AnimatePresence>
                 {selectedProfessionDesc && (
@@ -344,24 +334,21 @@ const UpdateModal = ({ user, onClose, onSave }: UpdateModalProps) => {
                     <label className="mb-2 block text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
                       Profesión específica
                     </label>
-                    <StyledSelect
-                      value={form.otherProfession ?? ""}
-                      hasError={!!errors.otherProfession}
-                      onChange={(e) => {
+                    <Select
+                      value={form.otherProfession ? { value: form.otherProfession, label: form.otherProfession } : null}
+                      onChange={(opt) => {
                         setForm((prev) => ({
                           ...prev,
-                          otherProfession: e.target.value,
+                          otherProfession: opt?.value || "",
                         }));
                         clearError("otherProfession");
                       }}
-                    >
-                      <option value="">Selecciona tu profesión específica</option>
-                      {OTHER_PROFESSIONS.map((p) => (
-                        <option key={p} value={p}>
-                          {p}
-                        </option>
-                      ))}
-                    </StyledSelect>
+                      options={OTHER_PROFESSIONS.map((p) => ({ value: p, label: p }))}
+                      placeholder="Selecciona tu profesión específica"
+                      styles={errorSelectStyles(!!errors.otherProfession)}
+                      menuPortalTarget={document.body}
+                      isClearable
+                    />
                     <ErrorMsg message={errors.otherProfession} />
                   </motion.div>
                 )}

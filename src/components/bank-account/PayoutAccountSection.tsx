@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Banknote, CheckCircle2, Loader2, Pencil, X } from "lucide-react";
+import Select from "react-select";
 import { usePayoutAccount } from "@/hooks/usePayoutAccount";
 import { PAYOUT_CURRENCIES } from "@/const/currencies";
+import { selectStyles } from "@/components/ui/selectStyles";
 import type { PayoutFieldGroup } from "@/types/payout-account.types";
 
 const FEEDBACK_COLOR: Record<string, string> = {
@@ -102,14 +104,15 @@ export default function PayoutAccountSection() {
           {group.required && <span className="text-red-400"> *</span>}
         </label>
         {isSelect ? (
-          <select className={inputClass} value={value} onChange={(e) => onChange(e.target.value)}>
-            <option value="">Seleccionar…</option>
-            {group.valuesAllowed!.map((opt) => (
-              <option key={opt.key} value={opt.key}>
-                {opt.name}
-              </option>
-            ))}
-          </select>
+          <Select
+            value={value ? { value, label: group.valuesAllowed!.find((opt) => opt.key === value)?.name || value } : null}
+            onChange={(opt) => onChange(opt?.value || "")}
+            options={group.valuesAllowed!.map((opt) => ({ value: opt.key, label: opt.name }))}
+            placeholder="Seleccionar…"
+            styles={selectStyles}
+            menuPortalTarget={document.body}
+            isClearable
+          />
         ) : (
           <input
             className={inputClass}
@@ -214,18 +217,15 @@ export default function PayoutAccountSection() {
             <label className="text-xs font-medium text-gray-500">
               Moneda en la que quieres recibir
             </label>
-            <select
-              className={inputClass}
-              value={currency}
-              onChange={(e) => selectCurrency(e.target.value)}
-            >
-              <option value="">Seleccionar moneda…</option>
-              {PAYOUT_CURRENCIES.map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
+            <Select
+              value={currency ? { value: currency, label: PAYOUT_CURRENCIES.find((c) => c.code === currency)?.label || currency } : null}
+              onChange={(opt) => selectCurrency(opt?.value || "")}
+              options={PAYOUT_CURRENCIES.map((c) => ({ value: c.code, label: c.label }))}
+              placeholder="Seleccionar moneda…"
+              styles={selectStyles}
+              menuPortalTarget={document.body}
+              isClearable
+            />
           </div>
 
           {loadingFields && (
@@ -241,17 +241,13 @@ export default function PayoutAccountSection() {
               {requirements.length > 1 && (
                 <div className="flex flex-col gap-1">
                   <label className="text-xs font-medium text-gray-500">Tipo de cuenta</label>
-                  <select
-                    className={inputClass}
-                    value={selectedType}
-                    onChange={(e) => setSelectedType(e.target.value)}
-                  >
-                    {requirements.map((r) => (
-                      <option key={r.type} value={r.type}>
-                        {r.title}
-                      </option>
-                    ))}
-                  </select>
+                  <Select
+                    value={selectedType ? { value: selectedType, label: requirements.find((r) => r.type === selectedType)?.title || selectedType } : null}
+                    onChange={(opt) => setSelectedType(opt?.value || "")}
+                    options={requirements.map((r) => ({ value: r.type, label: r.title }))}
+                    styles={selectStyles}
+                    menuPortalTarget={document.body}
+                  />
                 </div>
               )}
 

@@ -1,7 +1,15 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, User, DollarSign, CheckCircle, AlertCircle } from "lucide-react";
+import Select from "react-select";
 import { usePayoneer } from "../../hooks/usePayoneer";
+import { selectStyles } from "../ui/selectStyles";
+
+const CURRENCY_OPTIONS = [
+  { value: "USD", label: "USD" },
+  { value: "EUR", label: "EUR" },
+  { value: "GBP", label: "GBP" },
+];
 
 interface RequestPaymentModalProps {
   isOpen: boolean;
@@ -149,15 +157,13 @@ const RequestPaymentModal: React.FC<RequestPaymentModalProps> = ({ isOpen, onClo
                 </div>
                 <div>
                   <label className="mb-2 block text-sm font-medium text-gray-700">Moneda</label>
-                  <select
-                    value={currency}
-                    onChange={(e) => setCurrency(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="USD">USD</option>
-                    <option value="EUR">EUR</option>
-                    <option value="GBP">GBP</option>
-                  </select>
+                  <Select
+                    value={CURRENCY_OPTIONS.find((o) => o.value === currency) || null}
+                    onChange={(opt) => setCurrency(opt?.value || "USD")}
+                    options={CURRENCY_OPTIONS}
+                    styles={selectStyles}
+                    menuPortalTarget={document.body}
+                  />
                 </div>
               </div>
 

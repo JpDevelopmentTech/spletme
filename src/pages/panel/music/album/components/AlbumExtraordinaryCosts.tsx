@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Select from "react-select";
 import {
   ArrowDownCircle,
   ArrowUpCircle,
@@ -11,6 +12,7 @@ import {
 import Button from "../../../../../components/atoms/button";
 import { accountingApi } from "@/services/accounting";
 import AlbumService from "../../../../../services/albums";
+import { selectStyles } from "@/components/ui/selectStyles";
 import type {
   AlbumBalance,
   Accounting,
@@ -60,6 +62,16 @@ const CONCEPT_LABELS: Record<string, string> = {
   INCOME: "Ingreso",
   EXPENSE: "Egreso",
 };
+
+const CONCEPT_OPTIONS = [
+  { value: "INCOME", label: "Ingreso" },
+  { value: "EXPENSE", label: "Egreso" },
+];
+
+const STATUS_OPTIONS: { value: AccountingStatus; label: string }[] = [
+  { value: "pending", label: "Pendiente" },
+  { value: "paid", label: "Pagado" },
+];
 
 const conceptLabel = (concept: string): string => CONCEPT_LABELS[concept.toUpperCase()] ?? concept;
 
@@ -852,47 +864,45 @@ const AlbumExtraordinaryCosts = ({ albumId, albumUpc, tracks }: AlbumExtraordina
               {form.scope === "song" && (
                 <div className="flex flex-col gap-1">
                   <label className="text-xs text-gray-500">Canción</label>
-                  <select
-                    value={form.songId}
-                    onChange={(e) => setForm((p) => ({ ...p, songId: e.target.value }))}
-                    className={inputClass}
-                  >
-                    {tracks.map((t) => (
-                      <option key={t._id} value={t._id}>
-                        {t.trackTitle}
-                      </option>
-                    ))}
-                  </select>
+                  <Select
+                    value={
+                      tracks
+                        .map((t) => ({ value: t._id, label: t.trackTitle }))
+                        .find((o) => o.value === form.songId) ?? null
+                    }
+                    onChange={(opt) => setForm((p) => ({ ...p, songId: opt?.value || p.songId }))}
+                    options={tracks.map((t) => ({ value: t._id, label: t.trackTitle }))}
+                    styles={selectStyles}
+                    menuPortalTarget={document.body}
+                  />
                 </div>
               )}
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
                   <label className="text-xs text-gray-500">Tipo</label>
-                  <select
-                    value={form.concept}
-                    onChange={(e) => setForm((p) => ({ ...p, concept: e.target.value }))}
-                    className={inputClass}
-                  >
-                    <option value="INCOME">Ingreso</option>
-                    <option value="EXPENSE">Egreso</option>
-                  </select>
+                  <Select
+                    value={CONCEPT_OPTIONS.find((o) => o.value === form.concept) ?? null}
+                    onChange={(opt) => setForm((p) => ({ ...p, concept: opt?.value || p.concept }))}
+                    options={CONCEPT_OPTIONS}
+                    styles={selectStyles}
+                    menuPortalTarget={document.body}
+                  />
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-xs text-gray-500">Estado</label>
-                  <select
-                    value={form.status}
-                    onChange={(e) =>
+                  <Select
+                    value={STATUS_OPTIONS.find((o) => o.value === form.status) ?? null}
+                    onChange={(opt) =>
                       setForm((p) => ({
                         ...p,
-                        status: e.target.value as AccountingStatus,
+                        status: opt?.value ?? p.status,
                       }))
                     }
-                    className={inputClass}
-                  >
-                    <option value="pending">Pendiente</option>
-                    <option value="paid">Pagado</option>
-                  </select>
+                    options={STATUS_OPTIONS}
+                    styles={selectStyles}
+                    menuPortalTarget={document.body}
+                  />
                 </div>
               </div>
 

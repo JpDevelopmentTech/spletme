@@ -1,7 +1,20 @@
 import { useState } from "react";
 import { X, Plus, UserPlus, Mail, Hash, UserCog } from "lucide-react";
+import Select from "react-select";
 import SongService from "../../../../services/songs";
 import { useParams } from "react-router-dom";
+import { selectStyles } from "../../../../components/ui/selectStyles";
+
+const ROLE_OPTIONS = [
+  { value: "singer", label: "Cantante" },
+  { value: "composer", label: "Compositor" },
+  { value: "musician", label: "Músico" },
+  { value: "producer", label: "Productor" },
+  { value: "arranger", label: "Arreglista" },
+  { value: "lyricist", label: "Letrista" },
+  { value: "mixer", label: "Mezclador" },
+  { value: "mastering", label: "Mastering" },
+];
 
 export default function AddCollaborator({
   compact = false,
@@ -134,26 +147,23 @@ export default function AddCollaborator({
                   </div>
                 )}
                 <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-3">
                     <UserCog className="h-4 w-4 text-gray-400" />
                   </div>
-                  <select
-                    value={role}
-                    onChange={(e) => setRole(e.target.value)}
-                    className="w-full appearance-none rounded-lg border border-gray-200 bg-white py-2.5 pl-9 pr-4 text-sm text-gray-700 outline-none transition-all focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                  >
-                    <option value="" disabled>
-                      Seleccionar rol
-                    </option>
-                    <option value="singer">Cantante</option>
-                    <option value="composer">Compositor</option>
-                    <option value="musician">Músico</option>
-                    <option value="producer">Productor</option>
-                    <option value="arranger">Arreglista</option>
-                    <option value="lyricist">Letrista</option>
-                    <option value="mixer">Mezclador</option>
-                    <option value="mastering">Mastering</option>
-                  </select>
+                  <Select
+                    value={role ? ROLE_OPTIONS.find((r) => r.value === role) ?? null : null}
+                    onChange={(opt) => setRole(opt?.value || "")}
+                    options={ROLE_OPTIONS}
+                    placeholder="Seleccionar rol"
+                    styles={{
+                      ...selectStyles,
+                      control: (base: Record<string, unknown>) => ({
+                        ...selectStyles.control(base),
+                        paddingLeft: 28,
+                      }),
+                    }}
+                    menuPortalTarget={document.body}
+                  />
                 </div>
               </div>
             </div>

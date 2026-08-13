@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import Select from "react-select";
 import { Music as MusicIcon, Disc, Crown, Info, Tags, ArrowUpDown, Check } from "lucide-react";
 import { hasAnySplit } from "@/utils/music.utils";
 import { CopyButton } from "@/components/ui/CopyButton";
 import type { MusicMode, SongItem, AlbumItem, SortBy, SplitFilter } from "@/types/music.types";
+import { selectStyles } from "@/components/ui/selectStyles";
 
 /** Formatea un monto en USD para las columnas de ingresos. */
 function formatIncome(value?: number): string {
@@ -476,17 +478,15 @@ export function MusicTable({
         </span>
         <div className="flex items-center gap-2">
           <span className="text-[13px] text-gray-500">Show:</span>
-          <select
-            value={limit}
-            onChange={(e) => onLimitChange(Number(e.target.value))}
-            className="rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-[13px] text-gray-900 focus:border-transparent focus:ring-2 focus:ring-orange-500"
-          >
-            {[5, 10, 25, 50, 100].map((v) => (
-              <option key={v} value={v}>
-                {v}
-              </option>
-            ))}
-          </select>
+          <div className="w-[84px]">
+            <Select
+              value={{ value: limit, label: String(limit) }}
+              onChange={(opt) => onLimitChange(Number(opt?.value ?? limit))}
+              options={[5, 10, 25, 50, 100].map((v) => ({ value: v, label: String(v) }))}
+              styles={selectStyles}
+              menuPortalTarget={document.body}
+            />
+          </div>
           <span className="text-[13px] text-gray-500">per page</span>
         </div>
         <div className="flex items-center gap-1.5">

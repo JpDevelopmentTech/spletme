@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Search, LayoutGrid, Rows3, Music as MusicIcon, ChevronDown } from "lucide-react";
+import Select from "react-select";
+import { Search, LayoutGrid, Rows3, Music as MusicIcon } from "lucide-react";
 import Loading from "@/components/loading/loading";
 import { SongDetailsModal } from "@/components/music/SongDetailsModal";
 import { SongsKpis } from "@/components/music/SongsKpis";
@@ -8,6 +9,7 @@ import { SongCard } from "@/components/music/SongCard";
 import { SongRow } from "@/components/music/SongRow";
 import { useSongsLibrary } from "@/hooks/useSongsLibrary";
 import { useSongsKpis } from "@/hooks/useSongsKpis";
+import { selectStyles } from "@/components/ui/selectStyles";
 
 type ViewMode = "grid" | "list";
 
@@ -198,23 +200,15 @@ export default function Songs() {
             </span>
             <div className="flex items-center gap-2">
               <span className="text-[12.5px] text-[#71757E]">Mostrar:</span>
-              <div className="relative">
-                <select
-                  value={limit}
-                  onChange={(e) => setLimit(Number(e.target.value))}
-                  className="appearance-none rounded-[12px] bg-[#F4F5F7] px-3 py-1.5 pr-7 text-[12.5px] font-medium text-[#1C1D22] focus:outline-none focus:ring-2 focus:ring-[#FF5C00]/40"
-                >
-                  {Array.from(new Set([limit, 12, 24, 48, 96]))
+              <div className="w-[88px]">
+                <Select
+                  value={{ value: limit, label: String(limit) }}
+                  onChange={(opt) => setLimit(Number(opt?.value ?? limit))}
+                  options={Array.from(new Set([limit, 12, 24, 48, 96]))
                     .sort((a, b) => a - b)
-                    .map((v) => (
-                      <option key={v} value={v}>
-                        {v}
-                      </option>
-                    ))}
-                </select>
-                <ChevronDown
-                  size={13}
-                  className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[#A6AAB2]"
+                    .map((v) => ({ value: v, label: String(v) }))}
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
                 />
               </div>
             </div>

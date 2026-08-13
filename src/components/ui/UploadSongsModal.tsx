@@ -1,7 +1,9 @@
 import { useState, useRef } from "react";
 import { X, Upload, FileText, AlertCircle, CheckCircle2, Music2 } from "lucide-react";
+import Select from "react-select";
 import type { Quarter } from "../../types/distributor.types";
 import type { UploadSongsResult } from "../../services/distributorsService";
+import { selectStyles } from "./selectStyles";
 
 type UploadPhase = "idle" | "uploading" | "processing" | "done";
 
@@ -175,17 +177,13 @@ export default function UploadSongsModal({
             <label className="text-xs font-semibold uppercase tracking-wider text-[#374151]">
               Año *
             </label>
-            <select
-              value={year}
-              onChange={(e) => setYear(Number(e.target.value))}
-              className="h-10 rounded-lg border border-gray-200 bg-white px-3 text-sm text-[#111827] focus:border-[#F97316] focus:outline-none"
-            >
-              {YEARS.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
+            <Select
+              value={{ value: year, label: String(year) }}
+              onChange={(opt) => setYear(opt?.value ?? CURRENT_YEAR)}
+              options={YEARS.map((y) => ({ value: y, label: String(y) }))}
+              styles={selectStyles}
+              menuPortalTarget={document.body}
+            />
           </div>
 
           {/* File upload area */}

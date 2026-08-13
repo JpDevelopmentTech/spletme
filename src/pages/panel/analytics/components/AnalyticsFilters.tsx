@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { SlidersHorizontal, X, ChevronDown } from "lucide-react";
+import Select from "react-select";
 import type { AnalyticsFilters, FilterOptions } from "../../../../types/analytics.types";
 import { analyticsService } from "../../../../services/analyticsService";
+import { selectStyles } from "../../../../components/ui/selectStyles";
 
 interface Props {
   filters: AnalyticsFilters;
@@ -63,18 +65,15 @@ export default function AnalyticsFiltersBar({ filters, onChange }: Props) {
               <label className="text-[11px] font-semibold uppercase tracking-wider text-[#6B7280]">
                 Plataforma
               </label>
-              <select
-                value={filters.platform ?? ""}
-                onChange={(e) => update("platform", e.target.value)}
-                className="h-9 rounded-lg border border-gray-200 bg-white px-3 text-[13px] text-[#111827] focus:border-[#F97316] focus:outline-none"
-              >
-                <option value="">Todas</option>
-                {options.platforms.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
-                ))}
-              </select>
+              <Select
+                value={filters.platform ? { value: filters.platform, label: filters.platform } : null}
+                onChange={(opt) => update("platform", opt?.value || "")}
+                options={options.platforms.map((p) => ({ value: p, label: p }))}
+                placeholder="Todas"
+                styles={selectStyles}
+                menuPortalTarget={document.body}
+                isClearable
+              />
             </div>
 
             {/* Country */}
@@ -82,18 +81,15 @@ export default function AnalyticsFiltersBar({ filters, onChange }: Props) {
               <label className="text-[11px] font-semibold uppercase tracking-wider text-[#6B7280]">
                 País
               </label>
-              <select
-                value={filters.country ?? ""}
-                onChange={(e) => update("country", e.target.value)}
-                className="h-9 rounded-lg border border-gray-200 bg-white px-3 text-[13px] text-[#111827] focus:border-[#F97316] focus:outline-none"
-              >
-                <option value="">Todos</option>
-                {options.countries.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
+              <Select
+                value={filters.country ? { value: filters.country, label: filters.country } : null}
+                onChange={(opt) => update("country", opt?.value || "")}
+                options={options.countries.map((c) => ({ value: c, label: c }))}
+                placeholder="Todos"
+                styles={selectStyles}
+                menuPortalTarget={document.body}
+                isClearable
+              />
             </div>
 
             {/* Start date */}
@@ -127,18 +123,15 @@ export default function AnalyticsFiltersBar({ filters, onChange }: Props) {
               <label className="text-[11px] font-semibold uppercase tracking-wider text-[#6B7280]">
                 Artista
               </label>
-              <select
-                value={filters.artistName ?? ""}
-                onChange={(e) => update("artistName", e.target.value)}
-                className="h-9 rounded-lg border border-gray-200 bg-white px-3 text-[13px] text-[#111827] focus:border-[#F97316] focus:outline-none"
-              >
-                <option value="">Todos</option>
-                {options.artists.map((a) => (
-                  <option key={a} value={a}>
-                    {a}
-                  </option>
-                ))}
-              </select>
+              <Select
+                value={filters.artistName ? { value: filters.artistName, label: filters.artistName } : null}
+                onChange={(opt) => update("artistName", opt?.value || "")}
+                options={options.artists.map((a) => ({ value: a, label: a }))}
+                placeholder="Todos"
+                styles={selectStyles}
+                menuPortalTarget={document.body}
+                isClearable
+              />
             </div>
 
             {/* Label */}
@@ -146,18 +139,15 @@ export default function AnalyticsFiltersBar({ filters, onChange }: Props) {
               <label className="text-[11px] font-semibold uppercase tracking-wider text-[#6B7280]">
                 Sello
               </label>
-              <select
-                value={filters.labelName ?? ""}
-                onChange={(e) => update("labelName", e.target.value)}
-                className="h-9 rounded-lg border border-gray-200 bg-white px-3 text-[13px] text-[#111827] focus:border-[#F97316] focus:outline-none"
-              >
-                <option value="">Todos</option>
-                {options.labels.map((l) => (
-                  <option key={l} value={l}>
-                    {l}
-                  </option>
-                ))}
-              </select>
+              <Select
+                value={filters.labelName ? { value: filters.labelName, label: filters.labelName } : null}
+                onChange={(opt) => update("labelName", opt?.value || "")}
+                options={options.labels.map((l) => ({ value: l, label: l }))}
+                placeholder="Todos"
+                styles={selectStyles}
+                menuPortalTarget={document.body}
+                isClearable
+              />
             </div>
           </div>
 

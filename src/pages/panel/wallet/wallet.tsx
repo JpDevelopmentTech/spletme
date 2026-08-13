@@ -9,10 +9,20 @@ import {
   Clock,
   AlertCircle,
 } from "lucide-react";
+import Select from "react-select";
 import PaymentsService from "@/services/payments";
 import type { RoyaltyPayment, RoyaltyBreakdownItem } from "@/services/payments";
 import BankAccountSection from "@/components/bank-account/BankAccountSection";
 import PayoutAccountSection from "@/components/bank-account/PayoutAccountSection";
+import { selectStyles } from "@/components/ui/selectStyles";
+
+const STATUS_FILTER_OPTIONS = [
+  { value: "all", label: "Todos los estados" },
+  { value: "processing", label: "En proceso" },
+  { value: "succeeded", label: "Completado" },
+  { value: "pending", label: "Pendiente" },
+  { value: "failed", label: "Fallido" },
+];
 
 const STATUS_CONFIG: Record<
   RoyaltyPayment["status"],
@@ -126,20 +136,18 @@ export default function WalletPage() {
                 className="w-full bg-transparent text-xs text-gray-700 placeholder-gray-400 outline-none"
               />
             </div>
-            <select
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setPage(1);
-              }}
-              className="cursor-pointer rounded-lg border border-gray-200 bg-[#F7F8FA] px-3 py-2 text-xs text-gray-700 outline-none"
-            >
-              <option value="all">Todos los estados</option>
-              <option value="processing">En proceso</option>
-              <option value="succeeded">Completado</option>
-              <option value="pending">Pendiente</option>
-              <option value="failed">Fallido</option>
-            </select>
+            <div className="w-44">
+              <Select
+                value={STATUS_FILTER_OPTIONS.find((o) => o.value === statusFilter) || null}
+                onChange={(opt) => {
+                  setStatusFilter(opt?.value || "all");
+                  setPage(1);
+                }}
+                options={STATUS_FILTER_OPTIONS}
+                styles={selectStyles}
+                menuPortalTarget={document.body}
+              />
+            </div>
           </div>
         </div>
 

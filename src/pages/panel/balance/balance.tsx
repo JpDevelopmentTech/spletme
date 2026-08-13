@@ -1,7 +1,21 @@
 import { motion } from "framer-motion";
 import { TrendingUp, Wallet, Filter } from "lucide-react";
+import Select from "react-select";
 import UseFilterSongsData from "../../../hooks/useFilterSongsData";
 import { useSplitPayments } from "../../../hooks/useSplitPayments";
+import { selectStyles } from "../../../components/ui/selectStyles";
+
+const PLATFORM_OPTIONS = [
+  { value: "spotify", label: "Spotify" },
+  { value: "youtube", label: "YouTube" },
+  { value: "apple", label: "Apple Music" },
+];
+
+const COUNTRY_OPTIONS = [
+  { value: "mx", label: "México" },
+  { value: "us", label: "Estados Unidos" },
+  { value: "es", label: "España" },
+];
 
 const Balance = () => {
   const {
@@ -48,36 +62,34 @@ const Balance = () => {
               <label htmlFor="platform" className="mb-1 block text-sm font-medium text-gray-700">
                 Plataforma
               </label>
-              <select
-                id="platform"
+              <Select
+                inputId="platform"
                 name="platform"
-                value={platform}
-                onChange={(e) => setPlatform(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="">Todas</option>
-                <option value="spotify">Spotify</option>
-                <option value="youtube">YouTube</option>
-                <option value="apple">Apple Music</option>
-              </select>
+                value={platform ? PLATFORM_OPTIONS.find((p) => p.value === platform) ?? null : null}
+                onChange={(opt) => setPlatform(opt?.value || "")}
+                options={PLATFORM_OPTIONS}
+                placeholder="Todas"
+                styles={selectStyles}
+                menuPortalTarget={document.body}
+                isClearable
+              />
             </div>
 
             <div>
               <label htmlFor="country" className="mb-1 block text-sm font-medium text-gray-700">
                 País
               </label>
-              <select
-                id="country"
+              <Select
+                inputId="country"
                 name="country"
-                value={country}
-                onChange={(e) => setCountry(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="">Todos</option>
-                <option value="mx">México</option>
-                <option value="us">Estados Unidos</option>
-                <option value="es">España</option>
-              </select>
+                value={country ? COUNTRY_OPTIONS.find((c) => c.value === country) ?? null : null}
+                onChange={(opt) => setCountry(opt?.value || "")}
+                options={COUNTRY_OPTIONS}
+                placeholder="Todos"
+                styles={selectStyles}
+                menuPortalTarget={document.body}
+                isClearable
+              />
             </div>
 
             <div>

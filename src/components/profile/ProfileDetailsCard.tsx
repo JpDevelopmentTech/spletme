@@ -1,13 +1,27 @@
 import { useState } from "react";
 import {
   Globe, MapPin, Phone, Building2,
-  Navigation, Briefcase, ChevronDown, AlertCircle,
+  Navigation, Briefcase, AlertCircle,
   CheckCircle2, Loader2, Check, Mic, SlidersHorizontal,
   Music, User,
 } from "lucide-react";
+import Select from "react-select";
 import { PROFILE_COUNTRIES, PROFILE_PROFESSIONS, OTHER_PROFESSIONS, PHONE_CODES } from "@/constants/profile.constants";
 import { inputCls } from "@/utils/profile.utils";
+import { selectStyles } from "@/components/ui/selectStyles";
 import type { ProfileUserData, EditProfileForm } from "@/types/profile.types";
+
+const errorSelectStyles = (hasError: boolean) => ({
+  ...selectStyles,
+  control: (base: Record<string, unknown>) => {
+    const s = selectStyles.control(base);
+    return {
+      ...s,
+      border: hasError ? "1px solid #FCA5A5" : s.border,
+      backgroundColor: hasError ? "#FEF2F2" : s.backgroundColor,
+    };
+  },
+});
 
 interface ProfileDetailsCardProps {
   userData:            ProfileUserData;
@@ -74,19 +88,15 @@ export function ProfileDetailsCard({
                 <label className="flex items-center gap-1.5 text-xs font-semibold text-[#6B7280] mb-1.5">
                   <Globe size={12} /> País
                 </label>
-                <div className="relative">
-                  <select
-                    value={editForm.country}
-                    onChange={(e) => onCountryChange(e.target.value)}
-                    className={inputCls(!!editErrors.country) + " pr-10 appearance-none"}
-                  >
-                    <option value="">Selecciona tu país</option>
-                    {PROFILE_COUNTRIES.map((c) => (
-                      <option key={c.code} value={c.code}>{c.label}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
-                </div>
+                <Select
+                  value={editForm.country ? { value: editForm.country, label: PROFILE_COUNTRIES.find((c) => c.code === editForm.country)?.label } : null}
+                  onChange={(opt) => onCountryChange(opt?.value || "")}
+                  options={PROFILE_COUNTRIES.map((c) => ({ value: c.code, label: c.label }))}
+                  placeholder="Selecciona tu país"
+                  styles={errorSelectStyles(!!editErrors.country)}
+                  menuPortalTarget={document.body}
+                  isClearable
+                />
               </div>
 
               {/* Departamento + Ciudad */}
@@ -97,17 +107,15 @@ export function ProfileDetailsCard({
                     {deptLoading && <Loader2 size={11} className="animate-spin ml-1" />}
                   </label>
                   {departments.length > 0 ? (
-                    <div className="relative">
-                      <select
-                        value={editForm.department}
-                        onChange={(e) => onDepartmentChange(e.target.value)}
-                        className={inputCls(false) + " pr-10 appearance-none"}
-                      >
-                        <option value="">Selecciona</option>
-                        {departments.map((d) => <option key={d} value={d}>{d}</option>)}
-                      </select>
-                      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
-                    </div>
+                    <Select
+                      value={editForm.department ? { value: editForm.department, label: editForm.department } : null}
+                      onChange={(opt) => onDepartmentChange(opt?.value || "")}
+                      options={departments.map((d) => ({ value: d, label: d }))}
+                      placeholder="Selecciona"
+                      styles={selectStyles}
+                      menuPortalTarget={document.body}
+                      isClearable
+                    />
                   ) : (
                     <input
                       type="text"
@@ -126,17 +134,15 @@ export function ProfileDetailsCard({
                     {cityLoading && <Loader2 size={11} className="animate-spin ml-1" />}
                   </label>
                   {cities.length > 0 ? (
-                    <div className="relative">
-                      <select
-                        value={editForm.city}
-                        onChange={(e) => onEditFormChange("city", e.target.value)}
-                        className={inputCls(false) + " pr-10 appearance-none"}
-                      >
-                        <option value="">Selecciona</option>
-                        {cities.map((c) => <option key={c} value={c}>{c}</option>)}
-                      </select>
-                      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
-                    </div>
+                    <Select
+                      value={editForm.city ? { value: editForm.city, label: editForm.city } : null}
+                      onChange={(opt) => onEditFormChange("city", opt?.value || "")}
+                      options={cities.map((c) => ({ value: c, label: c }))}
+                      placeholder="Selecciona"
+                      styles={selectStyles}
+                      menuPortalTarget={document.body}
+                      isClearable
+                    />
                   ) : (
                     <input
                       type="text"
@@ -162,17 +168,14 @@ export function ProfileDetailsCard({
                   <Phone size={12} /> Teléfono
                 </label>
                 <div className="flex gap-2">
-                  <div className="relative w-36 flex-shrink-0">
-                    <select
-                      value={editForm.phoneCountryCode}
-                      onChange={(e) => onEditFormChange("phoneCountryCode", e.target.value)}
-                      className={inputCls(false) + " pr-7 appearance-none text-[13px]"}
-                    >
-                      {PHONE_CODES.map((pc) => (
-                        <option key={pc.dial} value={pc.dial}>{pc.label}</option>
-                      ))}
-                    </select>
-                    <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9CA3AF]" />
+                  <div className="w-36 flex-shrink-0">
+                    <Select
+                      value={editForm.phoneCountryCode ? { value: editForm.phoneCountryCode, label: PHONE_CODES.find((pc) => pc.dial === editForm.phoneCountryCode)?.label } : null}
+                      onChange={(opt) => onEditFormChange("phoneCountryCode", opt?.value || "")}
+                      options={PHONE_CODES.map((pc) => ({ value: pc.dial, label: pc.label }))}
+                      styles={selectStyles}
+                      menuPortalTarget={document.body}
+                    />
                   </div>
                   <input
                     type="tel"
