@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Loader2 } from "lucide-react";
+import Select from "react-select";
 import { OnboardingData } from "../../../services/onboarding";
+import { selectStyles } from "../../ui/selectStyles";
 
 interface AccountDetailsStepProps {
   nextStep: (data?: Partial<OnboardingData>) => void;
@@ -298,6 +299,19 @@ const inputStyle = (hasError: boolean): React.CSSProperties => ({
 
 const CNOW = "https://countriesnow.space/api/v0.1";
 
+const errorSelectStyles = (hasError: boolean) => ({
+  ...selectStyles,
+  control: (base: Record<string, unknown>) => {
+    const s = selectStyles.control(base);
+    return {
+      ...s,
+      border: hasError ? "1px solid #FCA5A5" : s.border,
+      backgroundColor: hasError ? "#FEF2F2" : s.backgroundColor,
+      minHeight: 46,
+    };
+  },
+});
+
 const AccountDetailsStep = ({ nextStep, prevStep, initialData }: AccountDetailsStepProps) => {
   const [formData, setFormData] = useState({
     country: "",
@@ -432,12 +446,15 @@ const AccountDetailsStep = ({ nextStep, prevStep, initialData }: AccountDetailsS
           <label className="text-sm font-medium text-[#374151]">
             País de residencia <span className="text-red-500">*</span>
           </label>
-          <select value={formData.country} onChange={(e) => set("country", e.target.value)} style={inputStyle(!!errors.country)}>
-            <option value="">Selecciona tu país</option>
-            {COUNTRIES.map((c) => (
-              <option key={c.code} value={c.code}>{c.label}</option>
-            ))}
-          </select>
+          <Select
+            value={formData.country ? { value: formData.country, label: COUNTRIES.find((c) => c.code === formData.country)?.label } : null}
+            onChange={(opt) => set("country", opt?.value || "")}
+            options={COUNTRIES.map((c) => ({ value: c.code, label: c.label }))}
+            placeholder="Selecciona tu país"
+            styles={errorSelectStyles(!!errors.country)}
+            menuPortalTarget={document.body}
+            isClearable
+          />
           {errors.country && <p className="text-xs text-red-500">{errors.country}</p>}
         </div>
 
@@ -446,22 +463,17 @@ const AccountDetailsStep = ({ nextStep, prevStep, initialData }: AccountDetailsS
           <label className="text-sm font-medium text-[#374151]">
             Departamento / Estado <span className="text-red-500">*</span>
           </label>
-          <div className="relative">
-            <select
-              value={formData.state}
-              onChange={(e) => set("state", e.target.value)}
-              disabled={!formData.country || statesLoading}
-              style={{ ...inputStyle(!!errors.state), paddingRight: 36, opacity: (!formData.country || statesLoading) ? 0.5 : 1 }}
-            >
-              <option value="">
-                {statesLoading ? "Cargando..." : !formData.country ? "Primero selecciona un país" : "Selecciona tu departamento"}
-              </option>
-              {states.map((s) => <option key={s} value={s}>{s}</option>)}
-            </select>
-            {statesLoading && (
-              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 animate-spin" />
-            )}
-          </div>
+          <Select
+            value={formData.state ? { value: formData.state, label: formData.state } : null}
+            onChange={(opt) => set("state", opt?.value || "")}
+            options={states.map((s) => ({ value: s, label: s }))}
+            placeholder={!formData.country ? "Primero selecciona un país" : "Selecciona tu departamento"}
+            isDisabled={!formData.country || statesLoading}
+            isLoading={statesLoading}
+            styles={errorSelectStyles(!!errors.state)}
+            menuPortalTarget={document.body}
+            isClearable
+          />
           {errors.state && <p className="text-xs text-red-500">{errors.state}</p>}
         </div>
 
@@ -470,31 +482,28 @@ const AccountDetailsStep = ({ nextStep, prevStep, initialData }: AccountDetailsS
           <label className="text-sm font-medium text-[#374151]">
             Ciudad <span className="text-red-500">*</span>
           </label>
-          <div className="relative">
-            {cities.length > 0 ? (
-              <select
-                value={formData.city}
-                onChange={(e) => set("city", e.target.value)}
-                disabled={citiesLoading}
-                style={{ ...inputStyle(!!errors.city), paddingRight: 36, opacity: citiesLoading ? 0.5 : 1 }}
-              >
-                <option value="">{citiesLoading ? "Cargando..." : "Selecciona tu ciudad"}</option>
-                {cities.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
-            ) : (
-              <input
-                type="text"
-                value={formData.city}
-                onChange={(e) => set("city", e.target.value)}
-                placeholder={!formData.state ? "Primero selecciona un departamento" : "Escribe tu ciudad"}
-                disabled={!formData.state || citiesLoading}
-                style={{ ...inputStyle(!!errors.city), opacity: (!formData.state || citiesLoading) ? 0.5 : 1 }}
-              />
-            )}
-            {citiesLoading && (
-              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 animate-spin" />
-            )}
-          </div>
+          {cities.length > 0 ? (
+            <Select
+              value={formData.city ? { value: formData.city, label: formData.city } : null}
+              onChange={(opt) => set("city", opt?.value || "")}
+              options={cities.map((c) => ({ value: c, label: c }))}
+              placeholder="Selecciona tu ciudad"
+              isDisabled={citiesLoading}
+              isLoading={citiesLoading}
+              styles={errorSelectStyles(!!errors.city)}
+              menuPortalTarget={document.body}
+              isClearable
+            />
+          ) : (
+            <input
+              type="text"
+              value={formData.city}
+              onChange={(e) => set("city", e.target.value)}
+              placeholder={!formData.state ? "Primero selecciona un departamento" : "Escribe tu ciudad"}
+              disabled={!formData.state || citiesLoading}
+              style={{ ...inputStyle(!!errors.city), opacity: (!formData.state || citiesLoading) ? 0.5 : 1 }}
+            />
+          )}
           {errors.city && <p className="text-xs text-red-500">{errors.city}</p>}
         </div>
 
@@ -519,26 +528,18 @@ const AccountDetailsStep = ({ nextStep, prevStep, initialData }: AccountDetailsS
             Número de teléfono <span className="text-red-500">*</span>
           </label>
           <div className="flex gap-2">
-            <select
-              value={formData.phoneCode}
-              onChange={(e) => set("phoneCode", e.target.value)}
-              style={{
-                height: 46,
-                borderRadius: 10,
-                border: "1px solid #E5E7EB",
-                backgroundColor: "#FFFFFF",
-                padding: "0 10px",
-                fontSize: 13,
-                color: "#111827",
-                outline: "none",
-                flexShrink: 0,
-                width: 130,
-              }}
-            >
-              {PHONE_CODES.map((p) => (
-                <option key={p.dial + p.label} value={p.dial}>{p.flag} {p.label}</option>
-              ))}
-            </select>
+            <div style={{ flexShrink: 0, width: 130 }}>
+              <Select
+                value={(() => {
+                  const p = PHONE_CODES.find((p) => p.dial === formData.phoneCode);
+                  return p ? { value: p.dial, label: `${p.flag} ${p.label}` } : null;
+                })()}
+                onChange={(opt) => set("phoneCode", opt?.value || "+57")}
+                options={PHONE_CODES.map((p) => ({ value: p.dial, label: `${p.flag} ${p.label}` }))}
+                styles={errorSelectStyles(false)}
+                menuPortalTarget={document.body}
+              />
+            </div>
             <input
               type="tel"
               value={formData.phone}

@@ -28,6 +28,11 @@ interface ApiSong {
   totalStreams: number;
   totalNetIncome: number;
   totalGrossIncome: number;
+  spotifyData?: {
+    album?: {
+      images?: Array<{ url: string; width?: number; height?: number }>;
+    };
+  };
   split: {
     splitId: string;
     percentage: number;
@@ -253,9 +258,17 @@ export function CollaboratorDetailModal({
               >
                 <ArrowLeft className="h-4 w-4" />
               </button>
-              <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[12px] bg-[#FF5C00]">
-                <Music className="h-5 w-5 text-white" />
-              </div>
+              {selectedSong.spotifyData?.album?.images?.[0]?.url ? (
+                <img
+                  src={selectedSong.spotifyData.album.images[0].url}
+                  alt={selectedSong.trackTitle}
+                  className="h-11 w-11 flex-shrink-0 rounded-[12px] object-cover"
+                />
+              ) : (
+                <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[12px] bg-[#FF5C00]">
+                  <Music className="h-5 w-5 text-white" />
+                </div>
+              )}
               <div className="flex min-w-0 flex-1 flex-col">
                 <span className="truncate text-base font-semibold text-[#1C1D22]">
                   {selectedSong.trackTitle}
@@ -588,12 +601,20 @@ export function CollaboratorDetailModal({
                     onClick={() => setSelectedSong(song)}
                     className={`flex w-full items-center gap-3 rounded-[16px] bg-white px-3.5 py-2.5 text-left shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:bg-[#FBFBFC]`}
                   >
-                    <span
-                      className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-[12px]"
-                      style={{ backgroundColor: COVER_TINTS[idx % COVER_TINTS.length] }}
-                    >
-                      <Music className="h-4 w-4 text-white" />
-                    </span>
+                    {song.spotifyData?.album?.images?.[0]?.url ? (
+                      <img
+                        src={song.spotifyData.album.images[0].url}
+                        alt={song.trackTitle}
+                        className="h-10 w-10 flex-shrink-0 rounded-[12px] object-cover"
+                      />
+                    ) : (
+                      <span
+                        className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-[12px]"
+                        style={{ backgroundColor: COVER_TINTS[idx % COVER_TINTS.length] }}
+                      >
+                        <Music className="h-4 w-4 text-white" />
+                      </span>
+                    )}
                     <div className="flex min-w-0 flex-1 flex-col">
                       <span className="truncate text-[13px] font-semibold text-[#1C1D22]">
                         {song.trackTitle}
