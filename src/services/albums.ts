@@ -27,6 +27,30 @@ class AlbumService {
   }
 
   /**
+   * Búsqueda global de álbumes por título, release, artista, sello o UPC —
+   * sobre todo el catálogo del usuario, no solo la página cargada en memoria.
+   */
+  async searchAlbums(query: string, skip = 0, limit = 10): Promise<AlbumsResponse | AlbumsError> {
+    try {
+      const response = await apiClient.get(`${this.BASE}/albums/search`, {
+        params: { q: query, skip, limit },
+      });
+      return response.data as AlbumsResponse;
+    } catch (error: unknown) {
+      const axErr = error as {
+        response?: { data?: AlbumsError };
+        message?: string;
+      };
+      if (axErr.response?.data) return axErr.response.data;
+      return {
+        success: false,
+        message: "Error searching albums",
+        error: axErr.message ?? "Unknown error",
+      };
+    }
+  }
+
+  /**
    * Obtiene un álbum específico por UPC.
    */
   async getAlbumByUPC(upc: string): Promise<AlbumResponse | AlbumsError> {

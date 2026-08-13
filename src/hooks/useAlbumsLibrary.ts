@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import useAlbums from "@/hooks/useAlbums";
 import useDebounce from "@/hooks/useDebounce";
-import { hasAnySplit, looksLikeUPC } from "@/utils/music.utils";
+import AlbumService from "@/services/albums";
+import { hasAnySplit } from "@/utils/music.utils";
 import type { SortBy, SplitFilter, AlbumItem } from "@/types/music.types";
 
 /**
@@ -12,7 +13,7 @@ export function useAlbumsLibrary() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
-  const [albumSearchResult, setAlbumSearchResult] = useState<AlbumItem | null>(null);
+  const [searchResults, setSearchResults] = useState<AlbumItem[] | null>(null);
   const [isAlbumSearching, setIsAlbumSearching] = useState(false);
   const [isOwnerSplitModalOpen, setIsOwnerSplitModalOpen] = useState(false);
   const [selectedAlbum, setSelectedAlbum] = useState<AlbumItem | null>(null);
@@ -32,7 +33,6 @@ export function useAlbumsLibrary() {
     albums,
     loading: albumsLoading,
     pagination: albumsPagination,
-    getAlbumByUPC,
     refreshAlbums,
   } = useAlbums(page, limit);
 
@@ -48,20 +48,25 @@ export function useAlbumsLibrary() {
     groupAlbumsByTrackCount,
   );
 
-  // Búsqueda por UPC cuando el query luce como un código UPC
+  // Búsqueda global en el backend: por título, release, artista, sello o UPC,
+  // sobre todo el catálogo del usuario (no solo la página cargada en memoria).
   useEffect(() => {
     const q = debouncedSearchQuery.trim();
-    if (q && looksLikeUPC(q)) {
-      setIsAlbumSearching(true);
-      setAlbumSearchResult(null);
-      getAlbumByUPC(q.replace(/\s|-/g, "")).then((result) => {
-        setAlbumSearchResult(result as AlbumItem);
-        setIsAlbumSearching(false);
-      });
-    } else {
-      setAlbumSearchResult(null);
+    if (!q) {
+      setSearchResults(null);
+      return;
     }
-  }, [debouncedSearchQuery, getAlbumByUPC]);
+    let cancelled = false;
+    setIsAlbumSearching(true);
+    AlbumService.searchAlbums(q, 0, 200).then((response) => {
+      if (cancelled) return;
+      setSearchResults(response.success && "data" in response ? (response.data as AlbumItem[]) : []);
+      setIsAlbumSearching(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedSearchQuery]);
 
   // Resetea la página al cambiar cualquier filtro
   useEffect(() => {
@@ -85,14 +90,7 @@ export function useAlbumsLibrary() {
     (a as AlbumItem & { releaseDate?: string })?.releaseDate ?? "";
 
   const filteredAlbums = useMemo<AlbumItem[]>(() => {
-    let list: AlbumItem[] = albumSearchResult
-      ? [albumSearchResult]
-      : (albums as AlbumItem[]).filter(
-          (album) =>
-            normalize(album.albumTitle).includes(normalize(searchQuery)) ||
-            normalize(album.artistName).includes(normalize(searchQuery)) ||
-            normalize(album.artisticLabel).includes(normalize(searchQuery)),
-        );
+    let list: AlbumItem[] = searchResults !== null ? searchResults : (albums as AlbumItem[]);
     if (artistFilter.trim()) {
       const artist = normalize(artistFilter.trim());
       list = list.filter((a) => normalize(a.artistName).includes(artist));
@@ -168,7 +166,7 @@ export function useAlbumsLibrary() {
       );
     return list;
   }, [
-    albumSearchResult,
+    searchResults,
     albums,
     searchQuery,
     artistFilter,
@@ -240,7 +238,7 @@ export function useAlbumsLibrary() {
   ].filter(Boolean).length;
 
   const loading = albumsLoading;
-  const initialLoading = albumsLoading && albums.length === 0 && !albumSearchResult;
+  const initialLoading = albumsLoading && albums.length === 0 && searchResults === null;
 
   return {
     // state
