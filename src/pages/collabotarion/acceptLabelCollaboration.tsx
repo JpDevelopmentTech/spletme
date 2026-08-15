@@ -37,7 +37,6 @@ interface InvitationData {
 
 const AcceptLabelCollaboration = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
   const [token, setToken] = useState("");
   const [invitationData, setInvitationData] = useState<InvitationData | null>(null);
   const [error, setError] = useState("");
@@ -122,7 +121,6 @@ const AcceptLabelCollaboration = () => {
   }, []);
 
   const handleAccept = async () => {
-    setLoading(true);
     setError("");
     try {
       const response = await LabelsService.acceptLabelInvitation(token);
@@ -141,13 +139,10 @@ const AcceptLabelCollaboration = () => {
     } catch (error) {
       console.error("Error al aceptar invitación:", error);
       setError("Error al aceptar la invitación. Inténtalo de nuevo.");
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleReject = async () => {
-    setLoading(true);
     try {
       const response = await LabelsService.rejectLabelInvitation(token);
 
@@ -159,8 +154,6 @@ const AcceptLabelCollaboration = () => {
     } catch (error) {
       console.error("Error al rechazar invitación:", error);
       setError("Error al rechazar la invitación. Inténtalo de nuevo.");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -368,42 +361,22 @@ const AcceptLabelCollaboration = () => {
         <div className="flex flex-col gap-4 sm:flex-row">
           <button
             onClick={handleAccept}
-            disabled={loading}
-            className={`flex flex-1 transform items-center justify-center space-x-2 rounded-xl px-6 py-4 font-semibold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl disabled:hover:scale-100 ${
+            className={`flex flex-1 transform items-center justify-center space-x-2 rounded-xl px-6 py-4 font-semibold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl ${
               isCustomLabel
-                ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:from-gray-400 disabled:to-gray-500"
-                : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500"
+                ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+                : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
             }`}
           >
-            {loading ? (
-              <>
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <span>Procesando...</span>
-              </>
-            ) : (
-              <>
-                <Check className="h-5 w-5" />
-                <span>Aceptar Invitación</span>
-              </>
-            )}
+            <Check className="h-5 w-5" />
+            <span>Aceptar Invitación</span>
           </button>
 
           <button
             onClick={handleReject}
-            disabled={loading}
-            className="flex flex-1 transform items-center justify-center space-x-2 rounded-xl bg-gradient-to-r from-red-500 to-red-600 px-6 py-4 font-semibold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:from-red-600 hover:to-red-700 hover:shadow-xl disabled:from-gray-400 disabled:to-gray-500 disabled:hover:scale-100"
+            className="flex flex-1 transform items-center justify-center space-x-2 rounded-xl bg-gradient-to-r from-red-500 to-red-600 px-6 py-4 font-semibold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:from-red-600 hover:to-red-700 hover:shadow-xl"
           >
-            {loading ? (
-              <>
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <span>Procesando...</span>
-              </>
-            ) : (
-              <>
-                <X className="h-5 w-5" />
-                <span>Rechazar Invitación</span>
-              </>
-            )}
+            <X className="h-5 w-5" />
+            <span>Rechazar Invitación</span>
           </button>
         </div>
 

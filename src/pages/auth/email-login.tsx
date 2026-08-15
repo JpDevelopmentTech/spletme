@@ -64,7 +64,9 @@ export default function EmailLogin() {
         <div className="flex w-full flex-col gap-[22px] rounded-[32px] bg-white px-10 pb-9 pt-[42px] shadow-[0_24px_56px_-16px_rgba(28,29,34,0.14)]">
           {/* Logo */}
           <div className="flex justify-center">
-            <img src={logo} alt="SplitMe" className="h-10 w-auto" />
+            <div className="rounded-xl bg-white p-2">
+              <img src={logo} alt="SplitMe" className="h-10 w-auto" />
+            </div>
           </div>
 
           {/* Encabezado */}

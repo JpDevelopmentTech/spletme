@@ -128,7 +128,9 @@ export default function Sidebar() {
       >
         {/* Brand */}
         <div className="flex items-center justify-between px-2">
-          <img src={logo} alt="SplitMe" className="h-7 w-auto" />
+          <div className="rounded-lg bg-white p-1">
+            <img src={logo} alt="SplitMe" className="h-7 w-auto" />
+          </div>
           <button
             onClick={() => setIsMobileMenuOpen(false)}
             className="rounded-lg p-1.5 text-[#A6AAB2] transition-colors hover:bg-[#F4F5F7] lg:hidden"

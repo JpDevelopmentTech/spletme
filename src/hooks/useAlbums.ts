@@ -10,7 +10,7 @@ interface UseAlbumsReturn {
   pagination: AlbumsPagination | null;
 
   // Actions
-  getAlbums: (skip?: number, limit?: number) => Promise<void>;
+  getAlbums: (skip?: number, limit?: number, search?: string) => Promise<void>;
   getAlbumByUPC: (upc: string) => Promise<Album | null>;
   loadMoreAlbums: () => Promise<void>;
   refreshAlbums: () => Promise<void>;
@@ -24,6 +24,7 @@ export const useAlbums = (
   page: number,
   limit: number,
   autoLoad: boolean = true,
+  search: string = "",
 ): UseAlbumsReturn => {
   const currentSkip = Math.max(0, (page - 1) * limit);
   const initialSkip = currentSkip;
@@ -37,12 +38,12 @@ export const useAlbums = (
 
   // Get albums with pagination
   const getAlbums = useCallback(
-    async (skip: number = initialSkip, limit: number = initialLimit) => {
+    async (skip: number = initialSkip, limit: number = initialLimit, searchQuery: string = search) => {
       setLoading(true);
       setError(null);
 
       try {
-        const response = await AlbumService.getAlbums(skip, limit);
+        const response = await AlbumService.getAlbums(skip, limit, searchQuery);
 
         if (response.success && "data" in response) {
           if (skip === 0) {
@@ -63,7 +64,7 @@ export const useAlbums = (
         setLoading(false);
       }
     },
-    [initialSkip, initialLimit],
+    [initialSkip, initialLimit, search],
   );
 
   // Get specific album by UPC
@@ -101,8 +102,8 @@ export const useAlbums = (
 
   // Refresh albums (reload from beginning)
   const refreshAlbums = useCallback(async () => {
-    await getAlbums(0, initialLimit);
-  }, [getAlbums, initialLimit]);
+    await getAlbums(0, initialLimit, search);
+  }, [getAlbums, initialLimit, search]);
 
   // Clear error
   const clearError = useCallback(() => {
@@ -115,9 +116,9 @@ export const useAlbums = (
   // Auto-load albums on mount
   useEffect(() => {
     if (autoLoad) {
-      getAlbums(currentSkip, limit);
+      getAlbums(currentSkip, limit, search);
     }
-  }, [autoLoad, getAlbums, currentSkip, limit]);
+  }, [autoLoad, getAlbums, currentSkip, limit, search]);
 
   return {
     // State

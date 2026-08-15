@@ -27,6 +27,12 @@ export function useAlbumsLibrary() {
   const [showFilterPanel, setShowFilterPanel] = useState(false);
 
   const debouncedSearchQuery = useDebounce(searchQuery, 600);
+  const trimmedSearchQuery = debouncedSearchQuery.trim();
+  // La búsqueda por UPC exacto se resuelve aparte (getAlbumByUPC); el resto de
+  // términos se envían al backend para que consulte la base de datos por
+  // cualquier atributo del álbum (título, artista, sello, UPC, ISRC), en vez
+  // de filtrar solo los álbumes ya cargados en memoria.
+  const serverSearchQuery = looksLikeUPC(trimmedSearchQuery) ? "" : trimmedSearchQuery;
 
   const {
     albums,
@@ -34,11 +40,10 @@ export function useAlbumsLibrary() {
     pagination: albumsPagination,
     getAlbumByUPC,
     refreshAlbums,
-  } = useAlbums(page, limit);
+  } = useAlbums(page, limit, true, serverSearchQuery);
 
   // Detecta si hay filtros de cliente aplicados
   const albumFiltersApplied = Boolean(
-    debouncedSearchQuery.trim() ||
     artistFilter.trim() ||
     upcFilter.trim() ||
     splitFilter !== "all" ||
@@ -85,14 +90,9 @@ export function useAlbumsLibrary() {
     (a as AlbumItem & { releaseDate?: string })?.releaseDate ?? "";
 
   const filteredAlbums = useMemo<AlbumItem[]>(() => {
-    let list: AlbumItem[] = albumSearchResult
-      ? [albumSearchResult]
-      : (albums as AlbumItem[]).filter(
-          (album) =>
-            normalize(album.albumTitle).includes(normalize(searchQuery)) ||
-            normalize(album.artistName).includes(normalize(searchQuery)) ||
-            normalize(album.artisticLabel).includes(normalize(searchQuery)),
-        );
+    // El texto libre ya fue filtrado en el servidor (serverSearchQuery); aquí
+    // solo aplican los filtros adicionales de cliente y el ordenamiento.
+    let list: AlbumItem[] = albumSearchResult ? [albumSearchResult] : (albums as AlbumItem[]);
     if (artistFilter.trim()) {
       const artist = normalize(artistFilter.trim());
       list = list.filter((a) => normalize(a.artistName).includes(artist));
@@ -170,7 +170,6 @@ export function useAlbumsLibrary() {
   }, [
     albumSearchResult,
     albums,
-    searchQuery,
     artistFilter,
     upcFilter,
     countryFilter,

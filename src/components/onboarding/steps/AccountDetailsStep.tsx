@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
-import { Loader2 } from "lucide-react";
+import Select, { StylesConfig } from "react-select";
 import { OnboardingData } from "../../../services/onboarding";
+
+interface SelectOption {
+  value: string;
+  label: string;
+}
 
 interface AccountDetailsStepProps {
   nextStep: (data?: Partial<OnboardingData>) => void;
@@ -203,6 +208,8 @@ const COUNTRIES = [
   { code: "ZW", name: "Zimbabwe",                       label: "🇿🇼 Zimbabue",                dial: "+263" },
 ];
 
+const COUNTRY_OPTIONS: SelectOption[] = COUNTRIES.map((c) => ({ value: c.code, label: c.label }));
+
 // ── Todos los códigos de teléfono disponibles (independiente del país) ─────────
 const PHONE_CODES = [
   { dial: "+1",   flag: "🇺🇸", label: "+1 (US/CA)"       },
@@ -284,6 +291,11 @@ const PHONE_CODES = [
   { dial: "+972", flag: "🇮🇱", label: "+972 (IL)"         },
 ];
 
+const PHONE_CODE_OPTIONS: SelectOption[] = PHONE_CODES.map((p) => ({
+  value: p.dial,
+  label: `${p.flag} ${p.label}`,
+}));
+
 const inputStyle = (hasError: boolean): React.CSSProperties => ({
   width: "100%",
   height: 46,
@@ -294,6 +306,32 @@ const inputStyle = (hasError: boolean): React.CSSProperties => ({
   fontSize: 14,
   color: "#111827",
   outline: "none",
+});
+
+const rsStyles = (hasError: boolean): StylesConfig<SelectOption, false> => ({
+  control: (base, state) => ({
+    ...base,
+    minHeight: 46,
+    height: 46,
+    borderRadius: 10,
+    border: `1px solid ${hasError ? "#FCA5A5" : "#E5E7EB"}`,
+    backgroundColor: hasError ? "#FEF2F2" : "#FFFFFF",
+    boxShadow: "none",
+    opacity: state.isDisabled ? 0.5 : 1,
+    "&:hover": { border: `1px solid ${hasError ? "#FCA5A5" : "#F97316"}` },
+  }),
+  valueContainer: (base) => ({ ...base, padding: "0 14px" }),
+  input: (base) => ({ ...base, margin: 0, padding: 0, fontSize: 14, color: "#111827" }),
+  singleValue: (base) => ({ ...base, fontSize: 14, color: "#111827" }),
+  placeholder: (base) => ({ ...base, fontSize: 14, color: "#9CA3AF" }),
+  option: (base, state) => ({
+    ...base,
+    backgroundColor: state.isSelected ? "#F97316" : state.isFocused ? "#fff7ed" : "white",
+    color: state.isSelected ? "white" : "#374151",
+    fontSize: 14,
+  }),
+  menuPortal: (base) => ({ ...base, zIndex: 10000 }),
+  indicatorSeparator: () => ({ display: "none" }),
 });
 
 const CNOW = "https://countriesnow.space/api/v0.1";
@@ -432,12 +470,15 @@ const AccountDetailsStep = ({ nextStep, prevStep, initialData }: AccountDetailsS
           <label className="text-sm font-medium text-[#374151]">
             País de residencia <span className="text-red-500">*</span>
           </label>
-          <select value={formData.country} onChange={(e) => set("country", e.target.value)} style={inputStyle(!!errors.country)}>
-            <option value="">Selecciona tu país</option>
-            {COUNTRIES.map((c) => (
-              <option key={c.code} value={c.code}>{c.label}</option>
-            ))}
-          </select>
+          <Select<SelectOption>
+            options={COUNTRY_OPTIONS}
+            value={COUNTRY_OPTIONS.find((o) => o.value === formData.country) || null}
+            onChange={(opt) => set("country", opt?.value ?? "")}
+            placeholder="Selecciona tu país"
+            styles={rsStyles(!!errors.country)}
+            menuPortalTarget={document.body}
+            isClearable
+          />
           {errors.country && <p className="text-xs text-red-500">{errors.country}</p>}
         </div>
 
@@ -446,22 +487,19 @@ const AccountDetailsStep = ({ nextStep, prevStep, initialData }: AccountDetailsS
           <label className="text-sm font-medium text-[#374151]">
             Departamento / Estado <span className="text-red-500">*</span>
           </label>
-          <div className="relative">
-            <select
-              value={formData.state}
-              onChange={(e) => set("state", e.target.value)}
-              disabled={!formData.country || statesLoading}
-              style={{ ...inputStyle(!!errors.state), paddingRight: 36, opacity: (!formData.country || statesLoading) ? 0.5 : 1 }}
-            >
-              <option value="">
-                {statesLoading ? "Cargando..." : !formData.country ? "Primero selecciona un país" : "Selecciona tu departamento"}
-              </option>
-              {states.map((s) => <option key={s} value={s}>{s}</option>)}
-            </select>
-            {statesLoading && (
-              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 animate-spin" />
-            )}
-          </div>
+          <Select<SelectOption>
+            options={states.map((s) => ({ value: s, label: s }))}
+            value={formData.state ? { value: formData.state, label: formData.state } : null}
+            onChange={(opt) => set("state", opt?.value ?? "")}
+            isDisabled={!formData.country || statesLoading}
+            isLoading={statesLoading}
+            isClearable
+            placeholder={!formData.country ? "Primero selecciona un país" : "Selecciona tu departamento"}
+            noOptionsMessage={() => "Sin resultados"}
+            loadingMessage={() => "Cargando..."}
+            styles={rsStyles(!!errors.state)}
+            menuPortalTarget={document.body}
+          />
           {errors.state && <p className="text-xs text-red-500">{errors.state}</p>}
         </div>
 
@@ -470,31 +508,30 @@ const AccountDetailsStep = ({ nextStep, prevStep, initialData }: AccountDetailsS
           <label className="text-sm font-medium text-[#374151]">
             Ciudad <span className="text-red-500">*</span>
           </label>
-          <div className="relative">
-            {cities.length > 0 ? (
-              <select
-                value={formData.city}
-                onChange={(e) => set("city", e.target.value)}
-                disabled={citiesLoading}
-                style={{ ...inputStyle(!!errors.city), paddingRight: 36, opacity: citiesLoading ? 0.5 : 1 }}
-              >
-                <option value="">{citiesLoading ? "Cargando..." : "Selecciona tu ciudad"}</option>
-                {cities.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
-            ) : (
-              <input
-                type="text"
-                value={formData.city}
-                onChange={(e) => set("city", e.target.value)}
-                placeholder={!formData.state ? "Primero selecciona un departamento" : "Escribe tu ciudad"}
-                disabled={!formData.state || citiesLoading}
-                style={{ ...inputStyle(!!errors.city), opacity: (!formData.state || citiesLoading) ? 0.5 : 1 }}
-              />
-            )}
-            {citiesLoading && (
-              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 animate-spin" />
-            )}
-          </div>
+          {cities.length > 0 ? (
+            <Select<SelectOption>
+              options={cities.map((c) => ({ value: c, label: c }))}
+              value={formData.city ? { value: formData.city, label: formData.city } : null}
+              onChange={(opt) => set("city", opt?.value ?? "")}
+              isDisabled={citiesLoading}
+              isLoading={citiesLoading}
+              isClearable
+              placeholder="Selecciona tu ciudad"
+              noOptionsMessage={() => "Sin resultados"}
+              loadingMessage={() => "Cargando..."}
+              styles={rsStyles(!!errors.city)}
+              menuPortalTarget={document.body}
+            />
+          ) : (
+            <input
+              type="text"
+              value={formData.city}
+              onChange={(e) => set("city", e.target.value)}
+              placeholder={!formData.state ? "Primero selecciona un departamento" : "Escribe tu ciudad"}
+              disabled={!formData.state || citiesLoading}
+              style={{ ...inputStyle(!!errors.city), opacity: (!formData.state || citiesLoading) ? 0.5 : 1 }}
+            />
+          )}
           {errors.city && <p className="text-xs text-red-500">{errors.city}</p>}
         </div>
 
@@ -519,26 +556,15 @@ const AccountDetailsStep = ({ nextStep, prevStep, initialData }: AccountDetailsS
             Número de teléfono <span className="text-red-500">*</span>
           </label>
           <div className="flex gap-2">
-            <select
-              value={formData.phoneCode}
-              onChange={(e) => set("phoneCode", e.target.value)}
-              style={{
-                height: 46,
-                borderRadius: 10,
-                border: "1px solid #E5E7EB",
-                backgroundColor: "#FFFFFF",
-                padding: "0 10px",
-                fontSize: 13,
-                color: "#111827",
-                outline: "none",
-                flexShrink: 0,
-                width: 130,
-              }}
-            >
-              {PHONE_CODES.map((p) => (
-                <option key={p.dial + p.label} value={p.dial}>{p.flag} {p.label}</option>
-              ))}
-            </select>
+            <div style={{ flexShrink: 0, width: 150 }}>
+              <Select<SelectOption>
+                options={PHONE_CODE_OPTIONS}
+                value={PHONE_CODE_OPTIONS.find((o) => o.value === formData.phoneCode) || null}
+                onChange={(opt) => set("phoneCode", opt?.value ?? "")}
+                styles={rsStyles(false)}
+                menuPortalTarget={document.body}
+              />
+            </div>
             <input
               type="tel"
               value={formData.phone}

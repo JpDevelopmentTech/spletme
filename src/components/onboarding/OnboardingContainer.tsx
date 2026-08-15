@@ -180,7 +180,7 @@ const OnboardingContainer = () => {
         className="flex w-full items-center justify-between bg-white px-10"
         style={{ height: 64, borderBottom: "1px solid #E5E7EB" }}
       >
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 rounded-lg bg-white p-1">
           <img src={logo} alt="SplitMe" className="h-7 w-auto" />
         </div>
         <div className="flex items-center gap-4">

@@ -8,9 +8,11 @@ class AlbumService {
   /**
    * Obtiene todos los álbumes del usuario autenticado con paginación.
    */
-  async getAlbums(skip = 0, limit = 10): Promise<AlbumsResponse | AlbumsError> {
+  async getAlbums(skip = 0, limit = 10, search = ""): Promise<AlbumsResponse | AlbumsError> {
     try {
-      const response = await apiClient.get(`${this.BASE}/albums?skip=${skip}&limit=${limit}`);
+      const params = new URLSearchParams({ skip: String(skip), limit: String(limit) });
+      if (search.trim()) params.set("search", search.trim());
+      const response = await apiClient.get(`${this.BASE}/albums?${params.toString()}`);
       return response.data as AlbumsResponse;
     } catch (error: unknown) {
       const axErr = error as {
