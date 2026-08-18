@@ -1,28 +1,36 @@
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { TrendingUp, DollarSign, Music, ArrowRight, PartyPopper } from "lucide-react";
+import { Handshake, Users, Wallet, ArrowRight, Check, ChevronRight } from "lucide-react";
 import { setAuth } from "@/store/states/authSlice";
 
-const FEATURES = [
+/** Siguientes pasos reales dentro del panel, en el orden en que conviene hacerlos. */
+const NEXT_STEPS = [
   {
-    Icon: TrendingUp,
-    title: "Analytics",
-    description: "Monitorea tus ingresos",
+    Icon: Handshake,
+    title: "Conecta un distribuidor",
+    description: "Sube el reporte y calculamos el reparto",
+    to: "/panel/dealers",
   },
   {
-    Icon: DollarSign,
-    title: "Regalías",
-    description: "Gestiona tus ganancias",
+    Icon: Users,
+    title: "Invita a tus colaboradores",
+    description: "Cada uno ve lo que le toca",
+    to: "/panel/collaborators",
   },
-  { Icon: Music, title: "Catálogo", description: "Sincroniza tu música" },
+  {
+    Icon: Wallet,
+    title: "Configura tu banco",
+    description: "Para recibir los pagos por Stripe o Wise",
+    to: "/panel/wallet",
+  },
 ];
 
 const CompletionStep = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const handleGoToDashboard = () => {
-    // Garantiza la marca antes de navegar, independiente del backend
+  /** Marca el onboarding como completado antes de salir, pase lo que pase en el backend. */
+  const completeAndGo = (to: string) => {
     const userStr = localStorage.getItem("user");
     if (userStr) {
       const user = JSON.parse(userStr);
@@ -30,78 +38,60 @@ const CompletionStep = () => {
       localStorage.setItem("user", JSON.stringify(user));
       dispatch(setAuth({ isAuth: "true", user }));
     }
-    navigate("/panel/home");
+    navigate(to);
   };
 
+  const firstName = (() => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user") ?? "{}");
+      const name = typeof user.name === "string" ? user.name.trim().split(" ")[0] : "";
+      return name || "";
+    } catch {
+      return "";
+    }
+  })();
+
   return (
-    <div className="flex flex-col items-center gap-6 text-center">
-      {/* Check circle */}
-      <div
-        className="flex items-center justify-center font-bold text-white"
-        style={{
-          width: 88,
-          height: 88,
-          borderRadius: 44,
-          backgroundColor: "#22C55E",
-          fontSize: 40,
-          lineHeight: 1,
-        }}
-      >
-        ✓
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-3.5">
+        <span className="flex h-[72px] w-[72px] items-center justify-center rounded-full bg-[#E4F5EC]">
+          <Check className="h-8 w-8 text-[#2FB37E]" />
+        </span>
+        <div className="flex flex-col gap-1.5">
+          <h1 className="font-display text-[28px] font-semibold text-[#1C1D22]">
+            {firstName ? `¡Todo listo, ${firstName}!` : "¡Todo listo!"}
+          </h1>
+          <p className="text-[13.5px] leading-relaxed text-[#71757E]">
+            Tu cuenta quedó verificada y tu perfil configurado. Ya puedes gestionar tus regalías.
+          </p>
+        </div>
       </div>
 
-      {/* Title */}
-      <div className="flex flex-col gap-2">
-        <h2 className="text-2xl font-bold text-[#111827]">¡Cuenta configurada exitosamente!</h2>
-        <p className="mx-auto max-w-md text-sm text-[#6B7280]">
-          Tu perfil está listo. Ya puedes gestionar tus regalías musicales.
-        </p>
-      </div>
-
-      {/* Feature cards */}
-      <div className="flex w-full gap-3.5">
-        {FEATURES.map(({ Icon, title, description }) => (
-          <div
+      <div className="flex flex-col gap-2.5">
+        {NEXT_STEPS.map(({ Icon, title, description, to }) => (
+          <button
             key={title}
-            className="flex flex-1 flex-col items-center gap-2"
-            style={{
-              backgroundColor: "#F9FAFB",
-              borderRadius: 12,
-              border: "1px solid #E5E7EB",
-              padding: 20,
-            }}
+            onClick={() => completeAndGo(to)}
+            className="flex items-center gap-3.5 rounded-[18px] border border-[#E8E8EC] bg-white px-4 py-3.5 text-left transition-colors hover:bg-[#F4F5F7] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF5C00]"
           >
-            <Icon size={28} color="#F97316" />
-            <span className="text-sm font-semibold text-[#111827]">{title}</span>
-            <span className="text-xs text-[#6B7280]">{description}</span>
-          </div>
+            <span className="flex h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-[13px] bg-[#FFEADD]">
+              <Icon className="h-[17px] w-[17px] text-[#FF5C00]" />
+            </span>
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="text-[13.5px] font-semibold text-[#1C1D22]">{title}</span>
+              <span className="text-[11.5px] text-[#A6AAB2]">{description}</span>
+            </span>
+            <ChevronRight className="h-4 w-4 flex-shrink-0 text-[#A6AAB2]" />
+          </button>
         ))}
       </div>
 
-      {/* Welcome banner */}
-      <div
-        className="flex w-full items-center gap-3 text-left"
-        style={{
-          backgroundColor: "#FFF7ED",
-          border: "1px solid #FED7AA",
-          borderRadius: 12,
-          padding: 16,
-        }}
-      >
-        <PartyPopper size={24} color="#F97316" className="flex-shrink-0" />
-        <p className="text-sm text-[#9A3412]">
-          ¡Bienvenido a SplitMe! Tu cuenta está lista para comenzar.
-        </p>
-      </div>
-
-      {/* CTA */}
       <button
-        onClick={handleGoToDashboard}
-        className="flex w-full items-center justify-center gap-2 text-base font-bold text-white transition-opacity hover:opacity-90"
-        style={{ height: 52, borderRadius: 12, backgroundColor: "#F97316" }}
+        onClick={() => completeAndGo("/panel/home")}
+        className="flex h-[52px] w-full items-center justify-center gap-2 rounded-[26px] bg-[#FF5C00] text-[15px] font-semibold text-white shadow-[0_8px_20px_-6px_rgba(255,92,0,0.55)] transition-colors hover:bg-[#EA580C] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF5C00]"
       >
-        Ir al Dashboard
-        <ArrowRight size={18} />
+        Entrar al panel
+        <ArrowRight className="h-4 w-4" />
       </button>
     </div>
   );

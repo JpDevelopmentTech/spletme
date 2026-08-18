@@ -5,6 +5,7 @@ import type {
   DistributorKpi,
   DistributorDashboard,
   CreateDistributorPayload,
+  UploadPeriodPayload,
 } from "../types/distributor.types";
 
 export interface RejectedSong {
@@ -46,17 +47,22 @@ export const distributorsService = {
     return apiClient.get(`/distributors/${distributorId}/uploads`).then((r) => r.data.data);
   },
 
+  /**
+   * Sube un archivo asociándolo a un rango de meses de un año.
+   *
+   * @param period - { startMonth, endMonth, year }, con los meses de 1 a 12.
+   */
   uploadSongs(
     distributorId: string,
     file: File,
-    quarter: string,
-    year: number,
+    period: UploadPeriodPayload,
     onUploadProgress?: (percent: number) => void,
   ): Promise<UploadSongsResult> {
     const form = new FormData();
     form.append("csvFile", file);
-    form.append("quarter", quarter);
-    form.append("year", String(year));
+    form.append("startMonth", String(period.startMonth));
+    form.append("endMonth", String(period.endMonth));
+    form.append("year", String(period.year));
     return apiClient
       .post(`/distributors/${distributorId}/upload`, form, {
         headers: { "Content-Type": "multipart/form-data" },

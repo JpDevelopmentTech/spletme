@@ -13,7 +13,8 @@ import {
   MoreHorizontal,
   ArrowRight,
 } from "lucide-react";
-import type { Distributor, DistributorKpi, Quarter } from "../../../types/distributor.types";
+import type { Distributor, DistributorKpi } from "../../../types/distributor.types";
+import type { PeriodLike } from "../../../utils/period.utils";
 import { distributorsService } from "../../../services/distributorsService";
 import CreateDistributorModal from "../../../components/ui/CreateDistributorModal";
 import UploadSongsModal from "../../../components/ui/UploadSongsModal";
@@ -53,7 +54,7 @@ export default function Dealers() {
   const [showCreate, setShowCreate] = useState(false);
   const [uploadTarget, setUploadTarget] = useState<{
     distributor: Distributor;
-    existingUploads: Array<{ quarter: Quarter; year: number }>;
+    existingUploads: PeriodLike[];
   } | null>(null);
 
   async function openUploadModal(distributor: Distributor) {
@@ -61,9 +62,16 @@ export default function Dealers() {
       const ups = await distributorsService.getUploads(distributor._id);
       setUploadTarget({
         distributor,
+        // Se pasa el rango completo para poder detectar solapamientos de meses.
         existingUploads: ups
           .filter((u) => u.status !== "error")
-          .map((u) => ({ quarter: u.quarter, year: u.year })),
+          .map((u) => ({
+            startMonth: u.startMonth,
+            endMonth: u.endMonth,
+            quarter: u.quarter,
+            year: u.year,
+            periodLabel: u.periodLabel,
+          })),
       });
     } catch {
       setUploadTarget({ distributor, existingUploads: [] });
@@ -150,12 +158,11 @@ export default function Dealers() {
           distributorName={uploadTarget.distributor.name}
           existingUploads={uploadTarget.existingUploads}
           onClose={() => setUploadTarget(null)}
-          onConfirm={async (file, quarter, year, onProgress) => {
+          onConfirm={async (file, period, onProgress) => {
             const result = await distributorsService.uploadSongs(
               uploadTarget.distributor._id,
               file,
-              quarter,
-              year,
+              period,
               onProgress,
             );
             await load();

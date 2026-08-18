@@ -1,32 +1,44 @@
 import { useState, useRef } from "react";
 import { X, Upload, FileText, AlertCircle, CheckCircle2, Music2 } from "lucide-react";
-import type { Quarter } from "../../types/distributor.types";
+import type { UploadPeriodPayload } from "../../types/distributor.types";
 import type { UploadSongsResult } from "../../services/distributorsService";
+import {
+  MONTH_OPTIONS,
+  MONTH_SHORT_NAMES,
+  buildPeriodLabel,
+  findOverlappingUpload,
+  formatUploadPeriod,
+  monthsCovered,
+  resolvePeriod,
+  validatePeriodRange,
+  type PeriodLike,
+} from "../../utils/period.utils";
 
 type UploadPhase = "idle" | "uploading" | "processing" | "done";
 
 interface Props {
   distributorName: string;
-  existingUploads?: Array<{ quarter: Quarter; year: number }>;
+  /** Cargas ya registradas, para impedir subir meses que se solapan. */
+  existingUploads?: PeriodLike[];
   onClose: () => void;
   onConfirm: (
     file: File,
-    quarter: Quarter,
-    year: number,
+    period: UploadPeriodPayload,
     onProgress: (percent: number) => void,
   ) => Promise<UploadSongsResult | void>;
 }
 
-const QUARTERS: Quarter[] = ["Q1", "Q2", "Q3", "Q4"];
-const QUARTER_LABELS: Record<Quarter, string> = {
-  Q1: "Q1 — Ene / Feb / Mar",
-  Q2: "Q2 — Abr / May / Jun",
-  Q3: "Q3 — Jul / Ago / Sep",
-  Q4: "Q4 — Oct / Nov / Dic",
-};
-
 const CURRENT_YEAR = new Date().getFullYear();
 const YEARS = Array.from({ length: 5 }, (_, i) => CURRENT_YEAR - i);
+
+/** Atajos habituales para no obligar a elegir mes a mes. */
+const PRESETS = [
+  { label: "Q1", startMonth: 1, endMonth: 3 },
+  { label: "Q2", startMonth: 4, endMonth: 6 },
+  { label: "Q3", startMonth: 7, endMonth: 9 },
+  { label: "Q4", startMonth: 10, endMonth: 12 },
+  { label: "Año completo", startMonth: 1, endMonth: 12 },
+];
 
 export default function UploadSongsModal({
   distributorName,
@@ -34,7 +46,8 @@ export default function UploadSongsModal({
   onClose,
   onConfirm,
 }: Props) {
-  const [quarter, setQuarter] = useState<Quarter>("Q1");
+  const [startMonth, setStartMonth] = useState(1);
+  const [endMonth, setEndMonth] = useState(3);
   const [year, setYear] = useState(CURRENT_YEAR);
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState("");
@@ -45,8 +58,36 @@ export default function UploadSongsModal({
 
   const loading = phase === "uploading" || phase === "processing";
 
-  const isDuplicate = existingUploads.some((u) => u.quarter === quarter && u.year === year);
-  const usedQuartersForYear = existingUploads.filter((u) => u.year === year).map((u) => u.quarter);
+  const rangeError = validatePeriodRange(startMonth, endMonth);
+  const periodLabel = buildPeriodLabel(startMonth, endMonth, year);
+  const months = monthsCovered(startMonth, endMonth);
+
+  // Una carga no puede solaparse con otra del mismo año: el backend lo rechaza
+  // y aquí se avisa antes de gastar la subida del archivo.
+  const overlapping = rangeError
+    ? null
+    : findOverlappingUpload(existingUploads, { startMonth, endMonth }, year);
+
+  /** Meses del año ya cubiertos por otras cargas, para pintarlos como ocupados. */
+  const takenMonths = new Set<number>();
+  existingUploads
+    .filter((u) => u.year === year)
+    .forEach((u) => {
+      const period = resolvePeriod(u);
+      if (!period) return;
+      for (let m = period.startMonth; m <= period.endMonth; m += 1) takenMonths.add(m);
+    });
+
+  /** Al elegir un mes inicial posterior al final, el final se arrastra con él. */
+  function handleStartMonthChange(value: number) {
+    setStartMonth(value);
+    if (value > endMonth) setEndMonth(value);
+  }
+
+  function applyPreset(preset: { startMonth: number; endMonth: number }) {
+    setStartMonth(preset.startMonth);
+    setEndMonth(preset.endMonth);
+  }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0] ?? null;
@@ -69,15 +110,19 @@ export default function UploadSongsModal({
       setError("Selecciona un archivo antes de continuar");
       return;
     }
-    if (isDuplicate) {
-      setError(`Ya existe una carga ${quarter} ${year} para este distribuidor`);
+    if (rangeError) {
+      setError(rangeError);
+      return;
+    }
+    if (overlapping) {
+      setError(`El periodo se solapa con la carga de ${formatUploadPeriod(overlapping)}`);
       return;
     }
     setError("");
     setProgress(0);
     setPhase("uploading");
     try {
-      const res = await onConfirm(file, quarter, year, (percent) => {
+      const res = await onConfirm(file, { startMonth, endMonth, year }, (percent) => {
         setProgress(percent);
         // Cuando el archivo termina de subir, empieza el guardado en backend
         if (percent >= 100) setPhase("processing");
@@ -106,8 +151,7 @@ export default function UploadSongsModal({
             progress={progress}
             result={result}
             fileName={file?.name ?? ""}
-            quarter={quarter}
-            year={year}
+            periodLabel={periodLabel}
             onClose={onClose}
           />
         </div>
@@ -139,32 +183,92 @@ export default function UploadSongsModal({
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* Quarter selector */}
+          {/* Selector de periodo: rango de meses dentro de un año */}
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold uppercase tracking-wider text-[#374151]">
-              Temporada (Quarter) *
+              Periodo del reporte *
             </label>
-            <div className="grid grid-cols-2 gap-2">
-              {QUARTERS.map((q) => {
-                const isUsed = usedQuartersForYear.includes(q);
+
+            {/* Atajos: trimestres y año completo */}
+            <div className="flex flex-wrap gap-1.5">
+              {PRESETS.map((preset) => {
+                const isActive =
+                  startMonth === preset.startMonth && endMonth === preset.endMonth;
                 return (
                   <button
-                    key={q}
+                    key={preset.label}
                     type="button"
-                    onClick={() => !isUsed && setQuarter(q)}
-                    disabled={isUsed}
-                    title={isUsed ? `Ya existe una carga ${q} ${year}` : undefined}
-                    className={`flex items-center gap-2 rounded-lg border px-3 py-2.5 text-left text-xs font-medium transition-colors ${
-                      isUsed
-                        ? "cursor-not-allowed border-gray-100 bg-gray-50 text-gray-300 line-through"
-                        : quarter === q
-                          ? "border-[#F97316] bg-orange-50 text-[#F97316]"
-                          : "border-gray-200 text-[#6B7280] hover:border-gray-300"
+                    onClick={() => applyPreset(preset)}
+                    className={`rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors ${
+                      isActive
+                        ? "border-[#F97316] bg-orange-50 text-[#F97316]"
+                        : "border-gray-200 text-[#6B7280] hover:border-gray-300"
                     }`}
                   >
-                    <span className="w-7 text-sm font-bold">{q}</span>
-                    <span className="text-[11px]">{QUARTER_LABELS[q].split("—")[1]?.trim()}</span>
+                    {preset.label}
                   </button>
+                );
+              })}
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex flex-col gap-1">
+                <span className="text-[11px] font-medium text-[#6B7280]">Desde</span>
+                <select
+                  value={startMonth}
+                  onChange={(e) => handleStartMonthChange(Number(e.target.value))}
+                  className="h-10 rounded-lg border border-gray-200 bg-white px-3 text-sm text-[#111827] focus:border-[#F97316] focus:outline-none"
+                >
+                  {MONTH_OPTIONS.map((m) => (
+                    <option key={m.value} value={m.value}>
+                      {m.label}
+                      {takenMonths.has(m.value) ? " (ya cargado)" : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <span className="text-[11px] font-medium text-[#6B7280]">Hasta</span>
+                <select
+                  value={endMonth}
+                  onChange={(e) => setEndMonth(Number(e.target.value))}
+                  className="h-10 rounded-lg border border-gray-200 bg-white px-3 text-sm text-[#111827] focus:border-[#F97316] focus:outline-none"
+                >
+                  {MONTH_OPTIONS.filter((m) => m.value >= startMonth).map((m) => (
+                    <option key={m.value} value={m.value}>
+                      {m.label}
+                      {takenMonths.has(m.value) ? " (ya cargado)" : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Regleta de 12 meses: muestra de un vistazo qué cubre la carga */}
+            <div className="mt-1 grid grid-cols-12 gap-0.5">
+              {MONTH_SHORT_NAMES.map((name, index) => {
+                const month = index + 1;
+                const inRange = month >= startMonth && month <= endMonth;
+                const isTaken = takenMonths.has(month);
+                return (
+                  <div
+                    key={name}
+                    title={
+                      isTaken ? `${name}: ya cubierto por otra carga` : `${name} ${year}`
+                    }
+                    className={`flex h-6 items-center justify-center rounded text-[9px] font-medium ${
+                      inRange && isTaken
+                        ? "bg-red-100 text-red-600"
+                        : inRange
+                          ? "bg-[#F97316] text-white"
+                          : isTaken
+                            ? "bg-gray-200 text-gray-400 line-through"
+                            : "bg-gray-50 text-[#9CA3AF]"
+                    }`}
+                  >
+                    {name}
+                  </div>
                 );
               })}
             </div>
@@ -234,12 +338,18 @@ export default function UploadSongsModal({
             <AlertCircle className="h-3.5 w-3.5 flex-shrink-0 text-[#F97316]" />
             <span className="text-xs text-[#6B7280]">
               Esta carga se asociará a{" "}
-              <span className="font-semibold text-[#111827]">
-                {quarter} {year}
-              </span>{" "}
-              para <span className="font-semibold text-[#111827]">{distributorName}</span>
+              <span className="font-semibold text-[#111827]">{periodLabel}</span>{" "}
+              ({months} {months === 1 ? "mes" : "meses"}) para{" "}
+              <span className="font-semibold text-[#111827]">{distributorName}</span>
             </span>
           </div>
+
+          {overlapping && (
+            <p className="flex items-center gap-1 text-xs text-amber-600">
+              <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
+              El periodo se solapa con la carga de {formatUploadPeriod(overlapping)}
+            </p>
+          )}
 
           {error && (
             <p className="flex items-center gap-1 text-xs text-red-500">
@@ -258,14 +368,14 @@ export default function UploadSongsModal({
             </button>
             <button
               type="submit"
-              disabled={loading || !file || isDuplicate}
+              disabled={loading || !file || Boolean(rangeError) || Boolean(overlapping)}
               className="h-10 flex-1 rounded-lg bg-[#F97316] text-sm font-semibold text-white transition-colors hover:bg-orange-600 disabled:opacity-60"
             >
               {loading
                 ? "Subiendo..."
-                : isDuplicate
-                  ? `${quarter} ${year} ya cargado`
-                  : `Subir ${quarter} ${year}`}
+                : overlapping
+                  ? "Periodo ya cargado"
+                  : `Subir ${periodLabel}`}
             </button>
           </div>
         </form>
@@ -279,8 +389,7 @@ interface ProgressProps {
   progress: number;
   result: UploadSongsResult | null;
   fileName: string;
-  quarter: Quarter;
-  year: number;
+  periodLabel: string;
   onClose: () => void;
 }
 
@@ -289,8 +398,7 @@ function UploadProgressView({
   progress,
   result,
   fileName,
-  quarter,
-  year,
+  periodLabel,
   onClose,
 }: ProgressProps) {
   const isUploading = phase === "uploading";
@@ -304,7 +412,7 @@ function UploadProgressView({
       : "Subiendo archivo...";
 
   const subtitle = isDone
-    ? `Carga ${quarter} ${year} completada`
+    ? `Carga de ${periodLabel} completada`
     : isProcessing
       ? "Estamos procesando y guardando tus canciones"
       : "Enviando el archivo al servidor";

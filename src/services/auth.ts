@@ -34,17 +34,18 @@ const getMessageFromPayload = (payload: unknown, fallback: string): string => {
 };
 
 export const AuthService = {
-  /** Autentica al usuario con email y contraseña */
+  /**
+   * Autentica al usuario con email y contraseña.
+   *
+   * El error se deja subir a quien llama: sin él no hay forma de distinguir unas
+   * credenciales incorrectas (el servidor responde) de un fallo de conexión.
+   */
   login: async (email: string, password: string) => {
-    try {
-      const response = await apiClient.post(`${BASE}/sign-in`, {
-        email,
-        password,
-      });
-      return response.data;
-    } catch {
-      return null;
-    }
+    const response = await apiClient.post(`${BASE}/sign-in`, {
+      email,
+      password,
+    });
+    return response.data;
   },
 
   /** Registra un nuevo usuario */
@@ -138,7 +139,10 @@ export const AuthService = {
     if (!subuserId.trim()) return { success: false, message: "ID de subperfil inválido" };
     try {
       const response = await apiClient.delete(`${BASE}/subusers/${subuserId}`);
-      return { success: true, message: response.data?.message ?? "Subperfil desvinculado correctamente" };
+      return {
+        success: true,
+        message: response.data?.message ?? "Subperfil desvinculado correctamente",
+      };
     } catch (error) {
       return {
         success: false,
@@ -176,16 +180,18 @@ export const AuthService = {
         onboardingData: {
           ...(currentUser.onboardingData ?? {}),
           ...(updatedPayload.onboardingData ?? {}),
-          country:          payload.country          ?? currentUser.onboardingData?.country          ?? null,
-          department:       payload.department       ?? currentUser.onboardingData?.department       ?? null,
-          city:             payload.city             ?? currentUser.onboardingData?.city             ?? null,
-          phoneCountryCode: payload.phoneCountryCode ?? currentUser.onboardingData?.phoneCountryCode ?? null,
-          phone:            payload.phone            ?? currentUser.onboardingData?.phone            ?? null,
-          address:          payload.address          ?? currentUser.onboardingData?.address          ?? null,
+          country: payload.country ?? currentUser.onboardingData?.country ?? null,
+          department: payload.department ?? currentUser.onboardingData?.department ?? null,
+          city: payload.city ?? currentUser.onboardingData?.city ?? null,
+          phoneCountryCode:
+            payload.phoneCountryCode ?? currentUser.onboardingData?.phoneCountryCode ?? null,
+          phone: payload.phone ?? currentUser.onboardingData?.phone ?? null,
+          address: payload.address ?? currentUser.onboardingData?.address ?? null,
           profession: payload.professions
             ? payload.professions.join(",")
-            : currentUser.onboardingData?.profession ?? null,
-          otherProfession: payload.otherProfession ?? currentUser.onboardingData?.otherProfession ?? null,
+            : (currentUser.onboardingData?.profession ?? null),
+          otherProfession:
+            payload.otherProfession ?? currentUser.onboardingData?.otherProfession ?? null,
         },
       };
       localStorage.setItem("user", JSON.stringify(updatedUser));

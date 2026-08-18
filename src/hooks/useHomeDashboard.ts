@@ -30,7 +30,7 @@ export function useHomeDashboard() {
   const { user } = useAuth0();
 
   useEffect(() => {
-    SongService.getTopByStreams().then((res: { data?: TopSong[] } | null) => {
+    SongService.getTopByIncome().then((res: { data?: TopSong[] } | null) => {
       if (res?.data) setTopSongs(res.data);
     });
   }, []);
@@ -81,7 +81,11 @@ export function useHomeDashboard() {
 
   const chartOptions: ApexOptions = useMemo(
     () => ({
-      chart: { toolbar: { show: false }, background: "transparent" },
+      chart: {
+        toolbar: { show: false },
+        background: "transparent",
+        fontFamily: '"Fira Code", ui-monospace, monospace',
+      },
       stroke: { width: [2, 2], curve: "smooth" },
       fill: {
         type: "gradient",

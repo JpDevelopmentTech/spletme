@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { motion } from "framer-motion";
+import { ArrowLeft, ArrowRight, CircleAlert, CircleCheck, Loader2, Pencil } from "lucide-react";
 import { OnboardingData, OnboardingService } from "../../../services/onboarding";
 
 interface VerificationStepProps {
@@ -153,31 +153,26 @@ const VerificationStep = ({ nextStep, prevStep, verificationEmail }: Verificatio
   const emailToVerify = verificationEmail || "tu correo";
 
   return (
-    <motion.div className="flex flex-col gap-5">
-      {/* Header */}
-      <div className="space-y-4 text-center">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.2 }}
-          className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-r from-gray-400 to-gray-600 text-3xl text-white shadow-lg"
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-1.5">
+        <h1 className="font-display text-[28px] font-semibold text-[#1C1D22]">
+          Verifica tu correo
+        </h1>
+        <p className="text-[13.5px] leading-relaxed text-[#71757E]">
+          Enviamos un código de 6 dígitos a{" "}
+          <span className="font-semibold text-[#1C1D22]">{emailToVerify}</span>
+        </p>
+        <button
+          type="button"
+          onClick={prevStep}
+          className="flex w-fit items-center gap-1.5 text-[12.5px] font-semibold text-[#FF5C00] transition-colors hover:text-[#EA580C] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF5C00]"
         >
-          📧
-        </motion.div>
-
-        <div>
-          <h3 className="mb-2 text-xl font-bold text-gray-900 dark:text-white">
-            Verifica tu cuenta
-          </h3>
-          <p className="text-gray-600 dark:text-gray-400">
-            Hemos enviado un código de verificación a{" "}
-            <span className="font-semibold text-gray-900 dark:text-white">{emailToVerify}</span>
-          </p>
-        </div>
+          <Pencil className="h-3 w-3" />
+          Cambiar correo
+        </button>
       </div>
 
-      {/* Code boxes */}
-      <div className="flex justify-center gap-2.5">
+      <div className="flex gap-2.5">
         {code.map((digit, index) => (
           <input
             key={index}
@@ -186,124 +181,104 @@ const VerificationStep = ({ nextStep, prevStep, verificationEmail }: Verificatio
             inputMode="numeric"
             maxLength={1}
             value={digit}
+            aria-label={`Dígito ${index + 1} de ${CODE_LENGTH}`}
+            aria-invalid={Boolean(error)}
             onChange={(e) => handleInputChange(index, e.target.value)}
             onKeyDown={(e) => handleKeyDown(index, e)}
             onPaste={handlePaste}
-            className="text-center text-[22px] font-bold outline-none transition-colors"
-            style={{
-              width: 52,
-              height: 60,
-              borderRadius: 10,
-              backgroundColor: digit ? "#FFF7ED" : "#FFFFFF",
-              border: digit
-                ? "2px solid #F97316"
-                : error
-                  ? "1.5px solid #FCA5A5"
-                  : "1.5px solid #E5E7EB",
-              color: digit ? "#F97316" : "#111827",
-            }}
+            disabled={isVerifying}
+            className={`h-[62px] flex-1 rounded-2xl border-0 text-center font-mono text-[24px] font-semibold text-[#1C1D22] outline outline-1 transition-colors focus:outline-2 focus:ring-0 ${
+              error
+                ? "bg-white outline-[#E5484D] focus:outline-[#E5484D]"
+                : digit
+                  ? "bg-white outline-[#E8E8EC] focus:outline-[#FF5C00]"
+                  : "bg-[#F4F5F7] outline-[#E8E8EC] focus:outline-[#FF5C00]"
+            }`}
           />
         ))}
       </div>
 
       {error && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center"
+        <p
+          role="alert"
+          className="flex items-center gap-2 rounded-[14px] bg-[#FDECEC] px-3 py-2.5 text-[11.5px] leading-snug text-[#E5484D]"
         >
-          <p className="flex items-center justify-center space-x-1 text-sm text-red-600 dark:text-red-400">
-            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <span>{error}</span>
-          </p>
-        </motion.div>
+          <CircleAlert className="h-3.5 w-3.5 flex-shrink-0" />
+          {error}
+        </p>
       )}
 
       {successMessage && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center"
+        <p
+          role="status"
+          className="flex items-center gap-2 rounded-[14px] bg-[#E4F5EC] px-3 py-2.5 text-[11.5px] leading-snug text-[#2FB37E]"
         >
-          <p className="text-sm text-green-600 dark:text-green-400">{successMessage}</p>
-        </motion.div>
+          <CircleCheck className="h-3.5 w-3.5 flex-shrink-0" />
+          {successMessage}
+        </p>
       )}
-      {/* Resend */}
-      <div className="text-center">
+
+      <div className="flex items-center gap-2">
+        <span className="text-[12.5px] text-[#71757E]">¿No llegó el código?</span>
         {countdown > 0 ? (
-          <p className="text-sm text-[#9CA3AF]">
-            ¿No recibiste el código? Reenviar en <span className="font-semibold">{countdown}s</span>
-          </p>
+          <span className="font-mono text-[12.5px] text-[#A6AAB2]">
+            Puedes reenviarlo en {countdown} s
+          </span>
         ) : (
           <button
+            type="button"
             onClick={handleResendCode}
-            disabled={isResending || isVerifying}
-            className="text-sm font-semibold text-gray-600 transition-colors duration-200 hover:text-gray-700 disabled:opacity-50 dark:text-gray-400 dark:hover:text-gray-300"
+            disabled={isResending}
+            className="text-[12.5px] font-semibold text-[#FF5C00] transition-colors hover:text-[#EA580C] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF5C00] disabled:text-[#A6AAB2]"
           >
-            {isResending ? "Enviando..." : "Reenviar código"}
+            {isResending ? "Enviando…" : "Reenviar ahora"}
           </button>
         )}
       </div>
 
-      {/* Info box */}
-      <div
-        className="flex items-start gap-2.5"
-        style={{
-          backgroundColor: "#F0F9FF",
-          border: "1px solid #BAE6FD",
-          borderRadius: 10,
-          padding: 14,
-        }}
-      >
-        <div className="flex items-start space-x-3">
-          <div className="text-xl text-gray-500">💡</div>
-          <div>
-            <h4 className="mb-1 font-semibold text-gray-900 dark:text-gray-100">
-              Consejos para recibir el código
-            </h4>
-            <ul className="space-y-1 text-sm text-gray-700 dark:text-gray-300">
-              <li>• Revisa tu bandeja de entrada y spam</li>
-              <li>• Verifica que tu correo sea correcto</li>
-              <li>• Asegúrate de tener conexión a internet</li>
-              <li>• El código expira en 10 minutos</li>
-            </ul>
-          </div>
-        </div>
+      <div className="flex flex-col gap-2.5 rounded-[18px] bg-[#F4F5F7] p-4">
+        <span className="text-[12.5px] font-semibold text-[#1C1D22]">
+          Si no lo ves en unos segundos
+        </span>
+        {[
+          "Revisa la carpeta de spam o promociones.",
+          "El código caduca a los 10 minutos.",
+          "Comprueba que el correo esté bien escrito.",
+        ].map((tip) => (
+          <span key={tip} className="flex items-start gap-2.5">
+            <span className="mt-[6px] h-[5px] w-[5px] flex-shrink-0 rounded-full bg-[#A6AAB2]" />
+            <span className="text-[12px] leading-snug text-[#71757E]">{tip}</span>
+          </span>
+        ))}
       </div>
 
-      {/* Navigation Buttons */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-        className="flex space-x-4 pt-6"
-      >
+      <div className="flex gap-3">
         <button
           onClick={prevStep}
           disabled={isVerifying}
-          className="flex-1 rounded-xl bg-gray-100 px-6 py-3 font-semibold text-gray-700 transition-all duration-300 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+          className="flex h-[50px] w-[150px] flex-shrink-0 items-center justify-center gap-2 rounded-[25px] border border-[#E8E8EC] bg-white text-[14.5px] font-semibold text-[#1C1D22] transition-colors hover:bg-[#F4F5F7] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF5C00] disabled:text-[#A6AAB2]"
         >
-          Anterior
+          <ArrowLeft className="h-[15px] w-[15px]" />
+          Atrás
         </button>
         <button
           onClick={handleVerify}
           disabled={!isCodeComplete || isVerifying}
-          className={`flex-1 rounded-xl px-6 py-3 font-semibold text-white transition-all duration-300 ${
+          className={`flex h-[50px] flex-1 items-center justify-center gap-2 rounded-[25px] text-[15px] font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF5C00] ${
             isCodeComplete && !isVerifying
-              ? "transform bg-gradient-to-r from-gray-500 to-gray-700 shadow-lg hover:-translate-y-0.5 hover:from-gray-600 hover:to-gray-800 hover:shadow-xl"
-              : "cursor-not-allowed bg-gray-300 dark:bg-gray-600"
+              ? "bg-[#FF5C00] text-white shadow-[0_8px_20px_-6px_rgba(255,92,0,0.55)] hover:bg-[#EA580C]"
+              : "cursor-not-allowed bg-[#F4F5F7] text-[#A6AAB2]"
           }`}
         >
-          {isVerifying ? "Verificando..." : "Verificar →"}
+          {isVerifying ? "Verificando…" : "Verificar código"}
+          {isVerifying ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <ArrowRight className="h-4 w-4" />
+          )}
         </button>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 };
 

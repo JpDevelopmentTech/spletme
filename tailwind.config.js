@@ -28,6 +28,8 @@ export default {
       },
       fontFamily: {
         custom: ["Poppins", "sans-serif"],
+        display: ["Bricolage Grotesque", "Poppins", "sans-serif"],
+        mono: ["Fira Code", "ui-monospace", "monospace"],
       },
       backgroundImage: {
         panel: "url('/src/assets/images/bgsplet.jpg')",

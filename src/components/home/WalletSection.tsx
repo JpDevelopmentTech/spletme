@@ -23,10 +23,10 @@ export function WalletSection({
 
   return (
     <div
-      className="flex flex-col gap-[18px] rounded-[36px] border border-white/60 bg-white/55 p-6 shadow-[0_16px_40px_-16px_rgba(255,92,0,0.15)] backdrop-blur-2xl"
+      className="flex flex-col gap-3.5 rounded-[26px] border border-[#E8E8EC] bg-white p-[22px] shadow-[0_10px_28px_-12px_rgba(255,92,0,0.15)]"
       data-tour="balance-section"
     >
-      <h2 className="text-base font-semibold text-[#1C1D22]">Billetera</h2>
+      <h2 className="font-display text-base font-semibold text-[#1C1D22]">Billetera</h2>
 
       {loading ? (
         <div className="flex items-center justify-center py-8">
@@ -42,19 +42,19 @@ export function WalletSection({
           {bothActive ? (
             <button
               onClick={onGoToBank}
-              className="flex w-full items-center justify-between rounded-[22px] border border-white/60 bg-white/70 px-4 py-3.5 shadow-[0_2px_8px_-2px_rgba(255,92,0,0.10)] backdrop-blur-md transition-colors hover:bg-white/85"
+              className="flex w-full items-center justify-between rounded-[20px] border border-[#E8E8EC] bg-white px-4 py-3.5 transition-colors hover:bg-[#F4F5F7]"
             >
-              <span className="text-[13px] font-medium text-[#1C1D22]">Gestionar en Banco</span>
+              <span className="text-[13px] font-semibold text-[#1C1D22]">Gestionar en Banco</span>
               <ChevronRight className="h-[15px] w-[15px] text-[#A6AAB2]" />
             </button>
           ) : (
             <>
-              <p className="text-xs text-[#71757E]">
+              <p className="text-[11.5px] leading-relaxed text-[#71757E]">
                 Configura tus cuentas para enviar y recibir dinero.
               </p>
               <button
                 onClick={onGoToBank}
-                className="flex w-full items-center justify-between rounded-[22px] bg-[#FF5C00] px-4 py-3.5 text-white shadow-[0_6px_16px_-4px_rgba(255,92,0,0.35)] transition-colors hover:bg-[#EA580C]"
+                className="flex w-full items-center justify-between rounded-[20px] bg-[#FF5C00] px-4 py-3.5 text-white shadow-[0_6px_16px_-4px_rgba(255,92,0,0.35)] transition-colors hover:bg-[#EA580C]"
               >
                 <span className="text-[13px] font-semibold">Configurar en Banco</span>
                 <ChevronRight className="h-[15px] w-[15px]" />

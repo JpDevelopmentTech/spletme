@@ -13,17 +13,31 @@ import {
   FileText,
   AlertCircle,
 } from "lucide-react";
-import type { DistributorDashboard, Quarter } from "../../../types/distributor.types";
+import type { DistributorDashboard, UploadPeriodPayload } from "../../../types/distributor.types";
+import { MONTH_SHORT_NAMES, formatUploadPeriod, resolvePeriod } from "../../../utils/period.utils";
 import { distributorsService } from "../../../services/distributorsService";
 import type { RejectedSong } from "../../../services/distributorsService";
 import UploadSongsModal from "../../../components/ui/UploadSongsModal";
 
-const QUARTER_COLORS: Record<Quarter, string> = {
-  Q1: "#2563EB",
-  Q2: "#10B981",
-  Q3: "#F97316",
-  Q4: "#8B5CF6",
-};
+/**
+ * Color del periodo según el mes en que arranca, para que cargas contiguas se
+ * distingan de un vistazo sin depender ya del trimestre.
+ */
+const PERIOD_COLORS = ["#2563EB", "#10B981", "#F97316", "#8B5CF6"];
+
+function periodColor(startMonth?: number | null): string {
+  if (!startMonth) return "#F97316";
+  return PERIOD_COLORS[Math.floor((startMonth - 1) / 3) % PERIOD_COLORS.length];
+}
+
+/** Abreviatura del periodo para la insignia de la lista ("Ene", "Ene–Mar"). */
+function periodBadge(upload: { startMonth?: number | null; endMonth?: number | null; quarter?: string | null }): string {
+  const period = resolvePeriod(upload);
+  if (!period) return "—";
+  const start = MONTH_SHORT_NAMES[period.startMonth - 1];
+  if (period.startMonth === period.endMonth) return start;
+  return `${start}–${MONTH_SHORT_NAMES[period.endMonth - 1]}`;
+}
 
 function fmt(n: number, currency = "USD") {
   const symbol = currency === "EUR" ? "€" : "$";
@@ -67,9 +81,9 @@ export default function DistributorDetail() {
     rejected: RejectedSong[];
   } | null>(null);
 
-  async function handleUpload(file: File, quarter: Quarter, year: number) {
+  async function handleUpload(file: File, period: UploadPeriodPayload) {
     if (!id) return;
-    const result = await distributorsService.uploadSongs(id, file, quarter, year);
+    const result = await distributorsService.uploadSongs(id, file, period);
     setUploadResult({
       songsProcessed: result.songsProcessed,
       rejected: result.rejected,
@@ -100,10 +114,10 @@ export default function DistributorDetail() {
     );
   }
 
-  const { distributor, totals, revenueByQuarter, topSongs, uploads } = dashboard;
+  const { distributor, totals, revenueByPeriod, topSongs, uploads } = dashboard;
   const initials = distributor.name.slice(0, 2).toUpperCase();
 
-  // Chart: revenue by quarter
+  // Gráfico: ingresos por periodo cargado
   const chartOptions: ApexOptions = {
     chart: { type: "bar", toolbar: { show: false }, background: "transparent" },
     plotOptions: {
@@ -115,9 +129,9 @@ export default function DistributorDetail() {
       },
     },
     dataLabels: { enabled: false },
-    colors: revenueByQuarter.map((r) => QUARTER_COLORS[r.quarter] || "#F97316"),
+    colors: revenueByPeriod.map((r) => periodColor(r.startMonth)),
     xaxis: {
-      categories: revenueByQuarter.map((r) => r.label),
+      categories: revenueByPeriod.map((r) => r.label),
       labels: { style: { fontSize: "11px", colors: "#9CA3AF" } },
       axisBorder: { show: false },
       axisTicks: { show: false },
@@ -146,7 +160,13 @@ export default function DistributorDetail() {
           distributorName={distributor.name}
           existingUploads={uploads
             .filter((u) => u.status !== "error")
-            .map((u) => ({ quarter: u.quarter, year: u.year }))}
+            .map((u) => ({
+              startMonth: u.startMonth,
+              endMonth: u.endMonth,
+              quarter: u.quarter,
+              year: u.year,
+              periodLabel: u.periodLabel,
+            }))}
           onClose={() => setShowUpload(false)}
           onConfirm={handleUpload}
         />
@@ -286,13 +306,13 @@ export default function DistributorDetail() {
           ))}
         </div>
 
-        {/* Revenue by quarter chart */}
+        {/* Ingresos por periodo */}
         <div className="rounded-xl border border-gray-200 bg-white p-6">
-          <h2 className="text-sm font-semibold text-[#111827]">Ingresos por Quarter</h2>
+          <h2 className="text-sm font-semibold text-[#111827]">Ingresos por Periodo</h2>
           <p className="mb-4 mt-0.5 text-xs text-[#6B7280]">
-            Evolución de ingresos netos por temporada
+            Evolución de ingresos netos por periodo cargado
           </p>
-          {revenueByQuarter.length === 0 ? (
+          {revenueByPeriod.length === 0 ? (
             <div className="flex h-48 items-center justify-center text-sm text-[#9CA3AF]">
               Sin cargas registradas aún
             </div>
@@ -302,7 +322,7 @@ export default function DistributorDetail() {
               series={[
                 {
                   name: "Ingresos Netos",
-                  data: revenueByQuarter.map((r) => r.totalNetIncome),
+                  data: revenueByPeriod.map((r) => r.totalNetIncome),
                 },
               ]}
               type="bar"
@@ -339,12 +359,14 @@ export default function DistributorDetail() {
                   >
                     <div
                       className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-[11px] font-bold text-white"
-                      style={{ backgroundColor: QUARTER_COLORS[u.quarter] }}
+                      style={{ backgroundColor: periodColor(u.startMonth) }}
                     >
-                      {u.quarter}
+                      {periodBadge(u)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-semibold text-[#111827]">{u.quarter} {u.year}</p>
+                      <p className="text-[13px] font-semibold text-[#111827]">
+                        {formatUploadPeriod(u)}
+                      </p>
                       <div className="flex items-center gap-1 text-[13px] text-[#111827]">
                         <p>Nombre del archivo: </p>
                         <p className="text-[11px] text-[#111827] font-semibold truncate">{u.fileName}</p>

@@ -285,12 +285,9 @@ const PlatformsCard = () => {
         )}
 
         {/* Lista de plataformas */}
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col divide-y divide-[#E8E8EC]">
           {data.map((platform) => (
-            <div
-              key={platform.name}
-              className="flex items-center justify-between rounded-[16px] border border-white/60 bg-white/70 px-3 py-2.5 backdrop-blur-md"
-            >
+            <div key={platform.name} className="flex items-center justify-between px-0.5 py-2.5">
               <div className="flex items-center gap-3">
                 <div
                   className="w-7 h-7 rounded-[10px] flex items-center justify-center overflow-hidden flex-shrink-0"
@@ -304,12 +301,12 @@ const PlatformsCard = () => {
                 </div>
                 <div className="flex flex-col gap-0.5">
                   <span className="text-[12px] font-semibold text-[#1C1D22]">{platform.name}</span>
-                  <span className="text-[11px] text-[#A6AAB2]">
+                  <span className="font-mono text-[10.5px] text-[#A6AAB2]">
                     {isIncome ? formatCurrency(platform.income) : `${formatNumber(platform.streams)} streams`}
                   </span>
                 </div>
               </div>
-              <span className="text-[12px] font-semibold text-[#1C1D22]">
+              <span className="font-mono text-[12px] font-semibold text-[#1C1D22]">
                 {isIncome ? platform.incomePercentage : platform.percentage}%
               </span>
             </div>
@@ -322,12 +319,12 @@ const PlatformsCard = () => {
   return (
     <>
       <style>{flipStyles}</style>
-      <div className="h-full rounded-[36px] border border-white/60 bg-white/55 p-6 shadow-[0_16px_40px_-16px_rgba(255,92,0,0.15)] backdrop-blur-2xl">
-        <div className="flex flex-col gap-4">
+      <div className="h-full rounded-[26px] border border-[#E8E8EC] bg-white p-[22px] shadow-[0_10px_28px_-12px_rgba(255,92,0,0.15)]">
+        <div className="flex flex-col gap-3.5">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-semibold text-[#1C1D22]">Platforms</h2>
+              <h2 className="font-display text-base font-semibold text-[#1C1D22]">Plataformas</h2>
               <span className={`text-[10.5px] font-semibold px-2.5 py-0.5 rounded-full transition-colors ${
                 isFlipped ? "bg-[#FFEADD] text-[#FF5C00]" : "bg-[#E4F5EC] text-[#2FB37E]"
               }`}>
@@ -337,7 +334,7 @@ const PlatformsCard = () => {
             <button
               onClick={() => setIsFlipped((f) => !f)}
               title={isFlipped ? "Ver ingresos" : "Ver streams"}
-              className="flex items-center gap-1.5 rounded-full border border-white/60 bg-white/60 px-2.5 py-1.5 text-[11px] font-medium text-[#71757E] backdrop-blur-md transition-colors hover:text-[#1C1D22]"
+              className="flex items-center gap-1.5 rounded-full bg-[#F4F5F7] px-2.5 py-1.5 text-[11px] font-medium text-[#71757E] transition-colors hover:text-[#1C1D22]"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               <span>{isFlipped ? "Ver ingresos" : "Ver streams"}</span>
@@ -345,7 +342,7 @@ const PlatformsCard = () => {
           </div>
 
           {/* Toggle tipo de gráfica */}
-          <div className="flex items-center justify-center gap-1 rounded-full border border-white/60 bg-white/60 p-1 backdrop-blur-md">
+          <div className="flex items-center justify-center gap-1 rounded-full bg-[#F4F5F7] p-1">
             {chartButtons.map(({ view, icon, label }) => (
               <button
                 key={view}

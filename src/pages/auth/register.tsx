@@ -1,9 +1,29 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Mail, Lock, Eye, EyeOff, User, AtSign, ArrowRight } from "lucide-react";
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  User,
+  AtSign,
+  ArrowRight,
+  Loader2,
+  CircleAlert,
+  ShieldCheck,
+} from "lucide-react";
 import { AuthService } from "../../services/auth";
 import { WelcomeModal } from "../../components/modal/WelcomeModal";
 import logo from "../../assets/images/2 - BLANCO.png";
+
+/** Recorrido completo del alta; aquí solo se cubre el primer punto. */
+const ROADMAP = [
+  { name: "Crea tu cuenta", detail: "Usuario, correo y contraseña" },
+  { name: "Tu profesión", detail: "Para qué usas Splitme" },
+  { name: "Tus datos", detail: "País, contacto e identificación" },
+  { name: "Verifica tu correo", detail: "Código de 6 dígitos" },
+  { name: "Listo", detail: "Entra al panel" },
+];
 
 export default function Register() {
   const navigate = useNavigate();
@@ -48,11 +68,6 @@ export default function Register() {
     setShowWelcome(true);
   };
 
-  const inputClass =
-    "peer h-12 w-full rounded-[14px] border border-transparent bg-[#F4F5F7] text-[13.5px] text-[#1C1D22] placeholder-[#A6AAB2] outline-none transition-colors focus:border-[#FF5C00] focus:bg-white focus:ring-2 focus:ring-[#FF5C00]/20";
-  const iconClass =
-    "pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#A6AAB2] transition-colors peer-focus:text-[#FF5C00]";
-
   return (
     <>
       <WelcomeModal
@@ -60,200 +75,292 @@ export default function Register() {
         userName={formData.name}
         onContinue={() => navigate("/auth/email-login")}
       />
-      <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-b from-white to-[#FFF4EC] px-4 py-10">
-        {/* Resplandores de fondo */}
-        <div className="pointer-events-none absolute -left-32 -top-32 h-[460px] w-[460px] rounded-full bg-[#FF5C00] opacity-[0.10] blur-[150px]" />
-        <div className="pointer-events-none absolute -bottom-24 -right-24 h-[460px] w-[460px] rounded-full bg-[#FF5C00] opacity-[0.09] blur-[150px]" />
+      <div className="flex min-h-screen bg-white">
+        {/* Formulario */}
+        <div className="flex w-full flex-col justify-between gap-8 px-6 py-10 sm:px-12 lg:w-[560px] lg:flex-shrink-0 lg:px-16 lg:py-10">
+          <img src={logo} alt="SplitMe" className="h-[38px] w-auto self-start" />
 
-        <div className="relative z-10 flex w-full max-w-[444px] flex-col items-center gap-6">
-          {/* Tarjeta */}
-          <div className="flex w-full flex-col gap-5 rounded-[32px] bg-white px-[38px] pb-8 pt-10 shadow-[0_24px_56px_-16px_rgba(28,29,34,0.14)]">
-            {/* Logo */}
-            <div className="flex justify-center">
-              <div className="rounded-xl bg-white p-2">
-                <img src={logo} alt="SplitMe" className="h-10 w-auto" />
-              </div>
+          <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-1.5">
+              <h1 className="font-display text-[28px] font-semibold text-[#1C1D22]">
+                Crea tu cuenta
+              </h1>
+              <p className="text-[13.5px] text-[#71757E]">
+                Cinco pasos rápidos, menos de tres minutos.
+              </p>
             </div>
 
-            {/* Encabezado */}
-            <div className="flex flex-col items-center gap-1.5">
-              <h2 className="text-[26px] font-bold text-[#1C1D22]">Crea tu cuenta</h2>
-              <p className="text-sm text-[#71757E]">Únete a SplitMe y gestiona tus regalías</p>
-            </div>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <Field id="username" label="Nombre de usuario" icon={<AtSign className="h-4 w-4" />}>
+                <input
+                  id="username"
+                  type="text"
+                  autoComplete="username"
+                  required
+                  value={formData.username}
+                  disabled={isSubmitting}
+                  onChange={(e) => set("username", e.target.value)}
+                  placeholder="Elige un nombre de usuario"
+                  className={inputClass}
+                />
+              </Field>
 
-            {/* Alerta */}
-            {errorMessage && (
-              <div className="rounded-[14px] border border-[#FADADA] bg-[#FEECEC] px-3.5 py-2.5 text-sm text-[#EF4444]">
-                {errorMessage}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
-              {/* Usuario */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-medium text-[#71757E]">Nombre de usuario</label>
-                <div className="relative">
+              <div className="grid grid-cols-2 gap-3.5">
+                <Field id="name" label="Nombre" icon={<User className="h-4 w-4" />}>
                   <input
+                    id="name"
                     type="text"
-                    name="username"
-                    value={formData.username}
-                    onChange={(e) => set("username", e.target.value)}
-                    placeholder="Elige un nombre de usuario"
+                    autoComplete="given-name"
                     required
-                    className={`${inputClass} pl-[42px] pr-4`}
+                    value={formData.name}
+                    disabled={isSubmitting}
+                    onChange={(e) => set("name", e.target.value)}
+                    placeholder="Tu nombre"
+                    className={inputClass}
                   />
-                  <AtSign className={iconClass} />
-                </div>
-              </div>
-
-              {/* Nombre + Apellido */}
-              <div className="flex gap-3">
-                <div className="flex flex-1 flex-col gap-1.5">
-                  <label className="text-[13px] font-medium text-[#71757E]">Nombre</label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={(e) => set("name", e.target.value)}
-                      placeholder="Tu nombre"
-                      required
-                      className={`${inputClass} pl-[42px] pr-3`}
-                    />
-                    <User className={iconClass} />
-                  </div>
-                </div>
-                <div className="flex flex-1 flex-col gap-1.5">
-                  <label className="text-[13px] font-medium text-[#71757E]">Apellido</label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      name="lastName"
-                      value={formData.lastName}
-                      onChange={(e) => set("lastName", e.target.value)}
-                      placeholder="Tu apellido"
-                      required
-                      className={`${inputClass} pl-[42px] pr-3`}
-                    />
-                    <User className={iconClass} />
-                  </div>
-                </div>
-              </div>
-
-              {/* Correo */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-medium text-[#71757E]">Correo electrónico</label>
-                <div className="relative">
+                </Field>
+                <Field id="lastName" label="Apellido">
                   <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={(e) => set("email", e.target.value)}
-                    placeholder="tucorreo@ejemplo.com"
+                    id="lastName"
+                    type="text"
+                    autoComplete="family-name"
                     required
-                    className={`${inputClass} pl-[42px] pr-4`}
+                    value={formData.lastName}
+                    disabled={isSubmitting}
+                    onChange={(e) => set("lastName", e.target.value)}
+                    placeholder="Tu apellido"
+                    className={inputClass}
                   />
-                  <Mail className={iconClass} />
-                </div>
+                </Field>
               </div>
 
-              {/* Contraseña */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-medium text-[#71757E]">Contraseña</label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    value={formData.password}
-                    onChange={(e) => set("password", e.target.value)}
-                    placeholder="Crea una contraseña"
-                    required
-                    className={`${inputClass} pl-[42px] pr-[42px]`}
-                  />
-                  <Lock className={iconClass} />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#A6AAB2] transition-colors hover:text-[#71757E]"
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-              </div>
+              <Field id="email" label="Correo electrónico" icon={<Mail className="h-4 w-4" />}>
+                <input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={formData.email}
+                  disabled={isSubmitting}
+                  onChange={(e) => set("email", e.target.value)}
+                  placeholder="tucorreo@ejemplo.com"
+                  className={inputClass}
+                />
+              </Field>
 
-              {/* Confirmar contraseña */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-medium text-[#71757E]">Confirmar contraseña</label>
-                <div className="relative">
-                  <input
-                    type={showConfirm ? "text" : "password"}
-                    name="passwordConfirmation"
-                    value={formData.passwordConfirmation}
-                    onChange={(e) => set("passwordConfirmation", e.target.value)}
-                    placeholder="Confirma tu contraseña"
-                    required
-                    className={`${inputClass} pl-[42px] pr-[42px]`}
+              <Field
+                id="password"
+                label="Contraseña"
+                icon={<Lock className="h-4 w-4" />}
+                action={
+                  <PasswordToggle
+                    visible={showPassword}
+                    onToggle={() => setShowPassword((v) => !v)}
+                    disabled={isSubmitting}
                   />
-                  <Lock className={iconClass} />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirm((v) => !v)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#A6AAB2] transition-colors hover:text-[#71757E]"
-                  >
-                    {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-              </div>
+                }
+              >
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  required
+                  value={formData.password}
+                  disabled={isSubmitting}
+                  onChange={(e) => set("password", e.target.value)}
+                  placeholder="Crea una contraseña"
+                  className={inputClass}
+                />
+              </Field>
 
-              {/* Botón */}
+              <Field
+                id="passwordConfirmation"
+                label="Confirmar contraseña"
+                icon={<Lock className="h-4 w-4" />}
+                error={errorMessage}
+                action={
+                  <PasswordToggle
+                    visible={showConfirm}
+                    onToggle={() => setShowConfirm((v) => !v)}
+                    disabled={isSubmitting}
+                  />
+                }
+              >
+                <input
+                  id="passwordConfirmation"
+                  type={showConfirm ? "text" : "password"}
+                  autoComplete="new-password"
+                  required
+                  value={formData.passwordConfirmation}
+                  disabled={isSubmitting}
+                  onChange={(e) => set("passwordConfirmation", e.target.value)}
+                  placeholder="Repite la contraseña"
+                  className={inputClass}
+                />
+              </Field>
+
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="mt-1 flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-[#FF5C00] text-[15px] font-semibold text-white shadow-[0_10px_24px_-6px_rgba(255,92,0,0.5)] transition hover:brightness-105 disabled:opacity-60"
+                className="flex h-[50px] w-full items-center justify-center gap-2 rounded-[25px] bg-[#FF5C00] text-[15px] font-semibold text-white shadow-[0_8px_20px_-6px_rgba(255,92,0,0.55)] transition-colors hover:bg-[#EA580C] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF5C00] disabled:opacity-75 disabled:shadow-none"
               >
-                {isSubmitting ? "Creando cuenta..." : "Crear cuenta"}
-                {!isSubmitting && <ArrowRight className="h-4 w-4" />}
+                {isSubmitting ? "Creando cuenta…" : "Crear cuenta"}
+                {isSubmitting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ArrowRight className="h-4 w-4" />
+                )}
               </button>
 
-              {/* Términos */}
-              <p className="text-center text-[11.5px] leading-relaxed text-[#A6AAB2]">
-                Al crear una cuenta aceptas nuestros{" "}
-                <a href="#" className="font-semibold text-[#FF5C00] hover:opacity-80">
-                  Términos de Servicio
-                </a>{" "}
-                y la{" "}
-                <a href="#" className="font-semibold text-[#FF5C00] hover:opacity-80">
-                  Política de Privacidad
-                </a>
-              </p>
+              <div className="flex items-center justify-center gap-1.5">
+                <span className="text-[13.5px] text-[#71757E]">¿Ya tienes cuenta?</span>
+                <Link
+                  to="/auth/email-login"
+                  className="text-[13.5px] font-semibold text-[#FF5C00] transition-colors hover:text-[#EA580C]"
+                >
+                  Inicia sesión
+                </Link>
+              </div>
             </form>
-
-            {/* Divisor */}
-            <div className="flex items-center gap-3">
-              <div className="h-px flex-1 bg-[#1C1D22]/[0.08]" />
-              <span className="text-xs text-[#A6AAB2]">o</span>
-              <div className="h-px flex-1 bg-[#1C1D22]/[0.08]" />
-            </div>
-
-            {/* Iniciar sesión */}
-            <div className="flex items-center justify-center gap-1.5">
-              <span className="text-[13.5px] text-[#71757E]">¿Ya tienes cuenta?</span>
-              <Link
-                to="/auth/email-login"
-                className="text-[13.5px] font-semibold text-[#FF5C00] transition-opacity hover:opacity-80"
-              >
-                Inicia sesión
-              </Link>
-            </div>
           </div>
 
-          {/* Confianza */}
-          <div className="flex items-center gap-1.5 text-[11.5px] text-[#A6AAB2]">
-            <Lock className="h-3 w-3" />
-            <span>Conexión segura · Stripe &amp; Wise</span>
+          <div className="flex items-center gap-2">
+            <Lock className="h-3 w-3 text-[#A6AAB2]" />
+            <span className="text-[11.5px] text-[#A6AAB2]">
+              Tus datos se guardan cifrados y nunca se comparten.
+            </span>
           </div>
         </div>
+
+        {/* Mapa del recorrido */}
+        <aside className="hidden flex-1 flex-col justify-center gap-8 bg-[#101114] px-[72px] lg:flex">
+          <div className="flex flex-col gap-3">
+            <span className="font-mono text-[10px] font-medium tracking-[1.4px] text-[#FF5C00]">
+              PASO 1 DE {ROADMAP.length}
+            </span>
+            <h2 className="max-w-[620px] font-display text-[34px] font-semibold leading-[1.18] text-white">
+              Configura tu cuenta y empieza a repartir.
+            </h2>
+          </div>
+
+          <ol className="flex flex-col">
+            {ROADMAP.map((step, index) => {
+              const current = index === 0;
+              return (
+                <li key={step.name} className="flex flex-col">
+                  {index > 0 && <span className="ml-[15px] h-[18px] w-0.5 bg-white/10" />}
+                  <div className="flex items-center gap-3.5">
+                    <span
+                      className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full font-mono text-[12px] font-semibold ${
+                        current
+                          ? "bg-[#FF5C00] text-white"
+                          : "border-[1.5px] border-white/15 text-white/40"
+                      }`}
+                    >
+                      {index + 1}
+                    </span>
+                    <span className="flex flex-col">
+                      <span
+                        className={`text-[14px] font-semibold ${current ? "text-white" : "text-white/50"}`}
+                      >
+                        {step.name}
+                      </span>
+                      <span
+                        className={`text-[12px] ${current ? "text-white/60" : "text-white/30"}`}
+                      >
+                        {step.detail}
+                      </span>
+                    </span>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+
+          <div className="flex max-w-[620px] items-start gap-3.5 rounded-[20px] border border-white/10 bg-white/[0.05] p-[18px]">
+            <ShieldCheck className="h-[18px] w-[18px] flex-shrink-0 text-[#FF5C00]" />
+            <div className="flex flex-col gap-1">
+              <span className="text-[13px] font-semibold text-white">
+                Por qué pedimos estos datos
+              </span>
+              <span className="text-[12px] leading-relaxed text-white/60">
+                Los necesitamos para pagarte: identifican tu cuenta ante el distribuidor y ante
+                Stripe o Wise.
+              </span>
+            </div>
+          </div>
+        </aside>
       </div>
     </>
+  );
+}
+
+const inputClass =
+  "w-full border-0 bg-transparent p-0 text-[13px] text-[#1C1D22] placeholder:text-[#A6AAB2] focus:border-0 focus:outline-none focus:ring-0 disabled:text-[#71757E]";
+
+interface FieldProps {
+  id: string;
+  label: string;
+  icon?: React.ReactNode;
+  error?: string;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+}
+
+/** Campo con etiqueta visible, icono opcional y error anclado debajo. */
+function Field({ id, label, icon, error, action, children }: FieldProps) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={id} className="text-[12px] font-semibold text-[#1C1D22]">
+        {label}
+      </label>
+      <div
+        className={`flex h-[46px] items-center gap-2.5 rounded-[15px] border px-3.5 transition-colors ${
+          error
+            ? "border-[#E5484D] bg-white ring-[3px] ring-[#E5484D]/15"
+            : "border-[#E8E8EC] bg-[#F4F5F7] focus-within:border-[#FF5C00] focus-within:bg-white focus-within:ring-[3px] focus-within:ring-[#FF5C00]/15"
+        }`}
+      >
+        {icon && (
+          <span className={`flex-shrink-0 ${error ? "text-[#E5484D]" : "text-[#A6AAB2]"}`}>
+            {icon}
+          </span>
+        )}
+        {children}
+        {action}
+      </div>
+      {error && (
+        <p
+          role="alert"
+          className="flex items-center gap-1.5 text-[11.5px] leading-snug text-[#E5484D]"
+        >
+          <CircleAlert className="h-3.5 w-3.5 flex-shrink-0" />
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/** Botón de mostrar/ocultar contraseña. */
+function PasswordToggle({
+  visible,
+  onToggle,
+  disabled,
+}: {
+  visible: boolean;
+  onToggle: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      disabled={disabled}
+      aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"}
+      className="flex-shrink-0 text-[#A6AAB2] transition-colors hover:text-[#71757E] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF5C00]"
+    >
+      {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+    </button>
   );
 }

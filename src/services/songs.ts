@@ -413,10 +413,10 @@ class SongService {
     }
   }
 
-  /** Obtiene las canciones con más streams */
-  async getTopByStreams() {
+  /** Obtiene las canciones que más ingresos netos generaron */
+  async getTopByIncome() {
     try {
-      const response = await apiClient.get(`${this.BASE}/top-by-streams`);
+      const response = await apiClient.get(`${this.BASE}/top-by-income`);
       return response.data;
     } catch {
       return null;
