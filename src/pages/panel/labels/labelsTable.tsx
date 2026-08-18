@@ -1,599 +1,528 @@
-import {
-  Music2,
-  Tag,
-  Play,
-  DollarSign,
-  Crown,
-  ArrowRight,
-  Disc3,
-  Layers,
-  Plus,
-  CheckCircle,
-  AlertCircle,
-  ArrowUpDown,
-  ChevronUp,
-  ChevronDown,
-  Edit3,
-  UserPlus,
-  FolderPlus,
-} from "lucide-react";
-import { useLabels } from "../../../hooks/useLabels";
-import { Label } from "../../../services/labels";
-import Loading from "../../../components/loading/loading";
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import CreateSplitsByLabelModal from "../../../components/modal/CreateSplitsByLabelModal";
-import CreateSplitsByCustomLabelModal from "../../../components/modal/CreateSplitsByCustomLabelModal";
-import CreateLabelModal from "../../../components/labels/CreateLabelModal";
-import EditLabelModal from "../../../components/labels/EditLabelModal";
-import InviteCollaboratorToLabelModal from "../../../components/labels/InviteCollaboratorToLabelModal";
-
-type SortField = "label" | "count" | "totalStreams" | "totalNetIncome" | "ownerEarnings";
-type SortOrder = "asc" | "desc";
-
-interface ExtendedLabel extends Label {
-  _id?: string;
-  artisticLabels?: string[];
-  createdAt?: string;
-}
+import {
+  Search,
+  Plus,
+  Tag,
+  SearchX,
+  FunnelX,
+  TriangleAlert,
+  ArrowUp,
+  ArrowDown,
+} from "lucide-react";
+import { useLabelsLibrary } from "@/hooks/useLabelsLibrary";
+import { LabelsKpis } from "@/components/labels/LabelsKpis";
+import { LabelsFilterBar } from "@/components/labels/LabelsFilterBar";
+import { LabelRow } from "@/components/labels/LabelRow";
+import {
+  LABEL_COLUMNS,
+  LABELS_GRID,
+  NEXT_SORT,
+  isDescending,
+  type LabelSortBy,
+} from "@/components/labels/labelsColumns";
+import type { LabelListItem } from "@/components/labels/types";
+import CreateSplitsByLabelModal from "@/components/modal/CreateSplitsByLabelModal";
+import CreateSplitsByCustomLabelModal from "@/components/modal/CreateSplitsByCustomLabelModal";
+import CreateLabelModal from "@/components/labels/CreateLabelModal";
+import EditLabelModal from "@/components/labels/EditLabelModal";
+import InviteCollaboratorToLabelModal from "@/components/labels/InviteCollaboratorToLabelModal";
 
 export default function LabelsTable() {
-  const { labels, allLabels, customLabels, loading, error, refreshLabels } = useLabels();
-  const navigate = useNavigate();
-  const [sortField, setSortField] = useState<SortField>("count");
-  const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedLabel, setSelectedLabel] = useState<{
-    name: string;
-    count: number;
-  } | null>(null);
-  const [isCreateLabelModalOpen, setIsCreateLabelModalOpen] = useState(false);
-  const [customLabelModalOpen, setCustomLabelModalOpen] = useState(false);
-  const [selectedCustomLabel, setSelectedCustomLabel] = useState<{
-    name: string;
-    artisticLabels: string[];
-    count: number;
-  } | null>(null);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [labelToEdit, setLabelToEdit] = useState<{
-    id: string;
-    name: string;
-    artisticLabels: string[];
-  } | null>(null);
-  const [inviteModalOpen, setInviteModalOpen] = useState(false);
-  const [labelToInvite, setLabelToInvite] = useState<{
-    labelType: "artistic" | "custom";
-    labelIdentifier: string;
-    labelName: string;
-    songCount: number;
-  } | null>(null);
+  const library = useLabelsLibrary();
+  const {
+    loading,
+    error,
+    reload,
+    items,
+    allItems,
+    sourceLabels,
+    totals,
+    search,
+    setSearch,
+    sortBy,
+    setSortBy,
+    hasFilters,
+    clearAllFilters,
+    showOnlyIncomplete,
+  } = library;
 
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortOrder("desc");
-    }
-  };
+  const [showCreate, setShowCreate] = useState(false);
+  const [splitTarget, setSplitTarget] = useState<LabelListItem | null>(null);
+  const [editing, setEditing] = useState<LabelListItem | null>(null);
+  const [deleting, setDeleting] = useState<LabelListItem | null>(null);
+  const [inviting, setInviting] = useState<LabelListItem | null>(null);
 
-  const sortedLabels = [...allLabels].sort((a, b) => {
-    if (a.isCustom && !b.isCustom) return -1;
-    if (!a.isCustom && b.isCustom) return 1;
-
-    let aValue: number | string = a[sortField];
-    let bValue: number | string = b[sortField];
-
-    if (sortField === "label") {
-      aValue = (a.label || "").toLowerCase();
-      bValue = (b.label || "").toLowerCase();
-      return sortOrder === "asc" ? (aValue > bValue ? 1 : -1) : aValue < bValue ? 1 : -1;
-    }
-
-    return sortOrder === "asc"
-      ? (aValue as number) - (bValue as number)
-      : (bValue as number) - (aValue as number);
-  });
-
-  const totalSongs = allLabels.reduce((sum, l) => sum + l.count, 0);
-  const totalStreams = allLabels.reduce((sum, l) => sum + l.totalStreams, 0);
-  const totalIncome = allLabels.reduce((sum, l) => sum + l.totalNetIncome, 0);
-  const totalOwnerEarnings = allLabels.reduce((sum, l) => sum + (l.ownerEarnings || 0), 0);
-
-  const handleLabelClick = (labelName: string, isCustom = false) => {
-    if (isCustom) {
-      navigate(`/panel/labels/custom/${encodeURIComponent(labelName)}`);
-    } else {
-      navigate(`/panel/labels/${encodeURIComponent(labelName)}`);
-    }
-  };
-
-  const handleOpenModal = (labelName: string, songCount: number) => {
-    setSelectedLabel({ name: labelName, count: songCount });
-    setModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setModalOpen(false);
-    setSelectedLabel(null);
-    refreshLabels();
-  };
-
-  const handleOpenCustomLabelModal = (
-    labelName: string,
-    artisticLabels: string[],
-    songCount: number,
-  ) => {
-    setSelectedCustomLabel({
-      name: labelName,
-      artisticLabels,
-      count: songCount,
-    });
-    setCustomLabelModalOpen(true);
-  };
-
-  const handleCloseCustomLabelModal = () => {
-    setCustomLabelModalOpen(false);
-    setSelectedCustomLabel(null);
-    refreshLabels();
-  };
-
-  const handleOpenEditModal = (id: string, name: string, artisticLabels: string[]) => {
-    setLabelToEdit({ id, name, artisticLabels });
-    setEditModalOpen(true);
-  };
-
-  const handleCloseEditModal = () => {
-    setEditModalOpen(false);
-    setLabelToEdit(null);
-  };
-
-  const handleOpenInviteModal = (
-    labelType: "artistic" | "custom",
-    labelIdentifier: string,
-    labelName: string,
-    songCount: number,
-  ) => {
-    setLabelToInvite({ labelType, labelIdentifier, labelName, songCount });
-    setInviteModalOpen(true);
-  };
-
-  const handleCloseInviteModal = () => {
-    setInviteModalOpen(false);
-    setLabelToInvite(null);
-  };
-
-  const formatCurrency = (val: number) =>
-    `$${val.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
-  const formatStreams = (val: number) => {
-    if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M`;
-    if (val >= 1_000) return `${(val / 1_000).toFixed(1)}K`;
-    return val.toLocaleString();
-  };
-
-  const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field) return <ArrowUpDown className="h-3.5 w-3.5 text-gray-300" />;
-    return sortOrder === "asc" ? (
-      <ChevronUp className="h-3.5 w-3.5 text-[#F97316]" />
-    ) : (
-      <ChevronDown className="h-3.5 w-3.5 text-[#F97316]" />
-    );
-  };
-
-  if (loading) return <Loading />;
+  const isEmpty = allItems.length === 0;
+  const pendingSongs = totals.coverage.total - totals.coverage.withSplits;
 
   return (
-    <div className="min-h-screen space-y-6 bg-[#F7F8FA] px-6 py-8 lg:px-10">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Labels Musicales</h1>
-          <p className="mt-0.5 text-sm text-gray-500">
-            Gestiona tus canciones organizadas por sello discográfico
-          </p>
-        </div>
-        <button
-          onClick={() => setIsCreateLabelModalOpen(true)}
-          className="flex items-center gap-2 rounded-lg bg-[#F97316] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-orange-600"
-        >
-          <FolderPlus className="h-4 w-4" />
-          Crear Nuevo Label
-        </button>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <div className="mb-3 flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50">
-              <Tag className="h-4 w-4 text-[#F97316]" />
-            </div>
-            <span className="text-xs font-medium text-gray-500">Total Labels</span>
-          </div>
-          <p className="text-2xl font-bold text-gray-900">{allLabels.length}</p>
-          <p className="mt-1 text-xs text-gray-400">
-            {customLabels.length} personalizados · {labels.length} artísticos
-          </p>
-        </div>
-
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <div className="mb-3 flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50">
-              <Music2 className="h-4 w-4 text-blue-600" />
-            </div>
-            <span className="text-xs font-medium text-gray-500">Total Canciones</span>
-          </div>
-          <p className="text-2xl font-bold text-gray-900">{totalSongs}</p>
-        </div>
-
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <div className="mb-3 flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50">
-              <Play className="h-4 w-4 text-purple-600" />
-            </div>
-            <span className="text-xs font-medium text-gray-500">Total Streams</span>
-          </div>
-          <p className="text-2xl font-bold text-gray-900">{formatStreams(totalStreams)}</p>
-        </div>
-
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <div className="mb-3 flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50">
-              <DollarSign className="h-4 w-4 text-green-600" />
-            </div>
-            <span className="text-xs font-medium text-gray-500">Total Ingresos</span>
-          </div>
-          <p className="text-2xl font-bold text-green-600">{formatCurrency(totalIncome)}</p>
-        </div>
-
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <div className="mb-3 flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50">
-              <Crown className="h-4 w-4 text-[#F97316]" />
-            </div>
-            <span className="text-xs font-medium text-gray-500">Ganancias del Owner</span>
-          </div>
-          <p className="text-2xl font-bold text-[#F97316]">{formatCurrency(totalOwnerEarnings)}</p>
-        </div>
-      </div>
-
-      {/* Error */}
-      {error && (
-        <div className="flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 p-4">
-          <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />
-          <p className="text-sm text-red-700">{error}</p>
-        </div>
-      )}
-
-      {/* Empty state */}
-      {allLabels.length === 0 && !loading && (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-gray-200 bg-white px-6 py-16 text-center">
-          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100">
-            <Disc3 className="h-6 w-6 text-gray-400" />
-          </div>
-          <p className="mb-1 text-sm font-semibold text-gray-700">Sin labels</p>
-          <p className="mb-4 text-xs text-gray-400">Aún no tienes canciones con labels asignados</p>
-          <button
-            onClick={() => setIsCreateLabelModalOpen(true)}
-            className="flex items-center gap-2 rounded-lg bg-[#F97316] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-orange-600"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            Crear primer label
-          </button>
-        </div>
-      )}
-
-      {/* Table */}
-      {allLabels.length > 0 && (
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    <button
-                      onClick={() => handleSort("label")}
-                      className="flex items-center gap-1.5 transition-colors hover:text-gray-700"
-                    >
-                      Label
-                      <SortIcon field="label" />
-                    </button>
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    <button
-                      onClick={() => handleSort("count")}
-                      className="flex items-center gap-1.5 transition-colors hover:text-gray-700"
-                    >
-                      Canciones
-                      <SortIcon field="count" />
-                    </button>
-                  </th>
-                  <th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 md:table-cell">
-                    <button
-                      onClick={() => handleSort("totalStreams")}
-                      className="flex items-center gap-1.5 transition-colors hover:text-gray-700"
-                    >
-                      Streams
-                      <SortIcon field="totalStreams" />
-                    </button>
-                  </th>
-                  <th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 lg:table-cell">
-                    <button
-                      onClick={() => handleSort("totalNetIncome")}
-                      className="flex items-center gap-1.5 transition-colors hover:text-gray-700"
-                    >
-                      Ingresos
-                      <SortIcon field="totalNetIncome" />
-                    </button>
-                  </th>
-                  <th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 lg:table-cell">
-                    <button
-                      onClick={() => handleSort("ownerEarnings")}
-                      className="flex items-center gap-1.5 transition-colors hover:text-gray-700"
-                    >
-                      Ganancia Owner
-                      <SortIcon field="ownerEarnings" />
-                    </button>
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    Acciones
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {sortedLabels.map((label, index) => (
-                  <tr
-                    key={label.isCustom ? `custom-${index}` : `artistic-${index}`}
-                    className={`cursor-pointer transition-colors ${
-                      label.isCustom ? "bg-orange-50/40 hover:bg-orange-50" : "hover:bg-gray-50"
-                    }`}
-                    onClick={() => handleLabelClick(label.label, label.isCustom)}
+    <div className="min-h-full bg-[#F7F7F9]">
+      <div className="flex flex-col gap-5 px-4 py-6 lg:px-8">
+        {/* Encabezado */}
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="flex flex-col gap-0.5">
+            <h1 className="font-display text-2xl font-semibold text-[#1C1D22]">Sellos</h1>
+            <p className="flex flex-wrap items-center gap-2 text-[13px] text-[#71757E]">
+              <span>
+                {allItems.length} {allItems.length === 1 ? "sello" : "sellos"}
+              </span>
+              <span className="text-[#A6AAB2]">·</span>
+              <span>{totals.songs.toLocaleString()} canciones agrupadas</span>
+              {pendingSongs > 0 && (
+                <>
+                  <span className="text-[#A6AAB2]">·</span>
+                  <button
+                    onClick={showOnlyIncomplete}
+                    className="font-semibold text-[#FF5C00] transition-colors hover:text-[#EA580C]"
                   >
-                    {/* Label name */}
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        {label.isCustom ? (
-                          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-orange-100">
-                            <Layers className="h-4 w-4 text-[#F97316]" />
-                          </div>
-                        ) : (
-                          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-orange-50">
-                            <Tag className="h-4 w-4 text-[#F97316]" />
-                          </div>
-                        )}
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="truncate text-sm font-semibold text-gray-900">
-                              {label.label || "Sin Label"}
-                            </p>
-                            {label.isCustom && (
-                              <span className="flex-shrink-0 rounded-full bg-orange-100 px-2 py-0.5 text-xs font-semibold text-[#F97316]">
-                                Personalizado
-                              </span>
-                            )}
-                          </div>
-                          {label.isCustom && (label as ExtendedLabel).artisticLabels?.length ? (
-                            <p className="mt-0.5 truncate text-xs text-gray-400">
-                              Incluye:{" "}
-                              {(label as ExtendedLabel).artisticLabels!.slice(0, 2).join(", ")}
-                              {(label as ExtendedLabel).artisticLabels!.length > 2 &&
-                                ` +${(label as ExtendedLabel).artisticLabels!.length - 2} más`}
-                            </p>
-                          ) : null}
-                        </div>
-                      </div>
-                    </td>
+                    {pendingSongs.toLocaleString()} sin repartir
+                  </button>
+                </>
+              )}
+            </p>
+          </div>
 
-                    {/* Count */}
-                    <td className="px-4 py-4">
-                      <span className="inline-flex rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-700">
-                        {label.count} {label.count === 1 ? "canción" : "canciones"}
-                      </span>
-                    </td>
-
-                    {/* Streams */}
-                    <td className="hidden px-4 py-4 md:table-cell">
-                      <span className="text-sm font-medium text-gray-900">
-                        {formatStreams(label.totalStreams)}
-                      </span>
-                    </td>
-
-                    {/* Income */}
-                    <td className="hidden px-4 py-4 lg:table-cell">
-                      <span className="text-sm font-semibold text-green-600">
-                        {formatCurrency(label.totalNetIncome)}
-                      </span>
-                    </td>
-
-                    {/* Owner Earnings */}
-                    <td className="hidden px-4 py-4 lg:table-cell">
-                      <span className="text-sm font-semibold text-[#F97316]">
-                        {formatCurrency(label.ownerEarnings || 0)}
-                      </span>
-                    </td>
-
-                    {/* Actions */}
-                    <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-end gap-2">
-                        {label.isCustom ? (
-                          <>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenEditModal(
-                                  (label as ExtendedLabel)._id || "",
-                                  label.label,
-                                  (label as ExtendedLabel).artisticLabels || [],
-                                );
-                              }}
-                              className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50"
-                              title="Editar label"
-                            >
-                              <Edit3 className="h-3.5 w-3.5" />
-                              <span className="hidden lg:inline">Editar</span>
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenInviteModal(
-                                  "custom",
-                                  (label as ExtendedLabel)._id || "",
-                                  label.label,
-                                  label.count,
-                                );
-                              }}
-                              className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50"
-                              title="Invitar colaborador"
-                            >
-                              <UserPlus className="h-3.5 w-3.5" />
-                              <span className="hidden lg:inline">Invitar</span>
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenCustomLabelModal(
-                                  label.label,
-                                  (label as ExtendedLabel).artisticLabels || [],
-                                  label.count,
-                                );
-                              }}
-                              className="flex items-center gap-1.5 rounded-lg bg-[#F97316] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-orange-600"
-                            >
-                              <Plus className="h-3.5 w-3.5" />
-                              <span className="hidden md:inline">Crear Splits</span>
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleLabelClick(label.label, true);
-                              }}
-                              className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:border-[#F97316] hover:text-[#F97316]"
-                            >
-                              <span className="hidden sm:inline">Ver</span>
-                              <ArrowRight className="h-3.5 w-3.5" />
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenInviteModal(
-                                  "artistic",
-                                  label.label,
-                                  label.label,
-                                  label.count,
-                                );
-                              }}
-                              className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50"
-                              title="Invitar colaborador"
-                            >
-                              <UserPlus className="h-3.5 w-3.5" />
-                              <span className="hidden lg:inline">Invitar</span>
-                            </button>
-
-                            {label.splitProgress?.hasAllSplits ? (
-                              <div className="flex items-center gap-1.5 rounded-lg border border-green-100 bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700">
-                                <CheckCircle className="h-3.5 w-3.5" />
-                                <span className="hidden lg:inline">Splits Creados</span>
-                              </div>
-                            ) : (
-                              <>
-                                {label.splitProgress?.withSplits > 0 && (
-                                  <span className="hidden rounded-lg border border-yellow-100 bg-yellow-50 px-2 py-1 text-xs font-semibold text-yellow-700 lg:inline-flex">
-                                    {label.splitProgress.percentage}%
-                                  </span>
-                                )}
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleOpenModal(label.label, label.count);
-                                  }}
-                                  className="flex items-center gap-1.5 rounded-lg bg-[#F97316] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-orange-600"
-                                >
-                                  <Plus className="h-3.5 w-3.5" />
-                                  <span className="hidden md:inline">Crear Splits</span>
-                                </button>
-                              </>
-                            )}
-
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleLabelClick(label.label, false);
-                              }}
-                              className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:border-[#F97316] hover:text-[#F97316]"
-                            >
-                              <span className="hidden sm:inline">Ver</span>
-                              <ArrowRight className="h-3.5 w-3.5" />
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative w-full sm:w-[290px]">
+              <Search
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-[#A6AAB2]"
+                size={16}
+              />
+              <input
+                type="text"
+                placeholder="Buscar sello…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full rounded-[22px] border border-[#E8E8EC] bg-white py-2.5 pl-11 pr-4 text-[12.5px] text-[#1C1D22] placeholder:text-[#A6AAB2] focus:border-[#FF5C00] focus:outline-none focus:ring-[3px] focus:ring-[#FF5C00]/15"
+              />
+            </div>
+            <button
+              onClick={() => setShowCreate(true)}
+              className="flex flex-shrink-0 items-center gap-2 rounded-[22px] bg-[#FF5C00] px-[18px] py-2.5 text-[12.5px] font-semibold text-white shadow-[0_6px_16px_-4px_rgba(255,92,0,0.4)] transition-colors hover:bg-[#EA580C]"
+            >
+              <Plus className="h-[15px] w-[15px]" />
+              Nuevo sello
+            </button>
           </div>
         </div>
-      )}
 
-      {/* Modals */}
-      {selectedLabel && (
-        <CreateSplitsByLabelModal
-          isOpen={modalOpen}
-          onClose={handleCloseModal}
-          label={selectedLabel.name}
-          songCount={selectedLabel.count}
-        />
-      )}
+        {error && (
+          <div className="flex items-center gap-2.5 rounded-2xl border border-[#F5C2C4] bg-[#FDECEC] px-4 py-3">
+            <TriangleAlert className="h-4 w-4 flex-shrink-0 text-[#E5484D]" />
+            <span className="flex-1 text-[12.5px] text-[#E5484D]">{error}</span>
+            <button
+              onClick={reload}
+              className="rounded-full bg-white px-3.5 py-1.5 text-[11.5px] font-semibold text-[#E5484D]"
+            >
+              Reintentar
+            </button>
+          </div>
+        )}
 
+        {loading ? (
+          <TableSkeleton />
+        ) : isEmpty ? (
+          <FirstLabelState onCreate={() => setShowCreate(true)} />
+        ) : (
+          <>
+            <LabelsKpis
+              customCount={totals.customCount}
+              artisticCount={totals.artisticCount}
+              songsCount={totals.songs}
+              totalStreams={totals.streams}
+              totalNetIncome={totals.netIncome}
+              ownerEarnings={totals.ownerEarnings}
+              coverage={totals.coverage}
+              onShowIncomplete={pendingSongs > 0 ? showOnlyIncomplete : undefined}
+            />
+
+            <LabelsFilterBar
+              typeFilter={library.typeFilter}
+              onTypeFilterChange={library.setTypeFilter}
+              customCount={totals.customCount}
+              artisticCount={totals.artisticCount}
+              coverageFilter={library.coverageFilter}
+              onCoverageFilterChange={library.setCoverageFilter}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+              hasFilters={hasFilters}
+              onClearAll={clearAllFilters}
+            />
+
+            {items.length === 0 ? (
+              <NoResultsState
+                search={search}
+                hasFilters={hasFilters}
+                onClearFilters={clearAllFilters}
+                onClearSearch={() => setSearch("")}
+              />
+            ) : (
+              <div className="overflow-hidden rounded-[26px] border border-[#E8E8EC] bg-white shadow-[0_10px_28px_-12px_rgba(255,92,0,0.15)]">
+                <TableHeader sortBy={sortBy} onSortChange={setSortBy} />
+                <div className="h-px bg-[#E8E8EC]" />
+                <LabelSections
+                  items={items}
+                  onCreateSplits={setSplitTarget}
+                  onEdit={setEditing}
+                  onInvite={setInviting}
+                  onDelete={setDeleting}
+                />
+                <div className="h-px bg-[#E8E8EC]" />
+                <div className="px-5 py-3.5">
+                  <span className="text-[12px] text-[#71757E]">
+                    {items.length}
+                    {items.length === allItems.length ? "" : ` de ${allItems.length}`}{" "}
+                    {items.length === 1 ? "sello" : "sellos"} ·{" "}
+                    {totals.coverage.withSplits.toLocaleString()} de{" "}
+                    {totals.coverage.total.toLocaleString()} canciones con split
+                  </span>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Modales */}
       <CreateLabelModal
-        isOpen={isCreateLabelModalOpen}
-        onClose={() => setIsCreateLabelModalOpen(false)}
-        availableLabels={labels}
-        onSuccess={() => refreshLabels()}
+        isOpen={showCreate}
+        onClose={() => setShowCreate(false)}
+        availableLabels={sourceLabels}
+        onSuccess={reload}
       />
 
-      {selectedCustomLabel && (
-        <CreateSplitsByCustomLabelModal
-          isOpen={customLabelModalOpen}
-          onClose={handleCloseCustomLabelModal}
-          labelName={selectedCustomLabel.name}
-          artisticLabels={selectedCustomLabel.artisticLabels}
-          songCount={selectedCustomLabel.count}
-        />
-      )}
+      {splitTarget &&
+        (splitTarget.isCustom ? (
+          <CreateSplitsByCustomLabelModal
+            isOpen
+            onClose={() => {
+              setSplitTarget(null);
+              reload();
+            }}
+            labelName={splitTarget.name}
+            artisticLabels={splitTarget.artisticLabels}
+            songCount={splitTarget.songCount}
+            alreadyWithSplit={splitTarget.coverage.withSplits}
+          />
+        ) : (
+          <CreateSplitsByLabelModal
+            isOpen
+            onClose={() => {
+              setSplitTarget(null);
+              reload();
+            }}
+            label={splitTarget.name}
+            songCount={splitTarget.songCount}
+            alreadyWithSplit={splitTarget.coverage.withSplits}
+          />
+        ))}
 
-      {labelToEdit && (
+      {(editing || deleting) && (
         <EditLabelModal
-          isOpen={editModalOpen}
-          onClose={handleCloseEditModal}
-          labelId={labelToEdit.id}
-          currentName={labelToEdit.name}
-          currentArtisticLabels={labelToEdit.artisticLabels}
-          availableLabels={labels}
-          onSuccess={() => {
-            refreshLabels();
-            handleCloseEditModal();
+          isOpen
+          initialMode={deleting ? "delete" : "edit"}
+          onClose={() => {
+            setEditing(null);
+            setDeleting(null);
           }}
-          onDelete={() => refreshLabels()}
+          labelId={(editing ?? deleting)!.id ?? ""}
+          currentName={(editing ?? deleting)!.name}
+          currentArtisticLabels={(editing ?? deleting)!.artisticLabels}
+          availableLabels={sourceLabels}
+          onSuccess={() => {
+            reload();
+            setEditing(null);
+            setDeleting(null);
+          }}
+          onDelete={() => {
+            reload();
+            setEditing(null);
+            setDeleting(null);
+          }}
         />
       )}
 
-      {labelToInvite && (
+      {inviting && (
         <InviteCollaboratorToLabelModal
-          isOpen={inviteModalOpen}
-          onClose={handleCloseInviteModal}
-          labelType={labelToInvite.labelType}
-          labelIdentifier={labelToInvite.labelIdentifier}
-          labelName={labelToInvite.labelName}
-          songCount={labelToInvite.songCount}
-          onSuccess={() => refreshLabels()}
+          isOpen
+          onClose={() => setInviting(null)}
+          labelType={inviting.isCustom ? "custom" : "artistic"}
+          labelIdentifier={inviting.isCustom ? (inviting.id ?? "") : inviting.name}
+          labelName={inviting.name}
+          songCount={inviting.songCount}
+          onSuccess={reload}
         />
       )}
+    </div>
+  );
+}
+
+/**
+ * Las filas, partidas en dos bloques con encabezado propio.
+ *
+ * La separación es el punto del rediseño: un sello personalizado agrupa sellos
+ * artísticos, y esa relación antes solo se insinuaba con un fondo naranja. El
+ * encabezado solo aparece cuando el bloque tiene contenido, así que al filtrar
+ * por un tipo la tabla se queda limpia.
+ */
+function LabelSections({
+  items,
+  onCreateSplits,
+  onEdit,
+  onInvite,
+  onDelete,
+}: {
+  items: LabelListItem[];
+  onCreateSplits: (item: LabelListItem) => void;
+  onEdit: (item: LabelListItem) => void;
+  onInvite: (item: LabelListItem) => void;
+  onDelete: (item: LabelListItem) => void;
+}) {
+  const custom = items.filter((item) => item.isCustom);
+  const artistic = items.filter((item) => !item.isCustom);
+  const bothVisible = custom.length > 0 && artistic.length > 0;
+
+  const groups = [
+    {
+      key: "custom",
+      items: custom,
+      title: "PERSONALIZADOS",
+      description: "Los que tú creaste agrupando varios sellos artísticos",
+    },
+    {
+      key: "artistic",
+      items: artistic,
+      title: "ARTÍSTICOS",
+      description: "Detectados en los reportes de tus distribuidoras",
+    },
+  ].filter((group) => group.items.length > 0);
+
+  return (
+    <>
+      {groups.map((group) => (
+        <div key={group.key}>
+          {bothVisible && (
+            <div className="flex flex-wrap items-center gap-2.5 bg-[#F4F5F7] px-5 py-2.5">
+              <span className="font-mono text-[9.5px] font-semibold tracking-[1.2px] text-[#1C1D22]">
+                {group.title}
+              </span>
+              <span className="rounded-[10px] bg-white px-1.5 py-px font-mono text-[10px] font-semibold text-[#71757E]">
+                {group.items.length}
+              </span>
+              <span className="hidden text-[11.5px] text-[#A6AAB2] sm:inline">
+                {group.description}
+              </span>
+            </div>
+          )}
+          <div className="flex flex-col divide-y divide-[#E8E8EC]">
+            {group.items.map((item) => (
+              <LabelRow
+                key={`${item.isCustom ? "custom" : "artistic"}-${item.id ?? item.name}`}
+                item={item}
+                onCreateSplits={onCreateSplits}
+                onEdit={onEdit}
+                onInvite={onInvite}
+                onDelete={onDelete}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
+
+/** Cabecera de la tabla: cada columna ordena y marca el criterio activo. */
+function TableHeader({
+  sortBy,
+  onSortChange,
+}: {
+  sortBy: LabelSortBy;
+  onSortChange: (value: LabelSortBy) => void;
+}) {
+  return (
+    <div className={`${LABELS_GRID} px-5 py-3`}>
+      <div className="flex min-w-0">
+        <ColumnButton
+          label="SELLO"
+          active={sortBy === "name_asc"}
+          descending={false}
+          onClick={() => onSortChange(NEXT_SORT.name(sortBy))}
+        />
+      </div>
+      {LABEL_COLUMNS.map((column) => {
+        const active = Boolean(column.sortKeys?.includes(sortBy));
+        return (
+          <div key={column.key} className={column.visibility}>
+            {column.sortKeys ? (
+              <ColumnButton
+                label={column.label}
+                active={active}
+                descending={isDescending(sortBy)}
+                onClick={() => onSortChange(NEXT_SORT[column.key](sortBy))}
+              />
+            ) : (
+              <ColumnLabel>{column.label}</ColumnLabel>
+            )}
+          </div>
+        );
+      })}
+      <div />
+    </div>
+  );
+}
+
+function ColumnButton({
+  label,
+  active,
+  descending,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  descending: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-1 transition-colors ${
+        active ? "text-[#FF5C00]" : "text-[#A6AAB2] hover:text-[#71757E]"
+      }`}
+    >
+      <span className="font-mono text-[9.5px] font-medium tracking-[1.2px]">{label}</span>
+      {active && (descending ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />)}
+    </button>
+  );
+}
+
+function ColumnLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="font-mono text-[9.5px] font-medium tracking-[1.2px] text-[#A6AAB2]">
+      {children}
+    </span>
+  );
+}
+
+/** Tabla fantasma: conserva las columnas mientras llegan los datos. */
+function TableSkeleton() {
+  const widths = ["w-[148px]", "w-[112px]", "w-[168px]", "w-[130px]"];
+  return (
+    <div className="overflow-hidden rounded-[26px] border border-[#E8E8EC] bg-white">
+      <div className={`${LABELS_GRID} px-5 py-3`}>
+        <div className="min-w-0">
+          <ColumnLabel>SELLO</ColumnLabel>
+        </div>
+        {LABEL_COLUMNS.map((column) => (
+          <div key={column.key} className={column.visibility}>
+            <ColumnLabel>{column.label}</ColumnLabel>
+          </div>
+        ))}
+        <div />
+      </div>
+      <div className="h-px bg-[#E8E8EC]" />
+      <div className="flex flex-col divide-y divide-[#E8E8EC]">
+        {widths.map((width, index) => (
+          <div key={width} className={`${LABELS_GRID} px-5 py-3.5`}>
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="h-[42px] w-[42px] flex-shrink-0 animate-pulse rounded-[14px] bg-[#F4F5F7]" />
+              <div className="flex flex-1 flex-col gap-2">
+                <div className={`h-2.5 animate-pulse rounded-full bg-[#F4F5F7] ${width}`} />
+                <div
+                  className={`h-2 animate-pulse rounded-full bg-[#F4F5F7]/70 ${
+                    index % 2 ? "w-[84px]" : "w-[108px]"
+                  }`}
+                />
+              </div>
+            </div>
+            {LABEL_COLUMNS.map((column) => (
+              <div key={column.key} className={column.visibility}>
+                <div className="h-2.5 w-[70%] animate-pulse rounded-full bg-[#F4F5F7]" />
+              </div>
+            ))}
+            <div className="flex justify-end gap-1.5">
+              <div className="h-8 w-[92px] animate-pulse rounded-full bg-[#F4F5F7]" />
+              <div className="h-8 w-8 animate-pulse rounded-full bg-[#F4F5F7]" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Pantalla vacía: explica de dónde salen los sellos, no solo ofrece un botón. */
+function FirstLabelState({ onCreate }: { onCreate: () => void }) {
+  return (
+    <div className="flex flex-col items-center gap-5 rounded-[26px] border border-[#E8E8EC] bg-white px-6 py-[46px] sm:px-10">
+      <div className="flex h-[60px] w-[60px] items-center justify-center rounded-[22px] bg-[#FFEADD]">
+        <Tag className="h-[26px] w-[26px] text-[#FF5C00]" />
+      </div>
+      <div className="flex flex-col items-center gap-1.5">
+        <h2 className="font-display text-[19px] font-semibold text-[#1C1D22]">
+          Todavía no hay sellos
+        </h2>
+        <p className="max-w-[520px] text-center text-[12.5px] leading-relaxed text-[#71757E]">
+          Los sellos artísticos aparecen solos en cuanto tus distribuidoras reporten canciones. Los
+          personalizados los creas tú para agrupar varios sellos y repartir splits de una sola vez.
+        </p>
+      </div>
+      <button
+        onClick={onCreate}
+        className="mt-1 flex items-center gap-2 rounded-[20px] bg-[#FF5C00] px-5 py-3 text-[13px] font-semibold text-white shadow-[0_6px_16px_-4px_rgba(255,92,0,0.4)] transition-colors hover:bg-[#EA580C]"
+      >
+        <Plus className="h-[15px] w-[15px]" />
+        Nuevo sello
+      </button>
+    </div>
+  );
+}
+
+/** Sin resultados: dice qué está limitando la vista y ofrece deshacerlo. */
+function NoResultsState({
+  search,
+  hasFilters,
+  onClearFilters,
+  onClearSearch,
+}: {
+  search: string;
+  hasFilters: boolean;
+  onClearFilters: () => void;
+  onClearSearch: () => void;
+}) {
+  const searching = search.trim() !== "";
+  return (
+    <div className="flex flex-col items-center gap-3 rounded-[26px] border border-[#E8E8EC] bg-white px-6 py-[50px]">
+      <div className="flex h-[52px] w-[52px] items-center justify-center rounded-[18px] bg-[#F4F5F7]">
+        <SearchX className="h-[22px] w-[22px] text-[#71757E]" />
+      </div>
+      <h3 className="font-display text-base font-semibold text-[#1C1D22]">
+        {searching ? `Ningún sello coincide con «${search}»` : "Ningún sello coincide"}
+      </h3>
+      <p className="text-center text-[12.5px] text-[#71757E]">
+        {hasFilters
+          ? "Hay filtros puestos que pueden estar dejando fuera lo que buscas."
+          : "Prueba con otro nombre."}
+      </p>
+      <div className="flex flex-wrap items-center justify-center gap-2.5 pt-1.5">
+        {hasFilters && (
+          <button
+            onClick={onClearFilters}
+            className="flex items-center gap-1.5 rounded-2xl bg-[#FF5C00] px-4 py-2.5 text-[12.5px] font-semibold text-white transition-colors hover:bg-[#EA580C]"
+          >
+            <FunnelX className="h-3.5 w-3.5" />
+            Limpiar filtros
+          </button>
+        )}
+        {searching && (
+          <button
+            onClick={onClearSearch}
+            className="rounded-2xl border border-[#E8E8EC] bg-white px-4 py-2.5 text-[12.5px] font-semibold text-[#1C1D22] transition-colors hover:bg-[#F4F5F7]"
+          >
+            Borrar búsqueda
+          </button>
+        )}
+      </div>
     </div>
   );
 }

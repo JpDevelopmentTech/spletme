@@ -1,40 +1,63 @@
-import { useMemo, useRef, useState, useEffect } from "react";
-import { X, Building2, ChevronDown, Search, Check } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Search, Check, ChevronDown, ArrowRight, Info, CirclePlus, TriangleAlert } from "lucide-react";
 import type { CreateDistributorPayload, Currency } from "../../types/distributor.types";
 import { SPOTIFY_DISTRIBUTORS, type SpotifyDistributor } from "../../const/distributors";
+import {
+  ModalShell,
+  FieldLabel,
+  PrimaryButton,
+  SecondaryButton,
+  DistributorMark,
+} from "@/components/ui/ModalShell";
+import { CurrencyPicker } from "@/components/distributors/CurrencyPicker";
 
 interface Props {
   onClose: () => void;
   onConfirm: (payload: CreateDistributorPayload) => Promise<void>;
+  /** Nombres ya usados, para avisar del duplicado antes de llamar al servidor. */
+  existingNames?: string[];
 }
 
-const CURRENCIES: { value: Currency; label: string; symbol: string }[] = [
-  { value: "USD", label: "Dólar (USD)", symbol: "$" },
-  { value: "EUR", label: "Euro (EUR)", symbol: "€" },
+/**
+ * Los distribuidores que concentran casi todas las altas. Tenerlos a un clic
+ * evita recorrer un desplegable de casi cien entradas en el caso habitual.
+ */
+const FEATURED_IDS = [
+  "distrokid",
+  "tunecore",
+  "cd-baby",
+  "amuse",
+  "routenote",
+  "too-lost",
+  "landr",
+  "record-union",
 ];
 
-export default function CreateDistributorModal({ onClose, onConfirm }: Props) {
+const FEATURED = FEATURED_IDS.map((id) => SPOTIFY_DISTRIBUTORS.find((d) => d.id === id)).filter(
+  (d): d is SpotifyDistributor => Boolean(d),
+);
+
+export default function CreateDistributorModal({ onClose, onConfirm, existingNames = [] }: Props) {
   const [provider, setProvider] = useState<SpotifyDistributor | null>(null);
   const [name, setName] = useState("");
   const [currency, setCurrency] = useState<Currency>("USD");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Estado del selector desplegable de distribuidores
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const selectRef = useRef<HTMLDivElement>(null);
 
-  // Cerrar el desplegable al hacer clic fuera
   useEffect(() => {
+    if (!open) return;
     function handleClickOutside(e: MouseEvent) {
-      if (selectRef.current && !selectRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
+      if (selectRef.current && !selectRef.current.contains(e.target as Node)) setOpen(false);
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [open]);
+
+  const restCount = SPOTIFY_DISTRIBUTORS.length - FEATURED.length;
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -42,215 +65,253 @@ export default function CreateDistributorModal({ onClose, onConfirm }: Props) {
     return SPOTIFY_DISTRIBUTORS.filter((d) => d.name.toLowerCase().includes(q));
   }, [query]);
 
-  const initials = name.trim().slice(0, 2).toUpperCase() || "??";
+  const trimmed = name.trim();
+  const duplicated = existingNames.some((n) => n.toLowerCase() === trimmed.toLowerCase());
+  const nameInvalid = Boolean(error) && (!trimmed || duplicated);
+
+  /** Alternativas cuando el alias ya está cogido, para no dejar al usuario pensando. */
+  const suggestions = useMemo(() => {
+    if (!duplicated || !trimmed) return [];
+    return [`${trimmed} 2`, `${trimmed} EU`, "Sello propio"].filter(
+      (s) => !existingNames.some((n) => n.toLowerCase() === s.toLowerCase()),
+    );
+  }, [duplicated, trimmed, existingNames]);
+
+  function selectProvider(d: SpotifyDistributor) {
+    setProvider(d);
+    setOpen(false);
+    setQuery("");
+    setError("");
+    // El nombre oficial es el alias por defecto; casi siempre es el que se quiere.
+    if (!trimmed) setName(d.name);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!provider) {
-      setError("Selecciona un distribuidor");
+      setError("Selecciona el distribuidor del que vienen los reportes.");
       return;
     }
-    if (!name.trim()) {
-      setError("El nombre (alias) es obligatorio");
+    if (!trimmed) {
+      setError("Ponle un nombre para reconocerlo en tus listas.");
       return;
     }
+    if (duplicated) {
+      setError("Ya tienes un distribuidor llamado así. Usa otro nombre.");
+      return;
+    }
+
     setLoading(true);
     setError("");
     try {
       await onConfirm({
-        name: name.trim(),
+        name: trimmed,
         currency,
         provider: provider.name,
         photoUrl: provider.logo,
       });
       onClose();
     } catch {
-      setError("No se pudo crear el distribuidor. Intenta de nuevo.");
-    } finally {
+      setError("No se pudo crear el distribuidor. Vuelve a intentarlo.");
       setLoading(false);
     }
   }
 
-  function selectProvider(d: SpotifyDistributor) {
-    setProvider(d);
-    setOpen(false);
-    setQuery("");
-    // Sugerir el nombre oficial como alias inicial si el campo está vacío
-    if (!name.trim()) setName(d.name);
-  }
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative mx-4 flex w-full max-w-md flex-col gap-5 rounded-2xl bg-white p-6 shadow-xl">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-[#111827]">Nuevo Distribuidor</h2>
-          <button
-            onClick={onClose}
-            className="rounded-lg p-1.5 transition-colors hover:bg-gray-100"
-          >
-            <X className="h-4 w-4 text-[#6B7280]" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* Avatar preview */}
-          <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-orange-100">
-              {provider ? (
-                <img
-                  src={provider.logo}
-                  alt={provider.name}
-                  className="h-full w-full object-contain"
-                />
-              ) : name.trim() ? (
-                <span className="text-xl font-bold text-[#F97316]">{initials}</span>
-              ) : (
-                <Building2 className="h-6 w-6 text-[#F97316]" />
-              )}
-            </div>
-            <div className="flex flex-col gap-0.5">
-              <span className="text-sm font-semibold text-[#111827]">
-                {name.trim() || provider?.name || "Nombre del distribuidor"}
-              </span>
-              <span className="text-xs text-[#9CA3AF]">
-                {provider ? provider.name : "Vista previa del avatar"}
-              </span>
-            </div>
-          </div>
-
-          {/* Distributor selector */}
-          <div className="flex flex-col gap-1.5" ref={selectRef}>
-            <label className="text-xs font-semibold uppercase tracking-wider text-[#374151]">
-              Distribuidor *
-            </label>
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setOpen((v) => !v)}
-                className="flex h-10 w-full items-center justify-between gap-2 rounded-lg border border-gray-200 px-3 text-sm transition-colors focus:border-[#F97316] focus:outline-none"
-              >
-                {provider ? (
-                  <span className="flex items-center gap-2 truncate">
-                    <img
-                      src={provider.logo}
-                      alt=""
-                      className="h-5 w-5 flex-shrink-0 rounded object-contain"
-                    />
-                    <span className="truncate text-[#111827]">{provider.name}</span>
-                  </span>
-                ) : (
-                  <span className="text-[#9CA3AF]">Selecciona un distribuidor...</span>
-                )}
-                <ChevronDown className="h-4 w-4 flex-shrink-0 text-[#6B7280]" />
-              </button>
-
-              {open && (
-                <div className="absolute z-10 mt-1 flex w-full flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
-                  <div className="flex items-center gap-2 border-b border-gray-100 px-3 py-2">
-                    <Search className="h-4 w-4 flex-shrink-0 text-[#9CA3AF]" />
-                    <input
-                      autoFocus
-                      type="text"
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                      placeholder="Buscar distribuidor..."
-                      className="w-full text-sm text-[#111827] placeholder-[#9CA3AF] focus:outline-none"
-                    />
-                  </div>
-                  <div className="max-h-60 overflow-y-auto">
-                    {filtered.length === 0 ? (
-                      <p className="px-3 py-3 text-sm text-[#9CA3AF]">Sin resultados</p>
-                    ) : (
-                      filtered.map((d) => (
-                        <button
-                          key={d.id}
-                          type="button"
-                          onClick={() => selectProvider(d)}
-                          className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors hover:bg-orange-50"
-                        >
-                          <img
-                            src={d.logo}
-                            alt=""
-                            loading="lazy"
-                            className="h-6 w-6 flex-shrink-0 rounded object-contain"
-                          />
-                          <span className="flex-1 truncate text-[#111827]">{d.name}</span>
-                          {provider?.id === d.id && (
-                            <Check className="h-4 w-4 flex-shrink-0 text-[#F97316]" />
-                          )}
-                        </button>
-                      ))
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Name (alias) */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-[#374151]">
-              Nombre (alias) *
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Ej. Mi cuenta de DistroKid, TuneCore label..."
-              className="h-10 rounded-lg border border-gray-200 px-3 text-sm text-[#111827] placeholder-[#9CA3AF] transition-colors focus:border-[#F97316] focus:outline-none"
-            />
-            <span className="text-xs text-[#9CA3AF]">
-              Un nombre personalizado para identificar este distribuidor.
+    <form onSubmit={handleSubmit} className="contents">
+      <ModalShell
+        title="Nuevo distribuidor"
+        subtitle={
+          provider ? provider.name : "Conecta la cuenta de la que descargas tus reportes"
+        }
+        width="lg"
+        locked={loading}
+        onClose={onClose}
+        logo={provider ? <DistributorMark name={provider.name} logo={provider.logo} /> : undefined}
+        footer={
+          <>
+            <span className="flex-1 text-[11px] text-[#A6AAB2]">
+              Después podrás subir su primer reporte
             </span>
-          </div>
+            <SecondaryButton onClick={onClose} disabled={loading}>
+              Cancelar
+            </SecondaryButton>
+            <PrimaryButton
+              type="submit"
+              disabled={loading || !provider || !trimmed || duplicated}
+              icon={<ArrowRight className="h-[15px] w-[15px]" />}
+            >
+              {loading ? "Creando…" : "Crear y subir reporte"}
+            </PrimaryButton>
+          </>
+        }
+      >
+        {/* Distribuidor */}
+        <div className="flex flex-col gap-2.5">
+          <FieldLabel required invalid={Boolean(error) && !provider}>
+            DISTRIBUIDOR
+          </FieldLabel>
 
-          {/* Currency */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-[#374151]">
-              Moneda
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              {CURRENCIES.map(({ value, label, symbol }) => (
+          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+            {FEATURED.map((d) => {
+              const selected = provider?.id === d.id;
+              return (
                 <button
-                  key={value}
+                  key={d.id}
                   type="button"
-                  onClick={() => setCurrency(value)}
-                  className={`flex items-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors ${
-                    currency === value
-                      ? "border-[#F97316] bg-orange-50 text-[#F97316]"
-                      : "border-gray-200 text-[#6B7280] hover:border-gray-300"
+                  onClick={() => selectProvider(d)}
+                  aria-pressed={selected}
+                  className={`flex h-[74px] flex-col items-center justify-center gap-1.5 rounded-2xl px-2 transition-colors ${
+                    selected
+                      ? "border-[1.5px] border-[#FF5C00] bg-[#FFEADD]"
+                      : "border border-[#E8E8EC] bg-white hover:border-[#D9DAE0]"
                   }`}
                 >
-                  <span className="text-base font-bold">{symbol}</span>
-                  <span>{label}</span>
+                  <img src={d.logo} alt="" loading="lazy" className="h-7 w-7 object-contain" />
+                  <span
+                    className={`w-full truncate text-center text-[10.5px] ${
+                      selected ? "font-semibold text-[#EA580C]" : "font-medium text-[#71757E]"
+                    }`}
+                  >
+                    {d.name}
+                  </span>
                 </button>
-              ))}
-            </div>
+              );
+            })}
           </div>
 
-          {error && <p className="text-xs text-red-500">{error}</p>}
-
-          {/* Actions */}
-          <div className="flex gap-2 pt-1">
+          <div className="relative" ref={selectRef}>
             <button
               type="button"
-              onClick={onClose}
-              className="h-10 flex-1 rounded-lg border border-gray-200 text-sm font-medium text-[#6B7280] transition-colors hover:bg-gray-50"
+              onClick={() => setOpen((v) => !v)}
+              aria-expanded={open}
+              className="flex w-full items-center gap-2.5 rounded-2xl bg-[#F4F5F7] px-3.5 py-3 text-left transition-colors hover:bg-[#E8E8EC]"
             >
-              Cancelar
+              <Search className="h-[15px] w-[15px] flex-shrink-0 text-[#71757E]" />
+              <span className="flex-1 truncate text-[12px] text-[#71757E]">
+                {provider && !FEATURED.some((f) => f.id === provider.id)
+                  ? provider.name
+                  : `Buscar entre ${restCount} distribuidores más…`}
+              </span>
+              <ChevronDown className="h-[15px] w-[15px] flex-shrink-0 text-[#A6AAB2]" />
             </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="h-10 flex-1 rounded-lg bg-[#F97316] text-sm font-semibold text-white transition-colors hover:bg-orange-600 disabled:opacity-60"
-            >
-              {loading ? "Creando..." : "Crear distribuidor"}
-            </button>
+
+            {open && (
+              <div className="absolute bottom-full left-0 z-10 mb-1.5 flex w-full flex-col overflow-hidden rounded-2xl border border-[#E8E8EC] bg-white shadow-[0_14px_36px_-8px_rgba(16,17,20,0.16)]">
+                <div className="flex items-center gap-2.5 border-b border-[#E8E8EC] px-3.5 py-2.5">
+                  <Search className="h-4 w-4 flex-shrink-0 text-[#A6AAB2]" />
+                  <input
+                    autoFocus
+                    type="text"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Buscar distribuidor…"
+                    className="w-full text-[12.5px] text-[#1C1D22] placeholder:text-[#A6AAB2] focus:outline-none"
+                  />
+                  <span className="flex-shrink-0 rounded-lg bg-[#F4F5F7] px-2 py-0.5 font-mono text-[10px] font-semibold text-[#71757E]">
+                    {filtered.length}
+                  </span>
+                </div>
+                <div className="max-h-[220px] overflow-y-auto p-1.5">
+                  {filtered.length === 0 ? (
+                    <p className="flex items-center gap-2 px-2.5 py-3 text-[12px] text-[#71757E]">
+                      <CirclePlus className="h-3.5 w-3.5 flex-shrink-0 text-[#A6AAB2]" />
+                      No está en el catálogo de Spotify.
+                    </p>
+                  ) : (
+                    filtered.map((d) => (
+                      <button
+                        key={d.id}
+                        type="button"
+                        onClick={() => selectProvider(d)}
+                        className={`flex w-full items-center gap-2.5 rounded-[13px] px-2.5 py-2 text-left transition-colors ${
+                          provider?.id === d.id ? "bg-[#FFEADD]" : "hover:bg-[#F4F5F7]"
+                        }`}
+                      >
+                        <img
+                          src={d.logo}
+                          alt=""
+                          loading="lazy"
+                          className="h-6 w-6 flex-shrink-0 rounded object-contain"
+                        />
+                        <span className="flex-1 truncate text-[12.5px] text-[#1C1D22]">
+                          {d.name}
+                        </span>
+                        {provider?.id === d.id && (
+                          <Check className="h-4 w-4 flex-shrink-0 text-[#FF5C00]" />
+                        )}
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
           </div>
-        </form>
-      </div>
-    </div>
+        </div>
+
+        {/* Nombre interno */}
+        <div className="flex flex-col gap-2">
+          <FieldLabel required invalid={nameInvalid}>
+            NOMBRE INTERNO
+          </FieldLabel>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value);
+              if (error) setError("");
+            }}
+            placeholder="Ej. Mi cuenta de DistroKid"
+            className={`rounded-2xl border px-4 py-3 text-[13px] font-medium text-[#1C1D22] placeholder:font-normal placeholder:text-[#A6AAB2] transition-colors focus:outline-none focus:ring-[3px] focus:ring-[#FF5C00]/15 ${
+              nameInvalid
+                ? "border-[1.5px] border-[#E5484D] bg-[#FDECEC]"
+                : "border-[#E8E8EC] focus:border-[#FF5C00]"
+            }`}
+          />
+          {duplicated ? (
+            <div className="flex flex-col gap-2">
+              <span className="flex items-center gap-1.5 text-[11.5px] font-medium text-[#E5484D]">
+                <TriangleAlert className="h-3 w-3 flex-shrink-0" />
+                Ya tienes un distribuidor llamado así.
+              </span>
+              {suggestions.length > 0 && (
+                <span className="flex flex-wrap items-center gap-2">
+                  <span className="text-[11px] text-[#A6AAB2]">Sugerencias:</span>
+                  {suggestions.map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setName(s)}
+                      className="rounded-[13px] bg-[#F4F5F7] px-2.5 py-1 text-[11px] font-medium text-[#1C1D22] transition-colors hover:bg-[#E8E8EC]"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </span>
+              )}
+            </div>
+          ) : (
+            <span className="text-[11px] leading-relaxed text-[#A6AAB2]">
+              Así lo verás en tus listas. Útil si tienes varias cuentas del mismo distribuidor.
+            </span>
+          )}
+        </div>
+
+        {/* Moneda */}
+        <div className="flex flex-col gap-2">
+          <FieldLabel>MONEDA DE LOS REPORTES</FieldLabel>
+          <CurrencyPicker value={currency} onChange={setCurrency} />
+        </div>
+
+        <p className="flex items-start gap-2.5 rounded-[14px] bg-[#F4F5F7] px-3.5 py-3 text-[11px] leading-relaxed text-[#71757E]">
+          <Info className="mt-px h-3.5 w-3.5 flex-shrink-0" />
+          Los importes se guardan en la moneda del reporte; no se convierten.
+        </p>
+
+        {error && !duplicated && (
+          <p className="text-[12px] font-medium text-[#E5484D]">{error}</p>
+        )}
+      </ModalShell>
+    </form>
   );
 }

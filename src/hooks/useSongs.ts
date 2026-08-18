@@ -1,20 +1,18 @@
 import { useEffect, useState, useCallback } from "react";
 import SongService from "../services/songs";
 
+// Refleja exactamente lo que el backend persiste en `releases[]`. Los campos
+// del CSV que no se guardan (catalogNumber, streamingSubscriptionType,
+// releaseType, customerPaymentCurrency, unitPrice, mechanicalReproductionCosts,
+// clientIncomeRate) ya no llegan: ver `ignoredCsvColumns` en el backend.
+// `upc` y `releaseTitle` viven en el nivel de la canción, no del release.
 interface Release {
   reportMonth: string;
   salesMonth: string;
   platform: string;
   country: string;
-  upc: string;
-  catalogNumber: string;
-  streamingSubscriptionType: string;
-  releaseType: string;
   salesType: string;
   quantity: number;
-  customerPaymentCurrency: string;
-  unitPrice: number;
-  mechanicalReproductionCosts: number;
   grossIncome: number;
   netIncome: number;
 }

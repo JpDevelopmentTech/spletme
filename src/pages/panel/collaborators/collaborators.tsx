@@ -1,255 +1,338 @@
-import { useState, useEffect, useCallback } from "react";
-import { Plus } from "lucide-react";
-import { CollaboratorsStatsGrid } from "@/components/collaborators/CollaboratorsStatsGrid";
-import { CollaboratorsTable } from "@/components/collaborators/CollaboratorsTable";
-import { FeaturedCollaboratorCard } from "@/components/collaborators/FeaturedCollaboratorCard";
-import { CollaboratorDetailModal } from "@/components/collaborators/CollaboratorDetailModal";
-import { CollaboratorPaymentModal } from "@/components/modal/CollaboratorPaymentModal";
+import { useMemo, useState } from "react";
+import { Search, UserPlus, TriangleAlert } from "lucide-react";
+import { useCollaboratorsLibrary } from "@/hooks/useCollaboratorsLibrary";
+import { CollaboratorsKpis } from "@/components/collaborators/CollaboratorsKpis";
+import { AttentionTray } from "@/components/collaborators/AttentionTray";
+import { CollaboratorsFilterBar } from "@/components/collaborators/CollaboratorsFilterBar";
+import { CollaboratorRow } from "@/components/collaborators/CollaboratorRow";
+import { BulkActionBar } from "@/components/collaborators/BulkActionBar";
 import { RecentPaymentsSection } from "@/components/collaborators/RecentPaymentsSection";
+import {
+  FirstCollaboratorState,
+  NoResultsState,
+} from "@/components/collaborators/CollaboratorsEmptyState";
+import { CollaboratorDetailModal } from "@/components/collaborators/CollaboratorDetailModal";
+import {
+  CollaboratorPaymentModal,
+  type PaymentTarget,
+} from "@/components/modal/CollaboratorPaymentModal";
+import {
+  COLLABORATOR_COLUMNS,
+  COLLABORATORS_GRID,
+} from "@/components/collaborators/collaboratorsColumns";
 import { AddCollaboratorSidebar } from "./components/AddCollaboratorSidebar";
-import type { Collaborator, CollaboratorPayment } from "@/types";
-import CollaboratorService from "@/services/collaborator";
+import { collaboratorColor, resolveCollaboratorState } from "@/utils/collaborators.utils";
+import { formatCurrency } from "@/utils/format.utils";
 import LocalStorageService from "@/services/localstorage";
-
-const AVATAR_PALETTE = [
-  { bg: "#FED7AA", text: "#9A3412" },
-  { bg: "#DBEAFE", text: "#1E40AF" },
-  { bg: "#FCE7F3", text: "#9D174D" },
-  { bg: "#D1FAE5", text: "#065F46" },
-  { bg: "#EDE9FE", text: "#5B21B6" },
-  { bg: "#FEF3C7", text: "#92400E" },
-];
-
-interface ApiCollaborator {
-  userId: string;
-  id: string;
-  name: string;
-  email: string;
-  roles: string[];
-  songCount: number;
-  songPresencePercentage: number;
-  activeSplits: number;
-  amountOwed: number;
-  totalPaid: number;
-  amountPending: number;
-  paymentStatus: string;
-  isActive: boolean;
-  hasWallet: boolean;
-  hasActiveStripeAccount: boolean;
-}
-
-interface ApiSummary {
-  totalCollaborators: number;
-  totalLabels: number;
-  byRole: { collaborator: number; label: number };
-  activeSplits: number;
-  totalAmountSent: number;
-  totalPending: number;
-  totalAmountReceived: number;
-}
-
-interface MetricsResponse {
-  summary: ApiSummary;
-  collaborators: ApiCollaborator[];
-}
-
-const getInitials = (name: string) =>
-  name
-    .split(" ")
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? "")
-    .join("");
-
-const resolveStatus = (c: ApiCollaborator): Collaborator["status"] => {
-  if (!c.hasWallet) return "no_wallet";
-  if (c.paymentStatus === "pending") return "pending";
-  return "active";
-};
-
-const adaptCollaborator = (raw: ApiCollaborator, idx: number): Collaborator => {
-  const palette = AVATAR_PALETTE[idx % AVATAR_PALETTE.length];
-  return {
-    id: raw.userId,
-    externalId: raw.id,
-    name: raw.name,
-    email: raw.email,
-    initials: getInitials(raw.name),
-    avatarBg: palette.bg,
-    avatarText: palette.text,
-    songs: raw.songCount,
-    songPresencePercentage: raw.songPresencePercentage ?? 0,
-    paid: raw.totalPaid,
-    amountOwed: raw.amountOwed ?? 0,
-    amountPending: raw.amountPending ?? 0,
-    status: resolveStatus(raw),
-    roles: raw.roles ?? [],
-  };
-};
-
-// TODO: reemplazar con endpoint de pagos cuando esté disponible
-const MOCK_PAYMENTS: CollaboratorPayment[] = [
-  {
-    id: "p1",
-    collaboratorName: "Lucia Reyes",
-    initials: "LR",
-    avatarBg: "#FED7AA",
-    avatarText: "#9A3412",
-    songTitle: "Solar Drift",
-    isrc: "USRC17608123",
-    relativeDate: "Hace 2 horas",
-    date: "10 may 2026",
-    amount: 3180,
-    status: "completed",
-  },
-  {
-    id: "p2",
-    collaboratorName: "Diego Marín",
-    initials: "DM",
-    avatarBg: "#DBEAFE",
-    avatarText: "#1E40AF",
-    songTitle: "Velvet Horizon",
-    isrc: "USRC17608124",
-    relativeDate: "Ayer",
-    date: "9 may 2026",
-    amount: 2140.5,
-    status: "completed",
-  },
-  {
-    id: "p3",
-    collaboratorName: "Ana Velasco",
-    initials: "AV",
-    avatarBg: "#FCE7F3",
-    avatarText: "#9D174D",
-    songTitle: "Echo Chambers",
-    isrc: "USRC17608125",
-    relativeDate: "Hace 3 días",
-    date: "7 may 2026",
-    amount: 1820.3,
-    status: "processing",
-  },
-  {
-    id: "p4",
-    collaboratorName: "Mateo Salas",
-    initials: "MS",
-    avatarBg: "#D1FAE5",
-    avatarText: "#065F46",
-    songTitle: "Quiet Skylines",
-    isrc: "USRC17608126",
-    relativeDate: "Hace 5 días",
-    date: "5 may 2026",
-    amount: 895.4,
-    status: "completed",
-  },
-];
+import type { Collaborator } from "@/types";
 
 export default function Collaborators() {
-  const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
-  const [metrics, setMetrics] = useState<ApiSummary | null>(null);
-  const [featuredId, setFeaturedId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [profileOpen, setProfileOpen] = useState(false);
-  const [payOpen, setPayOpen] = useState(false);
+  const library = useCollaboratorsLibrary();
+  const {
+    loading,
+    paymentsLoading,
+    error,
+    reload,
+    refresh,
+    collaborators,
+    visible,
+    payable,
+    blocked,
+    payments,
+    totals,
+    catalogSize,
+    search,
+    setSearch,
+    hasFilters,
+    clearFilters,
+    selected,
+    selectedIds,
+    selectedTotal,
+    toggleSelect,
+    toggleSelectAll,
+    clearSelection,
+  } = library;
+
+  const [profileOf, setProfileOf] = useState<Collaborator | null>(null);
+  const [payTargets, setPayTargets] = useState<PaymentTarget[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const currentUser = LocalStorageService.getItem("user");
   const userRole = String(currentUser?.role ?? "").toLowerCase();
   const canAddCollaborator = !currentUser?.parentUserId || userRole === "label";
 
-  const refreshMetrics = useCallback(async () => {
-    const response = await CollaboratorService.getMetrics();
-    const payload: MetricsResponse | null = response?.data ?? null;
-    if (payload) {
-      setMetrics(payload.summary);
-      const list = payload.collaborators.map(adaptCollaborator);
-      setCollaborators(list);
-      // Conserva la selección actual; solo destaca el primero en la carga inicial.
-      setFeaturedId((prev) => prev ?? (list.length > 0 ? list[0].id : null));
-    }
-    setLoading(false);
-  }, []);
+  /** El color de cada persona es estable: se deriva de su sitio en el catálogo. */
+  const colorOf = useMemo(() => {
+    const map = new Map<string, string>();
+    collaborators.forEach((c, index) => map.set(c.id, collaboratorColor(index)));
+    return map;
+  }, [collaborators]);
 
-  useEffect(() => {
-    refreshMetrics();
-  }, [refreshMetrics]);
+  const toTarget = (c: Collaborator): PaymentTarget => ({
+    id: c.id,
+    name: c.name,
+    email: c.email,
+    pending: c.amountPending,
+  });
 
-  const featured = collaborators.find((c) => c.id === featuredId) ?? collaborators[0];
+  const remindBlocked = () => {
+    const emails = blocked.map((c) => c.email).filter(Boolean).join(",");
+    if (emails) window.open(`mailto:${emails}`, "_blank");
+  };
 
-  const totalSent = metrics?.totalAmountSent ?? 0;
-  const totalReceived = metrics?.totalAmountReceived ?? 0;
-  const activeSplits = metrics?.activeSplits ?? 0;
-  const pendingPayments = collaborators.filter((c) => c.status === "pending").length;
+  const visiblePayable = visible.filter((c) => resolveCollaboratorState(c) === "can_pay");
+  const allSelected =
+    visiblePayable.length > 0 && visiblePayable.every((c) => selectedIds.has(c.id));
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="flex flex-col gap-6 px-6 py-8 lg:px-10">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-2xl font-bold text-[#1C1D22]">Colaboradores</h1>
-            <p className="text-sm text-[#A6AAB2]">
-              Organiza y gestiona a las personas que comparten tus regalías
+    <div className="min-h-full bg-[#F7F7F9]">
+      <div className="flex flex-col gap-5 px-4 py-6 lg:px-8">
+        {/* Encabezado */}
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="flex flex-col gap-0.5">
+            <h1 className="font-display text-2xl font-semibold text-[#1C1D22]">Colaboradores</h1>
+            <p className="flex flex-wrap items-center gap-2 text-[13px] text-[#71757E]">
+              <span>
+                {collaborators.length}{" "}
+                {collaborators.length === 1 ? "persona" : "personas"}
+              </span>
+              <span className="text-[#A6AAB2]">·</span>
+              <span>{totals.activeSplits} splits activos</span>
+              {totals.totalPending > 0 && (
+                <>
+                  <span className="text-[#A6AAB2]">·</span>
+                  <button
+                    onClick={() => library.setStateFilter("can_pay")}
+                    className="font-semibold text-[#FF5C00] transition-colors hover:text-[#EA580C]"
+                  >
+                    {formatCurrency(totals.totalPending)} por pagar
+                  </button>
+                </>
+              )}
             </p>
           </div>
-          {canAddCollaborator && (
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="flex items-center gap-2 rounded-full bg-[#FF5C00] px-[18px] py-[11px] text-[13px] font-semibold text-white transition-colors hover:bg-[#EA580C]"
-            >
-              <Plus className="h-[15px] w-[15px]" />
-              Agregar colaborador
-            </button>
-          )}
+
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative w-full sm:w-[280px]">
+              <Search
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-[#A6AAB2]"
+                size={16}
+              />
+              <input
+                type="text"
+                placeholder="Buscar por nombre o correo…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full rounded-[22px] border border-[#E8E8EC] bg-white py-2.5 pl-11 pr-4 text-[12.5px] text-[#1C1D22] placeholder:text-[#A6AAB2] focus:border-[#FF5C00] focus:outline-none focus:ring-[3px] focus:ring-[#FF5C00]/15"
+              />
+            </div>
+            {canAddCollaborator && (
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="flex flex-shrink-0 items-center gap-2 rounded-[22px] bg-[#FF5C00] px-[18px] py-2.5 text-[12.5px] font-semibold text-white shadow-[0_6px_16px_-4px_rgba(255,92,0,0.4)] transition-colors hover:bg-[#EA580C]"
+              >
+                <UserPlus className="h-[15px] w-[15px]" />
+                Invitar a una canción
+              </button>
+            )}
+          </div>
         </div>
 
-        <CollaboratorsStatsGrid
-          totalCollaborators={loading ? 0 : (metrics?.totalCollaborators ?? collaborators.length)}
-          totalSent={
-            loading
-              ? "$0.00"
-              : `$${totalSent.toLocaleString("en-US", { minimumFractionDigits: 2 })}`
-          }
-          totalReceived={
-            loading
-              ? "$0.00"
-              : `$${totalReceived.toLocaleString("en-US", { minimumFractionDigits: 2 })}`
-          }
-          activeSplits={loading ? 0 : activeSplits}
-          pendingPayments={loading ? 0 : pendingPayments}
-        />
-
-        {!loading && collaborators.length > 0 && featured && (
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-            <CollaboratorsTable
-              collaborators={collaborators}
-              featuredId={featuredId ?? ""}
-              onSelectCollaborator={setFeaturedId}
-            />
-            <FeaturedCollaboratorCard
-              collaborator={featured}
-              onViewProfile={() => setProfileOpen(true)}
-              onPaySplit={() => setPayOpen(true)}
-            />
+        {error && (
+          <div className="flex items-center gap-2.5 rounded-2xl border border-[#F5C2C4] bg-[#FDECEC] px-4 py-3">
+            <TriangleAlert className="h-4 w-4 flex-shrink-0 text-[#E5484D]" />
+            <span className="flex-1 text-[12.5px] text-[#E5484D]">{error}</span>
+            <button
+              onClick={reload}
+              className="rounded-full bg-white px-3.5 py-1.5 text-[11.5px] font-semibold text-[#E5484D]"
+            >
+              Reintentar
+            </button>
           </div>
         )}
 
-        <RecentPaymentsSection payments={MOCK_PAYMENTS} />
+        {loading ? (
+          <TableSkeleton />
+        ) : collaborators.length === 0 ? (
+          <FirstCollaboratorState onInvite={() => setSidebarOpen(true)} />
+        ) : (
+          <>
+            <CollaboratorsKpis
+              totalCollaborators={totals.totalCollaborators}
+              people={totals.people}
+              labels={totals.labels}
+              activeSplits={totals.activeSplits}
+              songsWithSplits={catalogSize}
+              totalPaid={totals.totalPaid}
+              totalPending={totals.totalPending}
+              waitingCount={payable.length + blocked.length}
+              onShowPending={
+                totals.totalPending > 0 ? () => library.setStateFilter("can_pay") : undefined
+              }
+            />
+
+            <AttentionTray
+              payable={payable}
+              blocked={blocked}
+              onPayAll={() => setPayTargets(payable.map(toTarget))}
+              onRemind={remindBlocked}
+              onShowBlocked={() => library.setStateFilter("no_payout_data")}
+            />
+
+            <CollaboratorsFilterBar
+              stateFilter={library.stateFilter}
+              onStateFilterChange={library.setStateFilter}
+              roleFilter={library.roleFilter}
+              onRoleFilterChange={library.setRoleFilter}
+              roles={library.roles}
+              sortBy={library.sortBy}
+              onSortChange={library.setSortBy}
+              hasFilters={hasFilters}
+              onClearAll={clearFilters}
+            />
+
+            {visible.length === 0 ? (
+              <NoResultsState
+                search={search}
+                hasFilters={hasFilters}
+                onClearFilters={clearFilters}
+                onClearSearch={() => setSearch("")}
+                onInvite={() => setSidebarOpen(true)}
+              />
+            ) : (
+              <div className="overflow-hidden rounded-[26px] border border-[#E8E8EC] bg-white shadow-[0_10px_28px_-12px_rgba(255,92,0,0.15)]">
+                <div className={`${COLLABORATORS_GRID} px-5 py-3`}>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={allSelected}
+                      onChange={toggleSelectAll}
+                      disabled={visiblePayable.length === 0}
+                      aria-label="Seleccionar todos los que pueden cobrar"
+                      className="h-[15px] w-[15px] cursor-pointer rounded-[5px] border-[1.5px] border-[#A6AAB2] accent-[#FF5C00] focus:ring-[3px] focus:ring-[#FF5C00]/15 disabled:cursor-not-allowed disabled:opacity-40"
+                    />
+                  </div>
+                  <ColumnLabel>COLABORADOR</ColumnLabel>
+                  {COLLABORATOR_COLUMNS.map((column) => (
+                    <div key={column.key} className={column.visibility}>
+                      <ColumnLabel>{column.label}</ColumnLabel>
+                    </div>
+                  ))}
+                  <div />
+                </div>
+                <div className="h-px bg-[#E8E8EC]" />
+                <div className="flex flex-col divide-y divide-[#E8E8EC]">
+                  {visible.map((collaborator) => (
+                    <CollaboratorRow
+                      key={collaborator.id}
+                      collaborator={collaborator}
+                      color={colorOf.get(collaborator.id) ?? "#FF5C00"}
+                      catalogSize={catalogSize}
+                      selected={selectedIds.has(collaborator.id)}
+                      onToggleSelect={toggleSelect}
+                      onOpen={setProfileOf}
+                      onPay={(c) => setPayTargets([toTarget(c)])}
+                    />
+                  ))}
+                </div>
+                <div className="h-px bg-[#E8E8EC]" />
+                <div className="px-5 py-3.5">
+                  <span className="text-[12px] text-[#71757E]">
+                    {visible.length}
+                    {visible.length === collaborators.length ? "" : ` de ${collaborators.length}`}{" "}
+                    {visible.length === 1 ? "colaborador" : "colaboradores"} · {catalogSize}{" "}
+                    canciones con split
+                  </span>
+                </div>
+              </div>
+            )}
+
+            <RecentPaymentsSection payments={payments} loading={paymentsLoading} />
+          </>
+        )}
       </div>
 
-      {profileOpen && featured && (
-        <CollaboratorDetailModal collaborator={featured} onClose={() => setProfileOpen(false)} isOwner />
-      )}
+      <BulkActionBar
+        count={selected.length}
+        total={selectedTotal}
+        onClear={clearSelection}
+        onPay={() => setPayTargets(selected.map(toTarget))}
+      />
 
-      {featured && (
-        <CollaboratorPaymentModal
-          isOpen={payOpen}
-          onClose={() => setPayOpen(false)}
-          collaboratorId={featured.id}
-          collaboratorName={featured.name}
-          collaboratorEmail={featured.email}
-          onPaymentSuccess={refreshMetrics}
+      {profileOf && (
+        <CollaboratorDetailModal
+          collaborator={profileOf}
+          onClose={() => setProfileOf(null)}
+          onPay={(c) => {
+            setProfileOf(null);
+            setPayTargets([toTarget(c)]);
+          }}
+          isOwner
         />
       )}
 
+      <CollaboratorPaymentModal
+        isOpen={payTargets.length > 0}
+        targets={payTargets}
+        onClose={() => setPayTargets([])}
+        onPaymentSuccess={refresh}
+      />
+
       <AddCollaboratorSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+    </div>
+  );
+}
+
+function ColumnLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="truncate font-mono text-[9.5px] font-medium tracking-[1.2px] text-[#A6AAB2]">
+      {children}
+    </span>
+  );
+}
+
+/** Tabla fantasma: conserva las columnas mientras llegan los datos. */
+function TableSkeleton() {
+  const widths = ["w-[148px]", "w-[112px]", "w-[168px]", "w-[130px]"];
+  return (
+    <div className="overflow-hidden rounded-[26px] border border-[#E8E8EC] bg-white">
+      <div className={`${COLLABORATORS_GRID} px-5 py-3`}>
+        <div />
+        <ColumnLabel>COLABORADOR</ColumnLabel>
+        {COLLABORATOR_COLUMNS.map((column) => (
+          <div key={column.key} className={column.visibility}>
+            <ColumnLabel>{column.label}</ColumnLabel>
+          </div>
+        ))}
+        <div />
+      </div>
+      <div className="h-px bg-[#E8E8EC]" />
+      <div className="flex flex-col divide-y divide-[#E8E8EC]">
+        {widths.map((width, index) => (
+          <div key={width} className={`${COLLABORATORS_GRID} px-5 py-3.5`}>
+            <div className="h-[15px] w-[15px] animate-pulse rounded-[5px] bg-[#F4F5F7]" />
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="h-10 w-10 flex-shrink-0 animate-pulse rounded-full bg-[#F4F5F7]" />
+              <div className="flex flex-1 flex-col gap-2">
+                <div className={`h-2.5 animate-pulse rounded-full bg-[#F4F5F7] ${width}`} />
+                <div
+                  className={`h-2 animate-pulse rounded-full bg-[#F4F5F7]/70 ${
+                    index % 2 ? "w-[130px]" : "w-[164px]"
+                  }`}
+                />
+              </div>
+            </div>
+            {COLLABORATOR_COLUMNS.map((column) => (
+              <div key={column.key} className={column.visibility}>
+                <div className="h-2.5 w-[70%] animate-pulse rounded-full bg-[#F4F5F7]" />
+              </div>
+            ))}
+            <div className="flex justify-end">
+              <div className="h-7 w-[52px] animate-pulse rounded-[15px] bg-[#F4F5F7]" />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

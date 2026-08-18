@@ -28,7 +28,7 @@ export function TopSongsShowcase({ songs }: TopSongsShowcaseProps) {
           Sube tu primera canción para comenzar a ver el rendimiento de tu música
         </p>
         <Link
-          to="/panel/music/songs"
+          to="/panel/music?view=songs"
           className="flex items-center gap-2 rounded-full bg-[#FF5C00] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#EA580C]"
         >
           <Music className="h-4 w-4" />

@@ -1,4 +1,5 @@
 import type { SongItem, AlbumItem } from "@/types/music.types";
+import type { AlbumTrack } from "@/types/album.types";
 
 /** Detecta si el item tiene un split asignado al owner */
 export const hasOwnerSplit = (item: SongItem | AlbumItem): boolean => Boolean(item?.ownerId?.split);
@@ -59,4 +60,24 @@ export const countReleases = (song: SongItem): number => {
   if (Array.isArray(song?.releases)) return song.releases.length;
   const count = Number(song?.releasesCount ?? song?.totalReleases);
   return Number.isFinite(count) ? count : 0;
+};
+
+/**
+ * Cuántas pistas de un álbum ya tienen reparto asignado.
+ *
+ * Es la lectura que dice si un álbum está terminado: se deriva de `tracks[].split`,
+ * que ya viene en la respuesta, sin pedir nada nuevo al servidor.
+ */
+export const albumSplitCoverage = (album: AlbumItem): { withSplit: number; total: number } => {
+  const tracks = Array.isArray(album?.tracks) ? album.tracks : [];
+  const withSplit = tracks.filter(
+    (track) => Boolean(track?.split) || Boolean(track?.ownerId?.split),
+  ).length;
+  return { withSplit, total: tracks.length || album?.totalTracks || 0 };
+};
+
+/** Pistas del álbum que todavía no reparten nada. */
+export const albumTracksWithoutSplit = (album: AlbumItem): AlbumTrack[] => {
+  const tracks = Array.isArray(album?.tracks) ? album.tracks : [];
+  return tracks.filter((track) => !track?.split && !track?.ownerId?.split);
 };

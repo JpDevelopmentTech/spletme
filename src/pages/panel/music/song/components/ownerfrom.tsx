@@ -1,4 +1,4 @@
-import { Crown, X, Globe, Percent, Music, Save, AlertCircle } from "lucide-react";
+import { Crown, X, Globe, Radio, Check, AlertCircle } from "lucide-react";
 import Select from "react-select";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
@@ -94,13 +94,13 @@ export default function OwnerSplitModal({
 
     try {
       if (!songId) {
-        setErrorMessage("ID de canción no válido.");
+        setErrorMessage("La canción no es válida.");
         return;
       }
 
       const pct = parseFloat(form.percentage);
       if (!pct || pct < 1 || pct > 100) {
-        setErrorMessage("El porcentaje debe estar entre 1 y 100.");
+        setErrorMessage("El porcentaje tiene que estar entre 1 y 100.");
         return;
       }
 
@@ -127,7 +127,7 @@ export default function OwnerSplitModal({
         const msg = err.response.data.message ?? err.response.data.error ?? "Error del servidor.";
         setErrorMessage(`Error ${err.response.status}: ${msg}`);
       } else {
-        setErrorMessage(err.message ?? "Error inesperado.");
+        setErrorMessage(err.message ?? "No se pudo guardar tu split.");
       }
     } finally {
       setIsLoading(false);
@@ -136,52 +136,53 @@ export default function OwnerSplitModal({
 
   if (!mounted || !isOpen) return null;
 
+  const percentage = parseFloat(form.percentage) || 0;
+  const restForOthers = Math.max(0, 100 - percentage);
+
   return createPortal(
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
       onClick={onClose}
+      role="presentation"
     >
       <div
-        className="mx-4 flex max-h-[90vh] w-full max-w-xl flex-col overflow-hidden rounded-xl border border-gray-200 bg-white"
+        className="flex max-h-[90vh] w-full max-w-[520px] flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_24px_60px_-16px_rgba(16,17,20,0.35)] motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95"
         onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Tu parte de la canción"
       >
-        {/* Header */}
-        <div className="flex flex-shrink-0 items-center justify-between bg-[#F97316] px-6 py-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/20">
-              <Crown className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-semibold leading-tight text-white">Owner Split</h2>
-                {hasExistingSplit && (
-                  <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold text-white">
-                    Editando
-                  </span>
-                )}
-              </div>
-              <p className="mt-0.5 max-w-xs truncate text-xs text-white/80">
-                {song?.trackTitle || "Canción"}
-              </p>
-            </div>
+        <header className="flex shrink-0 items-center gap-3.5 px-5 pb-4 pt-5">
+          <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-[14px] bg-[#FFEADD]">
+            <Crown className="h-[18px] w-[18px] text-[#FF5C00]" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-display text-[17px] font-semibold text-[#1C1D22]">
+              {hasExistingSplit ? "Cambiar tu parte" : "Fijar tu parte"}
+            </p>
+            <p className="truncate text-[11.5px] text-[#71757E]">
+              {song?.trackTitle || "Esta canción"}
+            </p>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20 transition-colors hover:bg-white/30"
+            className="grid h-[30px] w-[30px] shrink-0 place-items-center rounded-full bg-[#F4F5F7] text-[#71757E] transition-colors hover:text-[#1C1D22]"
+            aria-label="Cerrar"
           >
-            <X className="h-4 w-4 text-white" />
+            <X className="h-3.5 w-3.5" />
           </button>
-        </div>
+        </header>
 
-        {/* Body */}
-        <div className="flex-1 space-y-4 overflow-y-auto bg-[#F7F8FA] p-5">
-          <div className="space-y-5 rounded-xl border border-gray-200 bg-white px-5 py-5">
-            <div className="space-y-1.5">
-              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-700">
-                <Percent className="h-3.5 w-3.5" />
-                Porcentaje del owner
-              </label>
-              <div className="relative max-w-xs">
+        <div className="h-px shrink-0 bg-[#E8E8EC]" />
+
+        <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-[22px] pb-5 pt-[18px]">
+          <div className="flex flex-col gap-2">
+            <span className="font-mono text-[9.5px] font-medium tracking-[1.2px] text-[#71757E]">
+              TU PORCENTAJE *
+            </span>
+            <div className="flex flex-wrap items-center gap-3.5">
+              <div className="relative w-[140px]">
                 <input
                   type="number"
                   min="1"
@@ -190,97 +191,114 @@ export default function OwnerSplitModal({
                   placeholder="0.00"
                   value={form.percentage}
                   onChange={(e) => updateForm("percentage", e.target.value)}
-                  className="w-full rounded-lg border border-gray-200 py-2.5 pl-4 pr-10 text-sm font-semibold text-gray-900 transition-colors focus:border-[#F97316] focus:outline-none"
+                  className="w-full rounded-[16px] border border-[#E8E8EC] bg-white py-3 pl-4 pr-9 font-mono text-[20px] font-semibold text-[#1C1D22] outline-none transition-colors focus:border-[#FF5C00] focus:ring-2 focus:ring-[#FF5C00]/25"
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-gray-400">
+                <span className="absolute right-3.5 top-1/2 -translate-y-1/2 font-mono text-[14px] text-[#A6AAB2]">
                   %
                 </span>
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-700">
-                <Globe className="h-3.5 w-3.5" />
-                Países
-              </label>
-              <FilterSegment
-                value={form.countriesType}
-                onChange={(v) => updateForm("countriesType", v)}
-                labels={{ all: "Todos", except: "Excepto", only: "Solo" }}
-                name="owner-países"
-              />
-              {form.countriesType !== "all" && (
-                <Select
-                  isMulti
-                  isLoading={isLoadingFilters}
-                  options={countryOptions}
-                  value={form.selectedCountries}
-                  onChange={(selected) => updateForm("selectedCountries", selected ?? [])}
-                  styles={selectStyles}
-                  placeholder="Seleccionar países..."
-                  noOptionsMessage={() => "No hay países disponibles"}
-                />
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-700">
-                <Music className="h-3.5 w-3.5" />
-                Plataformas
-              </label>
-              <FilterSegment
-                value={form.platformsType}
-                onChange={(v) => updateForm("platformsType", v)}
-                labels={{ all: "Todas", except: "Excepto", only: "Solo" }}
-                name="owner-plataformas"
-              />
-              {form.platformsType !== "all" && (
-                <Select
-                  isMulti
-                  isLoading={isLoadingFilters}
-                  options={platformOptions}
-                  value={form.selectedPlatforms}
-                  onChange={(selected) => updateForm("selectedPlatforms", selected ?? [])}
-                  styles={selectStyles}
-                  placeholder="Seleccionar plataformas..."
-                  noOptionsMessage={() => "No hay plataformas disponibles"}
-                />
+              {percentage > 0 && (
+                <div className="flex min-w-[180px] flex-1 flex-col gap-1">
+                  <span className="font-mono text-[15px] font-semibold text-[#1C1D22]">
+                    {restForOthers}% para los demás
+                  </span>
+                  <span className="text-[11px] leading-[1.4] text-[#A6AAB2]">
+                    Es lo que quedará por repartir entre los colaboradores de esta canción.
+                  </span>
+                </div>
               )}
             </div>
           </div>
-        </div>
 
-        {/* Footer */}
-        <div className="flex-shrink-0 border-t border-gray-200 bg-white px-6 py-4">
+          <div className="flex flex-col gap-2">
+            <span className="flex items-center gap-1.5 font-mono text-[9.5px] font-medium tracking-[1.2px] text-[#71757E]">
+              <Globe className="h-3 w-3" />
+              EN QUÉ PAÍSES APLICA
+            </span>
+            <FilterSegment
+              value={form.countriesType}
+              onChange={(v) => updateForm("countriesType", v)}
+              labels={{ all: "Todos", except: "Excepto", only: "Solo" }}
+              name="owner-países"
+            />
+            {form.countriesType !== "all" && (
+              <Select
+                isMulti
+                isLoading={isLoadingFilters}
+                options={countryOptions}
+                value={form.selectedCountries}
+                onChange={(selected) => updateForm("selectedCountries", selected ?? [])}
+                styles={selectStyles}
+                menuPortalTarget={document.body}
+                menuPosition="fixed"
+                placeholder="Elegir países…"
+                noOptionsMessage={() => "No hay países disponibles"}
+              />
+            )}
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <span className="flex items-center gap-1.5 font-mono text-[9.5px] font-medium tracking-[1.2px] text-[#71757E]">
+              <Radio className="h-3 w-3" />
+              EN QUÉ PLATAFORMAS APLICA
+            </span>
+            <FilterSegment
+              value={form.platformsType}
+              onChange={(v) => updateForm("platformsType", v)}
+              labels={{ all: "Todas", except: "Excepto", only: "Solo" }}
+              name="owner-plataformas"
+            />
+            {form.platformsType !== "all" && (
+              <Select
+                isMulti
+                isLoading={isLoadingFilters}
+                options={platformOptions}
+                value={form.selectedPlatforms}
+                onChange={(selected) => updateForm("selectedPlatforms", selected ?? [])}
+                styles={selectStyles}
+                menuPortalTarget={document.body}
+                menuPosition="fixed"
+                placeholder="Elegir plataformas…"
+                noOptionsMessage={() => "No hay plataformas disponibles"}
+              />
+            )}
+          </div>
+
           {errorMessage && (
-            <div className="mb-3 flex items-start gap-2 rounded-lg border border-red-100 bg-red-50 p-3">
-              <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />
-              <p className="text-xs text-red-700">{errorMessage}</p>
+            <div className="flex items-center gap-2.5 rounded-[14px] bg-[#FDECEC] px-3 py-2.5">
+              <AlertCircle className="h-3.5 w-3.5 shrink-0 text-[#E5484D]" />
+              <span className="text-[11.5px] font-medium text-[#E5484D]">{errorMessage}</span>
             </div>
           )}
-          <div className="flex items-center justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-gray-900"
-            >
-              Cancelar
-            </button>
-            <button
-              type="button"
-              onClick={saveOwnerSplit}
-              disabled={isLoading}
-              className="flex items-center gap-2 rounded-lg bg-[#F97316] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {isLoading ? (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-              ) : (
-                <Save className="h-4 w-4" />
-              )}
-              {isLoading ? "Guardando..." : hasExistingSplit ? "Actualizar Split" : "Crear Split"}
-            </button>
-          </div>
         </div>
+
+        <div className="h-px shrink-0 bg-[#E8E8EC]" />
+
+        <footer className="flex shrink-0 items-center gap-2.5 px-[22px] pb-[18px] pt-[15px]">
+          <p className="flex-1 text-[11px] leading-[1.35] text-[#A6AAB2]">
+            Tu parte se descuenta antes de repartir al resto. El cambio queda en el historial.
+          </p>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-[20px] border border-[#E8E8EC] bg-white px-4 py-2.5 text-[12px] font-semibold text-[#71757E] transition-colors hover:text-[#1C1D22]"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={saveOwnerSplit}
+            disabled={isLoading}
+            className="inline-flex items-center gap-[7px] rounded-[20px] bg-[#FF5C00] px-4 py-2.5 text-[12px] font-semibold text-white transition-colors hover:bg-[#EA580C] disabled:opacity-60"
+          >
+            {isLoading ? (
+              <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+            ) : (
+              <Check className="h-3.5 w-3.5" />
+            )}
+            {isLoading ? "Guardando…" : hasExistingSplit ? "Actualizar mi parte" : "Guardar mi parte"}
+          </button>
+        </footer>
       </div>
     </div>,
     document.body,

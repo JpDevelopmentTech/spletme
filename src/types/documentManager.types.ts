@@ -1,10 +1,15 @@
+/** Para qué sirve el papel, no en qué formato está. */
+export type DocumentCategory = "contrato" | "licencia" | "factura" | "otro";
+
 export interface Document {
   _id?: string;
   id?: string;
   songId: string;
-  uploadedBy: string;
+  uploadedBy: string | { _id?: string; name?: string; email?: string };
   name: string;
+  /** Extensión del archivo: pdf, jpg, png… */
   type: string;
+  category?: DocumentCategory;
   size: string;
   uploadDate: Date | string;
   url: string;

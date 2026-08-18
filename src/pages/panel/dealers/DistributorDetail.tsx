@@ -1,450 +1,447 @@
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import ReactApexChart from "react-apexcharts";
-import { ApexOptions } from "apexcharts";
 import {
   ArrowLeft,
   Upload,
   Music,
-  TrendingUp,
+  Play,
   DollarSign,
-  BarChart2,
-  Calendar,
-  FileText,
-  AlertCircle,
+  FileStack,
+  CalendarOff,
+  Building2,
+  CircleDollarSign,
+  History,
+  TriangleAlert,
+  Pencil,
+  Trash2,
+  Download,
 } from "lucide-react";
-import type { DistributorDashboard, UploadPeriodPayload } from "../../../types/distributor.types";
-import { MONTH_SHORT_NAMES, formatUploadPeriod, resolvePeriod } from "../../../utils/period.utils";
-import { distributorsService } from "../../../services/distributorsService";
-import type { RejectedSong } from "../../../services/distributorsService";
-import UploadSongsModal from "../../../components/ui/UploadSongsModal";
-
-/**
- * Color del periodo según el mes en que arranca, para que cargas contiguas se
- * distingan de un vistazo sin depender ya del trimestre.
- */
-const PERIOD_COLORS = ["#2563EB", "#10B981", "#F97316", "#8B5CF6"];
-
-function periodColor(startMonth?: number | null): string {
-  if (!startMonth) return "#F97316";
-  return PERIOD_COLORS[Math.floor((startMonth - 1) / 3) % PERIOD_COLORS.length];
-}
-
-/** Abreviatura del periodo para la insignia de la lista ("Ene", "Ene–Mar"). */
-function periodBadge(upload: { startMonth?: number | null; endMonth?: number | null; quarter?: string | null }): string {
-  const period = resolvePeriod(upload);
-  if (!period) return "—";
-  const start = MONTH_SHORT_NAMES[period.startMonth - 1];
-  if (period.startMonth === period.endMonth) return start;
-  return `${start}–${MONTH_SHORT_NAMES[period.endMonth - 1]}`;
-}
-
-function fmt(n: number, currency = "USD") {
-  const symbol = currency === "EUR" ? "€" : "$";
-  if (n >= 1_000_000) return `${symbol}${(n / 1_000_000).toFixed(2)}M`;
-  if (n >= 1_000) return `${symbol}${(n / 1_000).toFixed(1)}K`;
-  return `${symbol}${n.toFixed(2)}`;
-}
-
-function fmtStreams(n: number) {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K`;
-  return String(n);
-}
+import type {
+  Currency,
+  DistributorDashboard,
+  UploadPeriodPayload,
+} from "@/types/distributor.types";
+import { distributorsService } from "@/services/distributorsService";
+import { formatStreams, formatMoney } from "@/utils/format.utils";
+import {
+  availableYears,
+  countMissingMonths,
+  coveredMonths,
+  findCoverageGaps,
+  formatMonthRange,
+  formatRelativeDate,
+  lastRelevantMonth,
+  type MonthRange,
+} from "@/utils/coverage.utils";
+import { DistributorRevenueChart } from "@/components/distributors/DistributorRevenueChart";
+import { UploadHistoryList } from "@/components/distributors/UploadHistoryList";
+import { DistributorTopSongs } from "@/components/distributors/DistributorTopSongs";
+import { DetailCoveragePanel } from "@/components/distributors/DetailCoveragePanel";
+import { RowActionsMenu } from "@/components/distributors/RowActionsMenu";
+import { DeleteDistributorDialog } from "@/components/distributors/DeleteDistributorDialog";
+import { DistributorMark } from "@/components/ui/ModalShell";
+import UploadSongsModal from "@/components/ui/UploadSongsModal";
+import EditDistributorModal from "@/components/ui/EditDistributorModal";
+import Loading from "@/components/loading/loading";
 
 export default function DistributorDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+
   const [dashboard, setDashboard] = useState<DistributorDashboard | null>(null);
   const [loading, setLoading] = useState(true);
+  const [year, setYear] = useState(() => new Date().getFullYear());
   const [showUpload, setShowUpload] = useState(false);
+  const [presetPeriod, setPresetPeriod] = useState<UploadPeriodPayload | undefined>();
+  const [editing, setEditing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
-  async function load() {
+  const load = useCallback(async () => {
     if (!id) return;
     setLoading(true);
     try {
-      const data = await distributorsService.getDashboard(id);
-      setDashboard(data);
+      setDashboard(await distributorsService.getDashboard(id));
     } catch {
       setDashboard(null);
     } finally {
       setLoading(false);
     }
-  }
+  }, [id]);
 
   useEffect(() => {
     load();
-  }, [id]);
+  }, [load]);
 
-  const [uploadResult, setUploadResult] = useState<{
-    songsProcessed: number;
-    rejected: RejectedSong[];
-  } | null>(null);
+  /** Cargas de más reciente a más antigua; el orden de la API no está garantizado. */
+  const sortedUploads = useMemo(
+    () =>
+      [...(dashboard?.uploads ?? [])].sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      ),
+    [dashboard],
+  );
+  /** Las cargas con error no cubren su periodo: ese mes sigue pendiente. */
+  const uploads = useMemo(
+    () => sortedUploads.filter((u) => u.status !== "error"),
+    [sortedUploads],
+  );
+  const upToMonth = useMemo(() => lastRelevantMonth(year), [year]);
+  const covered = useMemo(() => coveredMonths(uploads, year), [uploads, year]);
+  const gaps = useMemo(() => findCoverageGaps(covered, upToMonth), [covered, upToMonth]);
+  const years = useMemo(() => availableYears(uploads), [uploads]);
+  const missingMonths = countMissingMonths(gaps);
 
-  async function handleUpload(file: File, period: UploadPeriodPayload) {
-    if (!id) return;
-    const result = await distributorsService.uploadSongs(id, file, period);
-    setUploadResult({
-      songsProcessed: result.songsProcessed,
-      rejected: result.rejected,
-    });
-    await load();
-  }
-
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F7F8FA]">
-        <p className="text-sm text-[#9CA3AF]">Cargando dashboard...</p>
-      </div>
-    );
-  }
+  if (loading) return <Loading />;
 
   if (!dashboard) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-[#F7F8FA]">
-        <AlertCircle className="h-8 w-8 text-red-400" />
-        <p className="text-sm text-[#6B7280]">No se pudo cargar el distribuidor</p>
-        <button
-          onClick={() => navigate("/panel/dealers")}
-          className="text-sm font-medium text-[#F97316]"
-        >
-          ← Volver
-        </button>
+      <div className="flex min-h-full flex-col items-center justify-center gap-3 bg-[#F7F7F9] px-4">
+        <span className="flex h-[52px] w-[52px] items-center justify-center rounded-[18px] bg-[#FDECEC]">
+          <TriangleAlert className="h-[22px] w-[22px] text-[#E5484D]" />
+        </span>
+        <h2 className="font-display text-base font-semibold text-[#1C1D22]">
+          No se pudo cargar el distribuidor
+        </h2>
+        <p className="text-[12.5px] text-[#71757E]">
+          Puede que ya no exista o que la conexión haya fallado.
+        </p>
+        <div className="flex items-center gap-2.5 pt-1.5">
+          <button
+            onClick={load}
+            className="rounded-2xl bg-[#FF5C00] px-4 py-2.5 text-[12.5px] font-semibold text-white transition-colors hover:bg-[#EA580C]"
+          >
+            Reintentar
+          </button>
+          <button
+            onClick={() => navigate("/panel/dealers")}
+            className="rounded-2xl border border-[#E8E8EC] bg-white px-4 py-2.5 text-[12.5px] font-semibold text-[#1C1D22] transition-colors hover:bg-[#F4F5F7]"
+          >
+            Volver a distribuidores
+          </button>
+        </div>
       </div>
     );
   }
 
-  const { distributor, totals, revenueByPeriod, topSongs, uploads } = dashboard;
-  const initials = distributor.name.slice(0, 2).toUpperCase();
+  const { distributor, totals, revenueByPeriod, topSongs } = dashboard;
+  const retained =
+    totals.totalGrossIncome > 0
+      ? Math.round((totals.totalNetIncome / totals.totalGrossIncome) * 100)
+      : 0;
+  const lastUpload = sortedUploads[0]?.createdAt ?? null;
 
-  // Gráfico: ingresos por periodo cargado
-  const chartOptions: ApexOptions = {
-    chart: { type: "bar", toolbar: { show: false }, background: "transparent" },
-    plotOptions: {
-      bar: {
-        horizontal: false,
-        columnWidth: "60%",
-        borderRadius: 4,
-        borderRadiusApplication: "end",
-      },
-    },
-    dataLabels: { enabled: false },
-    colors: revenueByPeriod.map((r) => periodColor(r.startMonth)),
-    xaxis: {
-      categories: revenueByPeriod.map((r) => r.label),
-      labels: { style: { fontSize: "11px", colors: "#9CA3AF" } },
-      axisBorder: { show: false },
-      axisTicks: { show: false },
-    },
-    yaxis: {
-      labels: {
-        style: { colors: "#9CA3AF", fontSize: "11px" },
-        formatter: (v: number) => (v >= 1000 ? `$${(v / 1000).toFixed(0)}K` : `$${v}`),
-      },
-    },
-    grid: {
-      borderColor: "#F3F4F6",
-      yaxis: { lines: { show: true } },
-      xaxis: { lines: { show: false } },
-    },
-    tooltip: {
-      theme: "light",
-      y: { formatter: (v: number) => fmt(v, distributor.currency) },
-    },
+  const openUpload = (period?: MonthRange) => {
+    setPresetPeriod(
+      period ? { startMonth: period.startMonth, endMonth: period.endMonth, year } : undefined,
+    );
+    setShowUpload(true);
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA]">
-      {showUpload && (
-        <UploadSongsModal
-          distributorName={distributor.name}
-          existingUploads={uploads
-            .filter((u) => u.status !== "error")
-            .map((u) => ({
-              startMonth: u.startMonth,
-              endMonth: u.endMonth,
-              quarter: u.quarter,
-              year: u.year,
-              periodLabel: u.periodLabel,
-            }))}
-          onClose={() => setShowUpload(false)}
-          onConfirm={handleUpload}
-        />
-      )}
-
-      <div className="flex flex-col gap-6 px-6 py-8 lg:px-10">
-        {/* Upload result banner */}
-        {uploadResult && (
-          <div
-            className={`flex items-start gap-3 rounded-xl p-4 ${
-              uploadResult.rejected.length > 0
-                ? "border border-yellow-200 bg-yellow-50"
-                : "border border-green-200 bg-green-50"
-            }`}
-          >
-            <AlertCircle
-              className={`h-5 w-5 flex-shrink-0 ${
-                uploadResult.rejected.length > 0 ? "text-yellow-600" : "text-green-600"
-              }`}
-            />
-            <div className="min-w-0 flex-1">
-              <p
-                className={`text-sm font-semibold ${
-                  uploadResult.rejected.length > 0 ? "text-yellow-800" : "text-green-800"
-                }`}
-              >
-                {uploadResult.songsProcessed} canción
-                {uploadResult.songsProcessed !== 1 ? "es" : ""} procesada
-                {uploadResult.songsProcessed !== 1 ? "s" : ""}
-                {uploadResult.rejected.length > 0 &&
-                  ` · ${uploadResult.rejected.length} rechazada${uploadResult.rejected.length !== 1 ? "s" : ""}`}
-              </p>
-              {uploadResult.rejected.length > 0 && (
-                <div className="mt-2">
-                  <p className="mb-1.5 text-xs text-yellow-700">
-                    Los siguientes ISRC ya pertenecen a otro usuario y fueron omitidos:
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {uploadResult.rejected.map((r) => (
-                      <span
-                        key={r.isrc}
-                        className="rounded bg-yellow-100 px-2 py-0.5 font-mono text-[11px] text-yellow-800"
-                      >
-                        {r.isrc}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-            <button
-              onClick={() => setUploadResult(null)}
-              className="rounded p-1 transition-colors hover:bg-black/5"
-            >
-              <ArrowLeft className="h-3.5 w-3.5 rotate-45 text-[#6B7280]" />
-            </button>
-          </div>
-        )}
-
-        {/* Header */}
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+    <div className="min-h-full bg-[#F7F7F9]">
+      <div className="flex flex-col gap-5 px-4 py-6 lg:px-8">
+        {/* Encabezado */}
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex min-w-0 items-center gap-3.5">
             <button
               onClick={() => navigate("/panel/dealers")}
-              className="rounded-lg p-2 transition-colors hover:bg-gray-100"
+              aria-label="Volver a distribuidores"
+              className="flex h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-full border border-[#E8E8EC] bg-white text-[#71757E] transition-colors hover:text-[#1C1D22]"
             >
-              <ArrowLeft className="h-4 w-4 text-[#6B7280]" />
+              <ArrowLeft className="h-4 w-4" />
             </button>
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-orange-100">
-              <span className="text-sm font-bold text-[#F97316]">{initials}</span>
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-[#111827]">{distributor.name}</h1>
-              <span className="text-xs text-[#6B7280]">
-                {distributor.currency === "USD" ? "$ Dólar" : "€ Euro"} · {totals.uploadCount}{" "}
-                cargas
-              </span>
+            <DistributorMark name={distributor.name} logo={distributor.photoUrl} size={54} />
+            <div className="flex min-w-0 flex-col gap-1.5">
+              <h1 className="truncate font-display text-2xl font-semibold text-[#1C1D22]">
+                {distributor.name}
+              </h1>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {distributor.provider && (
+                  <Chip icon={<Building2 className="h-3 w-3" />}>{distributor.provider}</Chip>
+                )}
+                <Chip
+                  icon={<CircleDollarSign className="h-3 w-3" />}
+                  tone={{ bg: "#E4F5EC", fg: "#2FB37E" }}
+                >
+                  {distributor.currency === "USD" ? "USD · Dólar" : "EUR · Euro"}
+                </Chip>
+                <Chip icon={<FileStack className="h-3 w-3" />}>
+                  {totals.uploadCount} {totals.uploadCount === 1 ? "carga" : "cargas"}
+                </Chip>
+                <Chip icon={<History className="h-3 w-3" />}>
+                  Última {formatRelativeDate(lastUpload)}
+                </Chip>
+              </div>
             </div>
           </div>
-          <button
-            onClick={() => setShowUpload(true)}
-            className="flex h-9 items-center gap-2 rounded-lg bg-[#F97316] px-4 text-sm font-semibold text-white transition-colors hover:bg-orange-600"
-          >
-            <Upload className="h-3.5 w-3.5" />
-            Subir canciones
-          </button>
-        </div>
 
-        {/* KPI cards */}
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {[
-            {
-              label: "Ingresos Netos",
-              value: fmt(totals.totalNetIncome, distributor.currency),
-              icon: DollarSign,
-              iconBg: "bg-green-50",
-              iconColor: "text-green-600",
-              valueColor: "text-green-500",
-            },
-            {
-              label: "Total Streams",
-              value: fmtStreams(totals.totalStreams),
-              icon: TrendingUp,
-              iconBg: "bg-blue-50",
-              iconColor: "text-blue-600",
-              valueColor: "text-[#111827]",
-            },
-            {
-              label: "Canciones",
-              value: String(totals.songsCount),
-              icon: Music,
-              iconBg: "bg-purple-50",
-              iconColor: "text-purple-600",
-              valueColor: "text-[#111827]",
-            },
-            {
-              label: "Cargas",
-              value: String(totals.uploadCount),
-              icon: BarChart2,
-              iconBg: "bg-orange-50",
-              iconColor: "text-[#F97316]",
-              valueColor: "text-[#111827]",
-            },
-          ].map(({ label, value, icon: Icon, iconBg, iconColor, valueColor }) => (
-            <div
-              key={label}
-              className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-5"
+          <div className="flex flex-shrink-0 items-center gap-2.5">
+            <button
+              onClick={() => openUpload()}
+              className="flex items-center gap-2 rounded-[22px] bg-[#FF5C00] px-[18px] py-2.5 text-[12.5px] font-semibold text-white shadow-[0_6px_16px_-4px_rgba(255,92,0,0.4)] transition-colors hover:bg-[#EA580C]"
             >
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-[#6B7280]">{label}</span>
-                <div className={`h-7 w-7 ${iconBg} flex items-center justify-center rounded-md`}>
-                  <Icon className={`h-3.5 w-3.5 ${iconColor}`} />
-                </div>
-              </div>
-              <p className={`text-2xl font-bold leading-none ${valueColor}`}>{value}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Ingresos por periodo */}
-        <div className="rounded-xl border border-gray-200 bg-white p-6">
-          <h2 className="text-sm font-semibold text-[#111827]">Ingresos por Periodo</h2>
-          <p className="mb-4 mt-0.5 text-xs text-[#6B7280]">
-            Evolución de ingresos netos por periodo cargado
-          </p>
-          {revenueByPeriod.length === 0 ? (
-            <div className="flex h-48 items-center justify-center text-sm text-[#9CA3AF]">
-              Sin cargas registradas aún
-            </div>
-          ) : (
-            <ReactApexChart
-              options={chartOptions}
-              series={[
+              <Upload className="h-[15px] w-[15px]" />
+              Subir reporte
+            </button>
+            <RowActionsMenu
+              label={`Acciones de ${distributor.name}`}
+              actions={[
                 {
-                  name: "Ingresos Netos",
-                  data: revenueByPeriod.map((r) => r.totalNetIncome),
+                  key: "edit",
+                  label: "Editar nombre y moneda",
+                  icon: <Pencil className="h-4 w-4" />,
+                  onSelect: () => setEditing(true),
+                },
+                {
+                  key: "export",
+                  label: "Exportar cargas (CSV)",
+                  icon: <Download className="h-4 w-4" />,
+                  onSelect: () => exportUploads(dashboard),
+                  disabled: sortedUploads.length === 0,
+                },
+                {
+                  key: "delete",
+                  label: "Eliminar distribuidor",
+                  icon: <Trash2 className="h-4 w-4" />,
+                  danger: true,
+                  onSelect: () => setDeleting(true),
                 },
               ]}
-              type="bar"
-              height={250}
             />
-          )}
+          </div>
         </div>
 
-        {/* Uploads + Top songs */}
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          {/* Upload records */}
-          <div className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-6">
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-[#F97316]" />
-              <h2 className="text-sm font-semibold text-[#111827]">Historial de Cargas</h2>
-            </div>
-            {uploads.length === 0 ? (
-              <div className="flex h-32 flex-col items-center justify-center gap-2 text-center">
-                <FileText className="h-6 w-6 text-[#D1D5DB]" />
-                <p className="text-sm text-[#9CA3AF]">Aún no hay cargas</p>
-                <button
-                  onClick={() => setShowUpload(true)}
-                  className="text-xs font-medium text-[#F97316] hover:underline"
-                >
-                  Subir primera carga →
-                </button>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-2">
-                {uploads.map((u) => (
-                  <div
-                    key={u._id}
-                    className="flex items-center gap-3 rounded-lg border border-gray-100 bg-[#FAFAFA] p-3"
-                  >
-                    <div
-                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-[11px] font-bold text-white"
-                      style={{ backgroundColor: periodColor(u.startMonth) }}
-                    >
-                      {periodBadge(u)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-semibold text-[#111827]">
-                        {formatUploadPeriod(u)}
-                      </p>
-                      <div className="flex items-center gap-1 text-[13px] text-[#111827]">
-                        <p>Nombre del archivo: </p>
-                        <p className="text-[11px] text-[#111827] font-semibold truncate">{u.fileName}</p>
-                      </div>
-                      <p className="text-[11px] text-[#9CA3AF] truncate">
-                        {u.songsCount} canciones · {new Date(u.createdAt).toLocaleDateString('es-ES')}
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-end gap-0.5">
-                      <span className="text-[12px] font-bold text-green-500">
-                        {fmt(u.totalNetIncome, distributor.currency)}
-                      </span>
-                      <span
-                        className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${
-                          u.status === "done"
-                            ? "bg-green-50 text-green-600"
-                            : u.status === "processing"
-                              ? "bg-yellow-50 text-yellow-600"
-                              : "bg-red-50 text-red-500"
-                        }`}
-                      >
-                        {u.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+        {/* Consola de métricas */}
+        <div className="flex flex-col divide-y divide-[#E8E8EC] overflow-hidden rounded-[26px] border border-[#E8E8EC] bg-white shadow-[0_10px_28px_-12px_rgba(255,92,0,0.15)] lg:flex-row lg:divide-x lg:divide-y-0">
+          <Channel
+            label="INGRESOS NETOS"
+            icon={<DollarSign className="h-[13px] w-[13px] text-[#2FB37E]" />}
+            value={formatMoney(totals.totalNetIncome, distributor.currency)}
+            valueClassName="text-[#2FB37E] text-[26px] sm:text-[30px]"
+            className="lg:w-[300px] lg:flex-shrink-0"
+          >
+            {totals.totalGrossIncome > 0 && (
+              <span className="text-[10.5px] text-[#A6AAB2]">
+                bruto {formatMoney(totals.totalGrossIncome, distributor.currency)} · {retained}%
+                retenido
+              </span>
             )}
+          </Channel>
+          <Channel
+            label="STREAMS"
+            icon={<Play className="h-[13px] w-[13px] text-[#71757E]" />}
+            value={formatStreams(totals.totalStreams)}
+          />
+          <Channel
+            label="CANCIONES"
+            icon={<Music className="h-[13px] w-[13px] text-[#71757E]" />}
+            value={totals.songsCount.toLocaleString()}
+          />
+          <Channel
+            label="CARGAS"
+            icon={<FileStack className="h-[13px] w-[13px] text-[#71757E]" />}
+            value={String(totals.uploadCount)}
+          />
+          <Channel
+            label={`SIN CARGAR ${year}`}
+            labelClassName="text-[#FF5C00]"
+            icon={<CalendarOff className="h-[13px] w-[13px] text-[#FF5C00]" />}
+            value={missingMonths > 0 ? gaps.map(formatMonthRange).join(" · ") : "Al día"}
+            valueClassName="text-[#FF5C00] text-[22px]"
+            className="bg-[#FFEADD] lg:w-[240px] lg:flex-shrink-0"
+          >
+            <span className="text-[10.5px] font-semibold text-[#EA580C]">
+              {missingMonths > 0
+                ? `${missingMonths} ${missingMonths === 1 ? "mes" : "meses"} de ${year}`
+                : `Todo ${year} cubierto`}
+            </span>
+          </Channel>
+        </div>
+
+        {/* Cuerpo */}
+        <div className="flex flex-col gap-5 xl:flex-row">
+          <div className="flex min-w-0 flex-1 flex-col gap-5">
+            <DistributorRevenueChart
+              periods={revenueByPeriod}
+              currency={distributor.currency}
+            />
+            <UploadHistoryList
+              uploads={sortedUploads}
+              currency={distributor.currency}
+              onUpload={() => openUpload()}
+            />
           </div>
 
-          {/* Top songs */}
-          <div className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-6">
-            <div className="flex items-center gap-2">
-              <Music className="h-4 w-4 text-[#F97316]" />
-              <h2 className="text-sm font-semibold text-[#111827]">Top 5 Canciones</h2>
-            </div>
-            {topSongs.length === 0 ? (
-              <div className="flex h-32 items-center justify-center text-sm text-[#9CA3AF]">
-                Sin canciones cargadas
-              </div>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {topSongs.map((s, i) => (
-                  <div key={s._id} className="flex items-center gap-3">
-                    <span
-                      className={`w-5 flex-shrink-0 text-[12px] font-bold ${
-                        i === 0
-                          ? "text-yellow-500"
-                          : i === 1
-                            ? "text-gray-400"
-                            : i === 2
-                              ? "text-amber-600"
-                              : "text-[#9CA3AF]"
-                      }`}
-                    >
-                      #{i + 1}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-[13px] font-semibold text-[#111827]">
-                        {s.trackTitle}
-                      </p>
-                      <p className="truncate text-[11px] text-[#9CA3AF]">{s.artistName}</p>
-                    </div>
-                    <div className="flex flex-shrink-0 flex-col items-end gap-0.5">
-                      <span className="text-[12px] font-bold text-green-500">
-                        {fmt(s.totalNetIncome, distributor.currency)}
-                      </span>
-                      <span className="text-[10px] text-[#9CA3AF]">
-                        {fmtStreams(s.totalStreams)} str.
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+          <div className="flex flex-col gap-5 xl:w-[352px] xl:flex-shrink-0">
+            <DetailCoveragePanel
+              covered={covered}
+              gaps={gaps}
+              year={year}
+              years={years}
+              onYearChange={setYear}
+              upToMonth={upToMonth}
+              onFillGap={openUpload}
+            />
+            <DistributorTopSongs songs={topSongs} currency={distributor.currency} />
           </div>
         </div>
       </div>
+
+      {showUpload && (
+        <UploadSongsModal
+          distributorName={distributor.name}
+          distributorLogo={distributor.photoUrl}
+          existingUploads={uploads}
+          initialPeriod={presetPeriod}
+          onClose={() => {
+            setShowUpload(false);
+            setPresetPeriod(undefined);
+          }}
+          onConfirm={async (file, period, onProgress, onProcessingProgress) => {
+            if (!id) return;
+            const result = await distributorsService.uploadSongs(
+              id,
+              file,
+              period,
+              onProgress,
+              onProcessingProgress,
+            );
+            await load();
+            return result;
+          }}
+        />
+      )}
+
+      {editing && (
+        <EditDistributorModal
+          distributor={distributor}
+          onClose={() => setEditing(false)}
+          onConfirm={async (payload: { name: string; currency: Currency }) => {
+            if (!id) return;
+            await distributorsService.update(id, payload);
+            await load();
+          }}
+        />
+      )}
+
+      {deleting && (
+        <DeleteDistributorDialog
+          item={{
+            distributor,
+            kpi: {
+              distributorId: distributor._id,
+              name: distributor.name,
+              currency: distributor.currency,
+              photoUrl: distributor.photoUrl,
+              totalStreams: totals.totalStreams,
+              totalNetIncome: totals.totalNetIncome,
+              totalGrossIncome: totals.totalGrossIncome,
+              uploadCount: totals.uploadCount,
+              songsCount: totals.songsCount,
+              lastUpload,
+            },
+            color: "#FF5C00",
+            uploads: sortedUploads,
+            covered,
+            gaps,
+            missingMonths,
+            shareOfTotal: 100,
+            shareOfMax: 100,
+          }}
+          onClose={() => setDeleting(false)}
+          onConfirm={async () => {
+            if (!id) return;
+            await distributorsService.remove(id);
+            navigate("/panel/dealers");
+          }}
+        />
+      )}
     </div>
   );
+}
+
+function Chip({
+  icon,
+  children,
+  tone = { bg: "#F4F5F7", fg: "#71757E" },
+}: {
+  icon: React.ReactNode;
+  children: React.ReactNode;
+  tone?: { bg: string; fg: string };
+}) {
+  return (
+    <span
+      className="flex items-center gap-1.5 rounded-[14px] px-2.5 py-1"
+      style={{ backgroundColor: tone.bg, color: tone.fg }}
+    >
+      {icon}
+      <span className="text-[11.5px] font-medium">{children}</span>
+    </span>
+  );
+}
+
+interface ChannelProps {
+  label: string;
+  labelClassName?: string;
+  icon: React.ReactNode;
+  value: string;
+  valueClassName?: string;
+  className?: string;
+  children?: React.ReactNode;
+}
+
+function Channel({
+  label,
+  labelClassName = "text-[#71757E]",
+  icon,
+  value,
+  valueClassName = "text-[#1C1D22] text-[26px]",
+  className = "",
+  children,
+}: ChannelProps) {
+  return (
+    <div className={`flex min-w-0 flex-1 flex-col justify-center gap-2 px-6 py-[22px] ${className}`}>
+      <div className="flex items-center gap-1.5">
+        {icon}
+        <span className={`font-mono text-[9.5px] font-medium tracking-[1.3px] ${labelClassName}`}>
+          {label}
+        </span>
+      </div>
+      <p className={`font-mono font-semibold leading-none tracking-tight ${valueClassName}`}>
+        {value}
+      </p>
+      {children}
+    </div>
+  );
+}
+
+/** Vuelca el historial para conciliarlo fuera de la aplicación. */
+function exportUploads(dashboard: DistributorDashboard) {
+  const { distributor, uploads } = dashboard;
+  const escape = (value: unknown) => `"${String(value ?? "").replace(/"/g, '""')}"`;
+
+  const rows = [
+    ["Periodo", "Año", "Archivo", "Canciones", "Streams", "Bruto", "Neto", "Estado", "Subido por", "Fecha"],
+    ...uploads.map((upload) => [
+      upload.periodLabel,
+      upload.year,
+      upload.fileName,
+      upload.songsCount,
+      upload.totalStreams,
+      upload.totalGrossIncome,
+      upload.totalNetIncome,
+      upload.status,
+      upload.uploadedBy?.name ?? "",
+      new Date(upload.createdAt).toISOString().slice(0, 10),
+    ]),
+  ];
+
+  const csv = rows.map((row) => row.map(escape).join(",")).join("\n");
+  const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `cargas-${distributor.name.replace(/[^\w]+/g, "-").toLowerCase()}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
 }

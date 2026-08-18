@@ -172,7 +172,7 @@ const VerificationStep = ({ nextStep, prevStep, verificationEmail }: Verificatio
         </button>
       </div>
 
-      <div className="flex gap-2.5">
+      <div className="grid grid-cols-6 gap-2">
         {code.map((digit, index) => (
           <input
             key={index}
@@ -180,6 +180,7 @@ const VerificationStep = ({ nextStep, prevStep, verificationEmail }: Verificatio
             type="text"
             inputMode="numeric"
             maxLength={1}
+            size={1}
             value={digit}
             aria-label={`Dígito ${index + 1} de ${CODE_LENGTH}`}
             aria-invalid={Boolean(error)}
@@ -187,7 +188,7 @@ const VerificationStep = ({ nextStep, prevStep, verificationEmail }: Verificatio
             onKeyDown={(e) => handleKeyDown(index, e)}
             onPaste={handlePaste}
             disabled={isVerifying}
-            className={`h-[62px] flex-1 rounded-2xl border-0 text-center font-mono text-[24px] font-semibold text-[#1C1D22] outline outline-1 transition-colors focus:outline-2 focus:ring-0 ${
+            className={`h-[62px] w-full min-w-0 rounded-2xl border-0 text-center font-mono text-[24px] font-semibold text-[#1C1D22] outline outline-1 transition-colors focus:outline-2 focus:ring-0 ${
               error
                 ? "bg-white outline-[#E5484D] focus:outline-[#E5484D]"
                 : digit

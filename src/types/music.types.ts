@@ -1,4 +1,6 @@
 export type MusicMode = "songs" | "albums";
+/** Cómo se dibuja el catálogo: lista densa o cuadrícula de portadas. */
+export type MusicLayout = "list" | "grid";
 export type SortBy =
   | "alpha"
   | "revenue"

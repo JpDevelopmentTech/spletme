@@ -1,6 +1,12 @@
-import { motion, AnimatePresence } from "framer-motion";
-import { X, DollarSign, User, AlertTriangle, Landmark } from "lucide-react";
+import { DollarSign, AlertCircle, Landmark } from "lucide-react";
 import { useState } from "react";
+import {
+  ModalShell,
+  ModalMark,
+  FooterNote,
+  PrimaryButton,
+  SecondaryButton,
+} from "@/components/ui/ModalShell";
 
 interface PaymentConfirmationModalProps {
   isOpen: boolean;
@@ -10,12 +16,28 @@ interface PaymentConfirmationModalProps {
   collaboratorEmail: string;
   amount: number;
   currency?: string;
+  songTitle?: string;
 }
 
+const money = (n: number) =>
+  n.toLocaleString("es-CO", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
+const getInitials = (name: string) =>
+  name
+    .split(" ")
+    .slice(0, 2)
+    .map((n) => n[0] ?? "")
+    .join("")
+    .toUpperCase() || "?";
+
 /**
- * Modal de confirmación para pagar a un colaborador individual. El cobro se hace
- * por débito ACH a la cuenta del owner y el reparto al colaborador vía Wise; no
- * depende de ningún balance de wallet previo.
+ * Enseña a quién va el dinero y cuánto sale antes de mover nada. El cobro se
+ * hace por débito ACH a la cuenta del owner y el envío al colaborador vía Wise.
  */
 export default function PaymentConfirmationModal({
   isOpen,
@@ -25,9 +47,12 @@ export default function PaymentConfirmationModal({
   collaboratorEmail,
   amount,
   currency = "USD",
+  songTitle,
 }: PaymentConfirmationModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  if (!isOpen) return null;
 
   const handleConfirm = async () => {
     setLoading(true);
@@ -36,140 +61,78 @@ export default function PaymentConfirmationModal({
       await onConfirm();
       onClose();
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Error al procesar el pago";
-      setError(errorMessage);
+      setError(err instanceof Error ? err.message : "No se pudo procesar el pago.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-          />
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative w-full max-w-lg overflow-hidden rounded-3xl bg-white shadow-2xl dark:bg-gray-800"
+    <ModalShell
+      title={`Pagar a ${collaboratorName}`}
+      subtitle={songTitle || "Esta canción"}
+      logo={
+        <ModalMark>
+          <DollarSign className="h-[18px] w-[18px]" />
+        </ModalMark>
+      }
+      locked={loading}
+      onClose={onClose}
+      footer={
+        <>
+          <FooterNote>Una vez enviado no se puede deshacer desde aquí.</FooterNote>
+          <SecondaryButton onClick={onClose} disabled={loading}>
+            Cancelar
+          </SecondaryButton>
+          <PrimaryButton
+            onClick={handleConfirm}
+            disabled={loading}
+            icon={<DollarSign className="h-3.5 w-3.5" />}
           >
-            {/* Header */}
-            <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20">
-                    <DollarSign className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-white">Confirmar Pago</h2>
-                    <p className="text-sm text-blue-100">Revisa los detalles antes de continuar</p>
-                  </div>
-                </div>
-                <button
-                  onClick={onClose}
-                  className="text-white/80 transition-colors hover:text-white"
-                  disabled={loading}
-                >
-                  <X className="h-6 w-6" />
-                </button>
-              </div>
-            </div>
-
-            {/* Content */}
-            <div className="space-y-6 p-6">
-              {error && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20"
-                >
-                  <div className="flex items-center gap-2">
-                    <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
-                    <p className="text-sm font-medium text-red-600 dark:text-red-400">{error}</p>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Recipient Info */}
-              <div className="rounded-2xl bg-gradient-to-r from-gray-50 to-blue-50 p-4 dark:from-gray-700 dark:to-blue-900/20">
-                <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400">
-                  Destinatario
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-purple-600">
-                    <User className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-base font-bold text-gray-900 dark:text-white">
-                      {collaboratorName}
-                    </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{collaboratorEmail}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Payment Amount */}
-              <div className="rounded-2xl border-2 border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 p-4 dark:border-green-800 dark:from-green-900/20 dark:to-emerald-900/20">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400">
-                  Monto a Pagar
-                </p>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold text-green-600 dark:text-green-400">
-                    $
-                    {amount.toLocaleString("en-US", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </span>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">{currency}</span>
-                </div>
-              </div>
-
-              {/* Info del cobro */}
-              <div className="flex items-start gap-2 rounded-xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
-                <Landmark className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-600 dark:text-blue-400" />
-                <p className="text-sm text-blue-900 dark:text-blue-200">
-                  Se cobrará este monto desde tu cuenta bancaria por pago bancario instantáneo y se
-                  enviará al colaborador vía Wise. El pago se confirma al instante y liquida en ~2
-                  días hábiles.
-                </p>
-              </div>
-
-              {/* Buttons */}
-              <div className="flex gap-3 pt-2">
-                <motion.button
-                  type="button"
-                  onClick={onClose}
-                  disabled={loading}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="flex-1 rounded-xl border-2 border-gray-300 px-6 py-3 font-semibold text-gray-700 transition-all hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
-                >
-                  Cancelar
-                </motion.button>
-                <motion.button
-                  type="button"
-                  onClick={handleConfirm}
-                  disabled={loading}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="flex-1 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-3 font-semibold text-white transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {loading ? "Procesando..." : "Confirmar Pago"}
-                </motion.button>
-              </div>
-            </div>
-          </motion.div>
+            {loading ? "Enviando…" : `Pagar ${money(amount)}`}
+          </PrimaryButton>
+        </>
+      }
+    >
+      {error && (
+        <div className="flex items-center gap-2.5 rounded-[14px] bg-[#FDECEC] px-3 py-2.5">
+          <AlertCircle className="h-3.5 w-3.5 shrink-0 text-[#E5484D]" />
+          <span className="text-[11.5px] font-medium text-[#E5484D]">{error}</span>
         </div>
       )}
-    </AnimatePresence>
+
+      <div className="flex flex-col gap-2.5 rounded-[18px] bg-[#F4F5F7] px-5 py-[18px]">
+        <span className="font-mono text-[9.5px] font-medium tracking-[1.2px] text-[#A6AAB2]">
+          TOTAL A PAGAR
+        </span>
+        <div className="flex items-baseline gap-2">
+          <span className="font-mono text-[30px] font-semibold text-[#1C1D22]">{money(amount)}</span>
+          <span className="font-mono text-[12px] text-[#A6AAB2]">{currency}</span>
+        </div>
+        <p className="text-[11.5px] text-[#71757E]">
+          Se cobra de tu cuenta bancaria y le llega por Wise.
+        </p>
+      </div>
+
+      <div className="flex items-center gap-3 rounded-[18px] border border-[#E8E8EC] px-4 py-3.5">
+        <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-full bg-[#1C1D22] text-[11.5px] font-semibold text-white">
+          {getInitials(collaboratorName)}
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[13px] font-semibold text-[#1C1D22]">{collaboratorName}</p>
+          <p className="truncate text-[11px] text-[#A6AAB2]">{collaboratorEmail}</p>
+        </div>
+        <span className="shrink-0 font-mono text-[13px] font-semibold text-[#2FB37E]">
+          {money(amount)}
+        </span>
+      </div>
+
+      <div className="flex items-center gap-2.5 rounded-[14px] bg-[#F4F5F7] px-3 py-2.5">
+        <Landmark className="h-3.5 w-3.5 shrink-0 text-[#71757E]" />
+        <span className="text-[11.5px] font-medium leading-[1.4] text-[#71757E]">
+          El cobro se confirma al instante y el envío suele liquidar en unos dos días hábiles.
+        </span>
+      </div>
+    </ModalShell>
   );
 }

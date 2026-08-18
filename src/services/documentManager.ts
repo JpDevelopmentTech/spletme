@@ -1,6 +1,7 @@
 import { apiClient } from "@/infrastructure/http/axiosClient";
 import type {
   Document,
+  DocumentCategory,
   DocumentResponse,
   DownloadResponse,
   DeleteResponse,
@@ -81,11 +82,16 @@ class DocumentManagerService {
     }
   }
 
-  async upload(songId: string, file: File): Promise<DocumentResponse> {
+  async upload(
+    songId: string,
+    file: File,
+    category: DocumentCategory = "otro",
+  ): Promise<DocumentResponse> {
     if (!songId || !file) return { success: false, message: "Song ID and file are required" };
     try {
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("category", category);
 
       const { data } = await apiClient.post(`${this.BASE}/song/${songId}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },

@@ -78,7 +78,7 @@ const Album = () => {
 
         {/* Breadcrumb */}
         <div className="hidden items-center gap-2 text-sm sm:flex">
-          <Link to="/panel/music/albums" className="text-gray-400 hover:text-gray-600">
+          <Link to="/panel/music?view=albums" className="text-gray-400 hover:text-gray-600">
             Música
           </Link>
           <span className="text-gray-300">/</span>

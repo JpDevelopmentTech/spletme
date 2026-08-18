@@ -1,0 +1,52 @@
+import { useEffect, useState } from "react";
+import AlbumService from "@/services/albums";
+import { useSongsKpis } from "./useSongsKpis";
+
+export interface MusicSummary {
+  totalSongs: number;
+  totalAlbums: number;
+  totalIncome: number;
+  totalStreams: number;
+  withoutSplits: number;
+  loading: boolean;
+}
+
+/**
+ * Cifras del catálogo completo, con canciones y álbumes en la misma lectura.
+ *
+ * Los KPIs de canciones ya existían; el total de álbumes se obtiene pidiendo una
+ * página de tamaño 1, porque la respuesta trae el total en `pagination` y así no
+ * hay que descargar el catálogo entero solo para contarlo.
+ */
+export function useMusicSummary(): MusicSummary {
+  const songs = useSongsKpis();
+  const [totalAlbums, setTotalAlbums] = useState(0);
+  const [albumsLoading, setAlbumsLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+
+    AlbumService.getAlbums(0, 1)
+      .then((response) => {
+        if (!active) return;
+        const total =
+          response.success && "pagination" in response ? (response.pagination?.total ?? 0) : 0;
+        setTotalAlbums(total);
+      })
+      .catch(() => active && setTotalAlbums(0))
+      .finally(() => active && setAlbumsLoading(false));
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  return {
+    totalSongs: songs.totalSongs,
+    totalAlbums,
+    totalIncome: songs.totalIncome,
+    totalStreams: songs.totalStreams,
+    withoutSplits: songs.withoutSplits,
+    loading: songs.loading || albumsLoading,
+  };
+}

@@ -53,7 +53,7 @@ export default function BankAccountLinkForm({
   };
 
   return (
-    <div className="flex flex-col gap-4 border-t border-gray-100 pt-4">
+    <div className="flex flex-col gap-4">
       <PaymentElement
         options={{
           defaultValues: {
@@ -65,14 +65,24 @@ export default function BankAccountLinkForm({
         }}
       />
 
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && (
+        <p
+          role="alert"
+          className="rounded-2xl border border-[rgba(229,72,77,0.2)] bg-[#FDECEC] px-4 py-2.5 text-[11.5px] leading-relaxed text-[#E5484D]"
+        >
+          {error}
+        </p>
+      )}
 
-      <div className="flex items-center justify-end gap-2">
+      <div className="flex flex-wrap items-center gap-2.5">
+        <span className="min-w-0 flex-1 text-[10.5px] leading-snug text-[#A6AAB2]">
+          Verificar la cuenta puede tardar unos minutos.
+        </span>
         <button
           type="button"
           onClick={onCancel}
           disabled={submitting}
-          className="rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-50"
+          className="rounded-[20px] border border-[#E8E8EC] bg-white px-4 py-2.5 text-[12.5px] font-semibold text-[#71757E] transition-colors enabled:hover:bg-[#F4F5F7] enabled:hover:text-[#1C1D22] disabled:opacity-50"
         >
           Cancelar
         </button>
@@ -80,12 +90,12 @@ export default function BankAccountLinkForm({
           type="button"
           onClick={handleSubmit}
           disabled={!stripe || submitting}
-          className="flex items-center gap-2 rounded-lg bg-orange-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
+          className="flex items-center gap-2 rounded-[20px] bg-[#FF5C00] px-4 py-2.5 text-[12.5px] font-semibold text-white shadow-[0_6px_16px_-4px_rgba(255,92,0,0.4)] transition-colors enabled:hover:bg-[#EA580C] disabled:cursor-not-allowed disabled:bg-[#F4F5F7] disabled:text-[#A6AAB2] disabled:shadow-none"
         >
           {submitting ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Guardando...
+              <Loader2 className="h-[14px] w-[14px] animate-spin" />
+              Guardando…
             </>
           ) : (
             "Confirmar y guardar"

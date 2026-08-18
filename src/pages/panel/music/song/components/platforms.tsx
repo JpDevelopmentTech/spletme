@@ -507,7 +507,7 @@ const Platforms = ({ reproductions = [] }: PlatformsProps) => {
           {/* ── HEADER FIJO: título + badge + botón flip ─────────────────────── */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-semibold text-gray-900">Platforms</h2>
+              <h2 className="text-base font-semibold text-gray-900">Plataformas</h2>
               <span
                 className={`rounded-full px-2 py-0.5 text-[11px] font-medium transition-colors ${
                   isFlipped ? "bg-indigo-50 text-indigo-600" : "bg-emerald-50 text-emerald-600"
@@ -547,7 +547,7 @@ const Platforms = ({ reproductions = [] }: PlatformsProps) => {
           {/* ── ZONA QUE GIRA: solo gráfica + lista ──────────────────────────── */}
           {platformData.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-2 py-8">
-              <p className="text-sm text-gray-400">No platform data yet</p>
+              <p className="text-sm text-gray-400">Todavía no hay datos por plataforma</p>
             </div>
           ) : (
             <div className="flip-zone-wrapper">

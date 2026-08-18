@@ -1,516 +1,461 @@
-import React, { useState, useEffect } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useEffect, useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
 import {
-  DollarSign,
   Music,
-  Users,
-  Award,
-  ArrowLeft,
-  AlertCircle,
   Play,
+  DollarSign,
+  Crown,
+  Users,
+  HandCoins,
   LayoutDashboard,
   Receipt,
   GitBranch,
   FolderOpen,
+  Disc3,
+  CircleAlert,
+  Clock3,
+  ArrowRight,
 } from "lucide-react";
-import PaymentsService from "@/services/payments";
-import type { PaymentReadiness } from "@/services/payments";
-import AddCollaborator from "../../collaborators/components/addCollaborator";
+import PaymentsService, { type PaymentReadiness } from "@/services/payments";
+import RoyaltiesService, { type RoyaltyRequest } from "@/services/royalties";
+import LocalStorageService from "@/services/localstorage";
+import useSong from "@/hooks/useSong";
+import { useSongMoney } from "@/hooks/useSongMoney";
+import useCurrentCollaborator from "@/hooks/useCurrentCollaborator";
+import { formatCurrency, formatStreams } from "@/utils/format.utils";
+import { DetailHeader } from "@/components/music/DetailHeader";
+import { DetailTabs, type DetailTab } from "@/components/music/DetailTabs";
+import { MoneyWaterfall } from "@/components/music/MoneyWaterfall";
+import { MetricConsole, type MetricChannel } from "@/components/ui/MetricConsole";
+import Loading from "@/components/loading/loading";
 import Table from "./components/table";
-import { useParams, useNavigate } from "react-router-dom";
 import Platforms from "./components/platforms";
 import Historyofsplits from "./components/historyofsplits";
 import Extraordinarycosts from "./components/extraordinarycosts";
-import useSong from "../../../../hooks/useSong";
-import StripeConnectLoginModal from "../../../../components/modal/StripeConnectLoginModal";
-import StripePaymentModal from "../../../../components/modal/StripePaymentModal";
-import LocalStorageService from "../../../../services/localstorage";
-import SongPaymentsHistory from "../../../../components/PaymentHistory/SongPaymentsHistory";
-import useCurrentCollaborator from "../../../../hooks/useCurrentCollaborator";
-import ValidationToastQueue, {
-  ValidationToastItem,
-  ValidationToastType,
-} from "../../../../components/alert/ValidationToastQueue";
-import Behavior from "../../dealers/components/behavior";
 import DocumentManager from "./components/documentManager";
-import { CopyButton } from "@/components/ui/CopyButton";
-import { SongCollaboratorsSummary } from "@/components/music/SongCollaboratorsSummary";
-import { SongRecentPayments } from "@/components/music/SongRecentPayments";
-import RoyaltiesService from "@/services/royalties";
-import type { RoyaltyRequest } from "@/services/royalties";
+import SongPaymentsHistory from "@/components/PaymentHistory/SongPaymentsHistory";
+import StripeConnectLoginModal from "@/components/modal/StripeConnectLoginModal";
+import StripePaymentModal from "@/components/modal/StripePaymentModal";
+import AddCollaborator from "../../collaborators/components/addCollaborator";
+import ValidationToastQueue, {
+  type ValidationToastItem,
+  type ValidationToastType,
+} from "@/components/alert/ValidationToastQueue";
+
+type TabKey = "resumen" | "colaboradores" | "pagos" | "splits" | "documentos";
 
 export default function Song() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { song, loading, getCollaboratorsInfo, getOwnerPercentage, getOwnerTotalOwed } = useSong({
-    id: id || "",
-  });
+  const { id = "" } = useParams();
+  const { song, loading, getOwnerPercentage, getOwnerTotalOwed } = useSong({ id });
   const { getCurrentUserPercentage, getCurrentUserAmount } = useCurrentCollaborator({
     collaborators: song?.collaborators || [],
   });
+
+  const [activeTab, setActiveTab] = useState<TabKey>("resumen");
   const [showStripeLoginModal, setShowStripeLoginModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [toasts, setToasts] = useState<ValidationToastItem[]>([]);
-  const [paymentHistoryRefresh, setPaymentHistoryRefresh] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [readiness, setReadiness] = useState<PaymentReadiness | null>(null);
   const [myRoyaltyRequest, setMyRoyaltyRequest] = useState<RoyaltyRequest | null>(null);
-  const [royaltyRequestLoading, setRoyaltyRequestLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<
-    "resumen" | "colaboradores" | "pagos" | "splits" | "documentos"
-  >("resumen");
+  const [royaltyLoading, setRoyaltyLoading] = useState(false);
+
+  const money = useSongMoney({ songId: id, song, refreshKey });
 
   useEffect(() => {
     if (!id) return;
     PaymentsService.getPaymentReadiness(id).then((res) => {
       if (!res.error && res.data) setReadiness(res.data);
     });
-  }, [id, paymentHistoryRefresh]);
+  }, [id, refreshKey]);
 
   useEffect(() => {
-    RoyaltiesService.getMyRequests().then((res) => {
-      if (!res.error && res.data) {
-        const match = res.data.find((r) => {
-          const songIdVal = typeof r.songId === "string" ? r.songId : r.songId._id;
-          return songIdVal === id;
-        });
-        setMyRoyaltyRequest(match ?? null);
-      }
-    });
-  }, [id]);
-
-  const addToast = (
-    type: ValidationToastType,
-    message: string,
-    extra?: Partial<ValidationToastItem>,
-  ) => {
-    setToasts((prev) => [
-      ...prev,
-      {
-        id: Date.now() + Math.floor(Math.random() * 1000),
-        type,
-        message,
-        ...extra,
-      },
-    ]);
-  };
-
-  const dequeueToast = (id: number) => {
-    setToasts((prev) => prev.filter((toast) => toast.id !== id));
-  };
-
-  const getUserDisplayPercentage = () => {
-    const collaboratorPercentage = getCurrentUserPercentage();
-    if (collaboratorPercentage && collaboratorPercentage > 0) {
-      return collaboratorPercentage;
-    }
-    return getOwnerPercentage();
-  };
-
-  const getUserDisplayAmount = () => {
-    const collaboratorAmount = getCurrentUserAmount();
-    if (collaboratorAmount && parseFloat(collaboratorAmount) > 0) {
-      return collaboratorAmount;
-    }
-    const ownerPct = getOwnerPercentage();
-    const totalIncome = song?.totalNetIncome || 0;
-    return ((ownerPct / 100) * totalIncome).toFixed(2);
-  };
-
-  const handlePayAllClick = () => {
-    // Pre-chequeo: si la canción no está lista para pagar, se avisan los problemas
-    // y no se abre el modal. El backend revalida lo mismo al confirmar el pago.
-    if (readiness && !readiness.canPay) {
-      readiness.issues.forEach((issue) => addToast("error", issue.message));
-      return;
-    }
-    setShowPaymentModal(true);
-  };
-
-  const handleStripeLoginSuccess = () => {
-    addToast(
-      "success",
-      "¡Inicio de sesión exitoso! Te has conectado correctamente con Stripe Connect.",
-    );
-  };
-
-  const handleRequestRoyalties = async () => {
     if (!id) return;
-    setRoyaltyRequestLoading(true);
-    const res = await RoyaltiesService.requestRoyalties(id);
-    setRoyaltyRequestLoading(false);
-    if (res.error) {
-      addToast("error", res.message || "Error al solicitar regalías");
-    } else {
-      addToast("success", "¡Solicitud enviada! El owner recibirá un correo para aprobarla.");
-      // Refresh the request status
-      const listRes = await RoyaltiesService.getMyRequests();
-      if (!listRes.error && listRes.data) {
-        const match = listRes.data.find((r) => {
-          const songIdVal = typeof r.songId === "string" ? r.songId : r.songId._id;
-          return songIdVal === id;
-        });
-        setMyRoyaltyRequest(match ?? null);
-      }
-    }
-  };
+    RoyaltiesService.getMyRequests().then((res) => {
+      if (res.error || !res.data) return;
+      const match = res.data.find((request) => {
+        const songId = typeof request.songId === "string" ? request.songId : request.songId._id;
+        return songId === id;
+      });
+      setMyRoyaltyRequest(match ?? null);
+    });
+  }, [id, refreshKey]);
 
-  const handlePaymentSuccess = () => {
-    setPaymentHistoryRefresh((prev) => prev + 1);
-    addToast(
-      "success",
-      "¡Pago procesado exitosamente! Los colaboradores recibirán su parte correspondiente.",
-    );
-  };
+  const addToast = (type: ValidationToastType, message: string) =>
+    setToasts((prev) => [...prev, { id: Date.now() + Math.random(), type, message }]);
+
+  const currentUser = LocalStorageService.getItem("user");
+  const isOwnerUser = useMemo(() => resolveIsOwner(song, currentUser), [song, currentUser]);
+
+  if (loading || !song) return <Loading />;
 
   const ownerAmount = getOwnerTotalOwed();
-  const totalNetIncome = song?.totalNetIncome || 0;
-  // Usar collaboratorsEarnings del backend si está disponible, si no calcular
-  // Total a pagar = lo PENDIENTE de los colaboradores (devengado − ya pagado).
   const totalToPay =
     song?.collaboratorsPending ??
     song?.collaboratorsEarnings ??
-    Math.max(0, (song?.totalNetIncome || 0) - ownerAmount);
-  const currentUser = LocalStorageService.getItem("user");
-  const normalizeIdentity = (value: unknown) =>
-    String(value || "")
-      .trim()
-      .toLowerCase();
-  const currentUserIds = [currentUser?.id, currentUser?._id, currentUser?.userId]
+    Math.max(0, (song?.totalNetIncome ?? 0) - ownerAmount);
+
+  const myPercentage = myRoyaltyRequest
+    ? myRoyaltyRequest.splitPercentage
+    : getCurrentUserPercentage() || getOwnerPercentage();
+  const myAmount = myRoyaltyRequest
+    ? myRoyaltyRequest.calculatedAmount
+    : Number(getCurrentUserAmount() || 0);
+
+  const collaboratorCount = (song?.collaborators ?? []).length;
+  const blocked = readiness !== null && !readiness.canPay;
+
+  async function handleRequestRoyalties() {
+    if (!id) return;
+    setRoyaltyLoading(true);
+    const res = await RoyaltiesService.requestRoyalties(id);
+    setRoyaltyLoading(false);
+    if (res.error) {
+      addToast("error", res.message || "No se pudo enviar la solicitud.");
+      return;
+    }
+    addToast("success", "Solicitud enviada. El owner recibirá un correo para aprobarla.");
+    setRefreshKey((k) => k + 1);
+  }
+
+  const TABS: DetailTab<TabKey>[] = [
+    { key: "resumen", label: "Resumen", icon: <LayoutDashboard className="h-[15px] w-[15px]" /> },
+    {
+      key: "colaboradores",
+      label: "Colaboradores",
+      icon: <Users className="h-[15px] w-[15px]" />,
+      count: collaboratorCount,
+    },
+    { key: "pagos", label: "Pagos", icon: <Receipt className="h-[15px] w-[15px]" /> },
+    { key: "splits", label: "Splits", icon: <GitBranch className="h-[15px] w-[15px]" /> },
+    { key: "documentos", label: "Documentos", icon: <FolderOpen className="h-[15px] w-[15px]" /> },
+  ];
+
+  const channels: MetricChannel[] = [
+    {
+      key: "streams",
+      label: "STREAMS",
+      icon: <Play className="h-[13px] w-[13px] text-[#71757E]" />,
+      value: formatStreams(song?.totalStreams ?? 0),
+    },
+    {
+      key: "net",
+      label: "INGRESO NETO",
+      icon: <DollarSign className="h-[13px] w-[13px] text-[#2FB37E]" />,
+      value: formatCurrency(money.netIncome),
+      valueColor: "#2FB37E",
+      width: 300,
+      caption: money.grossIncome > 0 ? `bruto ${formatCurrency(money.grossIncome)}` : undefined,
+    },
+    {
+      key: "share",
+      label: isOwnerUser ? "TU PARTE" : "TU SPLIT",
+      icon: <Crown className="h-[13px] w-[13px] text-[#71757E]" />,
+      value: `${myPercentage || 0}%`,
+      caption: formatCurrency(myAmount),
+    },
+    {
+      key: "collabs",
+      label: "COLABORADORES",
+      icon: <Users className="h-[13px] w-[13px] text-[#71757E]" />,
+      value: String(collaboratorCount),
+    },
+    isOwnerUser
+      ? {
+          key: "topay",
+          label: "POR PAGAR",
+          icon: <HandCoins className="h-[13px] w-[13px] text-[#FF5C00]" />,
+          value: formatCurrency(totalToPay),
+          highlight: true,
+          width: 260,
+          caption:
+            collaboratorCount > 0
+              ? `${collaboratorCount} ${collaboratorCount === 1 ? "persona" : "personas"}`
+              : "sin colaboradores",
+        }
+      : {
+          key: "mine",
+          label: "TU SALDO",
+          icon: <HandCoins className="h-[13px] w-[13px] text-[#FF5C00]" />,
+          value: formatCurrency(myAmount),
+          highlight: true,
+          width: 260,
+          caption: myRoyaltyRequest?.status === "pending" ? "solicitud enviada" : "por solicitar",
+        },
+  ];
+
+  return (
+    <div className="min-h-full bg-[#F7F7F9]">
+      <div className="flex flex-col gap-5 px-4 py-6 lg:px-8">
+        <DetailHeader
+          cover={song?.spotifyData?.album?.images?.[0]?.url}
+          fallbackIcon={<Music className="h-9 w-9 text-[#A6AAB2]" />}
+          title={song?.trackTitle ?? "—"}
+          codeLabel="ISRC"
+          code={song?.isrc}
+          meta={
+            <>
+              <span>{song?.artistName ?? "—"}</span>
+              {song?.upc && (
+                <>
+                  <span className="text-[#A6AAB2]">·</span>
+                  <a
+                    href={`/panel/album/upc/${encodeURIComponent(song.upc)}`}
+                    className="flex items-center gap-1.5 font-medium text-[#FF5C00] transition-colors hover:text-[#EA580C]"
+                  >
+                    <Disc3 className="h-3.5 w-3.5" />
+                    Ver álbum
+                  </a>
+                </>
+              )}
+            </>
+          }
+          highlightLabel={isOwnerUser ? "TOTAL A PAGAR" : "TU PARTE"}
+          highlightValue={formatCurrency(isOwnerUser ? totalToPay : myAmount)}
+          highlightColor={isOwnerUser ? "#1C1D22" : "#2FB37E"}
+          actions={
+            isOwnerUser ? (
+              <button
+                onClick={() => setShowPaymentModal(true)}
+                disabled={blocked || totalToPay <= 0}
+                className="flex items-center gap-2 rounded-[22px] bg-[#FF5C00] px-[18px] py-3 text-[12.5px] font-semibold text-white shadow-[0_6px_16px_-4px_rgba(255,92,0,0.4)] transition-colors enabled:hover:bg-[#EA580C] disabled:cursor-not-allowed disabled:bg-[#F4F5F7] disabled:text-[#A6AAB2] disabled:shadow-none"
+              >
+                <HandCoins className="h-[15px] w-[15px]" />
+                Pagar a todos
+              </button>
+            ) : (
+              <RoyaltyAction
+                request={myRoyaltyRequest}
+                loading={royaltyLoading}
+                onRequest={handleRequestRoyalties}
+              />
+            )
+          }
+        />
+
+        <MetricConsole channels={channels} />
+
+        {isOwnerUser && blocked && readiness && (
+          <BlockedNotice issues={readiness.issues} />
+        )}
+
+        {!isOwnerUser && myRoyaltyRequest?.status === "pending" && (
+          <PendingRequestNotice />
+        )}
+
+        <DetailTabs tabs={TABS} active={activeTab} onChange={setActiveTab} />
+
+        {activeTab === "resumen" && (
+          <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-5 xl:flex-row">
+              <div className="min-w-0 flex-1">
+                <MoneyWaterfall
+                  steps={money.steps}
+                  shares={money.shares}
+                  distributable={money.repartible}
+                  subtitle="De lo que entra por esta canción hasta lo que le toca a cada uno"
+                  onEditSplits={() => setActiveTab("colaboradores")}
+                />
+              </div>
+              <div className="xl:w-[400px] xl:flex-shrink-0">
+                <Platforms reproductions={song?.reproductions ?? []} />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "colaboradores" && (
+          <Table
+            collaborators={song?.collaborators ?? []}
+            songId={id}
+            song={song}
+            isOwner={isOwnerUser}
+            headerAction={isOwnerUser ? <AddCollaborator compact isOwner={isOwnerUser} /> : null}
+          />
+        )}
+
+        {activeTab === "pagos" && (
+          <div className="flex flex-col gap-5 xl:flex-row xl:items-start">
+            <div className="min-w-0 flex-1">
+              <Extraordinarycosts
+                songId={id}
+                distributable={money.repartible}
+                songTitle={song?.trackTitle}
+              />
+            </div>
+            <div className="xl:w-[400px] xl:flex-shrink-0">
+              <SongPaymentsHistory
+                songId={id}
+                refreshTrigger={refreshKey}
+                pendingAmount={totalToPay}
+              />
+            </div>
+          </div>
+        )}
+
+        {activeTab === "splits" && (
+          <Historyofsplits
+            songId={id}
+            isOwner={isOwnerUser}
+            collaborators={song?.collaborators ?? []}
+            distributable={money.repartible}
+          />
+        )}
+
+        {activeTab === "documentos" && <DocumentManager songId={id} />}
+      </div>
+
+      <ValidationToastQueue
+        toasts={toasts}
+        onDequeue={(toastId: number) =>
+          setToasts((prev) => prev.filter((toast) => toast.id !== toastId))
+        }
+      />
+
+      <StripeConnectLoginModal
+        isOpen={showStripeLoginModal}
+        onClose={() => setShowStripeLoginModal(false)}
+        onLoginSuccess={() => addToast("success", "Te has conectado con Stripe Connect.")}
+      />
+
+      <StripePaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        songId={id}
+        songTitle={song?.trackTitle}
+        totalAmount={totalToPay}
+        collaborators={song?.collaborators ?? []}
+        onPaymentSuccess={() => {
+          setRefreshKey((k) => k + 1);
+          addToast("success", "Pago procesado. Los colaboradores recibirán su parte.");
+        }}
+      />
+    </div>
+  );
+}
+
+/** Los motivos que impiden pagar, con la acción que resuelve cada uno. */
+function BlockedNotice({ issues }: { issues: { code: string; message: string }[] }) {
+  return (
+    <div className="flex flex-col gap-2.5 rounded-[22px] bg-[#FDECEC] p-4">
+      <p className="flex items-center gap-2.5 text-[13px] font-semibold text-[#E5484D]">
+        <CircleAlert className="h-4 w-4 flex-shrink-0" />
+        Falta esto para poder pagar
+      </p>
+      <ul className="flex flex-col gap-1.5">
+        {issues.map((issue) => (
+          <li
+            key={issue.code}
+            className="flex items-center gap-2.5 rounded-[13px] bg-white px-3 py-2.5"
+          >
+            <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#E5484D]" />
+            <span className="text-[11.5px] leading-snug text-[#E5484D]">{issue.message}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function PendingRequestNotice() {
+  return (
+    <div className="flex flex-wrap items-center gap-3 rounded-[22px] bg-[#F4F5F7] p-4">
+      <span className="flex h-[34px] w-[34px] flex-shrink-0 items-center justify-center rounded-xl bg-white">
+        <Clock3 className="h-4 w-4 text-[#71757E]" />
+      </span>
+      <span className="flex min-w-[200px] flex-1 flex-col gap-0.5">
+        <span className="text-[12.5px] font-semibold text-[#1C1D22]">
+          Solicitud enviada, pendiente de aprobación
+        </span>
+        <span className="text-[11.5px] text-[#71757E]">
+          El owner recibirá un correo para aceptarla o rechazarla. Te avisamos en cuanto responda.
+        </span>
+      </span>
+      <span className="rounded-[14px] bg-[#FFEADD] px-3 py-1.5 text-[11px] font-semibold text-[#FF5C00]">
+        Pendiente
+      </span>
+    </div>
+  );
+}
+
+/** Botón de regalías del colaborador, según el estado de su solicitud. */
+function RoyaltyAction({
+  request,
+  loading,
+  onRequest,
+}: {
+  request: RoyaltyRequest | null;
+  loading: boolean;
+  onRequest: () => void;
+}) {
+  if (request?.status === "pending") {
+    return (
+      <span className="rounded-[22px] bg-white px-[18px] py-3 text-[12.5px] font-semibold text-[#71757E]">
+        Solicitud pendiente
+      </span>
+    );
+  }
+
+  if (request?.status === "accepted") {
+    return (
+      <span className="flex items-center gap-2 rounded-[22px] bg-[#E4F5EC] px-[18px] py-3 text-[12.5px] font-semibold text-[#2FB37E]">
+        <Crown className="h-[15px] w-[15px]" />
+        Aceptada
+      </span>
+    );
+  }
+
+  return (
+    <button
+      onClick={onRequest}
+      disabled={loading || request?.status === "rejected"}
+      className="flex items-center gap-2 rounded-[22px] bg-[#FF5C00] px-[18px] py-3 text-[12.5px] font-semibold text-white shadow-[0_6px_16px_-4px_rgba(255,92,0,0.4)] transition-colors enabled:hover:bg-[#EA580C] disabled:cursor-not-allowed disabled:bg-[#F4F5F7] disabled:text-[#A6AAB2] disabled:shadow-none"
+    >
+      <HandCoins className="h-[15px] w-[15px]" />
+      {loading
+        ? "Enviando…"
+        : request?.status === "rejected"
+          ? "Solicitud rechazada"
+          : "Solicitar mis regalías"}
+      {!loading && !request && <ArrowRight className="h-[14px] w-[14px]" />}
+    </button>
+  );
+}
+
+/**
+ * Si la sesión actual es la dueña de la canción.
+ *
+ * Se compara por correo y usuario antes que por id porque las subcuentas heredan
+ * identificadores del padre y darían un falso positivo.
+ */
+function resolveIsOwner(song: any, currentUser: any): boolean {
+  if (!song || !currentUser) return false;
+
+  const normalize = (value: unknown) => String(value ?? "").trim().toLowerCase();
+
+  const ownerEmails = [song?.ownerId?.email, song?.owner?.email].filter(Boolean).map(normalize);
+  const ownerUsernames = [song?.ownerId?.username, song?.owner?.username]
     .filter(Boolean)
-    .map((value) => String(value));
-  const currentUserEmail = normalizeIdentity(currentUser?.email);
-  const currentUserUsername = normalizeIdentity(currentUser?.username);
+    .map(normalize);
   const ownerIds = [
-    typeof song?.ownerId === "string" ? song?.ownerId : undefined,
+    typeof song?.ownerId === "string" ? song.ownerId : undefined,
     song?.ownerId?._id,
     song?.ownerId?.id,
     song?.owner?._id,
     song?.owner?.id,
   ]
     .filter(Boolean)
-    .map((value) => String(value));
-  const ownerEmails = [song?.ownerId?.email, song?.owner?.email]
-    .filter(Boolean)
-    .map((value) => normalizeIdentity(value));
-  const ownerUsernames = [song?.ownerId?.username, song?.owner?.username]
-    .filter(Boolean)
-    .map((value) => normalizeIdentity(value));
-  const hasOwnerIdentity = ownerEmails.length > 0 || ownerUsernames.length > 0;
-  const emailMatchesOwner = currentUserEmail !== "" && ownerEmails.includes(currentUserEmail);
-  const usernameMatchesOwner =
-    currentUserUsername !== "" && ownerUsernames.includes(currentUserUsername);
-  const idMatchesOwner =
-    ownerIds.length > 0 && currentUserIds.some((currentId) => ownerIds.includes(currentId));
-  const isSubuserSession = Boolean(currentUser?.parentUserId);
-  const isOwnerUser =
-    emailMatchesOwner ||
-    usernameMatchesOwner ||
-    (!isSubuserSession && !hasOwnerIdentity && idMatchesOwner);
+    .map(String);
 
-  // El owner ve el Net Income completo. Un colaborador (no-owner) lo ve ya
-  // descontado por la parte que le corresponde al split del owner.
-  const displayNetIncome = isOwnerUser ? totalNetIncome : Math.max(0, totalNetIncome - ownerAmount);
+  const email = normalize(currentUser?.email);
+  const username = normalize(currentUser?.username);
+  const ids = [currentUser?.id, currentUser?._id, currentUser?.userId].filter(Boolean).map(String);
 
-  const streamsDisplay = (song?.totalStreams ?? 0).toLocaleString();
-  const netIncomeDisplay = `$${displayNetIncome.toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-  const myAmount = myRoyaltyRequest
-    ? myRoyaltyRequest.calculatedAmount.toFixed(2)
-    : getUserDisplayAmount();
-  const myPercentage = myRoyaltyRequest
-    ? myRoyaltyRequest.splitPercentage
-    : getUserDisplayPercentage();
+  if (email && ownerEmails.includes(email)) return true;
+  if (username && ownerUsernames.includes(username)) return true;
 
-  const TABS = [
-    { key: "resumen", label: "Resumen", icon: LayoutDashboard },
-    { key: "colaboradores", label: "Colaboradores", icon: Users },
-    { key: "pagos", label: "Pagos", icon: Receipt },
-    { key: "splits", label: "Splits", icon: GitBranch },
-    { key: "documentos", label: "Documentos", icon: FolderOpen },
-  ] as const;
-
-  return (
-    <React.Fragment>
-      <StripeConnectLoginModal
-        isOpen={showStripeLoginModal}
-        onClose={() => setShowStripeLoginModal(false)}
-        onLoginSuccess={handleStripeLoginSuccess}
-      />
-      <StripePaymentModal
-        isOpen={showPaymentModal}
-        onClose={() => setShowPaymentModal(false)}
-        songTitle={song?.trackTitle}
-        songId={song?._id || song?.id}
-        totalAmount={totalToPay}
-        collaborators={getCollaboratorsInfo()}
-        onPaymentSuccess={handlePaymentSuccess}
-      />
-      <ValidationToastQueue toasts={toasts} onDequeue={dequeueToast} />
-      <div className="min-h-full bg-white">
-        <div className="flex flex-col gap-5 px-4 py-6 lg:px-8">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex items-center gap-2 rounded-[16px]  px-4 py-2 text-sm font-medium text-[#71757E] transition-colors hover:text-[#1C1D22]"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Regresar
-            </button>
-            <div className="hidden items-center gap-2 text-[13px] sm:flex">
-              <span className="text-[#A6AAB2]">Inicio</span>
-              <span className="text-[#A6AAB2]">/</span>
-              <span className="text-[#A6AAB2]">Canciones</span>
-              <span className="text-[#A6AAB2]">/</span>
-              <span className="font-semibold text-[#1C1D22]">{song?.trackTitle || "Detalle"}</span>
-            </div>
-          </div>
-
-          {/* Hero */}
-          {loading ? (
-            <div className="flex items-center gap-5 rounded-[36px] bg-[#F4F5F7] p-6">
-              <div className="h-[104px] w-[104px] flex-shrink-0 animate-pulse rounded-[22px] bg-black/[0.06]" />
-              <div className="flex flex-1 flex-col gap-3">
-                <div className="h-5 w-1/3 animate-pulse rounded-full bg-black/[0.06]" />
-                <div className="h-3.5 w-1/5 animate-pulse rounded-full bg-black/[0.06]" />
-                <div className="mt-1 flex flex-wrap gap-2">
-                  <div className="h-7 w-28 animate-pulse rounded-full bg-black/[0.06]" />
-                  <div className="h-7 w-24 animate-pulse rounded-full bg-black/[0.06]" />
-                  <div className="h-7 w-24 animate-pulse rounded-full bg-black/[0.06]" />
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-5 rounded-[36px] bg-[#F4F5F7] p-6 lg:flex-row lg:items-center">
-            <div className="flex flex-1 items-center gap-5">
-              <div className="flex h-[104px] w-[104px] flex-shrink-0 items-center justify-center overflow-hidden rounded-[22px] bg-[#FF5C00]/15">
-                {song?.spotifyData?.album?.images?.length ? (
-                  <img
-                    src={song.spotifyData.album.images[0].url}
-                    alt={song.trackTitle}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <Music className="h-10 w-10 text-[#FF5C00]/50" />
-                )}
-              </div>
-              <div className="flex min-w-0 flex-col gap-2">
-                <div className="flex flex-wrap items-center gap-2.5">
-                  <h1 className="text-[21px] font-bold text-[#1C1D22]">{song?.trackTitle.slice(0, 30) + "..." || "—"}</h1>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FF5C00] px-2.5 py-1 text-[11px] font-semibold text-white">
-                    ISRC: {song?.isrc || "—"}
-                    {song?.isrc && (
-                      <CopyButton
-                        value={song.isrc}
-                        title="Copiar ISRC"
-                        className="text-white/80 hover:bg-white/20 hover:text-white"
-                      />
-                    )}
-                  </span>
-                </div>
-                <span className="flex items-center gap-1.5 text-sm text-[#71757E]">
-                  <Users className="h-3.5 w-3.5" />
-                  {song?.artistName || "—"}
-                </span>
-                <div className="flex flex-wrap items-center gap-2">
-                  <StatPill
-                    icon={<Play className="h-3 w-3 text-[#A6AAB2]" />}
-                    text={`${streamsDisplay} streams`}
-                  />
-                  <StatPill
-                    icon={<DollarSign className="h-3 w-3 text-[#71757E]" />}
-                    text={netIncomeDisplay}
-                    valueClass="text-[#2FB37E]"
-                  />
-                  <StatPill
-                    icon={<Award className="h-3 w-3 text-[#FF5C00]" />}
-                    text={`Mi parte ${myPercentage}%`}
-                    valueClass="text-[#FF5C00]"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Payment / Royalties CTA */}
-            <div className="flex flex-shrink-0 items-center gap-4">
-              <div className="flex flex-col items-end">
-                <span className="text-[10.5px] font-semibold uppercase tracking-wider text-[#A6AAB2]">
-                  {isOwnerUser ? "Total a pagar" : "Mi parte"}
-                </span>
-                <span className="text-2xl font-bold text-[#1C1D22]">
-                  ${isOwnerUser ? totalToPay.toFixed(2) : myAmount}
-                </span>
-              </div>
-              {isOwnerUser ? (
-                <button
-                  onClick={handlePayAllClick}
-                  disabled={readiness !== null && !readiness.canPay}
-                  className="inline-flex items-center gap-2 rounded-[16px] bg-[#FF5C00] px-5 py-3 text-sm font-bold text-white shadow-[0_6px_16px_-4px_rgba(255,92,0,0.35)] transition-colors hover:bg-[#EA580C] disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  <DollarSign className="h-4 w-4" />
-                  Pagar a todos
-                </button>
-              ) : myRoyaltyRequest?.status === "pending" ? (
-                <span className="inline-flex items-center gap-2 rounded-[16px] bg-white px-5 py-3 text-sm font-semibold text-[#71757E]">
-                  Solicitud pendiente
-                </span>
-              ) : myRoyaltyRequest?.status === "accepted" ? (
-                <span className="inline-flex items-center gap-2 rounded-[16px] bg-[#E4F5EC] px-5 py-3 text-sm font-semibold text-[#2FB37E]">
-                  <Award className="h-4 w-4" /> Aceptada
-                </span>
-              ) : (
-                <button
-                  onClick={handleRequestRoyalties}
-                  disabled={royaltyRequestLoading || myRoyaltyRequest?.status === "rejected"}
-                  className="inline-flex items-center gap-2 rounded-[16px] bg-[#FF5C00] px-5 py-3 text-sm font-bold text-white shadow-[0_6px_16px_-4px_rgba(255,92,0,0.35)] transition-colors hover:bg-[#EA580C] disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  <DollarSign className="h-4 w-4" />
-                  {royaltyRequestLoading
-                    ? "Enviando..."
-                    : myRoyaltyRequest?.status === "rejected"
-                      ? "Rechazada"
-                      : "Solicitar regalías"}
-                </button>
-              )}
-            </div>
-          </div>
-          )}
-
-          {/* Alertas de estado */}
-          {isOwnerUser && readiness !== null && !readiness.canPay && (
-            <div className="rounded-[22px] border border-[#FF5C00]/20 bg-[#FFEADD] p-4">
-              <p className="flex items-center gap-2 text-sm font-semibold text-[#EA580C]">
-                <AlertCircle className="h-4 w-4" />
-                Falta esto para poder pagar:
-              </p>
-              <ul className="mt-2 list-inside list-disc space-y-1 pl-1">
-                {readiness.issues.map((issue) => (
-                  <li key={issue.code} className="text-[12.5px] leading-snug text-[#C2410C]">
-                    {issue.message}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {!isOwnerUser && myRoyaltyRequest?.status === "pending" && (
-            <div className="rounded-[22px] bg-[#F4F5F7] p-4">
-              <p className="flex items-center gap-2 text-sm font-semibold text-[#1C1D22]">
-                <AlertCircle className="h-4 w-4 text-[#71757E]" />
-                Solicitud de regalías pendiente de aprobación
-              </p>
-              <p className="mt-1 text-[12.5px] text-[#71757E]">
-                El owner recibirá un correo para aceptar o rechazar tu solicitud.
-              </p>
-            </div>
-          )}
-
-          {/* Tabs */}
-          <div className="flex flex-wrap items-center gap-1.5">
-            {TABS.map((t) => {
-              const active = activeTab === t.key;
-              const Icon = t.icon;
-              return (
-                <button
-                  key={t.key}
-                  onClick={() => setActiveTab(t.key)}
-                  className={`inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-[13px] font-medium transition-colors ${
-                    active ? "bg-[#FFEADD] text-[#FF5C00]" : "text-[#71757E] hover:text-[#1C1D22]"
-                  }`}
-                >
-                  <Icon
-                    className={`h-[15px] w-[15px] ${active ? "text-[#FF5C00]" : "text-[#A6AAB2]"}`}
-                  />
-                  {t.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Contenido según pestaña */}
-          {loading ? (
-            <div className="rounded-[28px] bg-[#F4F5F7] p-12 text-center">
-              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-[#FF5C00]" />
-              <p className="mt-4 text-sm text-[#A6AAB2]">Cargando…</p>
-            </div>
-          ) : (
-            <>
-          {activeTab === "resumen" && (
-            <div className="flex flex-col gap-5">
-              <div className="grid grid-cols-1 items-stretch gap-5 lg:grid-cols-2">
-                <Behavior songId={id} compact />
-                <Platforms reproductions={song?.reproductions} />
-              </div>
-              <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-                <SongCollaboratorsSummary
-                  collaborators={getCollaboratorsInfo()}
-                  onViewAll={() => setActiveTab("colaboradores")}
-                />
-                <SongRecentPayments
-                  songId={id}
-                  refreshTrigger={paymentHistoryRefresh}
-                  onViewAll={() => setActiveTab("pagos")}
-                />
-              </div>
-            </div>
-          )}
-
-          {activeTab === "colaboradores" && (
-            <div className="rounded-[28px] bg-[#F4F5F7] p-6">
-              <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <Users className="h-5 w-5 text-[#1C1D22]" />
-                  <h3 className="text-base font-semibold text-[#1C1D22]">Colaboradores</h3>
-                </div>
-                <AddCollaborator compact isOwner={isOwnerUser || song?.requesterRole === "label"} />
-              </div>
-              <Table
-                collaborators={getCollaboratorsInfo()}
-                songId={song?._id || song?.id}
-                song={song}
-                isOwner={isOwnerUser}
-              />
-            </div>
-          )}
-
-          {activeTab === "pagos" && (
-            <SongPaymentsHistory
-              songId={id}
-              refreshTrigger={paymentHistoryRefresh}
-              pendingAmount={totalToPay}
-            />
-          )}
-
-          {activeTab === "splits" && (
-            <div className="grid grid-cols-2 items-start gap-5 lg:grid-cols-2">
-              <Historyofsplits songId={id} isOwner={isOwnerUser} />
-              <Extraordinarycosts songId={id || ""} />
-            </div>
-          )}
-
-          {activeTab === "documentos" && <DocumentManager songId={id || ""} />}
-            </>
-          )}
-        </div>
-      </div>
-    </React.Fragment>
-  );
-}
-
-/** Pill de estadística del hero (streams, ingresos, mi parte). */
-function StatPill({
-  icon,
-  text,
-  valueClass = "text-[#1C1D22]",
-}: {
-  icon: React.ReactNode;
-  text: string;
-  valueClass?: string;
-}) {
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-semibold shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-      {icon}
-      <span className={valueClass}>{text}</span>
-    </span>
-  );
+  const hasIdentity = ownerEmails.length > 0 || ownerUsernames.length > 0;
+  const isSubuser = Boolean(currentUser?.parentUserId);
+  return !isSubuser && !hasIdentity && ids.some((value) => ownerIds.includes(value));
 }

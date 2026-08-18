@@ -1,4 +1,25 @@
+import { useState } from "react";
+import Select from "react-select";
+
+interface CountryOption {
+  value: string;
+  label: string;
+}
+
+const COUNTRY_OPTIONS: CountryOption[] = [
+  { value: "USA", label: "USA" },
+  { value: "UK", label: "United Kingdom" },
+  { value: "CA", label: "Canada" },
+  { value: "FR", label: "France" },
+  { value: "DE", label: "Germany" },
+  { value: "ES", label: "Spain" },
+  { value: "JP", label: "Japan" },
+  { value: "AUS", label: "Australia" },
+];
+
 const Step12 = ({ nextStep, prevStep }: { nextStep: () => void; prevStep: () => void }) => {
+  const [country, setCountry] = useState<CountryOption | null>(null);
+
   return (
     <div>
       <h1 className="leding-tight mb-4 text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:mb-6">
@@ -13,20 +34,41 @@ const Step12 = ({ nextStep, prevStep }: { nextStep: () => void; prevStep: () => 
             >
               Pais
             </label>
-            <select
-              id="country"
-              className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-gray-500 focus:ring-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-gray-500 dark:focus:ring-gray-500"
-            >
-              <option>Selecciona tu pais</option>
-              <option value="USA">USA</option>
-              <option value="UK">United Kingdom</option>
-              <option value="CA">Canada</option>
-              <option value="FR">France</option>
-              <option value="DE">Germany</option>
-              <option value="ES">Spain</option>
-              <option value="JP">Japan</option>
-              <option value="AUS">Australia</option>
-            </select>
+            <Select<CountryOption>
+              unstyled
+              inputId="country"
+              options={COUNTRY_OPTIONS}
+              value={country}
+              onChange={setCountry}
+              placeholder="Selecciona tu pais"
+              noOptionsMessage={() => "Sin resultados"}
+              isClearable
+              menuPortalTarget={document.body}
+              styles={{ menuPortal: (base) => ({ ...base, zIndex: 10000 }) }}
+              classNames={{
+                control: ({ isFocused }) =>
+                  `flex w-full items-center rounded-lg border bg-gray-50 p-2.5 text-sm text-gray-900 dark:bg-gray-700 dark:text-white ${
+                    isFocused
+                      ? "border-gray-500 ring-1 ring-gray-500 dark:border-gray-500"
+                      : "border-gray-300 dark:border-gray-600"
+                  }`,
+                valueContainer: () => "flex flex-1 flex-wrap items-center gap-1",
+                placeholder: () => "text-gray-500 dark:text-gray-400",
+                dropdownIndicator: () => "px-1 text-gray-400",
+                clearIndicator: () => "px-1 text-gray-400 hover:text-gray-600",
+                menu: () =>
+                  "mt-1 overflow-hidden rounded-lg border border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-700",
+                option: ({ isSelected, isFocused }) =>
+                  `cursor-pointer px-3 py-2 text-sm ${
+                    isSelected
+                      ? "bg-gray-600 text-white"
+                      : isFocused
+                        ? "bg-gray-100 text-gray-900 dark:bg-gray-600 dark:text-white"
+                        : "text-gray-900 dark:text-white"
+                  }`,
+                noOptionsMessage: () => "px-3 py-2 text-sm text-gray-500 dark:text-gray-400",
+              }}
+            />
           </div>
           <div>
             <label

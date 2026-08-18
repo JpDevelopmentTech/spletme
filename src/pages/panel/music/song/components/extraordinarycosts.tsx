@@ -1,5 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowDownCircle, ArrowUpCircle, Coins, Plus, Trash2, X } from "lucide-react";
+import {
+  ArrowDownCircle,
+  ArrowUpCircle,
+  ArrowRight,
+  Coins,
+  Plus,
+  Trash2,
+  AlertCircle,
+} from "lucide-react";
+import {
+  ModalShell,
+  ModalMark,
+  FieldLabel,
+  FooterNote,
+  PrimaryButton,
+  SecondaryButton,
+} from "@/components/ui/ModalShell";
 import { accountingApi } from "@/services/accounting";
 import type {
   Accounting,
@@ -7,10 +23,11 @@ import type {
   CreateAccountingDto,
 } from "../../../../../types/accounting.types";
 
-// ─── Types ─────────────────────────────────────────────────────────────────────
-
 interface ExtraordinaryCostsProps {
   songId: string;
+  /** Repartible actual, para enseñar cómo lo mueve un costo antes de guardarlo. */
+  distributable?: number;
+  songTitle?: string;
 }
 
 type FormState = {
@@ -21,8 +38,6 @@ type FormState = {
   status: AccountingStatus;
 };
 
-// ─── Constants ──────────────────────────────────────────────────────────────────
-
 const STATUS_LABELS: Record<AccountingStatus, string> = {
   pending: "Pendiente",
   paid: "Pagado",
@@ -30,9 +45,9 @@ const STATUS_LABELS: Record<AccountingStatus, string> = {
 };
 
 const STATUS_CLASSES: Record<AccountingStatus, string> = {
-  pending: "bg-[#FFEADD] text-[#FF5C00]",
+  pending: "bg-[#FFEADD] text-[#EA580C]",
   paid: "bg-[#E4F5EC] text-[#2FB37E]",
-  cancelled: "bg-[#EDEEF1] text-[#71757E]",
+  cancelled: "bg-[#F4F5F7] text-[#71757E]",
 };
 
 const CONCEPT_LABELS: Record<string, string> = {
@@ -45,8 +60,6 @@ const conceptLabel = (concept: string): string => CONCEPT_LABELS[concept.toUpper
 const isIncome = (concept: string): boolean =>
   concept.toUpperCase() === "INCOME" || concept === "Ingreso";
 
-// ─── Helpers ────────────────────────────────────────────────────────────────────
-
 const toNum = (v: unknown): number => {
   if (v === null || v === undefined) return 0;
   if (typeof v === "number") return isFinite(v) ? v : 0;
@@ -55,8 +68,13 @@ const toNum = (v: unknown): number => {
   return isFinite(parsed) ? parsed : 0;
 };
 
-const fmt = (v: unknown): string =>
-  toNum(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const money = (v: unknown): string =>
+  toNum(v).toLocaleString("es-CO", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
 const fmtInput = (v: string) => {
   const s = v.replace(/,/g, "").replace(/[^\d.]/g, "");
@@ -78,7 +96,7 @@ const formatDate = (v?: string) => {
 };
 
 const initialForm = (): FormState => ({
-  concept: "INCOME",
+  concept: "EXPENSE",
   amount: "",
   date: new Date().toISOString().split("T")[0],
   description: "",
@@ -86,11 +104,9 @@ const initialForm = (): FormState => ({
 });
 
 const INPUT_CLASS =
-  "w-full rounded-[16px] border border-[#EDEEF1] bg-white px-3.5 py-2.5 text-[13px] text-[#1C1D22] shadow-[0_1px_2px_rgba(0,0,0,0.04)] outline-none focus:ring-2 focus:ring-[#FF5C00]/40";
+  "w-full rounded-[16px] border border-[#E8E8EC] bg-white px-3.5 py-3 text-[13px] text-[#1C1D22] outline-none transition-colors focus:border-[#FF5C00] focus:ring-2 focus:ring-[#FF5C00]/25";
 
-// ─── Main Component ─────────────────────────────────────────────────────────────
-
-const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
+const ExtraordinaryCosts = ({ songId, distributable = 0, songTitle }: ExtraordinaryCostsProps) => {
   const [costs, setCosts] = useState<Accounting[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -108,7 +124,7 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
         const data = await accountingApi.getBySongId(songId);
         if (active) setCosts(Array.isArray(data) ? data : []);
       } catch {
-        if (active) setError("No se pudieron cargar los costos.");
+        if (active) setError("No se pudieron traer los costos.");
       } finally {
         if (active) setLoading(false);
       }
@@ -139,11 +155,11 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
     const concept = form.concept.trim().toUpperCase();
     const amountValue = parseAmt(form.amount);
     if (!concept) {
-      setError("El concepto es obligatorio.");
+      setError("Elige si es un ingreso o un egreso.");
       return;
     }
     if (!isFinite(amountValue) || amountValue <= 0) {
-      setError("El monto debe ser mayor a cero.");
+      setError("El monto tiene que ser mayor que cero.");
       return;
     }
     setSaving(true);
@@ -162,7 +178,7 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
       resetForm();
       setShowForm(false);
     } catch {
-      setError("No se pudo crear el costo.");
+      setError("No se pudo guardar el costo.");
     } finally {
       setSaving(false);
     }
@@ -177,223 +193,317 @@ const ExtraordinaryCosts = ({ songId }: ExtraordinaryCostsProps) => {
     }
   };
 
+  // Lo que el costo del formulario le haría al repartible si se guardara.
+  const draftAmount = parseAmt(form.amount);
+  const draftEffect = isIncome(form.concept) ? draftAmount : -draftAmount;
+  const nextDistributable = Math.max(0, distributable + draftEffect);
+
   return (
     <>
-      <div className="flex flex-col gap-[14px] rounded-[28px] bg-[#F4F5F7] p-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <Coins className="h-[19px] w-[19px] text-[#1C1D22]" />
-            <h3 className="text-base font-semibold text-[#1C1D22]">Costos Extraordinarios</h3>
+      <section className="overflow-hidden rounded-[26px] border border-[#E8E8EC] bg-white shadow-[0_10px_28px_-12px_rgba(255,92,0,0.15)]">
+        <header className="flex flex-wrap items-center justify-between gap-3.5 px-5 py-[18px]">
+          <div className="flex flex-col gap-0.5">
+            <h3 className="font-display text-[18px] font-semibold text-[#1C1D22]">
+              Lo que entra y sale por fuera
+            </h3>
+            <p className="text-[12.5px] font-medium text-[#71757E]">
+              Mezcla, máster, promoción: se restan antes de repartir
+            </p>
           </div>
           <button
             type="button"
             onClick={() => setShowForm(true)}
-            className="flex items-center gap-1.5 rounded-[16px] bg-[#FF5C00] px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#EA580C]"
+            className="inline-flex items-center gap-[7px] rounded-[20px] bg-[#FF5C00] px-4 py-2.5 text-[12px] font-semibold text-white transition-colors hover:bg-[#EA580C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C00] focus-visible:ring-offset-2"
           >
             <Plus className="h-3.5 w-3.5" />
-            Agregar
+            Apuntar un costo
           </button>
+        </header>
+
+        <div className="h-px bg-[#E8E8EC]" />
+
+        <div className="flex flex-wrap items-stretch">
+          <Figure label="INGRESOS EXTRA" value={money(ingresos)} tone="text-[#2FB37E]" />
+          <div className="w-px self-stretch bg-[#E8E8EC]" />
+          <Figure label="COSTOS" value={money(egresos)} tone="text-[#E5484D]" />
+          <div className="w-px self-stretch bg-[#E8E8EC]" />
+          <Figure
+            label="EFECTO EN EL REPARTIBLE"
+            value={`${balance < 0 ? "−" : "+"}${money(Math.abs(balance))}`}
+            tone={balance < 0 ? "text-[#E5484D]" : "text-[#1C1D22]"}
+          />
         </div>
 
-        {/* Balance */}
-        <div className="grid grid-cols-3 gap-2.5">
-          <div className="rounded-[16px] bg-white p-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-            <p className="text-[11px] text-[#71757E]">Ingresos</p>
-            <p className="text-base font-bold text-[#2FB37E]">${fmt(ingresos)}</p>
-          </div>
-          <div className="rounded-[16px] bg-white p-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-            <p className="text-[11px] text-[#71757E]">Egresos</p>
-            <p className="text-base font-bold text-[#EF4444]">${fmt(egresos)}</p>
-          </div>
-          <div className="rounded-[16px] bg-white p-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-            <p className="text-[11px] text-[#71757E]">Balance</p>
-            <p className={`text-base font-bold ${balance < 0 ? "text-[#EF4444]" : "text-[#1C1D22]"}`}>
-              {balance < 0 ? "-" : ""}${fmt(Math.abs(balance))}
-            </p>
-          </div>
-        </div>
+        <div className="h-px bg-[#E8E8EC]" />
 
-        {error && (
-          <div className="rounded-[16px] bg-[#FEECEC] px-3.5 py-2.5 text-sm text-[#EF4444]">
-            {error}
+        {error && !showForm && (
+          <div className="flex items-center gap-2.5 bg-[#FDECEC] px-5 py-3">
+            <AlertCircle className="h-3.5 w-3.5 shrink-0 text-[#E5484D]" />
+            <span className="flex-1 text-[12px] font-medium text-[#E5484D]">{error}</span>
+            <button
+              type="button"
+              onClick={() => setError(null)}
+              className="text-[11px] font-semibold text-[#E5484D] underline"
+            >
+              Descartar
+            </button>
           </div>
         )}
 
-        {/* Entries */}
-        <div className="flex max-h-80 flex-col gap-2 overflow-auto">
-          {loading ? (
-            <div className="rounded-[16px] bg-white px-4 py-8 text-center text-[13px] text-[#A6AAB2] shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-              Cargando costos...
-            </div>
-          ) : costs.length === 0 ? (
-            <div className="rounded-[16px] bg-white px-4 py-8 text-center text-[13px] text-[#A6AAB2] shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-              No hay costos registrados para esta canción.
-            </div>
-          ) : (
-            costs.map((item) => {
+        {loading ? (
+          <p className="py-14 text-center text-sm text-[#71757E]">Trayendo los costos…</p>
+        ) : costs.length === 0 ? (
+          <div className="flex flex-col items-center gap-2.5 py-14 text-center">
+            <span className="grid h-[58px] w-[58px] place-items-center rounded-[20px] bg-[#FFEADD]">
+              <Coins className="h-6 w-6 text-[#FF5C00]" />
+            </span>
+            <p className="text-[15px] font-semibold text-[#1C1D22]">
+              No hay costos apuntados en esta canción
+            </p>
+            <p className="max-w-[400px] text-[13px] text-[#71757E]">
+              Todo lo que entra se reparte tal cual. Apunta un costo si hubo gastos que descontar
+              antes.
+            </p>
+          </div>
+        ) : (
+          <ul>
+            {costs.map((item, index) => {
               const income = isIncome(item.concept);
               return (
-                <div
-                  key={item._id}
-                  className="flex items-center gap-3 rounded-[16px] bg-white px-3.5 py-2.5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]"
-                >
-                  {income ? (
-                    <ArrowUpCircle className="h-[22px] w-[22px] shrink-0 text-[#2FB37E]" />
-                  ) : (
-                    <ArrowDownCircle className="h-[22px] w-[22px] shrink-0 text-[#EF4444]" />
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13px] font-semibold text-[#1C1D22]">
-                      {item.description || conceptLabel(item.concept)}
+                <li key={item._id}>
+                  {index > 0 && <div className="h-px bg-[#E8E8EC]" />}
+                  <div className="flex flex-wrap items-center gap-3.5 px-5 py-3">
+                    <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[12px] bg-[#F4F5F7]">
+                      {income ? (
+                        <ArrowUpCircle className="h-[18px] w-[18px] text-[#2FB37E]" />
+                      ) : (
+                        <ArrowDownCircle className="h-[18px] w-[18px] text-[#E5484D]" />
+                      )}
+                    </span>
+                    <div className="min-w-[180px] flex-1">
+                      <p className="truncate text-[13px] font-semibold text-[#1C1D22]">
+                        {item.description || conceptLabel(item.concept)}
+                      </p>
+                      <p className="truncate text-[11px] text-[#A6AAB2]">
+                        {conceptLabel(item.concept)} · {formatDate(item.date || item.createdAt)}
+                      </p>
+                    </div>
+                    <p
+                      className={`w-[130px] shrink-0 whitespace-nowrap font-mono text-[13px] font-semibold ${
+                        income ? "text-[#2FB37E]" : "text-[#E5484D]"
+                      }`}
+                    >
+                      {income ? "+" : "−"}
+                      {money(item.amount)}
                     </p>
-                    <p className="text-[11px] text-[#A6AAB2]">{formatDate(item.date || item.createdAt)}</p>
+                    <span
+                      className={`w-[104px] shrink-0 ${STATUS_CLASSES[item.status]} inline-flex justify-center rounded-[14px] px-2.5 py-[5px] text-[10.5px] font-semibold`}
+                    >
+                      {STATUS_LABELS[item.status]}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(item._id)}
+                      aria-label="Eliminar este costo"
+                      title="Eliminar este costo"
+                      className="grid h-[30px] w-[30px] shrink-0 place-items-center rounded-full border border-[#E8E8EC] bg-white text-[#E5484D] transition-colors hover:bg-[#F4F5F7] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C00]"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
                   </div>
-                  <p
-                    className={`shrink-0 whitespace-nowrap text-[13px] font-bold ${income ? "text-[#2FB37E]" : "text-[#EF4444]"}`}
-                  >
-                    {income ? "+" : "-"}${fmt(item.amount)}
-                  </p>
-                  <span
-                    className={`shrink-0 rounded-full px-2.5 py-1 text-[10.5px] font-semibold ${STATUS_CLASSES[item.status]}`}
-                  >
-                    {STATUS_LABELS[item.status]}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(item._id)}
-                    aria-label="Eliminar costo"
-                    className="shrink-0 text-[#A6AAB2] transition-colors hover:text-[#EF4444]"
-                  >
-                    <Trash2 className="h-[15px] w-[15px]" />
-                  </button>
-                </div>
+                </li>
               );
-            })
-          )}
-        </div>
-      </div>
+            })}
+          </ul>
+        )}
 
-      {/* ── Modal ── */}
+        {costs.length > 0 && (
+          <>
+            <div className="h-px bg-[#E8E8EC]" />
+            <footer className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5">
+              <span className="flex items-center gap-2.5 text-[12px] text-[#71757E]">
+                <Coins className="h-3.5 w-3.5" />
+                {costs.length} {costs.length === 1 ? "apunte" : "apuntes"}
+              </span>
+              <span className="text-[11px] text-[#A6AAB2]">
+                Estos importes ya están descontados en la cascada del resumen
+              </span>
+            </footer>
+          </>
+        )}
+      </section>
+
       {showForm && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-          onClick={() => setShowForm(false)}
-        >
-          <div
-            className="w-full max-w-md overflow-hidden rounded-[24px] bg-white shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between border-b border-[#EDEEF1] px-5 py-4">
-              <div className="flex items-center gap-2">
-                <Plus className="h-4 w-4 text-[#FF5C00]" />
-                <span className="text-sm font-semibold text-[#1C1D22]">Nuevo costo</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                aria-label="Cerrar"
-                className="grid h-8 w-8 place-items-center rounded-[12px] bg-[#F4F5F7] text-[#71757E]"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <div className="flex flex-col gap-3 px-5 py-4">
-              {error && (
-                <div className="rounded-[16px] bg-[#FEECEC] px-3.5 py-2.5 text-sm text-[#EF4444]">
-                  {error}
-                </div>
-              )}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1">
-                  <label className="text-[11px] text-[#71757E]">Tipo</label>
-                  <select
-                    value={form.concept}
-                    onChange={(e) => setForm((p) => ({ ...p, concept: e.target.value }))}
-                    className={INPUT_CLASS}
-                  >
-                    <option value="INCOME">Ingreso</option>
-                    <option value="EXPENSE">Egreso</option>
-                  </select>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-[11px] text-[#71757E]">Estado</label>
-                  <select
-                    value={form.status}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, status: e.target.value as AccountingStatus }))
-                    }
-                    className={INPUT_CLASS}
-                  >
-                    <option value="pending">Pendiente</option>
-                    <option value="paid">Pagado</option>
-                  </select>
-                </div>
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-[11px] text-[#71757E]">Monto</label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px] text-[#A6AAB2]">
-                    $
-                  </span>
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    placeholder="0.00"
-                    value={form.amount}
-                    onChange={(e) => setForm((p) => ({ ...p, amount: fmtInput(e.target.value) }))}
-                    className={`${INPUT_CLASS} pl-7`}
-                  />
-                </div>
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-[11px] text-[#71757E]">Fecha</label>
-                <input
-                  type="date"
-                  value={form.date}
-                  onChange={(e) => setForm((p) => ({ ...p, date: e.target.value }))}
-                  className={INPUT_CLASS}
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-[11px] text-[#71757E]">
-                  Descripción <span className="text-[#A6AAB2]">(opcional)</span>
-                </label>
-                <textarea
-                  placeholder="Agrega una nota..."
-                  value={form.description}
-                  onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
-                  className={`${INPUT_CLASS} resize-none`}
-                  rows={2}
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 border-t border-[#EDEEF1] bg-[#F4F5F7] px-5 py-4">
-              <button
-                type="button"
-                onClick={handleCreate}
-                className="rounded-[16px] bg-[#FF5C00] px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#EA580C]"
-              >
-                {saving ? "Guardando..." : "Guardar costo"}
-              </button>
-              <button
-                type="button"
+        <ModalShell
+          title="Nuevo costo extraordinario"
+          subtitle={songTitle || "Esta canción"}
+          logo={
+            <ModalMark>
+              <Coins className="h-[18px] w-[18px]" />
+            </ModalMark>
+          }
+          locked={saving}
+          onClose={() => setShowForm(false)}
+          footer={
+            <>
+              <FooterNote>Un costo cambia lo que se reparte, no lo que ya se pagó.</FooterNote>
+              <SecondaryButton
                 onClick={() => {
                   resetForm();
                   setShowForm(false);
                 }}
-                className="rounded-[16px] bg-[#F4F5F7] px-3.5 py-2 text-xs font-semibold text-[#71757E]"
+                disabled={saving}
               >
                 Cancelar
-              </button>
+              </SecondaryButton>
+              <PrimaryButton onClick={handleCreate} disabled={saving}>
+                {saving ? "Guardando…" : "Guardar costo"}
+              </PrimaryButton>
+            </>
+          }
+        >
+          {error && (
+            <div className="flex items-center gap-2.5 rounded-[14px] bg-[#FDECEC] px-3 py-2.5">
+              <AlertCircle className="h-3.5 w-3.5 shrink-0 text-[#E5484D]" />
+              <span className="text-[11.5px] font-medium text-[#E5484D]">{error}</span>
             </div>
+          )}
+
+          <Field label="TIPO" required>
+            <div className="flex flex-wrap items-center gap-[7px]">
+              {[
+                { value: "EXPENSE", label: "Egreso" },
+                { value: "INCOME", label: "Ingreso" },
+              ].map((option) => (
+                <Chip
+                  key={option.value}
+                  label={option.label}
+                  active={form.concept === option.value}
+                  onClick={() => setForm((p) => ({ ...p, concept: option.value }))}
+                />
+              ))}
+            </div>
+          </Field>
+
+          <Field label="CONCEPTO" required>
+            <input
+              type="text"
+              placeholder="Mezcla y máster, promoción, diseño de portada…"
+              value={form.description}
+              onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+              className={INPUT_CLASS}
+            />
+          </Field>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="MONTO" required>
+              <div className="relative">
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-[13px] text-[#A6AAB2]">
+                  $
+                </span>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="0.00"
+                  value={form.amount}
+                  onChange={(e) => setForm((p) => ({ ...p, amount: fmtInput(e.target.value) }))}
+                  className={`${INPUT_CLASS} pl-7 font-mono`}
+                />
+              </div>
+            </Field>
+            <Field label="FECHA">
+              <input
+                type="date"
+                value={form.date}
+                onChange={(e) => setForm((p) => ({ ...p, date: e.target.value }))}
+                className={INPUT_CLASS}
+              />
+            </Field>
           </div>
-        </div>
+
+          <Field label="ESTADO">
+            <div className="flex flex-wrap items-center gap-[7px]">
+              {(["pending", "paid"] as AccountingStatus[]).map((status) => (
+                <Chip
+                  key={status}
+                  label={STATUS_LABELS[status]}
+                  active={form.status === status}
+                  onClick={() => setForm((p) => ({ ...p, status }))}
+                />
+              ))}
+            </div>
+          </Field>
+
+          {distributable > 0 && draftAmount > 0 && (
+            <div className="flex flex-col gap-2.5 rounded-[18px] bg-[#F4F5F7] px-5 py-[18px]">
+              <span className="font-mono text-[9.5px] font-medium tracking-[1.2px] text-[#A6AAB2]">
+                LO QUE CAMBIA AL GUARDARLO
+              </span>
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="font-mono text-[20px] font-medium text-[#A6AAB2]">
+                  {money(distributable)}
+                </span>
+                <ArrowRight className="h-4 w-4 text-[#A6AAB2]" />
+                <span className="font-mono text-[20px] font-semibold text-[#1C1D22]">
+                  {money(nextDistributable)}
+                </span>
+              </div>
+              <p className="text-[11.5px] text-[#71757E]">
+                Es lo que quedaría por repartir entre quienes cobran de la canción.
+              </p>
+            </div>
+          )}
+        </ModalShell>
       )}
     </>
   );
 };
+
+const Figure = ({ label, value, tone }: { label: string; value: string; tone: string }) => (
+  <div className="flex min-w-[180px] flex-1 flex-col gap-1.5 px-5 py-4">
+    <span className="font-mono text-[9.5px] font-medium tracking-[1.2px] text-[#A6AAB2]">
+      {label}
+    </span>
+    <span className={`font-mono text-[20px] font-semibold ${tone}`}>{value}</span>
+  </div>
+);
+
+const Field = ({
+  label,
+  required,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  children: React.ReactNode;
+}) => (
+  <div className="flex flex-col gap-2">
+    <FieldLabel required={required}>{label}</FieldLabel>
+    {children}
+  </div>
+);
+
+const Chip = ({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    aria-pressed={active}
+    className={`rounded-[14px] border px-3 py-[7px] text-[11.5px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C00] ${
+      active
+        ? "border-[#FF5C00] bg-[#FFEADD] font-semibold text-[#FF5C00]"
+        : "border-[#E8E8EC] bg-white font-medium text-[#71757E]"
+    }`}
+  >
+    {label}
+  </button>
+);
 
 export default ExtraordinaryCosts;

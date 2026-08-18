@@ -23,7 +23,10 @@ export interface Album {
   id?: string;
   upc: string;
   albumTitle: string;
+  /** Primer artista del álbum. El listado completo está en `artists`. */
   artistName: string;
+  /** Todos los artistas distintos de las pistas del álbum. */
+  artists?: string[];
   artisticLabel?: string;
   totalTracks: number;
   totalStreams: number;

@@ -1,9 +1,22 @@
-import { useState, useRef } from "react";
-import { X, Upload, FileText, AlertCircle, CheckCircle2, Music2 } from "lucide-react";
-import type { UploadPeriodPayload } from "../../types/distributor.types";
-import type { UploadSongsResult } from "../../services/distributorsService";
+import { useMemo, useRef, useState } from "react";
 import {
-  MONTH_OPTIONS,
+  Upload,
+  FileSpreadsheet,
+  CircleAlert,
+  CircleCheck,
+  CalendarCheck,
+  CalendarOff,
+  Check,
+  Cpu,
+  Lock,
+  Download,
+  ArrowRight,
+  TriangleAlert,
+} from "lucide-react";
+import type { UploadPeriodPayload } from "../../types/distributor.types";
+import type { RejectedSong, UploadSongsResult, UploadStatus } from "../../services/distributorsService";
+import {
+  MONTH_NAMES,
   MONTH_SHORT_NAMES,
   buildPeriodLabel,
   findOverlappingUpload,
@@ -13,25 +26,36 @@ import {
   validatePeriodRange,
   type PeriodLike,
 } from "../../utils/period.utils";
+import { formatMonthRange } from "@/utils/coverage.utils";
+import {
+  ModalShell,
+  FieldLabel,
+  PrimaryButton,
+  SecondaryButton,
+  DistributorMark,
+} from "@/components/ui/ModalShell";
 
 type UploadPhase = "idle" | "uploading" | "processing" | "done";
 
 interface Props {
   distributorName: string;
+  distributorLogo?: string | null;
   /** Cargas ya registradas, para impedir subir meses que se solapan. */
   existingUploads?: PeriodLike[];
+  /** Periodo ya marcado al abrir; lo usa el aviso de hueco del detalle. */
+  initialPeriod?: UploadPeriodPayload;
   onClose: () => void;
   onConfirm: (
     file: File,
     period: UploadPeriodPayload,
     onProgress: (percent: number) => void,
+    onProcessingProgress?: (status: UploadStatus) => void,
   ) => Promise<UploadSongsResult | void>;
 }
 
 const CURRENT_YEAR = new Date().getFullYear();
-const YEARS = Array.from({ length: 5 }, (_, i) => CURRENT_YEAR - i);
+const YEARS = Array.from({ length: 4 }, (_, i) => CURRENT_YEAR - i).reverse();
 
-/** Atajos habituales para no obligar a elegir mes a mes. */
 const PRESETS = [
   { label: "Q1", startMonth: 1, endMonth: 3 },
   { label: "Q2", startMonth: 4, endMonth: 6 },
@@ -40,518 +64,697 @@ const PRESETS = [
   { label: "Año completo", startMonth: 1, endMonth: 12 },
 ];
 
+const ACCEPTED = /\.(csv|xlsx|xls)$/i;
+
 export default function UploadSongsModal({
   distributorName,
+  distributorLogo,
   existingUploads = [],
+  initialPeriod,
   onClose,
   onConfirm,
 }: Props) {
-  const [startMonth, setStartMonth] = useState(1);
-  const [endMonth, setEndMonth] = useState(3);
-  const [year, setYear] = useState(CURRENT_YEAR);
+  const [year, setYear] = useState(initialPeriod?.year ?? CURRENT_YEAR);
+  const [startMonth, setStartMonth] = useState(initialPeriod?.startMonth ?? 1);
+  const [endMonth, setEndMonth] = useState(initialPeriod?.endMonth ?? 3);
+  /** Mes desde el que se está extendiendo la selección con el segundo clic. */
+  const [anchor, setAnchor] = useState<number | null>(null);
+
   const [file, setFile] = useState<File | null>(null);
+  const [dragging, setDragging] = useState(false);
   const [error, setError] = useState("");
+
   const [phase, setPhase] = useState<UploadPhase>("idle");
   const [progress, setProgress] = useState(0);
+  const [processingProgress, setProcessingProgress] = useState(0);
+  const [processedRows, setProcessedRows] = useState(0);
+  const [liveProcessed, setLiveProcessed] = useState(0);
+  const [liveRejected, setLiveRejected] = useState(0);
   const [result, setResult] = useState<UploadSongsResult | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
 
-  const loading = phase === "uploading" || phase === "processing";
+  const inputRef = useRef<HTMLInputElement>(null);
+  const busy = phase === "uploading" || phase === "processing";
+
+  /** Meses del año ya cubiertos por otras cargas: no se pueden volver a subir. */
+  const takenMonths = useMemo(() => {
+    const taken = new Set<number>();
+    for (const upload of existingUploads) {
+      if (upload.year !== year) continue;
+      const period = resolvePeriod(upload);
+      if (!period) continue;
+      for (let m = period.startMonth; m <= period.endMonth; m += 1) taken.add(m);
+    }
+    return taken;
+  }, [existingUploads, year]);
 
   const rangeError = validatePeriodRange(startMonth, endMonth);
   const periodLabel = buildPeriodLabel(startMonth, endMonth, year);
   const months = monthsCovered(startMonth, endMonth);
 
-  // Una carga no puede solaparse con otra del mismo año: el backend lo rechaza
-  // y aquí se avisa antes de gastar la subida del archivo.
   const overlapping = rangeError
     ? null
     : findOverlappingUpload(existingUploads, { startMonth, endMonth }, year);
 
-  /** Meses del año ya cubiertos por otras cargas, para pintarlos como ocupados. */
-  const takenMonths = new Set<number>();
-  existingUploads
-    .filter((u) => u.year === year)
-    .forEach((u) => {
-      const period = resolvePeriod(u);
-      if (!period) return;
-      for (let m = period.startMonth; m <= period.endMonth; m += 1) takenMonths.add(m);
-    });
+  /** Meses de la selección que chocan con una carga previa. */
+  const conflictingMonths = useMemo(() => {
+    const conflicts: number[] = [];
+    for (let m = startMonth; m <= endMonth; m += 1) if (takenMonths.has(m)) conflicts.push(m);
+    return conflicts;
+  }, [startMonth, endMonth, takenMonths]);
 
-  /** Al elegir un mes inicial posterior al final, el final se arrastra con él. */
-  function handleStartMonthChange(value: number) {
-    setStartMonth(value);
-    if (value > endMonth) setEndMonth(value);
+  /** El tramo libre contiguo más largo dentro de la selección, para ofrecer el arreglo. */
+  const suggestedRange = useMemo(() => {
+    if (conflictingMonths.length === 0) return null;
+    let best: { startMonth: number; endMonth: number } | null = null;
+    let current: number | null = null;
+
+    for (let m = startMonth; m <= endMonth + 1; m += 1) {
+      const free = m <= endMonth && !takenMonths.has(m);
+      if (free && current === null) current = m;
+      if (!free && current !== null) {
+        const candidate = { startMonth: current, endMonth: m - 1 };
+        const size = candidate.endMonth - candidate.startMonth + 1;
+        if (!best || size > best.endMonth - best.startMonth + 1) best = candidate;
+        current = null;
+      }
+    }
+    return best;
+  }, [conflictingMonths, startMonth, endMonth, takenMonths]);
+
+  function selectMonth(month: number) {
+    if (takenMonths.has(month)) return;
+    if (anchor === null) {
+      setStartMonth(month);
+      setEndMonth(month);
+      setAnchor(month);
+    } else {
+      setStartMonth(Math.min(anchor, month));
+      setEndMonth(Math.max(anchor, month));
+      setAnchor(null);
+    }
+    setError("");
   }
 
   function applyPreset(preset: { startMonth: number; endMonth: number }) {
     setStartMonth(preset.startMonth);
     setEndMonth(preset.endMonth);
+    setAnchor(null);
+    setError("");
   }
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0] ?? null;
-    if (f && !f.name.match(/\.(csv|xlsx|xls)$/i)) {
-      setError("Solo se aceptan archivos CSV o Excel (.csv, .xlsx, .xls)");
+  function acceptFile(candidate: File | null) {
+    if (!candidate) return;
+    if (!ACCEPTED.test(candidate.name)) {
+      setError("Solo se aceptan archivos CSV o Excel (.csv, .xlsx, .xls).");
       return;
     }
     setError("");
-    setFile(f);
-  }
-
-  function handleBackdropClose() {
-    if (loading) return;
-    onClose();
+    setFile(candidate);
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!file) {
-      setError("Selecciona un archivo antes de continuar");
-      return;
-    }
-    if (rangeError) {
-      setError(rangeError);
-      return;
-    }
+    if (rangeError) return setError(rangeError);
     if (overlapping) {
-      setError(`El periodo se solapa con la carga de ${formatUploadPeriod(overlapping)}`);
-      return;
+      return setError(`El periodo se solapa con la carga de ${formatUploadPeriod(overlapping)}.`);
     }
+    if (!file) return setError("Selecciona el archivo del reporte antes de continuar.");
+
     setError("");
     setProgress(0);
+    setProcessingProgress(0);
+    setProcessedRows(0);
+    setLiveProcessed(0);
+    setLiveRejected(0);
     setPhase("uploading");
+
     try {
-      const res = await onConfirm(file, { startMonth, endMonth, year }, (percent) => {
-        setProgress(percent);
-        // Cuando el archivo termina de subir, empieza el guardado en backend
-        if (percent >= 100) setPhase("processing");
-      });
+      const res = await onConfirm(
+        file,
+        { startMonth, endMonth, year },
+        (percent) => {
+          setProgress(percent);
+          if (percent >= 100) setPhase("processing");
+        },
+        (status) => {
+          setPhase("processing");
+          setProcessingProgress(status.progress);
+          setProcessedRows(status.processedRows);
+          setLiveProcessed(status.songsProcessed);
+          setLiveRejected(status.rejectedCount);
+        },
+      );
       setResult(res ?? null);
       setPhase("done");
     } catch (err) {
       const apiMessage = (err as { response?: { data?: { message?: string } } }).response?.data
         ?.message;
-      setError(apiMessage || "Error al subir el archivo. Verifica el formato e intenta de nuevo.");
+      const fallback = (err as Error)?.message;
+      setError(apiMessage || fallback || "Error al subir el archivo. Revisa el formato.");
       setPhase("idle");
       setProgress(0);
     }
   }
 
+  // ---- Fases de subida, procesado y resultado -----------------------------
+
   if (phase !== "idle") {
+    const done = phase === "done";
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-        <div
-          className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-          onClick={handleBackdropClose}
-        />
-        <div className="relative mx-4 w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
-          <UploadProgressView
-            phase={phase}
-            progress={progress}
-            result={result}
-            fileName={file?.name ?? ""}
-            periodLabel={periodLabel}
-            onClose={onClose}
-          />
-        </div>
-      </div>
-    );
-  }
+      <ModalShell
+        title={done ? "Reporte procesado" : phase === "uploading" ? "Subiendo reporte" : "Procesando reporte"}
+        subtitle={`${periodLabel} · ${distributorName}`}
+        width="lg"
+        locked={busy}
+        onClose={onClose}
+        logo={<DistributorMark name={distributorName} logo={distributorLogo} size={36} />}
+        footer={
+          done ? (
+            <>
+              <span className="flex-1 text-[11px] text-[#A6AAB2]">
+                Los datos del distribuidor ya están actualizados
+              </span>
+              <PrimaryButton
+                onClick={onClose}
+                icon={<ArrowRight className="h-[15px] w-[15px]" />}
+              >
+                Listo
+              </PrimaryButton>
+            </>
+          ) : (
+            <>
+              <span className="flex-1 text-[11px] text-[#A6AAB2]">
+                Puedes cerrar esta ventana: el proceso sigue en el servidor.
+              </span>
+              <SecondaryButton onClick={onClose}>Seguir en segundo plano</SecondaryButton>
+            </>
+          )
+        }
+      >
+        <Steps phase={phase} />
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-        onClick={handleBackdropClose}
-      />
-      <div className="relative mx-4 flex w-full max-w-lg flex-col gap-5 rounded-2xl bg-white p-6 shadow-xl">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-base font-bold text-[#111827]">Subir canciones</h2>
-            <p className="mt-0.5 text-xs text-[#6B7280]">
-              Distribuidor: <span className="font-semibold text-[#F97316]">{distributorName}</span>
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="rounded-lg p-1.5 transition-colors hover:bg-gray-100"
-          >
-            <X className="h-4 w-4 text-[#6B7280]" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* Selector de periodo: rango de meses dentro de un año */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-[#374151]">
-              Periodo del reporte *
-            </label>
-
-            {/* Atajos: trimestres y año completo */}
-            <div className="flex flex-wrap gap-1.5">
-              {PRESETS.map((preset) => {
-                const isActive =
-                  startMonth === preset.startMonth && endMonth === preset.endMonth;
-                return (
-                  <button
-                    key={preset.label}
-                    type="button"
-                    onClick={() => applyPreset(preset)}
-                    className={`rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors ${
-                      isActive
-                        ? "border-[#F97316] bg-orange-50 text-[#F97316]"
-                        : "border-gray-200 text-[#6B7280] hover:border-gray-300"
-                    }`}
-                  >
-                    {preset.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <div className="flex flex-col gap-1">
-                <span className="text-[11px] font-medium text-[#6B7280]">Desde</span>
-                <select
-                  value={startMonth}
-                  onChange={(e) => handleStartMonthChange(Number(e.target.value))}
-                  className="h-10 rounded-lg border border-gray-200 bg-white px-3 text-sm text-[#111827] focus:border-[#F97316] focus:outline-none"
-                >
-                  {MONTH_OPTIONS.map((m) => (
-                    <option key={m.value} value={m.value}>
-                      {m.label}
-                      {takenMonths.has(m.value) ? " (ya cargado)" : ""}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <span className="text-[11px] font-medium text-[#6B7280]">Hasta</span>
-                <select
-                  value={endMonth}
-                  onChange={(e) => setEndMonth(Number(e.target.value))}
-                  className="h-10 rounded-lg border border-gray-200 bg-white px-3 text-sm text-[#111827] focus:border-[#F97316] focus:outline-none"
-                >
-                  {MONTH_OPTIONS.filter((m) => m.value >= startMonth).map((m) => (
-                    <option key={m.value} value={m.value}>
-                      {m.label}
-                      {takenMonths.has(m.value) ? " (ya cargado)" : ""}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Regleta de 12 meses: muestra de un vistazo qué cubre la carga */}
-            <div className="mt-1 grid grid-cols-12 gap-0.5">
-              {MONTH_SHORT_NAMES.map((name, index) => {
-                const month = index + 1;
-                const inRange = month >= startMonth && month <= endMonth;
-                const isTaken = takenMonths.has(month);
-                return (
-                  <div
-                    key={name}
-                    title={
-                      isTaken ? `${name}: ya cubierto por otra carga` : `${name} ${year}`
-                    }
-                    className={`flex h-6 items-center justify-center rounded text-[9px] font-medium ${
-                      inRange && isTaken
-                        ? "bg-red-100 text-red-600"
-                        : inRange
-                          ? "bg-[#F97316] text-white"
-                          : isTaken
-                            ? "bg-gray-200 text-gray-400 line-through"
-                            : "bg-gray-50 text-[#9CA3AF]"
-                    }`}
-                  >
-                    {name}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Year selector */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-[#374151]">
-              Año *
-            </label>
-            <select
-              value={year}
-              onChange={(e) => setYear(Number(e.target.value))}
-              className="h-10 rounded-lg border border-gray-200 bg-white px-3 text-sm text-[#111827] focus:border-[#F97316] focus:outline-none"
-            >
-              {YEARS.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* File upload area */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-[#374151]">
-              Archivo CSV / Excel *
-            </label>
-            <button
-              type="button"
-              onClick={() => inputRef.current?.click()}
-              className={`flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed py-6 transition-colors ${
-                file
-                  ? "border-green-300 bg-green-50"
-                  : "border-gray-200 hover:border-[#F97316] hover:bg-orange-50"
-              }`}
-            >
-              {file ? (
-                <>
-                  <FileText className="h-6 w-6 text-green-500" />
-                  <span className="text-sm font-semibold text-green-600">{file.name}</span>
-                  <span className="text-xs text-green-500">
-                    {(file.size / 1024).toFixed(1)} KB — click para cambiar
-                  </span>
-                </>
-              ) : (
-                <>
-                  <Upload className="h-6 w-6 text-[#9CA3AF]" />
-                  <span className="text-sm font-medium text-[#6B7280]">
-                    Click para seleccionar archivo
-                  </span>
-                  <span className="text-xs text-[#9CA3AF]">CSV, XLSX o XLS</span>
-                </>
-              )}
-            </button>
-            <input
-              ref={inputRef}
-              type="file"
-              accept=".csv,.xlsx,.xls"
-              onChange={handleFileChange}
-              className="hidden"
-            />
-          </div>
-
-          {/* Period summary */}
-          <div className="flex items-center gap-2 rounded-lg border border-gray-100 bg-[#FAFAFA] px-3 py-2">
-            <AlertCircle className="h-3.5 w-3.5 flex-shrink-0 text-[#F97316]" />
-            <span className="text-xs text-[#6B7280]">
-              Esta carga se asociará a{" "}
-              <span className="font-semibold text-[#111827]">{periodLabel}</span>{" "}
-              ({months} {months === 1 ? "mes" : "meses"}) para{" "}
-              <span className="font-semibold text-[#111827]">{distributorName}</span>
-            </span>
-          </div>
-
-          {overlapping && (
-            <p className="flex items-center gap-1 text-xs text-amber-600">
-              <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
-              El periodo se solapa con la carga de {formatUploadPeriod(overlapping)}
-            </p>
-          )}
-
-          {error && (
-            <p className="flex items-center gap-1 text-xs text-red-500">
-              <AlertCircle className="h-3.5 w-3.5" /> {error}
-            </p>
-          )}
-
-          {/* Actions */}
-          <div className="flex gap-2 pt-1">
-            <button
-              type="button"
-              onClick={onClose}
-              className="h-10 flex-1 rounded-lg border border-gray-200 text-sm font-medium text-[#6B7280] transition-colors hover:bg-gray-50"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={loading || !file || Boolean(rangeError) || Boolean(overlapping)}
-              className="h-10 flex-1 rounded-lg bg-[#F97316] text-sm font-semibold text-white transition-colors hover:bg-orange-600 disabled:opacity-60"
-            >
-              {loading
-                ? "Subiendo..."
-                : overlapping
-                  ? "Periodo ya cargado"
-                  : `Subir ${periodLabel}`}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-interface ProgressProps {
-  phase: UploadPhase;
-  progress: number;
-  result: UploadSongsResult | null;
-  fileName: string;
-  periodLabel: string;
-  onClose: () => void;
-}
-
-function UploadProgressView({
-  phase,
-  progress,
-  result,
-  fileName,
-  periodLabel,
-  onClose,
-}: ProgressProps) {
-  const isUploading = phase === "uploading";
-  const isProcessing = phase === "processing";
-  const isDone = phase === "done";
-
-  const title = isDone
-    ? "¡Canciones guardadas!"
-    : isProcessing
-      ? "Guardando canciones..."
-      : "Subiendo archivo...";
-
-  const subtitle = isDone
-    ? `Carga de ${periodLabel} completada`
-    : isProcessing
-      ? "Estamos procesando y guardando tus canciones"
-      : "Enviando el archivo al servidor";
-
-  return (
-    <div className="flex flex-col items-center gap-6 py-4">
-      {/* Animación / icono */}
-      <div className="relative flex h-24 w-24 items-center justify-center">
-        {isDone ? (
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-50">
-            <CheckCircle2 className="h-11 w-11 text-green-500" />
-          </div>
-        ) : (
+        {phase === "uploading" && (
           <>
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-100 opacity-60" />
-            <div className="relative flex h-20 w-20 items-end justify-center gap-1 rounded-full bg-orange-50">
-              {/* Ecualizador animado: sensación de "guardando música" */}
-              <div className="flex h-9 items-end gap-1">
-                {[0, 1, 2, 3, 4].map((i) => (
-                  <span
-                    key={i}
-                    className="w-1.5 rounded-full bg-[#F97316]"
-                    style={{
-                      animation: "usm-eq 0.9s ease-in-out infinite",
-                      animationDelay: `${i * 0.12}s`,
-                    }}
-                  />
-                ))}
-              </div>
-              <Music2 className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-white p-0.5 text-orange-400 shadow-sm" />
+            <Phase title="Subiendo archivo" value={`${progress}%`} percent={progress} />
+            <div className="flex items-center gap-2.5 rounded-[14px] bg-[#F4F5F7] px-3.5 py-3">
+              <FileSpreadsheet className="h-[15px] w-[15px] flex-shrink-0 text-[#71757E]" />
+              <span className="flex-1 truncate font-mono text-[11px] text-[#71757E]">
+                {file?.name}
+              </span>
+              <span className="flex-shrink-0 font-mono text-[10.5px] text-[#A6AAB2]">
+                {formatSize(file?.size ?? 0)}
+              </span>
             </div>
           </>
         )}
-      </div>
 
-      {/* Texto */}
-      <div className="px-2 text-center">
-        <h3 className="text-base font-bold text-[#111827]">{title}</h3>
-        <p className="mt-1 text-xs text-[#6B7280]">{subtitle}</p>
-        {fileName && (
-          <p className="mt-1 flex items-center justify-center gap-1 text-[11px] text-[#9CA3AF]">
-            <FileText className="h-3 w-3" /> {fileName}
-          </p>
+        {phase === "processing" && (
+          <>
+            <Phase
+              title="Procesando filas"
+              value={processedRows > 0 ? `${processedRows.toLocaleString()} filas` : "Leyendo…"}
+              percent={processingProgress}
+            />
+            <div className="grid grid-cols-2 gap-2.5">
+              <LiveMetric label="PROCESADAS" value={liveProcessed} color="#2FB37E" />
+              <LiveMetric label="OMITIDAS" value={liveRejected} color="#E5484D" />
+            </div>
+            <p className="flex items-start gap-2.5 rounded-[14px] bg-[#FFEADD] px-3.5 py-3 text-[11px] leading-relaxed text-[#EA580C]">
+              <CircleAlert className="mt-px h-3.5 w-3.5 flex-shrink-0 text-[#FF5C00]" />
+              Puedes cerrar esta ventana: el reporte se sigue procesando en el servidor.
+            </p>
+          </>
         )}
-      </div>
 
-      {/* Barra de progreso */}
-      {!isDone && (
-        <div className="w-full">
-          <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-gray-100">
-            {isUploading ? (
-              <div
-                className="h-full rounded-full bg-[#F97316] transition-all duration-200 ease-out"
-                style={{ width: `${progress}%` }}
-              />
-            ) : (
-              // Fase de guardado: barra indeterminada animada
-              <div
-                className="absolute top-0 h-full w-2/5 rounded-full bg-gradient-to-r from-orange-300 via-[#F97316] to-orange-300"
-                style={{
-                  animation: "usm-indeterminate 1.1s ease-in-out infinite",
-                }}
-              />
-            )}
-          </div>
-          <div className="mt-2 flex items-center justify-between">
-            <span className="text-[11px] font-medium text-[#9CA3AF]">
-              {isUploading ? "Subiendo archivo" : "Procesando registros"}
+        {done && <UploadResult result={result} periodLabel={periodLabel} />}
+      </ModalShell>
+    );
+  }
+
+  // ---- Formulario ---------------------------------------------------------
+
+  const canSubmit = Boolean(file) && !rangeError && !overlapping;
+
+  return (
+    <form onSubmit={handleSubmit} className="contents">
+      <ModalShell
+        title="Subir reporte"
+        subtitle={`${distributorName} · ${existingUploads.length} ${
+          existingUploads.length === 1 ? "reporte cargado" : "reportes cargados"
+        }`}
+        width="lg"
+        onClose={onClose}
+        logo={<DistributorMark name={distributorName} logo={distributorLogo} />}
+        footer={
+          <>
+            <span className="flex-1 text-[11px] text-[#A6AAB2]">
+              Los ISRC ya registrados por otro usuario se omiten
             </span>
-            <span className="text-[11px] font-bold text-[#F97316]">
-              {isUploading ? `${progress}%` : "En curso..."}
+            <SecondaryButton onClick={onClose}>Cancelar</SecondaryButton>
+            <PrimaryButton
+              type="submit"
+              disabled={!canSubmit}
+              icon={<Upload className="h-[15px] w-[15px]" />}
+            >
+              {overlapping ? "Periodo ya cargado" : `Subir ${formatMonthRange({ startMonth, endMonth })}`}
+            </PrimaryButton>
+          </>
+        }
+      >
+        {/* Periodo */}
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-3">
+            <FieldLabel required invalid={Boolean(overlapping)}>
+              PERIODO DEL REPORTE
+            </FieldLabel>
+            <div className="flex items-center gap-0.5 rounded-2xl bg-[#F4F5F7] p-0.5">
+              {YEARS.map((y) => (
+                <button
+                  key={y}
+                  type="button"
+                  onClick={() => {
+                    setYear(y);
+                    setAnchor(null);
+                  }}
+                  className={`rounded-[13px] px-2.5 py-1.5 font-mono text-[10.5px] font-semibold transition-colors ${
+                    y === year ? "bg-[#FF5C00] text-white" : "text-[#71757E] hover:text-[#1C1D22]"
+                  }`}
+                >
+                  {y}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* La regleta es el control: se elige el mes inicial y luego el final. */}
+          <div className="flex gap-1">
+            {MONTH_SHORT_NAMES.map((short, index) => {
+              const month = index + 1;
+              const taken = takenMonths.has(month);
+              const selected = month >= startMonth && month <= endMonth;
+              const conflict = taken && selected;
+              const isAnchor = anchor === month;
+
+              return (
+                <button
+                  key={short}
+                  type="button"
+                  disabled={taken}
+                  onClick={() => selectMonth(month)}
+                  aria-pressed={selected}
+                  title={
+                    taken
+                      ? `${MONTH_NAMES[index]}: ya cubierto por otra carga`
+                      : `${MONTH_NAMES[index]} ${year}`
+                  }
+                  className={[
+                    "flex h-14 flex-1 flex-col items-center justify-center gap-1 rounded-[13px] transition-colors",
+                    conflict
+                      ? "border-[1.5px] border-[#E5484D] bg-[#FDECEC]"
+                      : selected
+                        ? "bg-[#FF5C00]"
+                        : taken
+                          ? "cursor-not-allowed border border-[#E8E8EC] bg-[#F4F5F7]"
+                          : "border border-[#E8E8EC] bg-white hover:border-[#FF5C00]",
+                    isAnchor && !conflict ? "ring-[3px] ring-[#FF5C00]/25" : "",
+                  ].join(" ")}
+                >
+                  <span
+                    className={`font-mono text-[10.5px] font-semibold ${
+                      conflict
+                        ? "text-[#E5484D]"
+                        : selected
+                          ? "text-white"
+                          : taken
+                            ? "text-[#A6AAB2]"
+                            : "text-[#1C1D22]"
+                    }`}
+                  >
+                    {short}
+                  </span>
+                  {conflict ? (
+                    <CircleAlert className="h-3 w-3 text-[#E5484D]" />
+                  ) : taken ? (
+                    <Lock className="h-3 w-3 text-[#A6AAB2]" />
+                  ) : (
+                    <span
+                      className={`h-[5px] w-[5px] rounded-full ${
+                        selected ? "bg-white/40" : "bg-[#E8E8EC]"
+                      }`}
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {PRESETS.map((preset) => {
+              const active = startMonth === preset.startMonth && endMonth === preset.endMonth;
+              const blocked = rangeIsTaken(preset, takenMonths);
+              return (
+                <button
+                  key={preset.label}
+                  type="button"
+                  disabled={blocked}
+                  onClick={() => applyPreset(preset)}
+                  className={`rounded-[14px] border px-2.5 py-1.5 text-[11px] transition-colors ${
+                    active
+                      ? "border-[#FF5C00] bg-[#FFEADD] font-semibold text-[#FF5C00]"
+                      : "border-[#E8E8EC] bg-white font-medium text-[#71757E] enabled:hover:border-[#D9DAE0]"
+                  } disabled:cursor-not-allowed disabled:opacity-45`}
+                  title={blocked ? "Todos sus meses ya están cargados" : undefined}
+                >
+                  {preset.label}
+                </button>
+              );
+            })}
+            <span className="ml-auto text-[10.5px] text-[#A6AAB2]">
+              {anchor === null
+                ? "Pulsa un mes y luego otro para marcar el rango"
+                : `Desde ${MONTH_NAMES[anchor - 1]}… elige el mes final`}
             </span>
           </div>
         </div>
-      )}
 
-      {/* Resumen al finalizar */}
-      {isDone && (
-        <div className="flex w-full flex-col gap-3">
-          <div className="flex gap-3">
-            <div className="flex flex-1 flex-col items-center gap-1 rounded-xl border border-green-100 bg-green-50 py-3">
-              <span className="text-2xl font-bold text-green-600">
-                {result?.songsProcessed ?? 0}
-              </span>
-              <span className="text-[11px] font-medium text-green-700">Canciones guardadas</span>
-            </div>
-            {(result?.rejectedCount ?? 0) > 0 && (
-              <div className="flex flex-1 flex-col items-center gap-1 rounded-xl border border-amber-100 bg-amber-50 py-3">
-                <span className="text-2xl font-bold text-amber-600">{result?.rejectedCount}</span>
-                <span className="text-[11px] font-medium text-amber-700">Rechazadas</span>
-              </div>
-            )}
-          </div>
-
-          {result?.rejected && result.rejected.length > 0 && (
-            <div className="flex flex-col gap-2 rounded-xl border border-amber-100 bg-amber-50 p-3">
-              <p className="flex items-center gap-1.5 text-xs font-semibold text-amber-700">
-                <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
-                Estas canciones ya tienen propietario y no se subieron
-              </p>
-              <ul className="flex max-h-40 flex-col gap-1.5 overflow-y-auto">
-                {result.rejected.map((song) => (
-                  <li
-                    key={song.isrc}
-                    className="flex flex-col rounded-lg border border-amber-100 bg-white px-2.5 py-1.5"
-                  >
-                    <span className="truncate text-xs font-medium text-[#111827]">
-                      {song.trackTitle || song.isrc}
-                    </span>
-                    <span className="truncate text-[11px] text-[#9CA3AF]">
-                      {[song.artistName, song.isrc].filter(Boolean).join(" · ")}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
+        {/* Archivo */}
+        <div className="flex flex-col gap-2">
+          <FieldLabel required>ARCHIVO DEL REPORTE</FieldLabel>
           <button
             type="button"
-            onClick={onClose}
-            className="h-10 rounded-lg bg-[#F97316] text-sm font-semibold text-white transition-colors hover:bg-orange-600"
+            onClick={() => inputRef.current?.click()}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragging(true);
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setDragging(false);
+              acceptFile(e.dataTransfer.files?.[0] ?? null);
+            }}
+            className={`flex w-full items-center gap-3 rounded-[18px] px-4 py-4 transition-colors ${
+              file
+                ? "border-[1.5px] border-[#2FB37E] bg-[#E4F5EC]"
+                : dragging
+                  ? "border-[1.5px] border-dashed border-[#FF5C00] bg-[#FFEADD]"
+                  : "border-[1.5px] border-dashed border-[#E8E8EC] bg-white hover:border-[#FF5C00] hover:bg-[#FFEADD]/40"
+            }`}
           >
-            Finalizar
+            <span
+              className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-[13px] ${
+                file ? "bg-white" : "bg-[#F4F5F7]"
+              }`}
+            >
+              {file ? (
+                <FileSpreadsheet className="h-[19px] w-[19px] text-[#2FB37E]" />
+              ) : (
+                <Upload className="h-[19px] w-[19px] text-[#A6AAB2]" />
+              )}
+            </span>
+            <span className="flex min-w-0 flex-1 flex-col gap-0.5 text-left">
+              <span
+                className={`truncate text-[12.5px] font-semibold ${
+                  file ? "font-mono text-[#1C1D22]" : "text-[#71757E]"
+                }`}
+              >
+                {file ? file.name : "Arrastra el archivo o pulsa para elegirlo"}
+              </span>
+              <span className={`text-[11px] ${file ? "text-[#2FB37E]" : "text-[#A6AAB2]"}`}>
+                {file ? formatSize(file.size) : "CSV, XLSX o XLS"}
+              </span>
+            </span>
+            {file && (
+              <span className="flex-shrink-0 rounded-[14px] bg-white px-3 py-1.5 text-[11.5px] font-semibold text-[#71757E]">
+                Cambiar
+              </span>
+            )}
           </button>
+          <input
+            ref={inputRef}
+            type="file"
+            accept=".csv,.xlsx,.xls"
+            onChange={(e) => acceptFile(e.target.files?.[0] ?? null)}
+            className="hidden"
+          />
         </div>
-      )}
 
-      {/* Keyframes locales del componente */}
-      <style>{`
-        @keyframes usm-eq {
-          0%, 100% { height: 28%; }
-          50% { height: 100%; }
-        }
-        @keyframes usm-indeterminate {
-          0% { left: -40%; }
-          100% { left: 100%; }
-        }
-      `}</style>
+        {/* Resumen o conflicto */}
+        {overlapping ? (
+          <div className="flex flex-col gap-3 rounded-[18px] bg-[#FDECEC] p-4">
+            <span className="flex items-center gap-2.5">
+              <CircleAlert className="h-[15px] w-[15px] flex-shrink-0 text-[#E5484D]" />
+              <span className="text-[12.5px] font-semibold text-[#E5484D]">
+                {conflictingMonths.map((m) => MONTH_SHORT_NAMES[m - 1]).join(", ")} ya{" "}
+                {conflictingMonths.length === 1 ? "está cubierto" : "están cubiertos"}
+              </span>
+            </span>
+            <span className="text-[11px] leading-relaxed text-[#E5484D]">
+              El reporte «{formatUploadPeriod(overlapping)}» ya incluye esos meses. Cada mes solo
+              puede pertenecer a una carga.
+            </span>
+            {suggestedRange && (
+              <button
+                type="button"
+                onClick={() => applyPreset(suggestedRange)}
+                className="self-start rounded-[13px] bg-[#E5484D] px-3.5 py-2 text-[11.5px] font-semibold text-white transition-colors hover:bg-[#C93B40]"
+              >
+                Ajustar a {formatMonthRange(suggestedRange)}
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="flex items-center gap-3 rounded-[18px] bg-[#FFEADD] p-4">
+            <CalendarCheck className="h-[17px] w-[17px] flex-shrink-0 text-[#FF5C00]" />
+            <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <span className="text-[12.5px] font-semibold text-[#EA580C]">
+                {periodLabel} · {months} {months === 1 ? "mes" : "meses"}
+              </span>
+              <span className="text-[11px] text-[#EA580C]">
+                No se solapa con ninguna carga anterior de {distributorName}.
+              </span>
+            </span>
+            <CircleCheck className="h-[17px] w-[17px] flex-shrink-0 text-[#FF5C00]" />
+          </div>
+        )}
+
+        {error && (
+          <p className="flex items-center gap-1.5 text-[12px] font-medium text-[#E5484D]">
+            <TriangleAlert className="h-3.5 w-3.5 flex-shrink-0" />
+            {error}
+          </p>
+        )}
+      </ModalShell>
+    </form>
+  );
+}
+
+/** Los tres pasos reales del proceso: subida, procesado en servidor y fin. */
+function Steps({ phase }: { phase: UploadPhase }) {
+  const active = phase === "uploading" ? 0 : phase === "processing" ? 1 : 2;
+  const steps = [
+    { label: "Subida", icon: <Upload className="h-3.5 w-3.5" /> },
+    { label: "Procesado", icon: <Cpu className="h-3.5 w-3.5" /> },
+    { label: "Listo", icon: <Check className="h-3.5 w-3.5" /> },
+  ];
+
+  return (
+    <div className="flex items-center">
+      {steps.map((step, index) => {
+        const done = index < active;
+        const current = index === active;
+        return (
+          <div key={step.label} className="flex flex-1 items-center last:flex-none">
+            {index > 0 && (
+              <span
+                className={`mx-1 h-0.5 flex-1 ${index <= active ? "bg-[#FF5C00]" : "bg-[#E8E8EC]"}`}
+              />
+            )}
+            <span className="flex flex-shrink-0 items-center gap-2">
+              <span
+                className={`flex h-[26px] w-[26px] items-center justify-center rounded-full ${
+                  done
+                    ? "bg-[#FF5C00] text-white"
+                    : current
+                      ? "border-[1.5px] border-[#FF5C00] bg-[#FFEADD] text-[#FF5C00]"
+                      : "bg-[#F4F5F7] text-[#A6AAB2]"
+                }`}
+              >
+                {done ? <Check className="h-3.5 w-3.5" /> : step.icon}
+              </span>
+              <span
+                className={`text-[11.5px] ${
+                  done || current ? "font-semibold text-[#1C1D22]" : "text-[#A6AAB2]"
+                }`}
+              >
+                {step.label}
+              </span>
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
+}
+
+function Phase({ title, value, percent }: { title: string; value: string; percent: number }) {
+  return (
+    <div className="flex flex-col gap-2.5">
+      <div className="flex items-center justify-between">
+        <span className="text-[12.5px] font-semibold text-[#1C1D22]">{title}</span>
+        <span className="font-mono text-[12px] font-semibold text-[#FF5C00]">{value}</span>
+      </div>
+      <span className="h-2 w-full overflow-hidden rounded-full bg-[#F4F5F7]">
+        <span
+          className="block h-full rounded-full bg-[#FF5C00] transition-all duration-300"
+          style={{ width: `${Math.min(100, Math.max(2, percent))}%` }}
+        />
+      </span>
+    </div>
+  );
+}
+
+function LiveMetric({ label, value, color }: { label: string; value: number; color: string }) {
+  return (
+    <div className="flex flex-col gap-1 rounded-[14px] bg-[#F4F5F7] px-3.5 py-3">
+      <span className="font-mono text-[9.5px] font-medium tracking-[1.1px] text-[#A6AAB2]">
+        {label}
+      </span>
+      <span className="font-mono text-[17px] font-semibold" style={{ color }}>
+        {value.toLocaleString()}
+      </span>
+    </div>
+  );
+}
+
+/**
+ * Resultado de la carga. Antes salía como banner amarillo en la página de
+ * detalle; aquí se resuelve donde ocurrió, con los rechazos agrupados por motivo
+ * y exportables para poder reclamarlos.
+ */
+function UploadResult({
+  result,
+  periodLabel,
+}: {
+  result: UploadSongsResult | null;
+  periodLabel: string;
+}) {
+  const groups = useMemo(() => groupRejections(result?.rejected ?? []), [result]);
+  const rejected = result?.rejected ?? [];
+
+  return (
+    <>
+      <div className="flex items-center gap-3 rounded-[18px] bg-[#E4F5EC] p-4">
+        <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#2FB37E]">
+          <Check className="h-5 w-5 text-white" />
+        </span>
+        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span className="text-[14px] font-semibold text-[#1F7D58]">
+            {(result?.songsProcessed ?? 0).toLocaleString()}{" "}
+            {result?.songsProcessed === 1 ? "canción procesada" : "canciones procesadas"}
+          </span>
+          <span className="text-[11.5px] text-[#2FB37E]">{periodLabel}</span>
+        </span>
+      </div>
+
+      {rejected.length > 0 && (
+        <div className="flex flex-col gap-3 rounded-[18px] border border-[#E8E8EC] p-4">
+          <div className="flex items-center gap-2.5">
+            <CalendarOff className="h-3.5 w-3.5 flex-shrink-0 text-[#EA580C]" />
+            <span className="flex-1 text-[12.5px] font-semibold text-[#1C1D22]">
+              {rejected.length} {rejected.length === 1 ? "canción omitida" : "canciones omitidas"}
+            </span>
+            <button
+              type="button"
+              onClick={() => downloadRejections(rejected, periodLabel)}
+              className="flex flex-shrink-0 items-center gap-1.5 rounded-xl bg-[#F4F5F7] px-2.5 py-1.5 text-[10.5px] font-semibold text-[#71757E] transition-colors hover:bg-[#E8E8EC] hover:text-[#1C1D22]"
+            >
+              <Download className="h-3 w-3" />
+              CSV
+            </button>
+          </div>
+
+          {groups.map((group) => (
+            <div key={group.reason} className="flex flex-col gap-2">
+              <span className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#EA580C]" />
+                <span className="flex-1 text-[11.5px] text-[#71757E]">{group.reason}</span>
+                <span className="font-mono text-[11.5px] font-semibold text-[#1C1D22]">
+                  {group.items.length}
+                </span>
+              </span>
+              <span className="flex flex-wrap items-center gap-1.5">
+                {group.items.slice(0, 6).map((song, index) => (
+                  <span
+                    key={`${song.isrc || song.trackTitle}-${index}`}
+                    title={`${song.trackTitle} — ${song.artistName}`}
+                    className="rounded-[11px] bg-[#FFEADD] px-2 py-1 font-mono text-[10px] text-[#EA580C]"
+                  >
+                    {song.isrc || song.trackTitle || "—"}
+                  </span>
+                ))}
+                {group.items.length > 6 && (
+                  <span className="text-[10.5px] text-[#A6AAB2]">
+                    y {group.items.length - 6} más
+                  </span>
+                )}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
+interface RejectionGroup {
+  reason: string;
+  items: RejectedSong[];
+}
+
+/**
+ * El servidor no envía el motivo del rechazo, pero sí distingue: una canción sin
+ * ISRC no se pudo identificar, y una con ISRC se omitió porque ya pertenece a
+ * otro usuario. Agruparlas así evita una lista plana de códigos sin explicación.
+ */
+function groupRejections(rejected: RejectedSong[]): RejectionGroup[] {
+  const withIsrc = rejected.filter((song) => Boolean(song.isrc));
+  const withoutIsrc = rejected.filter((song) => !song.isrc);
+
+  return [
+    { reason: "ISRC ya registrado por otro usuario", items: withIsrc },
+    { reason: "Sin ISRC en el archivo", items: withoutIsrc },
+  ].filter((group) => group.items.length > 0);
+}
+
+/** Descarga los rechazos para poder reclamarlos al distribuidor. */
+function downloadRejections(rejected: RejectedSong[], periodLabel: string) {
+  const escape = (value: string) => `"${String(value ?? "").replace(/"/g, '""')}"`;
+  const rows = [
+    ["ISRC", "UPC", "Titulo", "Artista"],
+    ...rejected.map((song) => [song.isrc, song.upc, song.trackTitle, song.artistName]),
+  ];
+  const csv = rows.map((row) => row.map(escape).join(",")).join("\n");
+
+  // El BOM hace que Excel abra el CSV como UTF-8 y no rompa los acentos.
+  const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `omitidas-${periodLabel.replace(/[^\w]+/g, "-").toLowerCase()}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function rangeIsTaken(
+  range: { startMonth: number; endMonth: number },
+  taken: Set<number>,
+): boolean {
+  for (let m = range.startMonth; m <= range.endMonth; m += 1) if (!taken.has(m)) return false;
+  return true;
+}
+
+function formatSize(bytes: number): string {
+  if (bytes >= 1_048_576) return `${(bytes / 1_048_576).toFixed(1)} MB`;
+  return `${(bytes / 1024).toFixed(1)} KB`;
 }

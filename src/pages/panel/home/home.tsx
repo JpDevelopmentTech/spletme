@@ -71,7 +71,7 @@ export default function Home() {
                   <span className="text-[12.5px] text-[#71757E]">Por ingresos generados</span>
                 </div>
                 <a
-                  href="/panel/music/songs"
+                  href="/panel/music?view=songs"
                   className="flex items-center gap-1 text-[12.5px] font-semibold text-[#FF5C00] transition-colors hover:text-[#EA580C]"
                 >
                   Ver todas

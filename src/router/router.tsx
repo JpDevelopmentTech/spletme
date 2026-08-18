@@ -3,8 +3,7 @@ import GuardedRoute, { PublicOnlyRoute } from "../guards/auth";
 import Login from "../pages/auth/login";
 import Panel from "../pages/panel/panel";
 import Home from "../pages/panel/home/home";
-import Songs from "../pages/panel/music/songs/songs";
-import Albums from "../pages/panel/music/albums/albums";
+import Music from "../pages/panel/music/music";
 import Last from "../pages/panel/last/last";
 import Collaborators from "../pages/panel/collaborators/collaborators";
 import Dealers from "../pages/panel/dealers/dealers";
@@ -85,15 +84,17 @@ const routes = [
       },
       {
         path: "music",
-        element: <Navigate to="/panel/music/songs" replace />,
+        element: <Music />,
       },
+      // Las dos rutas antiguas se conservan como redirección: los enlaces ya
+      // repartidos siguen funcionando y caen en la agrupación correspondiente.
       {
         path: "music/songs",
-        element: <Songs />,
+        element: <Navigate to="/panel/music?view=songs" replace />,
       },
       {
         path: "music/albums",
-        element: <Albums />,
+        element: <Navigate to="/panel/music?view=albums" replace />,
       },
       {
         path: "song/:id",

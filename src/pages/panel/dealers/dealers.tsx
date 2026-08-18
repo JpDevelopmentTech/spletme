@@ -1,154 +1,277 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import ReactApexChart from "react-apexcharts";
-import { ApexOptions } from "apexcharts";
+import { useState } from "react";
 import {
-  Plus,
-  Upload,
   Search,
-  TrendingUp,
-  Music,
-  DollarSign,
-  BarChart2,
-  MoreHorizontal,
-  ArrowRight,
+  Plus,
+  Handshake,
+  SearchX,
+  CirclePlus,
+  FileUp,
+  ChartPie,
+  ArrowUp,
+  ArrowDown,
+  FunnelX,
+  TriangleAlert,
 } from "lucide-react";
-import type { Distributor, DistributorKpi } from "../../../types/distributor.types";
-import type { PeriodLike } from "../../../utils/period.utils";
-import { distributorsService } from "../../../services/distributorsService";
-import CreateDistributorModal from "../../../components/ui/CreateDistributorModal";
-import UploadSongsModal from "../../../components/ui/UploadSongsModal";
-
-const AVATAR_PALETTES = [
-  { bg: "#DBEAFE", color: "#1E40AF" },
-  { bg: "#FEE2E2", color: "#991B1B" },
-  { bg: "#FEF3C7", color: "#92400E" },
-  { bg: "#D1FAE5", color: "#065F46" },
-  { bg: "#EDE9FE", color: "#5B21B6" },
-  { bg: "#FCE7F3", color: "#9D174D" },
-];
-
-function palette(index: number) {
-  return AVATAR_PALETTES[index % AVATAR_PALETTES.length];
-}
-
-function fmt(n: number, currency = "USD") {
-  const s = currency === "EUR" ? "€" : "$";
-  if (n >= 1_000_000) return `${s}${(n / 1_000_000).toFixed(2)}M`;
-  if (n >= 1_000) return `${s}${(n / 1_000).toFixed(1)}K`;
-  return `${s}${n.toFixed(2)}`;
-}
-
-function fmtStreams(n: number) {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K`;
-  return String(n);
-}
+import { distributorsService } from "@/services/distributorsService";
+import { useDistributorsLibrary } from "@/hooks/useDistributorsLibrary";
+import { DistributorsKpis } from "@/components/distributors/DistributorsKpis";
+import { RevenueShareBar } from "@/components/distributors/RevenueShareBar";
+import { YearCoverageCard } from "@/components/distributors/YearCoverageCard";
+import { DistributorsFilterBar } from "@/components/distributors/DistributorsFilterBar";
+import { DistributorRow } from "@/components/distributors/DistributorRow";
+import { CoverageLegend } from "@/components/distributors/CoverageStrip";
+import { DeleteDistributorDialog } from "@/components/distributors/DeleteDistributorDialog";
+import {
+  DISTRIBUTOR_COLUMNS,
+  DISTRIBUTORS_GRID,
+  NEXT_SORT,
+  isDescending,
+  type DistributorSortBy,
+} from "@/components/distributors/distributorsColumns";
+import type { DistributorListItem } from "@/components/distributors/types";
+import CreateDistributorModal from "@/components/ui/CreateDistributorModal";
+import EditDistributorModal from "@/components/ui/EditDistributorModal";
+import UploadSongsModal from "@/components/ui/UploadSongsModal";
+import { formatGaps } from "@/utils/coverage.utils";
 
 export default function Dealers() {
-  const navigate = useNavigate();
-  const [distributors, setDistributors] = useState<Distributor[]>([]);
-  const [kpis, setKpis] = useState<DistributorKpi[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
+  const library = useDistributorsLibrary();
+  const {
+    loading,
+    error,
+    reload,
+    items,
+    allItems,
+    totals,
+    year,
+    setYear,
+    years,
+    upToMonth,
+    search,
+    setSearch,
+    sortBy,
+    setSortBy,
+    hasFilters,
+    clearAllFilters,
+    missingMonths,
+    globalGaps,
+  } = library;
+
   const [showCreate, setShowCreate] = useState(false);
-  const [uploadTarget, setUploadTarget] = useState<{
-    distributor: Distributor;
-    existingUploads: PeriodLike[];
-  } | null>(null);
+  const [editing, setEditing] = useState<DistributorListItem | null>(null);
+  const [deleting, setDeleting] = useState<DistributorListItem | null>(null);
+  const [uploadTarget, setUploadTarget] = useState<DistributorListItem | null>(null);
 
-  async function openUploadModal(distributor: Distributor) {
-    try {
-      const ups = await distributorsService.getUploads(distributor._id);
-      setUploadTarget({
-        distributor,
-        // Se pasa el rango completo para poder detectar solapamientos de meses.
-        existingUploads: ups
-          .filter((u) => u.status !== "error")
-          .map((u) => ({
-            startMonth: u.startMonth,
-            endMonth: u.endMonth,
-            quarter: u.quarter,
-            year: u.year,
-            periodLabel: u.periodLabel,
-          })),
-      });
-    } catch {
-      setUploadTarget({ distributor, existingUploads: [] });
-    }
-  }
+  const isEmpty = allItems.length === 0;
 
-  async function load() {
-    setLoading(true);
-    try {
-      const [list, kpiList] = await Promise.all([
-        distributorsService.getAll(),
-        distributorsService.getKpis(),
-      ]);
-      setDistributors(list);
-      setKpis(kpiList);
-    } catch {
-      setDistributors([]);
-      setKpis([]);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    load();
-  }, []);
-
-  const filtered = distributors.filter((d) => d.name.toLowerCase().includes(search.toLowerCase()));
-
-  const totalIncome = kpis.reduce((s, k) => s + k.totalNetIncome, 0);
-  const totalStreams = kpis.reduce((s, k) => s + k.totalStreams, 0);
-  const totalSongs = kpis.reduce((s, k) => s + k.songsCount, 0);
-
-  // KPI comparison bar chart
-  const kpiChartOptions: ApexOptions = {
-    chart: { type: "bar", toolbar: { show: false }, background: "transparent" },
-    plotOptions: {
-      bar: {
-        horizontal: true,
-        barHeight: "60%",
-        borderRadius: 4,
-        borderRadiusApplication: "end",
-      },
-    },
-    dataLabels: { enabled: false },
-    colors: ["#F97316"],
-    xaxis: {
-      labels: {
-        style: { colors: "#9CA3AF", fontSize: "11px" },
-        formatter: (v: string) => {
-          const n = Number(v);
-          return n >= 1000 ? `$${(n / 1000).toFixed(0)}K` : `$${n}`;
-        },
-      },
-      axisBorder: { show: false },
-      axisTicks: { show: false },
-    },
-    yaxis: { labels: { style: { colors: "#9CA3AF", fontSize: "11px" } } },
-    grid: {
-      borderColor: "#F3F4F6",
-      xaxis: { lines: { show: true } },
-      yaxis: { lines: { show: false } },
-    },
-    tooltip: { theme: "light", y: { formatter: (v: number) => fmt(v) } },
+  /** Deja a la vista solo los distribuidores a los que les falta algún mes. */
+  const showOnlyGaps = () => {
+    library.setCoverageFilter("with_gaps");
+    library.setSortBy("coverage_asc");
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA]">
+    <div className="min-h-full bg-[#F7F7F9]">
+      <div className="flex flex-col gap-5 px-4 py-6 lg:px-8">
+        {/* Encabezado */}
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="flex flex-col gap-0.5">
+            <h1 className="font-display text-2xl font-semibold text-[#1C1D22]">Distribuidores</h1>
+            <p className="flex flex-wrap items-center gap-2 text-[13px] text-[#71757E]">
+              <span>
+                {allItems.length} {allItems.length === 1 ? "distribuidor" : "distribuidores"}
+              </span>
+              <span className="text-[#A6AAB2]">·</span>
+              <span>{totals.uploadCount} cargas</span>
+              {missingMonths > 0 && (
+                <>
+                  <span className="text-[#A6AAB2]">·</span>
+                  <button
+                    onClick={showOnlyGaps}
+                    className="font-semibold text-[#FF5C00] transition-colors hover:text-[#EA580C]"
+                  >
+                    {missingMonths} {missingMonths === 1 ? "mes" : "meses"} sin cubrir
+                  </button>
+                </>
+              )}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative w-full sm:w-[290px]">
+              <Search
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-[#A6AAB2]"
+                size={16}
+              />
+              <input
+                type="text"
+                placeholder="Buscar distribuidor o proveedor…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full rounded-[22px] border border-[#E8E8EC] bg-white py-2.5 pl-11 pr-4 text-[12.5px] text-[#1C1D22] placeholder:text-[#A6AAB2] focus:border-[#FF5C00] focus:outline-none focus:ring-[3px] focus:ring-[#FF5C00]/15"
+              />
+            </div>
+            <button
+              onClick={() => setShowCreate(true)}
+              className="flex flex-shrink-0 items-center gap-2 rounded-[22px] bg-[#FF5C00] px-[18px] py-2.5 text-[12.5px] font-semibold text-white shadow-[0_6px_16px_-4px_rgba(255,92,0,0.4)] transition-colors hover:bg-[#EA580C]"
+            >
+              <Plus className="h-[15px] w-[15px]" />
+              Nuevo distribuidor
+            </button>
+          </div>
+        </div>
+
+        {error && (
+          <div className="flex items-center gap-2.5 rounded-2xl border border-[#F5C2C4] bg-[#FDECEC] px-4 py-3">
+            <TriangleAlert className="h-4 w-4 flex-shrink-0 text-[#E5484D]" />
+            <span className="flex-1 text-[12.5px] text-[#E5484D]">{error}</span>
+            <button
+              onClick={reload}
+              className="rounded-full bg-white px-3.5 py-1.5 text-[11.5px] font-semibold text-[#E5484D]"
+            >
+              Reintentar
+            </button>
+          </div>
+        )}
+
+        {loading ? (
+          <TableSkeleton />
+        ) : isEmpty ? (
+          <FirstDistributorState onCreate={() => setShowCreate(true)} />
+        ) : (
+          <>
+            <DistributorsKpis
+              distributorsCount={allItems.length}
+              songsCount={totals.songsCount}
+              totalNetIncome={totals.totalNetIncome}
+              totalGrossIncome={totals.totalGrossIncome}
+              totalStreams={totals.totalStreams}
+              missingMonths={missingMonths}
+              gapsLabel={formatGaps(globalGaps)}
+              year={year}
+              onShowGaps={missingMonths > 0 ? showOnlyGaps : undefined}
+            />
+
+            <div className="flex flex-col gap-5 lg:flex-row">
+              <RevenueShareBar
+                className="min-w-0 flex-1"
+                slices={allItems.map((item) => ({
+                  id: item.distributor._id,
+                  name: item.distributor.name,
+                  amount: item.kpi?.totalNetIncome ?? 0,
+                  color: item.color,
+                }))}
+              />
+              <YearCoverageCard
+                countByMonth={library.countByMonth}
+                distributorsCount={allItems.length}
+                gaps={globalGaps}
+                year={year}
+                years={years}
+                onYearChange={setYear}
+                upToMonth={upToMonth}
+                onShowGaps={missingMonths > 0 ? showOnlyGaps : undefined}
+              />
+            </div>
+
+            <DistributorsFilterBar
+              currencyFilter={library.currencyFilter}
+              onCurrencyFilterChange={library.setCurrencyFilter}
+              providerFilter={library.providerFilter}
+              onProviderFilterChange={library.setProviderFilter}
+              providers={library.providers}
+              coverageFilter={library.coverageFilter}
+              onCoverageFilterChange={library.setCoverageFilter}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+              hasFilters={hasFilters}
+              onClearAll={clearAllFilters}
+            />
+
+            {items.length === 0 ? (
+              <NoResultsState
+                search={search}
+                hasFilters={hasFilters}
+                onClearFilters={clearAllFilters}
+                onClearSearch={() => setSearch("")}
+              />
+            ) : (
+              <div className="overflow-hidden rounded-[26px] border border-[#E8E8EC] bg-white shadow-[0_10px_28px_-12px_rgba(255,92,0,0.15)]">
+                <TableHeader sortBy={sortBy} onSortChange={setSortBy} />
+                <div className="h-px bg-[#E8E8EC]" />
+                <div className="flex flex-col divide-y divide-[#E8E8EC]">
+                  {items.map((item) => (
+                    <DistributorRow
+                      key={item.distributor._id}
+                      item={item}
+                      year={year}
+                      upToMonth={upToMonth}
+                      onUpload={setUploadTarget}
+                      onEdit={setEditing}
+                      onDelete={setDeleting}
+                    />
+                  ))}
+                </div>
+                <div className="h-px bg-[#E8E8EC]" />
+                <div className="flex flex-col items-start justify-between gap-3 px-5 py-3.5 sm:flex-row sm:items-center">
+                  <span className="text-[12px] text-[#71757E]">
+                    {items.length}
+                    {items.length === allItems.length ? "" : ` de ${allItems.length}`}{" "}
+                    {items.length === 1 ? "distribuidor" : "distribuidores"} ·{" "}
+                    {totals.uploadCount} cargas · {totals.songsCount.toLocaleString()} canciones
+                  </span>
+                  <div className="hidden xl:block">
+                    <CoverageLegend />
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
       {showCreate && (
         <CreateDistributorModal
+          existingNames={allItems.map((item) => item.distributor.name)}
           onClose={() => setShowCreate(false)}
           onConfirm={async (payload) => {
             const created = await distributorsService.create(payload);
-            await load();
-            // Abrir de inmediato el modal de carga del Q para el distribuidor
-            // recién creado. Al ser nuevo, no tiene cargas previas.
-            setUploadTarget({ distributor: created, existingUploads: [] });
+            await reload();
+            // Un distribuidor recién creado no sirve de nada vacío: se encadena
+            // con la subida de su primer reporte.
+            setUploadTarget({
+              distributor: created,
+              kpi: null,
+              color: "#FF5C00",
+              uploads: [],
+              covered: new Set(),
+              gaps: [],
+              missingMonths: 0,
+              shareOfTotal: 0,
+              shareOfMax: 0,
+            });
+          }}
+        />
+      )}
+
+      {editing && (
+        <EditDistributorModal
+          distributor={editing.distributor}
+          onClose={() => setEditing(null)}
+          onConfirm={async (payload) => {
+            await distributorsService.update(editing.distributor._id, payload);
+            await reload();
+          }}
+        />
+      )}
+
+      {deleting && (
+        <DeleteDistributorDialog
+          item={deleting}
+          onClose={() => setDeleting(null)}
+          onConfirm={async () => {
+            await distributorsService.remove(deleting.distributor._id);
+            await reload();
           }}
         />
       )}
@@ -156,297 +279,252 @@ export default function Dealers() {
       {uploadTarget && (
         <UploadSongsModal
           distributorName={uploadTarget.distributor.name}
-          existingUploads={uploadTarget.existingUploads}
+          distributorLogo={uploadTarget.distributor.photoUrl}
+          existingUploads={uploadTarget.uploads}
           onClose={() => setUploadTarget(null)}
-          onConfirm={async (file, period, onProgress) => {
+          onConfirm={async (file, period, onProgress, onProcessingProgress) => {
             const result = await distributorsService.uploadSongs(
               uploadTarget.distributor._id,
               file,
               period,
               onProgress,
+              onProcessingProgress,
             );
-            await load();
+            await reload();
             return result;
           }}
         />
       )}
+    </div>
+  );
+}
 
-      <div className="flex flex-col gap-6 px-6 py-8 lg:px-10">
-        {/* Header */}
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-2xl font-bold text-[#111827]">Distribuidores</h1>
-            <p className="text-sm text-[#6B7280]">
-              Gestiona y analiza el rendimiento de tus distribuidores
-            </p>
-            <div className="mt-1 h-0.5 w-10 rounded-full bg-[#F97316]" />
-          </div>
-          <button
-            onClick={() => setShowCreate(true)}
-            className="flex h-9 items-center gap-2 rounded-lg bg-[#F97316] px-4 text-sm font-semibold text-white transition-colors hover:bg-orange-600"
-          >
-            <Plus className="h-4 w-4" />
-            Nuevo distribuidor
-          </button>
-        </div>
-
-        {/* Global stats */}
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {[
-            {
-              label: "Total Distribuidores",
-              value: String(distributors.length),
-              sub: `${kpis.reduce((s, k) => s + k.uploadCount, 0)} cargas totales`,
-              icon: TrendingUp,
-              iconBg: "bg-orange-50",
-              iconColor: "text-[#F97316]",
-              valueColor: "text-[#111827]",
-            },
-            {
-              label: "Canciones Totales",
-              value: String(totalSongs),
-              sub: "En todos los distribuidores",
-              icon: Music,
-              iconBg: "bg-blue-50",
-              iconColor: "text-blue-600",
-              valueColor: "text-[#111827]",
-            },
-            {
-              label: "Ingresos Totales",
-              value: fmt(totalIncome),
-              sub: "Suma de ingresos netos",
-              icon: DollarSign,
-              iconBg: "bg-green-50",
-              iconColor: "text-green-600",
-              valueColor: "text-green-500",
-            },
-            {
-              label: "Streams Totales",
-              value: fmtStreams(totalStreams),
-              sub: "Reproducciones acumuladas",
-              icon: BarChart2,
-              iconBg: "bg-purple-50",
-              iconColor: "text-purple-600",
-              valueColor: "text-[#111827]",
-            },
-          ].map(({ label, value, sub, icon: Icon, iconBg, iconColor, valueColor }) => (
-            <div
-              key={label}
-              className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-5"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-[#6B7280]">{label}</span>
-                <div className={`h-7 w-7 ${iconBg} flex items-center justify-center rounded-md`}>
-                  <Icon className={`h-3.5 w-3.5 ${iconColor}`} />
-                </div>
-              </div>
-              <p className={`text-[26px] font-bold leading-none ${valueColor}`}>{value}</p>
-              <span className="text-[11px] font-medium text-[#9CA3AF]">{sub}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* KPI comparison chart */}
-        {kpis.length > 0 && (
-          <div className="rounded-xl border border-gray-200 bg-white p-6">
-            <h2 className="text-sm font-semibold text-[#111827]">KPIs Comparativos</h2>
-            <p className="mb-4 mt-0.5 text-xs text-[#6B7280]">Ingresos netos por distribuidor</p>
-            <ReactApexChart
-              options={{
-                ...kpiChartOptions,
-                xaxis: {
-                  ...kpiChartOptions.xaxis,
-                  categories: kpis.map((k) => k.name),
-                },
-              }}
-              series={[
-                {
-                  name: "Ingresos Netos",
-                  data: kpis.map((k) => k.totalNetIncome),
-                },
-              ]}
-              type="bar"
-              height={Math.max(120, kpis.length * 44)}
-            />
-          </div>
-        )}
-
-        {/* Distributors table */}
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-          <div className="flex items-center justify-between gap-4 border-b border-gray-100 px-6 py-4">
-            <div className="flex items-center gap-2.5">
-              <span className="text-sm font-semibold text-[#111827]">
-                Listado de Distribuidores
-              </span>
-              <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[11px] font-bold text-[#6B7280]">
-                {filtered.length}
-              </span>
-            </div>
-            <div className="relative w-56">
-              <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#9CA3AF]" />
-              <input
-                type="text"
-                placeholder="Buscar distribuidor..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="h-9 w-full rounded-lg border border-gray-200 pl-9 pr-3 text-[13px] text-[#111827] placeholder-[#9CA3AF] transition-colors focus:border-[#F97316] focus:outline-none"
+/** Cabecera de la tabla: cada columna ordena y marca el criterio activo. */
+function TableHeader({
+  sortBy,
+  onSortChange,
+}: {
+  sortBy: DistributorSortBy;
+  onSortChange: (v: DistributorSortBy) => void;
+}) {
+  return (
+    <div className={`${DISTRIBUTORS_GRID} px-5 py-3`}>
+      <div className="flex min-w-0">
+        <ColumnButton
+          label="DISTRIBUIDOR"
+          active={sortBy === "name_asc"}
+          descending={false}
+          onClick={() => onSortChange(NEXT_SORT.name(sortBy))}
+        />
+      </div>
+      {DISTRIBUTOR_COLUMNS.map((column) => {
+        const active = Boolean(column.sortKeys?.includes(sortBy));
+        return (
+          <div key={column.key} className={column.visibility}>
+            {column.sortKeys ? (
+              <ColumnButton
+                label={column.label}
+                active={active}
+                descending={isDescending(sortBy)}
+                onClick={() => onSortChange(NEXT_SORT[column.key](sortBy))}
               />
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            {loading ? (
-              <div className="flex h-40 items-center justify-center text-sm text-[#9CA3AF]">
-                Cargando distribuidores...
-              </div>
-            ) : filtered.length === 0 ? (
-              <div className="flex h-40 flex-col items-center justify-center gap-3">
-                <p className="text-sm text-[#9CA3AF]">
-                  {distributors.length === 0 ? "Aún no tienes distribuidores" : "Sin resultados"}
-                </p>
-                {distributors.length === 0 && (
-                  <button
-                    onClick={() => setShowCreate(true)}
-                    className="flex items-center gap-1.5 text-sm font-medium text-[#F97316] hover:underline"
-                  >
-                    <Plus className="h-3.5 w-3.5" /> Crear primer distribuidor
-                  </button>
-                )}
-              </div>
             ) : (
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-100 bg-[#FAFAFA]">
-                    <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
-                      Distribuidor
-                    </th>
-                    <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
-                      Moneda
-                    </th>
-                    <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
-                      Canciones
-                    </th>
-                    <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
-                      Streams
-                    </th>
-                    <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
-                      Ingresos
-                    </th>
-                    <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
-                      Cargas
-                    </th>
-                    <th className="w-[80px]" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((d, i) => {
-                    const kpi = kpis.find((k) => k.distributorId === d._id);
-                    const pal = palette(i);
-                    const initials = d.name.slice(0, 2).toUpperCase();
-                    return (
-                      <tr
-                        key={d._id}
-                        className="cursor-pointer border-b border-gray-100 transition-colors last:border-b-0 hover:bg-gray-50"
-                        onClick={() => navigate(`/panel/dealers/${d._id}`)}
-                      >
-                        <td className="px-4 py-4">
-                          <div className="flex items-center gap-3">
-                            {d.photoUrl ? (
-                              <img
-                                src={d.photoUrl}
-                                alt={d.name}
-                                className="h-9 w-9 flex-shrink-0 rounded-full bg-white object-contain ring-1 ring-gray-100"
-                              />
-                            ) : (
-                              <div
-                                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full"
-                                style={{ backgroundColor: pal.bg }}
-                              >
-                                <span
-                                  className="text-[12px] font-bold"
-                                  style={{ color: pal.color }}
-                                >
-                                  {initials}
-                                </span>
-                              </div>
-                            )}
-                            <div className="flex flex-col">
-                              <span className="text-[13px] font-semibold text-[#111827]">
-                                {d.name}
-                              </span>
-                              {d.provider && d.provider !== d.name && (
-                                <span className="text-[11px] text-[#9CA3AF]">{d.provider}</span>
-                              )}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 text-center">
-                          <span
-                            className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${
-                              d.currency === "USD"
-                                ? "bg-green-50 text-green-700"
-                                : "bg-blue-50 text-blue-700"
-                            }`}
-                          >
-                            {d.currency}
-                          </span>
-                        </td>
-                        <td className="px-4 py-4 text-center">
-                          <span className="text-[13px] font-medium text-[#111827]">
-                            {kpi?.songsCount ?? 0}
-                          </span>
-                        </td>
-                        <td className="px-4 py-4 text-center text-[12px] text-[#6B7280]">
-                          {fmtStreams(kpi?.totalStreams ?? 0)}
-                        </td>
-                        <td className="px-4 py-4 text-center">
-                          <span className="text-[13px] font-semibold text-green-500">
-                            {fmt(kpi?.totalNetIncome ?? 0, d.currency)}
-                          </span>
-                        </td>
-                        <td className="px-4 py-4 text-center">
-                          <span className="inline-flex items-center rounded-full bg-orange-50 px-2.5 py-1 text-[11px] font-bold text-[#F97316]">
-                            {kpi?.uploadCount ?? 0}
-                          </span>
-                        </td>
-                        <td className="px-3 py-4">
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openUploadModal(d);
-                              }}
-                              className="rounded-md p-1.5 text-[#9CA3AF] transition-colors hover:bg-orange-50 hover:text-[#F97316]"
-                              title="Subir canciones"
-                            >
-                              <Upload className="h-3.5 w-3.5" />
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/panel/dealers/${d._id}`);
-                              }}
-                              className="rounded-md p-1.5 text-[#9CA3AF] transition-colors hover:bg-gray-100 hover:text-[#111827]"
-                              title="Ver detalle"
-                            >
-                              <ArrowRight className="h-3.5 w-3.5" />
-                            </button>
-                            <button
-                              onClick={(e) => e.stopPropagation()}
-                              className="rounded-md p-1.5 text-[#9CA3AF] transition-colors hover:bg-gray-100 hover:text-[#6B7280]"
-                            >
-                              <MoreHorizontal className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+              <ColumnLabel>{column.label}</ColumnLabel>
             )}
           </div>
+        );
+      })}
+      <div />
+    </div>
+  );
+}
+
+function ColumnButton({
+  label,
+  active,
+  descending,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  descending: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-1 transition-colors ${
+        active ? "text-[#FF5C00]" : "text-[#A6AAB2] hover:text-[#71757E]"
+      }`}
+    >
+      <span className="font-mono text-[9.5px] font-medium tracking-[1.2px]">{label}</span>
+      {active && (descending ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />)}
+    </button>
+  );
+}
+
+function ColumnLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="font-mono text-[9.5px] font-medium tracking-[1.2px] text-[#A6AAB2]">
+      {children}
+    </span>
+  );
+}
+
+/** Tabla fantasma: conserva las columnas mientras llegan los datos. */
+function TableSkeleton() {
+  const widths = ["w-[148px]", "w-[112px]", "w-[168px]", "w-[130px]"];
+  return (
+    <div className="overflow-hidden rounded-[26px] border border-[#E8E8EC] bg-white">
+      <div className={`${DISTRIBUTORS_GRID} px-5 py-3`}>
+        <div className="min-w-0">
+          <ColumnLabel>DISTRIBUIDOR</ColumnLabel>
         </div>
+        {DISTRIBUTOR_COLUMNS.map((column) => (
+          <div key={column.key} className={column.visibility}>
+            <ColumnLabel>{column.label}</ColumnLabel>
+          </div>
+        ))}
+        <div />
+      </div>
+      <div className="h-px bg-[#E8E8EC]" />
+      <div className="flex flex-col divide-y divide-[#E8E8EC]">
+        {widths.map((width, index) => (
+          <div key={width} className={`${DISTRIBUTORS_GRID} px-5 py-3.5`}>
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="h-[42px] w-[42px] flex-shrink-0 animate-pulse rounded-[14px] bg-[#F4F5F7]" />
+              <div className="flex flex-1 flex-col gap-2">
+                <div className={`h-2.5 animate-pulse rounded-full bg-[#F4F5F7] ${width}`} />
+                <div
+                  className={`h-2 animate-pulse rounded-full bg-[#F4F5F7]/70 ${
+                    index % 2 ? "w-[84px]" : "w-[108px]"
+                  }`}
+                />
+              </div>
+            </div>
+            {DISTRIBUTOR_COLUMNS.map((column) => (
+              <div key={column.key} className={column.visibility}>
+                <div className="h-2.5 w-[70%] animate-pulse rounded-full bg-[#F4F5F7]" />
+              </div>
+            ))}
+            <div className="flex justify-end gap-1.5">
+              <div className="h-8 w-8 animate-pulse rounded-full bg-[#F4F5F7]" />
+              <div className="h-8 w-8 animate-pulse rounded-full bg-[#F4F5F7]" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const ONBOARDING_STEPS = [
+  {
+    icon: <CirclePlus className="h-3.5 w-3.5 text-[#FF5C00]" />,
+    title: "Conecta la cuenta",
+    detail: "DistroKid, TuneCore, CD Baby…",
+  },
+  {
+    icon: <FileUp className="h-3.5 w-3.5 text-[#FF5C00]" />,
+    title: "Sube el reporte",
+    detail: "CSV o Excel, tal cual lo descargas",
+  },
+  {
+    icon: <ChartPie className="h-3.5 w-3.5 text-[#FF5C00]" />,
+    title: "Ve el reparto",
+    detail: "Ingresos por canción y colaborador",
+  },
+];
+
+/** Pantalla vacía: explica el modelo completo, no solo ofrece un botón. */
+function FirstDistributorState({ onCreate }: { onCreate: () => void }) {
+  return (
+    <div className="flex flex-col items-center gap-5 rounded-[26px] border border-[#E8E8EC] bg-white px-6 py-[46px] sm:px-10">
+      <div className="flex h-[60px] w-[60px] items-center justify-center rounded-[22px] bg-[#FFEADD]">
+        <Handshake className="h-[26px] w-[26px] text-[#FF5C00]" />
+      </div>
+      <div className="flex flex-col items-center gap-1.5">
+        <h2 className="font-display text-[19px] font-semibold text-[#1C1D22]">
+          Conecta tu primer distribuidor
+        </h2>
+        <p className="max-w-[520px] text-center text-[12.5px] leading-relaxed text-[#71757E]">
+          Splitme lee los reportes de regalías que ya descargas y reparte los ingresos entre tus
+          colaboradores.
+        </p>
+      </div>
+
+      <ol className="grid w-full max-w-[740px] grid-cols-1 gap-3 pt-2 sm:grid-cols-3">
+        {ONBOARDING_STEPS.map((step, index) => (
+          <li key={step.title} className="flex flex-col gap-2 rounded-[18px] bg-[#F4F5F7] p-4">
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-[26px] w-[26px] items-center justify-center rounded-[9px] bg-white">
+                {step.icon}
+              </span>
+              <span className="font-mono text-[10px] font-semibold tracking-[1px] text-[#A6AAB2]">
+                0{index + 1}
+              </span>
+            </div>
+            <span className="text-[12.5px] font-semibold text-[#1C1D22]">{step.title}</span>
+            <span className="text-[11px] leading-snug text-[#A6AAB2]">{step.detail}</span>
+          </li>
+        ))}
+      </ol>
+
+      <button
+        onClick={onCreate}
+        className="mt-2 flex items-center gap-2 rounded-[20px] bg-[#FF5C00] px-5 py-3 text-[13px] font-semibold text-white shadow-[0_6px_16px_-4px_rgba(255,92,0,0.4)] transition-colors hover:bg-[#EA580C]"
+      >
+        <Plus className="h-[15px] w-[15px]" />
+        Conectar distribuidor
+      </button>
+    </div>
+  );
+}
+
+/** Sin resultados: dice qué está limitando la vista y ofrece deshacerlo. */
+function NoResultsState({
+  search,
+  hasFilters,
+  onClearFilters,
+  onClearSearch,
+}: {
+  search: string;
+  hasFilters: boolean;
+  onClearFilters: () => void;
+  onClearSearch: () => void;
+}) {
+  const searching = search.trim() !== "";
+  return (
+    <div className="flex flex-col items-center gap-3 rounded-[26px] border border-[#E8E8EC] bg-white px-6 py-[50px]">
+      <div className="flex h-[52px] w-[52px] items-center justify-center rounded-[18px] bg-[#F4F5F7]">
+        <SearchX className="h-[22px] w-[22px] text-[#71757E]" />
+      </div>
+      <h3 className="font-display text-base font-semibold text-[#1C1D22]">
+        {searching ? `Sin resultados para «${search}»` : "Ningún distribuidor coincide"}
+      </h3>
+      <p className="text-center text-[12.5px] text-[#71757E]">
+        {hasFilters
+          ? "Hay filtros puestos que pueden estar dejando fuera lo que buscas."
+          : "Prueba con otro nombre o proveedor."}
+      </p>
+      <div className="flex flex-wrap items-center justify-center gap-2.5 pt-1.5">
+        {hasFilters && (
+          <button
+            onClick={onClearFilters}
+            className="flex items-center gap-1.5 rounded-2xl bg-[#FF5C00] px-4 py-2.5 text-[12.5px] font-semibold text-white transition-colors hover:bg-[#EA580C]"
+          >
+            <FunnelX className="h-3.5 w-3.5" />
+            Limpiar filtros
+          </button>
+        )}
+        {searching && (
+          <button
+            onClick={onClearSearch}
+            className="rounded-2xl border border-[#E8E8EC] bg-white px-4 py-2.5 text-[12.5px] font-semibold text-[#1C1D22] transition-colors hover:bg-[#F4F5F7]"
+          >
+            Borrar búsqueda
+          </button>
+        )}
       </div>
     </div>
   );

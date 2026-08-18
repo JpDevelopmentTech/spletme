@@ -1,215 +1,159 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { useState } from "react";
+import { NavLink } from "react-router-dom";
 import {
-  Home,
-  Music,
-  Disc,
-  Users,
+  AudioWaveform,
+  House,
+  LibraryBig,
   Handshake,
+  Users,
+  Tag,
   BarChart2,
-  Menu,
-  X,
   Wallet,
   Settings,
-  Tag,
-  ChevronDown,
+  Menu,
+  X,
 } from "lucide-react";
-import { useAuth0 } from "@auth0/auth0-react";
-import { useState, useEffect } from "react";
-import LocalStorageService from "../../services/localstorage";
-import logo from "../../assets/images/2 - BLANCO.png";
 
-interface UserData {
-  name: string;
-  lastName: string;
-}
-
-const navItems = [
-  { to: "/panel/dealers", label: "Distribuidores", icon: Handshake },
-  { to: "/panel/collaborators", label: "Colaboradores", icon: Users },
-  { to: "/panel/labels", label: "Sellos", icon: Tag },
-  { to: "/panel/analytics", label: "Analíticas", icon: BarChart2 },
-  { to: "/panel/wallet", label: "Banco", icon: Wallet },
-];
-
-const musicSubItems = [
-  { to: "/panel/music/songs", label: "Canciones", icon: Music },
-  { to: "/panel/music/albums", label: "Álbumes", icon: Disc },
-];
-
-interface SidebarNavLinkProps {
+interface NavItem {
   to: string;
   label: string;
-  icon: typeof Home;
-  indent?: boolean;
-  onNavigate: () => void;
+  icon: typeof House;
+  /** Marca activo también en las rutas hijas, no solo en la exacta. */
+  matchNested?: boolean;
 }
 
-/** Enlace de navegación del sidebar. Estado activo con punto naranja; soporta sangría para submenús. */
-function SidebarNavLink({ to, label, icon: Icon, indent = false, onNavigate }: SidebarNavLinkProps) {
-  return (
-    <NavLink
-      to={to}
-      onClick={onNavigate}
-      className={({ isActive }) =>
-        `flex items-center gap-3.5 rounded-[16px] transition-colors ${
-          indent ? "py-2.5 pl-[34px] pr-3" : "px-3 py-[11px]"
-        } ${isActive ? "" : "hover:bg-[#F4F5F7]"}`
-      }
-    >
-      {({ isActive }) => (
-        <>
-          <Icon
-            className={`flex-shrink-0 ${indent ? "h-[17px] w-[17px]" : "h-[19px] w-[19px]"}`}
-            style={{ color: isActive ? "#FF5C00" : "#A6AAB2" }}
-          />
-          <span
-            className={`flex-1 ${indent ? "text-[13px]" : "text-sm"}`}
-            style={{
-              color: isActive ? "#1C1D22" : "#71757E",
-              fontWeight: isActive ? 600 : 500,
-            }}
-          >
-            {label}
-          </span>
-          {isActive && !indent && (
-            <span className="h-[7px] w-[7px] flex-shrink-0 rounded-full bg-[#FF5C00]" />
-          )}
-        </>
-      )}
-    </NavLink>
-  );
+interface NavGroup {
+  /** Rótulo de la sección. Sin él, el grupo va suelto arriba o al pie. */
+  title?: string;
+  items: NavItem[];
 }
+
+/**
+ * La navegación va agrupada por para qué sirve cada cosa: primero el catálogo,
+ * después lo que se gestiona alrededor de él. Los rótulos hacen de separador y
+ * evitan una lista plana de ocho destinos sin jerarquía.
+ */
+const NAV_GROUPS: NavGroup[] = [
+  {
+    items: [{ to: "/panel/home", label: "Inicio", icon: House }],
+  },
+  {
+    title: "MÚSICA",
+    items: [
+      { to: "/panel/music", label: "Música", icon: LibraryBig, matchNested: true },
+    ],
+  },
+  {
+    title: "GESTIÓN",
+    items: [
+      { to: "/panel/dealers", label: "Distribuidores", icon: Handshake, matchNested: true },
+      { to: "/panel/collaborators", label: "Colaboradores", icon: Users, matchNested: true },
+      { to: "/panel/labels", label: "Sellos", icon: Tag, matchNested: true },
+      { to: "/panel/analytics", label: "Analíticas", icon: BarChart2 },
+      { to: "/panel/wallet", label: "Banco", icon: Wallet },
+    ],
+  },
+  {
+    items: [{ to: "/panel/profile", label: "Ajustes", icon: Settings }],
+  },
+];
 
 export default function Sidebar() {
-  const { user } = useAuth0();
-  const location = useLocation();
-  const isMusicSection = location.pathname.startsWith("/panel/music");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [userData, setUserData] = useState<UserData | null>(null);
-  const [isMusicMenuOpen, setIsMusicMenuOpen] = useState(isMusicSection);
-
-  useEffect(() => {
-    if (isMusicSection) setIsMusicMenuOpen(true);
-  }, [isMusicSection]);
-
-  useEffect(() => {
-    const stored = LocalStorageService.getItem("user");
-    if (stored) {
-      setUserData({ name: stored.name || "", lastName: stored.lastName || "" });
-    }
-  }, []);
-
-  const displayName =
-    [userData?.name, userData?.lastName].filter(Boolean).join(" ") || user?.name || "Usuario";
+  const close = () => setIsMobileMenuOpen(false);
 
   return (
     <>
-      {/* Mobile menu button */}
+      {/* Acceso al menú en móvil, donde el panel va oculto */}
       <button
         onClick={() => setIsMobileMenuOpen(true)}
-        className="fixed left-4 top-4 z-50 rounded-2xl border border-[#ECEEF1] bg-white p-2.5 shadow-sm transition-colors lg:hidden"
+        aria-label="Abrir menú"
+        className="fixed left-4 top-4 z-50 rounded-2xl border border-[#E8E8EC] bg-white p-2.5 shadow-sm lg:hidden"
       >
         <Menu className="h-5 w-5 text-[#1C1D22]" />
       </button>
 
-      {/* Mobile overlay */}
       {isMobileMenuOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
+        <div className="fixed inset-0 z-40 bg-[#101114]/40 lg:hidden" onClick={close} />
       )}
 
-      {/* Sidebar */}
-      <div
-        className={`fixed left-0 top-0 z-40 flex h-full w-[260px] flex-col border-r border-[#ECEEF1] bg-white px-5 pb-6 pt-7 transition-transform duration-300 ${
+      <aside
+        className={`fixed left-0 top-0 z-40 flex h-full w-[260px] flex-col gap-6 overflow-y-auto border-r border-[#E8E8EC] bg-white px-5 py-6 transition-transform duration-300 ${
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
-        {/* Brand */}
-        <div className="flex items-center justify-between px-2">
-          <div className="rounded-lg bg-white p-1">
-            <img src={logo} alt="SplitMe" className="h-7 w-auto" />
-          </div>
+        {/* Marca */}
+        <div className="flex flex-shrink-0 items-center justify-between">
+          <NavLink to="/panel/home" onClick={close} className="flex items-center gap-2.5 px-1.5 py-1">
+            <span className="flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-[10px] bg-[#FF5C00]">
+              <AudioWaveform className="h-[17px] w-[17px] text-white" />
+            </span>
+            <span className="font-display text-[19px] font-semibold text-[#1C1D22]">splitme</span>
+          </NavLink>
+
           <button
-            onClick={() => setIsMobileMenuOpen(false)}
+            onClick={close}
+            aria-label="Cerrar menú"
             className="rounded-lg p-1.5 text-[#A6AAB2] transition-colors hover:bg-[#F4F5F7] lg:hidden"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        {/* Greeting */}
-        <div className="mt-7 flex flex-col gap-0.5 px-2">
-          <span className="text-[12.5px] text-[#A6AAB2]">Bienvenido de nuevo,</span>
-          <span className="truncate text-[15px] font-semibold text-[#1C1D22]">{displayName}</span>
-        </div>
+        {/* Navegación */}
+        <nav className="flex flex-col gap-6">
+          {NAV_GROUPS.map((group, index) => (
+            <div key={group.title ?? `group-${index}`} className="flex flex-col gap-[3px]">
+              {group.title && (
+                <span className="px-[13px] py-1.5 font-mono text-[9.5px] font-medium tracking-[1.4px] text-[#A6AAB2]">
+                  {group.title}
+                </span>
+              )}
+              {group.items.map((item) => (
+                <SidebarLink key={item.to} item={item} onNavigate={close} />
+              ))}
+            </div>
+          ))}
+        </nav>
+      </aside>
+    </>
+  );
+}
 
-        {/* Navigation */}
-        <nav className="mt-7 flex flex-1 flex-col gap-1 overflow-y-auto">
-          <SidebarNavLink
-            to="/panel/home"
-            label="Inicio"
-            icon={Home}
-            onNavigate={() => setIsMobileMenuOpen(false)}
+/**
+ * Enlace del sidebar. El destino activo se marca con fondo, no con un punto al
+ * margen: se reconoce de un vistazo sin tener que recorrer la lista.
+ */
+function SidebarLink({ item, onNavigate }: { item: NavItem; onNavigate: () => void }) {
+  const { to, label, icon: Icon, matchNested } = item;
+
+  return (
+    <NavLink
+      to={to}
+      end={!matchNested}
+      onClick={onNavigate}
+      className={({ isActive }) =>
+        `flex items-center gap-3 rounded-[13px] px-[13px] py-[9px] transition-colors ${
+          isActive ? "bg-[#FFEADD]" : "hover:bg-[#F4F5F7]"
+        }`
+      }
+    >
+      {({ isActive }) => (
+        <>
+          <Icon
+            className={`h-[17px] w-[17px] flex-shrink-0 ${
+              isActive ? "text-[#FF5C00]" : "text-[#71757E]"
+            }`}
           />
-
-          {/* Música — sección expandible */}
-          <button
-            type="button"
-            onClick={() => setIsMusicMenuOpen((prev) => !prev)}
-            className={`flex items-center gap-3.5 rounded-[16px] px-3 py-[11px] transition-colors ${
-              isMusicSection ? "" : "hover:bg-[#F4F5F7]"
+          <span
+            className={`text-[13.5px] ${
+              isActive ? "font-semibold text-[#FF5C00]" : "font-medium text-[#1C1D22]"
             }`}
           >
-            <Music
-              className="h-[19px] w-[19px] flex-shrink-0"
-              style={{ color: isMusicSection ? "#FF5C00" : "#A6AAB2" }}
-            />
-            <span
-              className="flex-1 text-left text-sm"
-              style={{
-                color: isMusicSection ? "#1C1D22" : "#71757E",
-                fontWeight: isMusicSection ? 600 : 500,
-              }}
-            >
-              Música
-            </span>
-            <ChevronDown
-              className="h-4 w-4 flex-shrink-0 text-[#A6AAB2] transition-transform duration-200"
-              style={{ transform: isMusicMenuOpen ? "rotate(180deg)" : "rotate(0deg)" }}
-            />
-          </button>
-          {isMusicMenuOpen &&
-            musicSubItems.map(({ to, label, icon }) => (
-              <SidebarNavLink
-                key={to}
-                to={to}
-                label={label}
-                icon={icon}
-                indent
-                onNavigate={() => setIsMobileMenuOpen(false)}
-              />
-            ))}
-
-          {navItems.map(({ to, label, icon }) => (
-            <SidebarNavLink
-              key={to}
-              to={to}
-              label={label}
-              icon={icon}
-              onNavigate={() => setIsMobileMenuOpen(false)}
-            />
-          ))}
-
-          <SidebarNavLink
-            to="/panel/profile"
-            label="Ajustes"
-            icon={Settings}
-            onNavigate={() => setIsMobileMenuOpen(false)}
-          />
-        </nav>
-      </div>
-    </>
+            {label}
+          </span>
+        </>
+      )}
+    </NavLink>
   );
 }

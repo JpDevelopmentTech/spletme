@@ -1,40 +1,37 @@
-import { Landmark, CheckCircle2, Clock, AlertCircle, Loader2 } from "lucide-react";
+import {
+  Landmark,
+  Check,
+  Hourglass,
+  TriangleAlert,
+  Loader2,
+  Plus,
+  Pencil,
+  Info,
+} from "lucide-react";
 import { Elements } from "@stripe/react-stripe-js";
 import { useOwnerBankAccount } from "@/hooks/useOwnerBankAccount";
 import { getStripe } from "@/infrastructure/stripe/stripeClient";
 import BankAccountLinkForm from "@/components/bank-account/BankAccountLinkForm";
+import { AccountCard, AccountBadge, AccountHeading } from "@/components/bank-account/AccountCard";
+import { AccountFeedback } from "@/components/bank-account/AccountFeedback";
 import type { BankAccountStatusData } from "@/types/bank-account.types";
 
 const stripePromise = getStripe();
 
-const STATUS_CONFIG: Record<
+const STATUS: Record<
   BankAccountStatusData["status"],
-  { label: string; color: string; bg: string; icon: typeof CheckCircle2 }
+  { label: string; tone: "ok" | "warn" | "error"; Icon: typeof Check }
 > = {
-  verified: {
-    label: "Verificada",
-    color: "#16A34A",
-    bg: "#ECFDF5",
-    icon: CheckCircle2,
-  },
-  pending: { label: "Pendiente", color: "#D97706", bg: "#FFFBEB", icon: Clock },
-  failed: {
-    label: "Fallida",
-    color: "#DC2626",
-    bg: "#FEF2F2",
-    icon: AlertCircle,
-  },
-};
-
-const FEEDBACK_COLOR: Record<string, string> = {
-  success: "text-green-600",
-  error: "text-red-500",
-  info: "text-gray-500",
+  verified: { label: "Verificada", tone: "ok", Icon: Check },
+  pending: { label: "Pendiente", tone: "warn", Icon: Hourglass },
+  failed: { label: "Fallida", tone: "error", Icon: TriangleAlert },
 };
 
 /**
- * Sección del dashboard (Billetera) para que el Owner vincule su cuenta bancaria
- * US vía Instant Bank Payments (Stripe Link, Payment Element) y consulte su estado.
+ * Cuenta bancaria del owner: de aquí sale el dinero hacia los colaboradores.
+ *
+ * El formulario de Stripe se abre dentro de la propia tarjeta y no en un modal,
+ * para que la cuenta que estás cambiando siga a la vista mientras lo rellenas.
  */
 export default function BankAccountSection() {
   const {
@@ -52,123 +49,123 @@ export default function BankAccountSection() {
   } = useOwnerBankAccount();
 
   const hasBankAccount = Boolean(status?.hasBankAccount);
-  const cfg = status ? STATUS_CONFIG[status.status] : STATUS_CONFIG.pending;
-  const StatusIcon = cfg.icon;
-  const isLinkingOpen = Boolean(clientSecret && setupIntentId);
+  const config = status ? STATUS[status.status] : STATUS.pending;
+  const StatusIcon = config.Icon;
+  const isLinking = Boolean(clientSecret && setupIntentId);
 
   return (
-    <div className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-5">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50">
-            <Landmark className="h-5 w-5 text-orange-500" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-[15px] font-bold text-gray-900">Cuenta bancaria</span>
-            <span className="text-xs text-gray-500">
-              Vincula tu cuenta bancaria de EE. UU. para pagar regalías al instante.
-            </span>
-          </div>
-        </div>
+    <AccountCard
+      direction="out"
+      label={hasBankAccount ? "DE AQUÍ SALE EL DINERO" : "DE AQUÍ SALDRÍA EL DINERO"}
+      status={
+        loadingStatus ? null : hasBankAccount ? (
+          <AccountBadge tone={config.tone} icon={<StatusIcon className="h-[11px] w-[11px]" />}>
+            {config.label}
+          </AccountBadge>
+        ) : (
+          <AccountBadge>Sin vincular</AccountBadge>
+        )
+      }
+    >
+      <AccountHeading
+        direction="out"
+        icon={<Landmark className="h-[18px] w-[18px] text-[#FF5C00]" />}
+        title={hasBankAccount ? "Cuenta bancaria" : "Aún no puedes pagar regalías"}
+        description={
+          hasBankAccount
+            ? "Con esta cuenta pagas las regalías a tus colaboradores."
+            : "Vincula la cuenta desde la que saldrá el dinero hacia tus colaboradores."
+        }
+      />
 
-        {!loadingStatus && hasBankAccount && (
-          <span
-            className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold"
-            style={{ background: cfg.bg, color: cfg.color }}
-          >
-            <StatusIcon className="h-3 w-3" />
-            {cfg.label}
+      {loadingStatus ? (
+        <AccountSkeleton />
+      ) : (
+        accounts.length > 0 && (
+          <div className="flex flex-col gap-2">
+            {accounts.map((account) => (
+              <div
+                key={account.id}
+                className="flex items-center gap-3 rounded-[18px] bg-[#F4F5F7] px-3.5 py-3"
+              >
+                <span className="flex h-[34px] w-[34px] flex-shrink-0 items-center justify-center rounded-[11px] border border-[#E8E8EC] bg-white">
+                  <Landmark className="h-[15px] w-[15px] text-[#71757E]" />
+                </span>
+                <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <span className="truncate text-[12.5px] font-semibold text-[#1C1D22]">
+                    {account.bankName ?? "Cuenta bancaria"}
+                  </span>
+                  <span className="truncate font-mono text-[10.5px] text-[#A6AAB2]">
+                    ···· {account.last4 ?? "----"} · {account.accountType ?? "us bank account"}
+                  </span>
+                </span>
+                {account.isActive && (
+                  <span className="flex flex-shrink-0 items-center gap-1 rounded-xl bg-[#E4F5EC] px-2 py-1 text-[10px] font-semibold text-[#2FB37E]">
+                    <Check className="h-[10px] w-[10px]" />
+                    Activa
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        )
+      )}
+
+      {isLinking && clientSecret && setupIntentId && (
+        <div className="flex flex-col gap-3 rounded-[18px] bg-[#F4F5F7] p-4">
+          <span className="flex items-center gap-2">
+            <Info className="h-[13px] w-[13px] text-[#71757E]" />
+            <span className="font-mono text-[9px] font-semibold tracking-[1.1px] text-[#71757E]">
+              FORMULARIO SEGURO DE STRIPE
+            </span>
           </span>
-        )}
-      </div>
-
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-gray-600">
-          {loadingStatus ? (
-            <span className="flex items-center gap-2 text-gray-400">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Cargando estado...
-            </span>
-          ) : hasBankAccount ? (
-            <span>Tu cuenta bancaria está vinculada.</span>
-          ) : (
-            <span>Aún no has vinculado una cuenta bancaria.</span>
-          )}
+          <Elements stripe={stripePromise} options={{ clientSecret }}>
+            <BankAccountLinkForm
+              setupIntentId={setupIntentId}
+              defaultName={billingDetails.name}
+              defaultEmail={billingDetails.email}
+              onSuccess={finishLinking}
+              onCancel={cancelLinking}
+            />
+          </Elements>
         </div>
+      )}
 
-        {!isLinkingOpen && (
+      {feedback && <AccountFeedback type={feedback.type} text={feedback.text} />}
+
+      {!isLinking && (
+        <div className="mt-auto flex flex-wrap items-center gap-3 pt-1">
           <button
             onClick={startLinking}
             disabled={linking || loadingStatus}
-            className="flex items-center gap-2 rounded-lg bg-orange-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
+            className="flex items-center gap-2 rounded-[20px] bg-[#FF5C00] px-[17px] py-2.5 text-[12.5px] font-semibold text-white shadow-[0_6px_16px_-4px_rgba(255,92,0,0.4)] transition-colors enabled:hover:bg-[#EA580C] disabled:cursor-not-allowed disabled:bg-[#F4F5F7] disabled:text-[#A6AAB2] disabled:shadow-none"
           >
             {linking ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Procesando...
-              </>
+              <Loader2 className="h-[14px] w-[14px] animate-spin" />
+            ) : hasBankAccount ? (
+              <Pencil className="h-[14px] w-[14px]" />
             ) : (
-              <>
-                <Landmark className="h-4 w-4" />
-                {hasBankAccount ? "Actualizar cuenta" : "Vincular cuenta"}
-              </>
+              <Plus className="h-[14px] w-[14px]" />
             )}
+            {linking ? "Abriendo…" : hasBankAccount ? "Actualizar cuenta" : "Vincular cuenta"}
           </button>
-        )}
-      </div>
-
-      {isLinkingOpen && clientSecret && setupIntentId && (
-        <Elements stripe={stripePromise} options={{ clientSecret }}>
-          <BankAccountLinkForm
-            setupIntentId={setupIntentId}
-            defaultName={billingDetails.name}
-            defaultEmail={billingDetails.email}
-            onSuccess={finishLinking}
-            onCancel={cancelLinking}
-          />
-        </Elements>
-      )}
-
-      {!loadingStatus && accounts.length > 0 && (
-        <div className="flex flex-col gap-2 border-t border-gray-100 pt-4">
-          <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-            Cuentas vinculadas
+          <span className="min-w-0 flex-1 text-[10.5px] leading-snug text-[#A6AAB2]">
+            Solo cuentas de EE. UU. Los pagos salen al instante.
           </span>
-          {accounts.map((acc) => (
-            <div
-              key={acc.id}
-              className="flex items-center justify-between rounded-lg border border-gray-100 bg-[#F7F8FA] px-3 py-2.5"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 bg-white">
-                  <Landmark className="h-4 w-4 text-gray-500" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-sm font-semibold text-gray-800">
-                    {acc.bankName ?? "Cuenta bancaria"} ····
-                    {acc.last4 ?? "----"}
-                  </span>
-                  <span className="text-xs capitalize text-gray-400">
-                    {acc.accountType ?? "us bank account"}
-                  </span>
-                </div>
-              </div>
-              {acc.isActive && (
-                <span className="flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-600">
-                  <CheckCircle2 className="h-3 w-3" />
-                  Activa
-                </span>
-              )}
-            </div>
-          ))}
         </div>
       )}
+    </AccountCard>
+  );
+}
 
-      {feedback && (
-        <p className={`text-xs ${FEEDBACK_COLOR[feedback.type] ?? "text-gray-500"}`}>
-          {feedback.text}
-        </p>
-      )}
+function AccountSkeleton() {
+  return (
+    <div className="flex items-center gap-3 rounded-[18px] bg-[#F4F5F7] px-3.5 py-3">
+      <div className="h-[34px] w-[34px] flex-shrink-0 animate-pulse rounded-[11px] bg-white" />
+      <div className="flex flex-1 flex-col gap-2">
+        <div className="h-2.5 w-[132px] animate-pulse rounded-full bg-white" />
+        <div className="h-2 w-[92px] animate-pulse rounded-full bg-white/70" />
+      </div>
     </div>
   );
 }
