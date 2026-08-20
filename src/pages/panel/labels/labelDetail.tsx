@@ -14,6 +14,8 @@ import {
   TriangleAlert,
   ArrowUp,
   ArrowDown,
+  Users,
+  UserPlus,
 } from "lucide-react";
 import { useLabelSongs } from "@/hooks/useLabels";
 import { toCoverage } from "@/hooks/useLabelsLibrary";
@@ -21,6 +23,9 @@ import { formatCurrency, formatStreams } from "@/utils/format.utils";
 import { SplitCoverageMeter } from "@/components/labels/SplitCoverageMeter";
 import { CopyButton } from "@/components/ui/CopyButton";
 import type { LabelSong } from "@/services/labels";
+import CreateSplitsByLabelModal from "@/components/modal/CreateSplitsByLabelModal";
+import InviteCollaboratorToLabelModal from "@/components/labels/InviteCollaboratorToLabelModal";
+import BulkCollaboratorSplitModal from "@/components/splits/BulkCollaboratorSplitModal";
 
 type SongSortBy = "income_desc" | "income_asc" | "title_asc" | "streams_desc" | "owner_desc";
 
@@ -59,6 +64,9 @@ export default function LabelDetail() {
 
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<SongSortBy>("income_desc");
+  const [ownerSplitOpen, setOwnerSplitOpen] = useState(false);
+  const [collabSplitOpen, setCollabSplitOpen] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
 
   const totals = useMemo(() => {
     let streams = 0;
@@ -80,6 +88,18 @@ export default function LabelDetail() {
       coverage: toCoverage(songs.length, withSplits, false),
     };
   }, [songs]);
+
+  /** Las canciones del sello, en la forma común de los repartos en bloque. */
+  const splitTracks = useMemo(
+    () =>
+      songs.map((song) => ({
+        _id: song._id,
+        trackTitle: song.trackTitle,
+        hasOwnerSplit: Boolean(song.ownerSplit),
+        collaborators: song.collaborators ?? [],
+      })),
+    [songs],
+  );
 
   const visibleSongs = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -141,29 +161,61 @@ export default function LabelDetail() {
         </nav>
 
         {/* Identidad */}
-        <div className="flex items-center gap-4">
-          <span className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-[18px] bg-[#FFEADD]">
-            <Tag className="h-6 w-6 text-[#FF5C00]" />
-          </span>
-          <div className="flex min-w-0 flex-col gap-1">
-            <h1 className="truncate font-display text-2xl font-semibold text-[#1C1D22]">
-              {decodedLabel || "Sin sello"}
-            </h1>
-            <p className="flex flex-wrap items-center gap-2 text-[12.5px] text-[#71757E]">
-              <span className="flex items-center gap-1.5 rounded-[10px] bg-[#F4F5F7] px-2 py-0.5 text-[11px] font-medium">
-                <Tag className="h-[11px] w-[11px]" />
-                Sello artístico
-              </span>
-              {songs[0]?.artistName && (
-                <>
-                  <span>{songs[0].artistName}</span>
-                  <span className="text-[#A6AAB2]">·</span>
-                </>
-              )}
-              <span>
-                {songs.length} {songs.length === 1 ? "canción" : "canciones"}
-              </span>
-            </p>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+          <div className="flex min-w-0 items-center gap-4">
+            <span className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-[18px] bg-[#FFEADD]">
+              <Tag className="h-6 w-6 text-[#FF5C00]" />
+            </span>
+            <div className="flex min-w-0 flex-col gap-1">
+              <h1 className="truncate font-display text-2xl font-semibold text-[#1C1D22]">
+                {decodedLabel || "Sin sello"}
+              </h1>
+              <p className="flex flex-wrap items-center gap-2 text-[12.5px] text-[#71757E]">
+                <span className="flex items-center gap-1.5 rounded-[10px] bg-[#F4F5F7] px-2 py-0.5 text-[11px] font-medium">
+                  <Tag className="h-[11px] w-[11px]" />
+                  Sello artístico
+                </span>
+                {songs[0]?.artistName && (
+                  <>
+                    <span>{songs[0].artistName}</span>
+                    <span className="text-[#A6AAB2]">·</span>
+                  </>
+                )}
+                <span>
+                  {songs.length} {songs.length === 1 ? "canción" : "canciones"}
+                </span>
+              </p>
+            </div>
+          </div>
+
+          {/* Las tres acciones que tratan al sello como un todo. Invitar y
+              repartir a un colaborador son secundarias; la parte del owner es
+              lo que hay que hacer primero y lo que más se repite. */}
+          <div className="flex flex-wrap items-center gap-2.5 lg:ml-auto">
+            <button
+              onClick={() => setCollabSplitOpen(true)}
+              disabled={songs.length === 0}
+              className="flex items-center gap-2 rounded-[22px] border border-[#E8E8EC] bg-white px-[18px] py-3 text-[12.5px] font-semibold text-[#1C1D22] transition-colors enabled:hover:bg-[#F4F5F7] disabled:cursor-not-allowed disabled:text-[#A6AAB2]"
+            >
+              <Users className="h-[15px] w-[15px] text-[#71757E]" />
+              Split de colaborador
+            </button>
+            <button
+              onClick={() => setInviteOpen(true)}
+              disabled={songs.length === 0}
+              className="flex items-center gap-2 rounded-[22px] border border-[#E8E8EC] bg-white px-[18px] py-3 text-[12.5px] font-semibold text-[#1C1D22] transition-colors enabled:hover:bg-[#F4F5F7] disabled:cursor-not-allowed disabled:text-[#A6AAB2]"
+            >
+              <UserPlus className="h-[15px] w-[15px] text-[#71757E]" />
+              Invitar al sello
+            </button>
+            <button
+              onClick={() => setOwnerSplitOpen(true)}
+              disabled={songs.length === 0}
+              className="flex items-center gap-2 rounded-[22px] bg-[#FF5C00] px-[18px] py-3 text-[12.5px] font-semibold text-white shadow-[0_6px_16px_-4px_rgba(255,92,0,0.4)] transition-colors enabled:hover:bg-[#EA580C] disabled:cursor-not-allowed disabled:bg-[#F4F5F7] disabled:text-[#A6AAB2] disabled:shadow-none"
+            >
+              <Crown className="h-[15px] w-[15px]" />
+              Tu split del sello
+            </button>
           </div>
         </div>
 
@@ -330,6 +382,57 @@ export default function LabelDetail() {
           </div>
         )}
       </div>
+
+      {ownerSplitOpen && (
+        <CreateSplitsByLabelModal
+          isOpen={ownerSplitOpen}
+          onClose={() => {
+            setOwnerSplitOpen(false);
+            loadSongs();
+          }}
+          label={decodedLabel}
+          songCount={songs.length}
+          alreadyWithSplit={totals.coverage.withSplits}
+        />
+      )}
+
+      {inviteOpen && (
+        <InviteCollaboratorToLabelModal
+          isOpen={inviteOpen}
+          onClose={() => setInviteOpen(false)}
+          labelType="artistic"
+          labelIdentifier={decodedLabel}
+          labelName={decodedLabel}
+          songCount={songs.length}
+          onSuccess={loadSongs}
+        />
+      )}
+
+      {collabSplitOpen && (
+        <BulkCollaboratorSplitModal
+          isOpen={collabSplitOpen}
+          onClose={() => setCollabSplitOpen(false)}
+          name={decodedLabel}
+          context="Sello artístico"
+          logo={
+            <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[14px] bg-[#FFEADD]">
+              <Tag className="h-[19px] w-[19px] text-[#FF5C00]" />
+            </span>
+          }
+          tracks={splitTracks}
+          unit={{ one: "canción", many: "canciones" }}
+          scopeNoun="sello"
+          onSplitsCreated={loadSongs}
+          onAssignOwnerSplit={() => {
+            setCollabSplitOpen(false);
+            setOwnerSplitOpen(true);
+          }}
+          onInvite={() => {
+            setCollabSplitOpen(false);
+            setInviteOpen(true);
+          }}
+        />
+      )}
     </div>
   );
 }

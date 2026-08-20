@@ -13,6 +13,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { AuthService } from "../../services/auth";
+import { readPendingInvite } from "@/utils/pendingInvite";
 import { WelcomeModal } from "../../components/modal/WelcomeModal";
 import logo from "../../assets/images/2 - BLANCO.png";
 
@@ -27,11 +28,20 @@ const ROADMAP = [
 
 export default function Register() {
   const navigate = useNavigate();
+
+  /**
+   * Quien llega desde una invitación trae su correo decidido: es el que recibió
+   * el mensaje y al que está atada la invitación. Se rellena y se bloquea para
+   * que no cree la cuenta con otro y luego no pueda aceptarla.
+   */
+  const pendingInvite = readPendingInvite();
+  const invitedEmail = pendingInvite?.email ?? "";
+
   const [formData, setFormData] = useState({
     username: "",
     name: "",
     lastName: "",
-    email: "",
+    email: invitedEmail,
     password: "",
     passwordConfirmation: "",
   });
@@ -141,12 +151,19 @@ export default function Register() {
                   autoComplete="email"
                   required
                   value={formData.email}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || Boolean(invitedEmail)}
+                  readOnly={Boolean(invitedEmail)}
                   onChange={(e) => set("email", e.target.value)}
                   placeholder="tucorreo@ejemplo.com"
                   className={inputClass}
                 />
               </Field>
+              {invitedEmail && (
+                <p className="-mt-2 text-[11.5px] leading-relaxed text-[#71757E]">
+                  Es el correo al que te enviaron la invitación. Al terminar te llevamos de
+                  vuelta para aceptarla.
+                </p>
+              )}
 
               <Field
                 id="password"

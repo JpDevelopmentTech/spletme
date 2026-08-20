@@ -6,8 +6,8 @@ interface ModalShellProps {
   subtitle?: React.ReactNode;
   /** Marca de identidad del distribuidor a la izquierda del título. */
   logo?: React.ReactNode;
-  /** Ancho máximo del panel. */
-  width?: "md" | "lg";
+  /** Ancho máximo del panel. `xl` es para los modales de dos columnas. */
+  width?: "md" | "lg" | "xl";
   /** Impide cerrar mientras hay una operación en curso. */
   locked?: boolean;
   onClose: () => void;
@@ -65,7 +65,7 @@ export function ModalShell({
         aria-labelledby={titleId}
         tabIndex={-1}
         className={`relative flex max-h-[90vh] w-full flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_24px_60px_-16px_rgba(16,17,20,0.35)] focus:outline-none ${
-          width === "lg" ? "max-w-[560px]" : "max-w-[520px]"
+          width === "xl" ? "max-w-[880px]" : width === "lg" ? "max-w-[560px]" : "max-w-[520px]"
         }`}
       >
         <div className="flex flex-shrink-0 items-center justify-between gap-4 px-6 pb-[18px] pt-[22px]">

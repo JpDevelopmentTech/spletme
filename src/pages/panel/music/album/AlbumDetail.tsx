@@ -14,14 +14,17 @@ import {
   TriangleAlert,
   Funnel,
   ChevronRight,
+  UserPlus,
+  Users,
 } from "lucide-react";
 import { useAlbums } from "@/hooks/useAlbums";
 import AlbumService from "@/services/albums";
 import SongService from "@/services/songs";
 import { accountingApi } from "@/services/accounting";
 import { formatCurrency, formatStreams } from "@/utils/format.utils";
-import { albumSplitCoverage } from "@/utils/music.utils";
+import { albumSplitCoverage, resolveIsOwner } from "@/utils/music.utils";
 import { collaboratorColor } from "@/utils/collaborators.utils";
+import LocalStorageService from "@/services/localstorage";
 import { buildWaterfall, distributable, type Share } from "@/utils/money.utils";
 import { DetailHeader } from "@/components/music/DetailHeader";
 import { DetailTabs, type DetailTab } from "@/components/music/DetailTabs";
@@ -30,6 +33,8 @@ import { MetricConsole, type MetricChannel } from "@/components/ui/MetricConsole
 import Loading from "@/components/loading/loading";
 import Platforms from "../song/components/platforms";
 import AlbumOwnerSplitModal from "./components/AlbumOwnerSplitModal";
+import { InviteAlbumCollaboratorModal } from "./components/InviteAlbumCollaboratorModal";
+import BulkCollaboratorSplitModal from "@/components/splits/BulkCollaboratorSplitModal";
 import AlbumExtraordinaryCosts from "./components/AlbumExtraordinaryCosts";
 import type { Album, AlbumTrack } from "@/models/album";
 import type { AlbumItem } from "@/types/music.types";
@@ -58,6 +63,19 @@ export default function AlbumDetail() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>("resumen");
   const [splitModalOpen, setSplitModalOpen] = useState(false);
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [collabSplitOpen, setCollabSplitOpen] = useState(false);
+
+  const currentUser = LocalStorageService.getItem("user");
+  /**
+   * Sólo el dueño invita. El álbum guarda `ownerId` como id pelado, así que la
+   * comprobación se hace sobre una pista, que sí trae el usuario completo: es
+   * el mismo dato con el que la página de canción decide lo mismo.
+   */
+  const isOwnerUser = useMemo(
+    () => resolveIsOwner(album?.tracks?.[0], currentUser),
+    [album, currentUser],
+  );
   const [onlyWithoutSplit, setOnlyWithoutSplit] = useState(false);
   const [monthly, setMonthly] = useState<MonthlyMetric[]>([]);
   const [reproductions, setReproductions] = useState<ReproductionData[]>([]);
@@ -324,14 +342,39 @@ export default function AlbumDetail() {
           highlightValue={pending > 0 ? `${pending} pistas` : "Al día"}
           highlightColor={pending > 0 ? "#FF5C00" : "#2FB37E"}
           actions={
-            <button
-              onClick={() => setSplitModalOpen(true)}
-              disabled={coverage.total === 0}
-              className="flex items-center gap-2 rounded-[22px] bg-[#FF5C00] px-[18px] py-3 text-[12.5px] font-semibold text-white shadow-[0_6px_16px_-4px_rgba(255,92,0,0.4)] transition-colors enabled:hover:bg-[#EA580C] disabled:cursor-not-allowed disabled:bg-[#F4F5F7] disabled:text-[#A6AAB2] disabled:shadow-none"
-            >
-              <Crown className="h-[15px] w-[15px]" />
-              Asignar split al álbum
-            </button>
+            <>
+              {/* Invitar es reversible y previo al reparto, así que va en
+                  secundario: la acción con peso de la página sigue siendo
+                  asignar el split. */}
+              {isOwnerUser && (
+                <button
+                  onClick={() => setCollabSplitOpen(true)}
+                  disabled={coverage.total === 0}
+                  className="flex items-center gap-2 rounded-[22px] border border-[#E8E8EC] bg-white px-[18px] py-3 text-[12.5px] font-semibold text-[#1C1D22] transition-colors enabled:hover:bg-[#F4F5F7] disabled:cursor-not-allowed disabled:text-[#A6AAB2]"
+                >
+                  <Users className="h-[15px] w-[15px] text-[#71757E]" />
+                  Split de colaborador
+                </button>
+              )}
+              {isOwnerUser && (
+                <button
+                  onClick={() => setInviteModalOpen(true)}
+                  disabled={coverage.total === 0}
+                  className="flex items-center gap-2 rounded-[22px] border border-[#E8E8EC] bg-white px-[18px] py-3 text-[12.5px] font-semibold text-[#1C1D22] transition-colors enabled:hover:bg-[#F4F5F7] disabled:cursor-not-allowed disabled:text-[#A6AAB2]"
+                >
+                  <UserPlus className="h-[15px] w-[15px] text-[#71757E]" />
+                  Invitar al álbum
+                </button>
+              )}
+              <button
+                onClick={() => setSplitModalOpen(true)}
+                disabled={coverage.total === 0}
+                className="flex items-center gap-2 rounded-[22px] bg-[#FF5C00] px-[18px] py-3 text-[12.5px] font-semibold text-white shadow-[0_6px_16px_-4px_rgba(255,92,0,0.4)] transition-colors enabled:hover:bg-[#EA580C] disabled:cursor-not-allowed disabled:bg-[#F4F5F7] disabled:text-[#A6AAB2] disabled:shadow-none"
+              >
+                <Crown className="h-[15px] w-[15px]" />
+                Tu split del álbum
+              </button>
+            </>
           }
         />
 
@@ -347,7 +390,7 @@ export default function AlbumDetail() {
                 shares={shares}
                 distributable={repartible}
                 subtitle={`De lo que entra por las ${coverage.total} pistas hasta lo que le toca a cada uno`}
-                onEditSplits={() => setActiveTab("pistas")}
+                onEditSplits={isOwnerUser ? () => setCollabSplitOpen(true) : undefined}
                 footnote={
                   shares.length > 0
                     ? "Los porcentajes son el promedio ponderado de las pistas que ya reparten; cada pista puede tener el suyo."
@@ -403,6 +446,48 @@ export default function AlbumDetail() {
           />
         )}
       </div>
+
+      {inviteModalOpen && (
+        <InviteAlbumCollaboratorModal
+          upc={album.upc}
+          albumTitle={album.albumTitle}
+          artistName={album.artistName}
+          cover={cover}
+          tracks={album.tracks as never[]}
+          onClose={() => setInviteModalOpen(false)}
+          onInvited={() => setRefreshKey((k) => k + 1)}
+        />
+      )}
+
+      {collabSplitOpen && (
+        <BulkCollaboratorSplitModal
+          isOpen={collabSplitOpen}
+          onClose={() => setCollabSplitOpen(false)}
+          name={album.albumTitle}
+          context={album.artistName}
+          logo={
+            <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center overflow-hidden rounded-[14px] bg-[#F4F5F7]">
+              <Disc3 className="h-[19px] w-[19px] text-[#A6AAB2]" />
+            </span>
+          }
+          tracks={(album.tracks ?? []).map((track) => ({
+            _id: track._id,
+            trackTitle: track.trackTitle,
+            hasOwnerSplit: Boolean(track?.ownerId?.split),
+            collaborators: track.collaborators ?? [],
+          }))}
+          scopeNoun="álbum"
+          onSplitsCreated={() => setRefreshKey((k) => k + 1)}
+          onAssignOwnerSplit={() => {
+            setCollabSplitOpen(false);
+            setSplitModalOpen(true);
+          }}
+          onInvite={() => {
+            setCollabSplitOpen(false);
+            setInviteModalOpen(true);
+          }}
+        />
+      )}
 
       {splitModalOpen && (
         <AlbumOwnerSplitModal

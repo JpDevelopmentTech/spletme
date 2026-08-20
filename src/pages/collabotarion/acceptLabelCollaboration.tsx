@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LabelsService from "../../services/labels";
+import { InviteAuthGate } from "@/components/invitations/InviteAuthGate";
+import { clearPendingInvite, readInviteEmail } from "@/utils/pendingInvite";
+import { isSignedIn } from "@/utils/session";
 import {
   Layers,
   Tag,
@@ -108,6 +111,8 @@ const AcceptLabelCollaboration = () => {
         };
 
         setInvitationData(newInvitationData);
+        // Se llegó a la aceptación: el desvío por el alta ya cumplió.
+        clearPendingInvite();
       } catch (error) {
         console.error("Error procesando token:", error);
         setError(
@@ -357,7 +362,10 @@ const AcceptLabelCollaboration = () => {
           </div>
         </div>
 
-        {/* Action Buttons */}
+        {/* Sin sesión no hay a quién añadir: primero la cuenta. */}
+        {!isSignedIn() ? (
+          <InviteAuthGate email={readInviteEmail(token)} what="este sello" />
+        ) : (
         <div className="flex flex-col gap-4 sm:flex-row">
           <button
             onClick={handleAccept}
@@ -379,6 +387,7 @@ const AcceptLabelCollaboration = () => {
             <span>Rechazar Invitación</span>
           </button>
         </div>
+        )}
 
         {/* Additional Info */}
         <div className="mt-6 text-center">

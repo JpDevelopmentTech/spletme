@@ -15,7 +15,11 @@ export interface AlbumTrack {
       images?: Array<{ url: string; width?: number; height?: number }>;
     };
   };
-  collaborators?: { _id?: string; name?: string; image?: string }[];
+  /**
+   * `id` es el identificador generado del usuario, no el `_id` de Mongo: es el
+   * que espera el endpoint de splits para identificar al participante.
+   */
+  collaborators?: { _id?: string; id?: string; name?: string; image?: string }[];
 }
 
 export interface Album {

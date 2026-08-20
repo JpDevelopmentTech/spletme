@@ -16,6 +16,7 @@ import {
   Send,
 } from "lucide-react";
 import { AuthService } from "../../services/auth";
+import { readPendingInvite } from "@/utils/pendingInvite";
 import { setAuth } from "../../store/states/authSlice";
 import logo from "../../assets/images/2 - BLANCO.png";
 
@@ -46,7 +47,12 @@ const TRUST_BADGES = [
 export default function EmailLogin() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [email, setEmail] = useState("");
+  /**
+   * Quien viene de una invitación entra con el correo al que la recibió: es el
+   * único con el que podrá aceptarla, así que se propone ya escrito.
+   */
+  const pendingInviteEmail = readPendingInvite()?.email ?? "";
+  const [email, setEmail] = useState(pendingInviteEmail);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
@@ -56,6 +62,7 @@ export default function EmailLogin() {
 
   // Recupera el correo guardado la última vez que se marcó "Recuérdame".
   useEffect(() => {
+    if (pendingInviteEmail) return;
     const saved = localStorage.getItem(REMEMBERED_EMAIL_KEY);
     if (saved) {
       setEmail(saved);
@@ -98,6 +105,15 @@ export default function EmailLogin() {
         localStorage.removeItem(REMEMBERED_EMAIL_KEY);
       }
       dispatch(setAuth({ isAuth: "true", user: userToStore }));
+
+      // Quien venía de una invitación vuelve a ella antes que a nada: es a lo
+      // que entró, y el onboarding es un formulario largo que puede abandonar a
+      // la mitad dejando la invitación sin aceptar.
+      const pendingInvite = readPendingInvite();
+      if (pendingInvite) {
+        navigate(pendingInvite.path, { replace: true });
+        return;
+      }
 
       navigate(userToStore.onboardingCompleted ? "/panel/home" : "/onboarding", { replace: true });
     } catch (err) {

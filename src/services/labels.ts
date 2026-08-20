@@ -61,7 +61,11 @@ export interface LabelSong {
   } | null;
   ownerEarnings: number;
   ownerId: { _id: string; name: string; email: string };
-  collaborators: unknown[];
+  /**
+   * Colaboradores de la canción. `id` es el identificador generado del usuario,
+   * que es el que espera el endpoint de splits para identificar al participante.
+   */
+  collaborators: { _id?: string; id?: string; name?: string; email?: string }[];
   releases: unknown[];
   spotifyData?: {
     album?: {
@@ -272,9 +276,12 @@ class LabelsService {
       _id: string;
       labelType: string;
       labelName: string;
-      collaboratorId: string;
-      collaboratorName: string;
+      collaboratorId: string | null;
+      /** Null cuando esa persona todavía no tiene cuenta. */
+      collaboratorName: string | null;
       collaboratorEmail: string;
+      /** Si el enlace la llevará primero a crear su cuenta. */
+      needsAccount?: boolean;
       status: string;
       totalSongs: number;
       expiresAt: string;

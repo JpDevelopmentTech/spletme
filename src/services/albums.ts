@@ -2,6 +2,31 @@ import { apiClient } from "@/infrastructure/http/axiosClient";
 import type { Album, AlbumsResponse, AlbumResponse, AlbumsError } from "../models/album";
 import type { AlbumBalance } from "../types/accounting.types";
 
+/** Lo que devuelve el servidor tras enviar una invitación de álbum. */
+export interface AlbumInvitationResult {
+  invitationId: string;
+  albumTitle: string;
+  collaboratorName: string | null;
+  collaboratorEmail: string;
+  /** Pistas que cubre la invitación. */
+  totalSongs: number;
+  /** Pistas que quedaron fuera porque esa persona ya colaboraba en ellas. */
+  alreadyCollaborating: number;
+  /** Si todavía no tiene cuenta y el enlace la llevará primero a crearla. */
+  needsAccount: boolean;
+  expiresAt: string;
+}
+
+/** Resultado de aceptar una invitación de álbum, pista por pista. */
+export interface AlbumAcceptanceResult {
+  upc: string;
+  albumTitle: string;
+  artistName: string;
+  collaboratorName: string;
+  summary: { total: number; added: number; alreadyExists: number; errors: number };
+  songs: string[];
+}
+
 class AlbumService {
   private readonly BASE = "/albums";
 
@@ -77,6 +102,54 @@ class AlbumService {
       return response.success && "data" in response ? response.data : null;
     } catch {
       return null;
+    }
+  }
+
+  /**
+   * Invita a alguien a colaborar en TODAS las pistas del álbum.
+   *
+   * Manda un solo correo por álbum, no uno por pista: quien recibe acepta una
+   * vez y entra en todas. El alcance son las pistas que el álbum tiene ahora,
+   * congeladas por el servidor al enviar la invitación.
+   */
+  async inviteCollaborator(
+    upc: string,
+    invitee: { collaboratorEmail?: string; collaboratorId?: string },
+  ): Promise<{ success: true; data: AlbumInvitationResult } | { success: false; message: string }> {
+    try {
+      const response = await apiClient.post(
+        `${this.BASE}/albums/${encodeURIComponent(upc)}/add-collaborator`,
+        invitee,
+      );
+      return { success: true, data: response.data?.data as AlbumInvitationResult };
+    } catch (error: unknown) {
+      const axErr = error as { response?: { data?: { message?: string } }; message?: string };
+      return {
+        success: false,
+        message:
+          axErr.response?.data?.message ??
+          axErr.message ??
+          "No se pudo enviar la invitación. Vuelve a intentarlo.",
+      };
+    }
+  }
+
+  /** Acepta la invitación de álbum que llegó por correo. */
+  async acceptCollaboration(
+    token: string,
+  ): Promise<{ success: true; data: AlbumAcceptanceResult } | { success: false; message: string }> {
+    try {
+      const response = await apiClient.post(`${this.BASE}/accept-collaboration`, { token });
+      return { success: true, data: response.data?.data as AlbumAcceptanceResult };
+    } catch (error: unknown) {
+      const axErr = error as { response?: { data?: { message?: string } }; message?: string };
+      return {
+        success: false,
+        message:
+          axErr.response?.data?.message ??
+          axErr.message ??
+          "No se pudo aceptar la invitación. Vuelve a intentarlo.",
+      };
     }
   }
 

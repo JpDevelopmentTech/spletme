@@ -81,3 +81,42 @@ export const albumTracksWithoutSplit = (album: AlbumItem): AlbumTrack[] => {
   const tracks = Array.isArray(album?.tracks) ? album.tracks : [];
   return tracks.filter((track) => !track?.split && !track?.ownerId?.split);
 };
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/**
+ * Si la sesión actual es la dueña de la canción (o de la pista de un álbum,
+ * que trae el mismo `ownerId` enriquecido).
+ *
+ * Se compara por correo y usuario antes que por id porque las subcuentas heredan
+ * identificadores del padre y darían un falso positivo.
+ */
+export function resolveIsOwner(song: any, currentUser: any): boolean {
+  if (!song || !currentUser) return false;
+
+  const normalize = (value: unknown) => String(value ?? "").trim().toLowerCase();
+
+  const ownerEmails = [song?.ownerId?.email, song?.owner?.email].filter(Boolean).map(normalize);
+  const ownerUsernames = [song?.ownerId?.username, song?.owner?.username]
+    .filter(Boolean)
+    .map(normalize);
+  const ownerIds = [
+    typeof song?.ownerId === "string" ? song.ownerId : undefined,
+    song?.ownerId?._id,
+    song?.ownerId?.id,
+    song?.owner?._id,
+    song?.owner?.id,
+  ]
+    .filter(Boolean)
+    .map(String);
+
+  const email = normalize(currentUser?.email);
+  const username = normalize(currentUser?.username);
+  const ids = [currentUser?.id, currentUser?._id, currentUser?.userId].filter(Boolean).map(String);
+
+  if (email && ownerEmails.includes(email)) return true;
+  if (username && ownerUsernames.includes(username)) return true;
+
+  const hasIdentity = ownerEmails.length > 0 || ownerUsernames.length > 0;
+  const isSubuser = Boolean(currentUser?.parentUserId);
+  return !isSubuser && !hasIdentity && ids.some((value) => ownerIds.includes(value));
+}

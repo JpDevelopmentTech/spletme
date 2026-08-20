@@ -25,9 +25,11 @@ interface InviteCollaboratorToLabelModalProps {
 }
 
 interface InvitationResult {
-  collaboratorName: string;
+  /** Null cuando esa persona todavía no tiene cuenta en Splitme. */
+  collaboratorName: string | null;
   collaboratorEmail: string;
   totalSongs: number;
+  needsAccount: boolean;
 }
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -98,9 +100,10 @@ export default function InviteCollaboratorToLabelModal({
       }
 
       setResult({
-        collaboratorName: response.data.collaboratorName,
+        collaboratorName: response.data.collaboratorName ?? null,
         collaboratorEmail: response.data.collaboratorEmail,
         totalSongs: response.data.totalSongs,
+        needsAccount: Boolean(response.data.needsAccount),
       });
       onSuccess?.();
     } catch {
@@ -142,15 +145,20 @@ export default function InviteCollaboratorToLabelModal({
             <Check className="h-[22px] w-[22px] text-[#2FB37E]" />
           </span>
           <h3 className="font-display text-[17px] font-semibold text-[#1C1D22]">
-            {result.collaboratorName} recibirá el acceso
+            {result.collaboratorName ?? result.collaboratorEmail} recibirá el acceso
           </h3>
           <p className="max-w-[380px] text-[12.5px] leading-relaxed text-[#71757E]">
-            Le llega un correo con el enlace para aceptar. La invitación caduca en 7 días.
+            {result.needsAccount
+              ? "Le llega un correo con el enlace. Como aún no tiene cuenta, primero creará la suya y desde ahí volverá solo a aceptar. La invitación caduca en 7 días."
+              : "Le llega un correo con el enlace para aceptar. La invitación caduca en 7 días."}
           </p>
         </div>
 
         <dl className="flex flex-col divide-y divide-[#E8E8EC] overflow-hidden rounded-[18px] bg-[#F4F5F7]">
-          <SummaryRow label="Colaborador" value={result.collaboratorName} />
+          <SummaryRow
+            label="Colaborador"
+            value={result.collaboratorName ?? "Sin cuenta todavía"}
+          />
           <SummaryRow label="Correo" value={result.collaboratorEmail} />
           <SummaryRow
             label="Sello"

@@ -21,6 +21,7 @@ import WalletPage from "../pages/panel/wallet/wallet";
 import Profile from "../pages/panel/profile/profile";
 import AcceptCollaboration from "../pages/collabotarion/acceptCollaboration";
 import AcceptLabelCollaboration from "../pages/collabotarion/acceptLabelCollaboration";
+import AcceptAlbumCollaboration from "../pages/collabotarion/acceptAlbumCollaboration";
 import LabelsTable from "../pages/panel/labels/labelsTable";
 import LabelDetail from "../pages/panel/labels/labelDetail";
 import CustomLabelDetail from "../pages/panel/labels/customLabelDetail";
@@ -68,6 +69,10 @@ const routes = [
   {
     path: "/collaboration/accept-label",
     element: <AcceptLabelCollaboration />,
+  },
+  {
+    path: "/collaboration/accept-album",
+    element: <AcceptAlbumCollaboration />,
   },
 
   {
