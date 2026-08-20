@@ -38,9 +38,16 @@ export interface DistributorUpload {
   quarter?: Quarter | null;
   year: number;
   fileName: string | null;
+  /** Moneda en la que llegó el archivo. Los totales de abajo están siempre en USD. */
+  sourceCurrency: Currency;
+  /** USD por cada unidad de `sourceCurrency`. Null si el reporte ya venía en USD. */
+  exchangeRate: number | null;
   totalStreams: number;
   totalGrossIncome: number;
   totalNetIncome: number;
+  /** Totales en la moneda original, para cuadrar contra el papel del distribuidor. */
+  totalGrossIncomeSource: number | null;
+  totalNetIncomeSource: number | null;
   songsCount: number;
   status: UploadStatus;
   songIds: string[];
@@ -110,4 +117,15 @@ export interface UploadPeriodPayload {
   startMonth: number;
   endMonth: number;
   year: number;
+}
+
+/**
+ * Moneda del archivo que se sube. El sistema guarda todo el dinero en USD: si
+ * el reporte llega en euros, el backend convierte cada importe con `exchangeRate`
+ * durante la ingesta y nada queda registrado en euros.
+ */
+export interface UploadCurrencyPayload {
+  sourceCurrency: Currency;
+  /** Cuántos USD vale 1 unidad de `sourceCurrency`. Null cuando ya es USD. */
+  exchangeRate: number | null;
 }

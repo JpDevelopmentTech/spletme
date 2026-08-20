@@ -84,7 +84,7 @@ export function useHomeDashboard() {
       chart: {
         toolbar: { show: false },
         background: "transparent",
-        fontFamily: '"Fira Code", ui-monospace, monospace',
+        fontFamily: '"Bricolage Grotesque", Poppins, sans-serif',
       },
       stroke: { width: [2, 2], curve: "smooth" },
       fill: {

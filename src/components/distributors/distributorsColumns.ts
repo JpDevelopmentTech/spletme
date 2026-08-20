@@ -33,7 +33,9 @@ export interface DistributorColumn {
 }
 
 export const DISTRIBUTOR_COLUMNS: DistributorColumn[] = [
-  { key: "currency", label: "MONEDA", visibility: "hidden lg:flex" },
+  // Moneda en la que el distribuidor emite sus reportes, no la de la columna de
+  // ingresos: esa va siempre en dólares.
+  { key: "currency", label: "REPORTA EN", visibility: "hidden lg:flex" },
   { key: "songs", label: "CANCIONES", visibility: "hidden lg:flex", sortKeys: ["songs_desc"] },
   { key: "streams", label: "STREAMS", visibility: "hidden md:flex", sortKeys: ["streams_desc"] },
   {

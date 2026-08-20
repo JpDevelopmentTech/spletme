@@ -280,13 +280,15 @@ export default function Dealers() {
         <UploadSongsModal
           distributorName={uploadTarget.distributor.name}
           distributorLogo={uploadTarget.distributor.photoUrl}
+          distributorCurrency={uploadTarget.distributor.currency}
           existingUploads={uploadTarget.uploads}
           onClose={() => setUploadTarget(null)}
-          onConfirm={async (file, period, onProgress, onProcessingProgress) => {
+          onConfirm={async (file, period, currency, onProgress, onProcessingProgress) => {
             const result = await distributorsService.uploadSongs(
               uploadTarget.distributor._id,
               file,
               period,
+              currency,
               onProgress,
               onProcessingProgress,
             );

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { TriangleAlert, Trash2 } from "lucide-react";
-import { formatMoney } from "@/utils/format.utils";
+import { formatCurrency } from "@/utils/format.utils";
 import { ModalShell, SecondaryButton, DistributorMark } from "@/components/ui/ModalShell";
 import type { DistributorListItem } from "./types";
 
@@ -77,7 +77,7 @@ export function DeleteDistributorDialog({
         <Impact label="Canciones asociadas" value={(kpi?.songsCount ?? 0).toLocaleString()} />
         <Impact
           label="Ingresos netos acumulados"
-          value={formatMoney(kpi?.totalNetIncome ?? 0, distributor.currency)}
+          value={formatCurrency(kpi?.totalNetIncome ?? 0)}
         />
       </ul>
 

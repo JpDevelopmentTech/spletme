@@ -12,7 +12,6 @@ import {
   Receipt,
   GitBranch,
   FolderOpen,
-  Disc3,
   CircleAlert,
   Clock3,
   ArrowRight,
@@ -21,16 +20,19 @@ import PaymentsService, { type PaymentReadiness } from "@/services/payments";
 import RoyaltiesService, { type RoyaltyRequest } from "@/services/royalties";
 import LocalStorageService from "@/services/localstorage";
 import useSong from "@/hooks/useSong";
+import useSongAlbums from "@/hooks/useSongAlbums";
 import { useSongMoney } from "@/hooks/useSongMoney";
 import useCurrentCollaborator from "@/hooks/useCurrentCollaborator";
 import { formatCurrency, formatStreams } from "@/utils/format.utils";
 import { DetailHeader } from "@/components/music/DetailHeader";
 import { DetailTabs, type DetailTab } from "@/components/music/DetailTabs";
 import { MoneyWaterfall } from "@/components/music/MoneyWaterfall";
+import { SongAlbumsChip } from "@/components/music/SongAlbumsChip";
 import { MetricConsole, type MetricChannel } from "@/components/ui/MetricConsole";
 import Loading from "@/components/loading/loading";
 import Table from "./components/table";
 import Platforms from "./components/platforms";
+import Performance from "./components/performance";
 import Historyofsplits from "./components/historyofsplits";
 import Extraordinarycosts from "./components/extraordinarycosts";
 import DocumentManager from "./components/documentManager";
@@ -48,6 +50,7 @@ type TabKey = "resumen" | "colaboradores" | "pagos" | "splits" | "documentos";
 export default function Song() {
   const { id = "" } = useParams();
   const { song, loading, getOwnerPercentage, getOwnerTotalOwed } = useSong({ id });
+  const songAlbums = useSongAlbums(id);
   const { getCurrentUserPercentage, getCurrentUserAmount } = useCurrentCollaborator({
     collaborators: song?.collaborators || [],
   });
@@ -197,18 +200,12 @@ export default function Song() {
           meta={
             <>
               <span>{song?.artistName ?? "—"}</span>
-              {song?.upc && (
-                <>
-                  <span className="text-[#A6AAB2]">·</span>
-                  <a
-                    href={`/panel/album/upc/${encodeURIComponent(song.upc)}`}
-                    className="flex items-center gap-1.5 font-medium text-[#FF5C00] transition-colors hover:text-[#EA580C]"
-                  >
-                    <Disc3 className="h-3.5 w-3.5" />
-                    Ver álbum
-                  </a>
-                </>
-              )}
+              <span className="text-[#A6AAB2]">·</span>
+              <SongAlbumsChip
+                albums={songAlbums.albums}
+                loading={songAlbums.loading}
+                fallbackUpc={song?.upc}
+              />
             </>
           }
           highlightLabel={isOwnerUser ? "TOTAL A PAGAR" : "TU PARTE"}
@@ -247,21 +244,16 @@ export default function Song() {
         <DetailTabs tabs={TABS} active={activeTab} onChange={setActiveTab} />
 
         {activeTab === "resumen" && (
-          <div className="flex flex-col gap-5">
-            <div className="flex flex-col gap-5 xl:flex-row">
-              <div className="min-w-0 flex-1">
-                <MoneyWaterfall
+          <div className="grid grid-cols-12 gap-5">
+            <MoneyWaterfall
                   steps={money.steps}
                   shares={money.shares}
                   distributable={money.repartible}
                   subtitle="De lo que entra por esta canción hasta lo que le toca a cada uno"
                   onEditSplits={() => setActiveTab("colaboradores")}
                 />
-              </div>
-              <div className="xl:w-[400px] xl:flex-shrink-0">
                 <Platforms reproductions={song?.reproductions ?? []} />
-              </div>
-            </div>
+                <Performance songId={id} />
           </div>
         )}
 

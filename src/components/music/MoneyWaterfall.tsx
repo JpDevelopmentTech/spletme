@@ -47,7 +47,7 @@ export function MoneyWaterfall({
   const assigned = assignedPercentage(shares);
 
   return (
-    <section className="flex flex-col gap-4 rounded-[26px] border border-[#E8E8EC] bg-white p-[26px] shadow-[0_10px_28px_-12px_rgba(255,92,0,0.15)]">
+    <section className="col-span-8 flex flex-col gap-4 rounded-[26px] border border-[#E8E8EC] bg-white p-[26px] shadow-[0_10px_28px_-12px_rgba(255,92,0,0.15)]">
       <div className="flex flex-col gap-0.5">
         <h2 className="font-display text-lg font-semibold text-[#1C1D22]">{title}</h2>
         {subtitle && <p className="text-[12.5px] text-[#71757E]">{subtitle}</p>}

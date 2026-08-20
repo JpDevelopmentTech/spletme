@@ -299,13 +299,14 @@ export default function CreateDistributorModal({ onClose, onConfirm, existingNam
 
         {/* Moneda */}
         <div className="flex flex-col gap-2">
-          <FieldLabel>MONEDA DE LOS REPORTES</FieldLabel>
+          <FieldLabel>MONEDA HABITUAL DE SUS REPORTES</FieldLabel>
           <CurrencyPicker value={currency} onChange={setCurrency} />
         </div>
 
         <p className="flex items-start gap-2.5 rounded-[14px] bg-[#F4F5F7] px-3.5 py-3 text-[11px] leading-relaxed text-[#71757E]">
           <Info className="mt-px h-3.5 w-3.5 flex-shrink-0" />
-          Los importes se guardan en la moneda del reporte; no se convierten.
+          Todo el dinero se guarda en dólares. Si eliges euros, cada vez que subas un reporte te
+          pediremos el cambio de su periodo para convertirlo.
         </p>
 
         {error && !duplicated && (

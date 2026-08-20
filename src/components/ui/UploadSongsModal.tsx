@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useId, useMemo, useRef, useState } from "react";
 import {
   Upload,
   FileSpreadsheet,
@@ -12,8 +12,13 @@ import {
   Download,
   ArrowRight,
   TriangleAlert,
+  ArrowLeftRight,
 } from "lucide-react";
-import type { UploadPeriodPayload } from "../../types/distributor.types";
+import type {
+  Currency,
+  UploadCurrencyPayload,
+  UploadPeriodPayload,
+} from "../../types/distributor.types";
 import type { RejectedSong, UploadSongsResult, UploadStatus } from "../../services/distributorsService";
 import {
   MONTH_NAMES,
@@ -27,6 +32,8 @@ import {
   type PeriodLike,
 } from "../../utils/period.utils";
 import { formatMonthRange } from "@/utils/coverage.utils";
+import { formatCurrency, formatMoney } from "@/utils/format.utils";
+import { CurrencyPicker } from "@/components/distributors/CurrencyPicker";
 import {
   ModalShell,
   FieldLabel,
@@ -40,6 +47,8 @@ type UploadPhase = "idle" | "uploading" | "processing" | "done";
 interface Props {
   distributorName: string;
   distributorLogo?: string | null;
+  /** Moneda habitual del distribuidor: sólo preselecciona el campo del reporte. */
+  distributorCurrency?: Currency;
   /** Cargas ya registradas, para impedir subir meses que se solapan. */
   existingUploads?: PeriodLike[];
   /** Periodo ya marcado al abrir; lo usa el aviso de hueco del detalle. */
@@ -48,6 +57,7 @@ interface Props {
   onConfirm: (
     file: File,
     period: UploadPeriodPayload,
+    currency: UploadCurrencyPayload,
     onProgress: (percent: number) => void,
     onProcessingProgress?: (status: UploadStatus) => void,
   ) => Promise<UploadSongsResult | void>;
@@ -66,9 +76,21 @@ const PRESETS = [
 
 const ACCEPTED = /\.(csv|xlsx|xls)$/i;
 
+/**
+ * Límites del tipo de cambio admitido. El servidor valida el mismo rango: no
+ * pretenden acertar la cotización, sino frenar el dedazo que multiplicaría el
+ * catálogo entero por cien sin que nadie lo note hasta ver los pagos.
+ */
+const MIN_RATE = 0.1;
+const MAX_RATE = 10;
+
+/** Importe con el que se enseña el efecto del cambio antes de subir nada. */
+const RATE_SAMPLE = 1000;
+
 export default function UploadSongsModal({
   distributorName,
   distributorLogo,
+  distributorCurrency = "USD",
   existingUploads = [],
   initialPeriod,
   onClose,
@@ -83,6 +105,16 @@ export default function UploadSongsModal({
   const [file, setFile] = useState<File | null>(null);
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState("");
+
+  /**
+   * Moneda del archivo. Arranca en la del distribuidor pero se decide aquí: la
+   * cotización con la que se liquidó cada reporte es la de SU periodo, y un
+   * mismo distribuidor puede cambiar de moneda entre trimestres.
+   */
+  const [sourceCurrency, setSourceCurrency] = useState<Currency>(distributorCurrency);
+  const [rateInput, setRateInput] = useState("");
+  /** El error del cambio no se enseña hasta que el campo se ha dejado atrás. */
+  const [rateTouched, setRateTouched] = useState(false);
 
   const [phase, setPhase] = useState<UploadPhase>("idle");
   const [progress, setProgress] = useState(0);
@@ -106,6 +138,10 @@ export default function UploadSongsModal({
     }
     return taken;
   }, [existingUploads, year]);
+
+  const converts = sourceCurrency !== "USD";
+  const rate = parseRate(rateInput);
+  const rateError = converts ? describeRateError(rateInput, rate) : null;
 
   const rangeError = validatePeriodRange(startMonth, endMonth);
   const periodLabel = buildPeriodLabel(startMonth, endMonth, year);
@@ -179,6 +215,10 @@ export default function UploadSongsModal({
       return setError(`El periodo se solapa con la carga de ${formatUploadPeriod(overlapping)}.`);
     }
     if (!file) return setError("Selecciona el archivo del reporte antes de continuar.");
+    if (rateError) {
+      setRateTouched(true);
+      return setError(rateError);
+    }
 
     setError("");
     setProgress(0);
@@ -192,6 +232,7 @@ export default function UploadSongsModal({
       const res = await onConfirm(
         file,
         { startMonth, endMonth, year },
+        { sourceCurrency, exchangeRate: converts ? rate : null },
         (percent) => {
           setProgress(percent);
           if (percent >= 100) setPhase("processing");
@@ -223,7 +264,9 @@ export default function UploadSongsModal({
     return (
       <ModalShell
         title={done ? "Reporte procesado" : phase === "uploading" ? "Subiendo reporte" : "Procesando reporte"}
-        subtitle={`${periodLabel} · ${distributorName}`}
+        subtitle={`${periodLabel} · ${distributorName}${
+          converts && rate !== null ? ` · 1 € = $${formatRate(rate)}` : ""
+        }`}
         width="lg"
         locked={busy}
         onClose={onClose}
@@ -286,14 +329,20 @@ export default function UploadSongsModal({
           </>
         )}
 
-        {done && <UploadResult result={result} periodLabel={periodLabel} />}
+        {done && (
+          <UploadResult
+            result={result}
+            periodLabel={periodLabel}
+            exchangeRate={converts ? rate : null}
+          />
+        )}
       </ModalShell>
     );
   }
 
   // ---- Formulario ---------------------------------------------------------
 
-  const canSubmit = Boolean(file) && !rangeError && !overlapping;
+  const canSubmit = Boolean(file) && !rangeError && !overlapping && !rateError;
 
   return (
     <form onSubmit={handleSubmit} className="contents">
@@ -499,6 +548,36 @@ export default function UploadSongsModal({
           />
         </div>
 
+        {/* Moneda del archivo */}
+        <div className="flex flex-col gap-2.5">
+          <FieldLabel required>MONEDA DE LOS IMPORTES DEL ARCHIVO</FieldLabel>
+          <CurrencyPicker
+            value={sourceCurrency}
+            onChange={(next) => {
+              setSourceCurrency(next);
+              setError("");
+            }}
+          />
+          {converts ? (
+            <ExchangeRateField
+              value={rateInput}
+              onChange={(next) => {
+                setRateInput(next);
+                setError("");
+              }}
+              onBlur={() => setRateTouched(true)}
+              rate={rate}
+              error={rateError}
+              showError={rateTouched}
+            />
+          ) : (
+            <p className="flex items-start gap-2.5 rounded-[14px] bg-[#F4F5F7] px-3.5 py-3 text-[11px] leading-relaxed text-[#71757E]">
+              <CircleCheck className="mt-px h-3.5 w-3.5 flex-shrink-0 text-[#A6AAB2]" />
+              El archivo ya viene en dólares: sus importes se guardan tal cual.
+            </p>
+          )}
+        </div>
+
         {/* Resumen o conflicto */}
         {overlapping ? (
           <div className="flex flex-col gap-3 rounded-[18px] bg-[#FDECEC] p-4">
@@ -533,6 +612,11 @@ export default function UploadSongsModal({
               <span className="text-[11px] text-[#EA580C]">
                 No se solapa con ninguna carga anterior de {distributorName}.
               </span>
+              {converts && rate !== null && !rateError && (
+                <span className="text-[11px] text-[#EA580C]">
+                  Importes convertidos a dólares · 1 € = ${formatRate(rate)}
+                </span>
+              )}
             </span>
             <CircleCheck className="h-[17px] w-[17px] flex-shrink-0 text-[#FF5C00]" />
           </div>
@@ -547,6 +631,150 @@ export default function UploadSongsModal({
       </ModalShell>
     </form>
   );
+}
+
+/**
+ * El tipo de cambio, escrito como la ecuación que es: «1 € = N USD».
+ *
+ * La forma importa más de lo que parece. Un campo llamado «tipo de cambio» a
+ * secas se rellena la mitad de las veces con la tasa invertida (0,92 en vez de
+ * 1,08), y el error no se ve: el archivo se procesa igual y el catálogo entero
+ * queda valorado a menos de la mitad. Aquí los dos lados de la igualdad están
+ * escritos, y debajo se enseña el resultado sobre un importe conocido, así que
+ * una tasa dada la vuelta se nota antes de subir nada.
+ */
+function ExchangeRateField({
+  value,
+  onChange,
+  onBlur,
+  rate,
+  error,
+  showError,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  onBlur: () => void;
+  rate: number | null;
+  error: string | null;
+  /** Si el error ya puede pintarse en rojo: no se regaña a media escritura. */
+  showError: boolean;
+}) {
+  const inputId = useId();
+  const helperId = `${inputId}-helper`;
+  const valid = !error && rate !== null;
+  // Callar el error a media escritura es cortesía; dar por bueno lo que se va a
+  // rechazar, no. Mientras el valor no sirva, el campo se queda en el mensaje
+  // neutro en vez de confirmar una conversión que no va a ocurrir.
+  const alerting = Boolean(error) && showError;
+
+  return (
+    <div
+      className={`flex flex-col gap-3 rounded-[18px] border p-4 transition-colors ${
+        alerting ? "border-[1.5px] border-[#E5484D] bg-[#FDECEC]" : "border-[#E8E8EC] bg-white"
+      }`}
+    >
+      <label htmlFor={inputId} className="flex items-center gap-2">
+        <ArrowLeftRight
+          className={`h-3.5 w-3.5 flex-shrink-0 ${alerting ? "text-[#E5484D]" : "text-[#FF5C00]"}`}
+        />
+        <FieldLabel required invalid={alerting}>
+          TIPO DE CAMBIO DEL REPORTE
+        </FieldLabel>
+      </label>
+
+      {/* La igualdad completa: lo que se teclea es sólo su lado derecho. */}
+      <div className="flex items-center gap-2.5">
+        <span className="flex h-11 flex-shrink-0 items-center gap-1.5 rounded-[14px] bg-[#F4F5F7] px-3.5 font-mono text-[13px] font-semibold text-[#1C1D22]">
+          1 €
+        </span>
+        <span className="flex-shrink-0 font-mono text-[15px] text-[#A6AAB2]">=</span>
+        <span
+          className={`flex h-11 min-w-0 flex-1 items-center rounded-[14px] border bg-white px-3.5 transition-colors focus-within:ring-[3px] ${
+            alerting
+              ? "border-[1.5px] border-[#E5484D] focus-within:ring-[#E5484D]/15"
+              : "border-[#E8E8EC] focus-within:border-[#FF5C00] focus-within:ring-[#FF5C00]/15"
+          }`}
+        >
+          <input
+            id={inputId}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            onBlur={onBlur}
+            inputMode="decimal"
+            autoComplete="off"
+            placeholder="1,0842"
+            aria-describedby={helperId}
+            aria-invalid={Boolean(error)}
+            className="min-w-0 flex-1 bg-transparent font-mono text-[13px] font-semibold text-[#1C1D22] placeholder:font-normal placeholder:text-[#A6AAB2] focus:outline-none"
+          />
+          <span className="flex-shrink-0 pl-2 font-mono text-[11.5px] font-semibold text-[#A6AAB2]">
+            USD
+          </span>
+        </span>
+      </div>
+
+      <p
+        id={helperId}
+        className={`flex items-start gap-2 text-[11px] leading-relaxed ${
+          alerting ? "font-medium text-[#E5484D]" : "text-[#71757E]"
+        }`}
+      >
+        {alerting ? (
+          <>
+            <TriangleAlert className="mt-px h-3.5 w-3.5 flex-shrink-0" />
+            {error}
+          </>
+        ) : valid ? (
+          <>
+            <CircleCheck className="mt-px h-3.5 w-3.5 flex-shrink-0 text-[#2FB37E]" />
+            <span>
+              Un ingreso de{" "}
+              <span className="font-mono font-semibold text-[#1C1D22]">
+                {formatMoney(RATE_SAMPLE, "EUR")}
+              </span>{" "}
+              del reporte se guardará como{" "}
+              <span className="font-mono font-semibold text-[#2FB37E]">
+                {formatCurrency(RATE_SAMPLE * (rate as number))}
+              </span>
+              .
+            </span>
+          </>
+        ) : (
+          <span>
+            Cuántos dólares valía un euro en el periodo del reporte. Úsalo tal como te lo liquidó
+            el distribuidor.
+          </span>
+        )}
+      </p>
+    </div>
+  );
+}
+
+/** El cambio, sin ceros de relleno: 1.08 y no 1.0800. */
+function formatRate(rate: number): string {
+  return rate.toLocaleString("en-US", { maximumFractionDigits: 6 });
+}
+
+/**
+ * Lee el cambio tecleado. Acepta la coma decimal porque es como se escribe en
+ * español y el campo es de texto libre, no un `type="number"` que la rechazaría
+ * en silencio según el idioma del navegador.
+ */
+function parseRate(value: string): number | null {
+  const normalized = value.trim().replace(",", ".");
+  if (!normalized) return null;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+/** Qué le falta al cambio tecleado, dicho donde se puede arreglar. */
+function describeRateError(raw: string, rate: number | null): string | null {
+  if (!raw.trim()) return "Indica cuántos dólares vale un euro para poder convertir el reporte.";
+  if (rate === null) return "Escribe solo el número del cambio, por ejemplo 1,0842.";
+  if (rate < MIN_RATE || rate > MAX_RATE) {
+    return `Un euro no puede valer ${rate} dólares. Revisa el cambio: se espera algo entre ${MIN_RATE} y ${MAX_RATE}.`;
+  }
+  return null;
 }
 
 /** Los tres pasos reales del proceso: subida, procesado en servidor y fin. */
@@ -635,9 +863,12 @@ function LiveMetric({ label, value, color }: { label: string; value: number; col
 function UploadResult({
   result,
   periodLabel,
+  exchangeRate,
 }: {
   result: UploadSongsResult | null;
   periodLabel: string;
+  /** Cambio aplicado, si el reporte llegó en otra moneda. */
+  exchangeRate: number | null;
 }) {
   const groups = useMemo(() => groupRejections(result?.rejected ?? []), [result]);
   const rejected = result?.rejected ?? [];
@@ -653,7 +884,10 @@ function UploadResult({
             {(result?.songsProcessed ?? 0).toLocaleString()}{" "}
             {result?.songsProcessed === 1 ? "canción procesada" : "canciones procesadas"}
           </span>
-          <span className="text-[11.5px] text-[#2FB37E]">{periodLabel}</span>
+          <span className="text-[11.5px] text-[#2FB37E]">
+            {periodLabel}
+            {exchangeRate !== null && ` · convertidas a dólares a 1 € = $${formatRate(exchangeRate)}`}
+          </span>
         </span>
       </div>
 

@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import CollaboratorService from "@/services/collaborator";
-import PaymentsService from "@/services/payments";
-import { flattenRoyaltyPayments, type RecentPayment } from "@/utils/payments.utils";
 import {
   collaboratorColor,
   initialsOf,
@@ -70,16 +68,12 @@ const adapt = (raw: ApiCollaborator, index: number): Collaborator => ({
 /**
  * Estado de la página de colaboradores: datos, filtros y selección múltiple.
  *
- * Los colaboradores y el resumen salen de `/collaborators/metrics`; los pagos
- * recientes, del historial real de cobros de regalías —antes eran cuatro
- * registros inventados en el propio componente—.
+ * Los colaboradores y el resumen salen de `/collaborators/metrics`.
  */
 export function useCollaboratorsLibrary() {
   const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
   const [summary, setSummary] = useState<ApiSummary | null>(null);
-  const [payments, setPayments] = useState<RecentPayment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [paymentsLoading, setPaymentsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [search, setSearch] = useState("");
@@ -111,28 +105,15 @@ export function useCollaboratorsLibrary() {
     }
   }, []);
 
-  const loadPayments = useCallback(async () => {
-    setPaymentsLoading(true);
-    try {
-      const response = await PaymentsService.getRoyaltyPayments();
-      setPayments(response.error ? [] : flattenRoyaltyPayments(response.data ?? []));
-    } catch {
-      setPayments([]);
-    } finally {
-      setPaymentsLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
     load();
-    loadPayments();
-  }, [load, loadPayments]);
+  }, [load]);
 
   const refresh = useCallback(async () => {
-    // Un pago cambia tanto los saldos como el historial.
-    await Promise.all([load(), loadPayments()]);
+    // Un pago cambia los saldos de todo el mundo.
+    await load();
     setSelectedIds(new Set());
-  }, [load, loadPayments]);
+  }, [load]);
 
   /** Quienes tienen saldo pendiente y pueden recibirlo ya. */
   const payable = useMemo(
@@ -232,7 +213,6 @@ export function useCollaboratorsLibrary() {
 
   return {
     loading,
-    paymentsLoading,
     error,
     refresh,
     reload: load,
@@ -240,7 +220,6 @@ export function useCollaboratorsLibrary() {
     visible,
     payable,
     blocked,
-    payments,
     roles,
     totals,
     catalogSize,

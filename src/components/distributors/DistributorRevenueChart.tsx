@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { CalendarOff } from "lucide-react";
-import { formatStreams, formatCompactMoney, formatMoney } from "@/utils/format.utils";
+import { formatStreams, formatCompactCurrency, formatCurrency } from "@/utils/format.utils";
 import { buildShortPeriodLabel, MONTH_SHORT_NAMES } from "@/utils/period.utils";
 import { quarterColor } from "@/utils/coverage.utils";
 import type { DistributorDashboard } from "@/types/distributor.types";
@@ -32,7 +32,6 @@ type Slot = BarSlot | GapSlot;
 
 interface DistributorRevenueChartProps {
   periods: Period[];
-  currency: string;
 }
 
 const CHART_HEIGHT = 230;
@@ -45,13 +44,13 @@ const CHART_HEIGHT = 230;
  * continuidad, sino que deja el vacío marcado. Ese hueco es la información
  * accionable de esta pantalla.
  */
-export function DistributorRevenueChart({ periods, currency }: DistributorRevenueChartProps) {
+export function DistributorRevenueChart({ periods }: DistributorRevenueChartProps) {
   const [metric, setMetric] = useState<Metric>("net");
 
   const slots = useMemo(() => buildSlots(periods, metric), [periods, metric]);
   const bars = slots.filter((slot): slot is BarSlot => slot.kind === "bar");
   const max = Math.max(1, ...bars.map((slot) => slot.value));
-  const format = (value: number) => formatValue(value, metric, currency);
+  const format = (value: number) => formatValue(value, metric);
 
   return (
     <div className="flex flex-col gap-[18px] rounded-[26px] border border-[#E8E8EC] bg-white p-[26px] shadow-[0_10px_28px_-12px_rgba(255,92,0,0.15)]">
@@ -95,7 +94,7 @@ export function DistributorRevenueChart({ periods, currency }: DistributorRevenu
           >
             {[1, 0.75, 0.5, 0.25, 0].map((step) => (
               <span key={step} className="font-mono text-[9.5px] text-[#A6AAB2]">
-                {step === 0 ? "0" : formatAxis(max * step, metric, currency)}
+                {step === 0 ? "0" : formatAxis(max * step, metric)}
               </span>
             ))}
           </div>
@@ -136,7 +135,7 @@ export function DistributorRevenueChart({ periods, currency }: DistributorRevenu
                         className="font-mono text-[10.5px] font-semibold"
                         style={{ color: slot.color }}
                       >
-                        {formatAxis(slot.value, metric, currency)}
+                        {formatAxis(slot.value, metric)}
                       </span>
                       <span
                         className="w-full max-w-[56px] rounded-t-[9px]"
@@ -231,14 +230,14 @@ function pickValue(period: Period, metric: Metric): number {
   return period.totalNetIncome ?? 0;
 }
 
-function formatValue(value: number, metric: Metric, currency: string): string {
+function formatValue(value: number, metric: Metric): string {
   if (metric === "streams") return `${formatStreams(value)} streams`;
   if (metric === "songs") return `${value.toLocaleString()} canciones`;
-  return formatMoney(value, currency);
+  return formatCurrency(value);
 }
 
-function formatAxis(value: number, metric: Metric, currency: string): string {
+function formatAxis(value: number, metric: Metric): string {
   if (metric === "streams") return formatStreams(value);
   if (metric === "songs") return Math.round(value).toLocaleString();
-  return formatCompactMoney(value, currency);
+  return formatCompactCurrency(value);
 }

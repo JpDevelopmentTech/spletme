@@ -88,15 +88,15 @@ export default function EditDistributorModal({ distributor, onClose, onConfirm }
         </div>
 
         <div className="flex flex-col gap-2">
-          <FieldLabel>MONEDA DE LOS REPORTES</FieldLabel>
+          <FieldLabel>MONEDA HABITUAL DE SUS REPORTES</FieldLabel>
           <CurrencyPicker value={currency} onChange={setCurrency} />
         </div>
 
         {currencyChanged && (
           <p className="flex items-start gap-2.5 rounded-[14px] bg-[#FFEADD] px-3.5 py-3 text-[11px] leading-relaxed text-[#EA580C]">
             <CircleAlert className="mt-px h-3.5 w-3.5 flex-shrink-0 text-[#FF5C00]" />
-            Cambiar la moneda solo cambia cómo se muestran los importes ya cargados: no los
-            convierte.
+            Solo cambia la moneda que se preselecciona al subir el próximo reporte. Los importes
+            ya cargados están en dólares y no se tocan.
           </p>
         )}
 

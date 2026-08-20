@@ -6,6 +6,8 @@ import type {
   DistributorDashboard,
   CreateDistributorPayload,
   UploadPeriodPayload,
+  UploadCurrencyPayload,
+  Currency,
 } from "../types/distributor.types";
 
 export interface RejectedSong {
@@ -33,6 +35,10 @@ export interface UploadStatus {
   totalStreams: number;
   totalGrossIncome: number;
   totalNetIncome: number;
+  /** Moneda del archivo; los totales de arriba están siempre en USD. */
+  sourceCurrency: Currency;
+  exchangeRate: number | null;
+  totalNetIncomeSource: number | null;
   rejected: RejectedSong[];
   rejectedCount: number;
   errorMessage: string | null;
@@ -87,6 +93,8 @@ export const distributorsService = {
    * resultado final o lanzando si la ingesta falla.
    *
    * @param period               - { startMonth, endMonth, year }, con los meses de 1 a 12.
+   * @param currency             - Moneda del archivo y, si no es USD, el tipo de
+   *   cambio con el que el servidor convertirá sus importes a USD.
    * @param onUploadProgress     - Avance de la transferencia del archivo (0-100).
    * @param onProcessingProgress - Avance del procesamiento en el servidor.
    */
@@ -94,6 +102,7 @@ export const distributorsService = {
     distributorId: string,
     file: File,
     period: UploadPeriodPayload,
+    currency: UploadCurrencyPayload,
     onUploadProgress?: (percent: number) => void,
     onProcessingProgress?: (status: UploadStatus) => void,
   ): Promise<UploadSongsResult> {
@@ -102,6 +111,12 @@ export const distributorsService = {
     form.append("startMonth", String(period.startMonth));
     form.append("endMonth", String(period.endMonth));
     form.append("year", String(period.year));
+    form.append("sourceCurrency", currency.sourceCurrency);
+    // La tasa sólo viaja cuando hay algo que convertir: en USD el servidor la
+    // descarta igualmente, y mandarla sugeriría una conversión que no ocurre.
+    if (currency.exchangeRate !== null) {
+      form.append("exchangeRate", String(currency.exchangeRate));
+    }
 
     const accepted = await apiClient
       .post(`/distributors/${distributorId}/upload`, form, {

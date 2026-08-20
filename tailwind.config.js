@@ -29,7 +29,9 @@ export default {
       fontFamily: {
         custom: ["Poppins", "sans-serif"],
         display: ["Bricolage Grotesque", "Poppins", "sans-serif"],
-        mono: ["Fira Code", "ui-monospace", "monospace"],
+        // Pese al nombre de la utilidad (`font-mono`, usada en ~300 sitios para
+        // cifras y etiquetas), ya no es una familia monoespaciada.
+        mono: ["Bricolage Grotesque", "Poppins", "sans-serif"],
       },
       backgroundImage: {
         panel: "url('/src/assets/images/bgsplet.jpg')",

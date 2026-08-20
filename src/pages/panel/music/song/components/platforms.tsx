@@ -1,12 +1,12 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
-import { BarChart2, PieChart, BarChartHorizontal, RefreshCw } from "lucide-react";
+import { BarChart2, PieChart, BarChartHorizontal, TrendingUp, ChevronRight } from "lucide-react";
+import { formatCurrency, formatStreams, formatCompactCurrency } from "@/utils/format.utils";
 import spotifyLogo from "@/assets/images/logo/spotify.svg";
 import youtubeLogo from "@/assets/images/logo/youtube.svg";
 import metaLogo from "@/assets/images/logo/meta.svg";
-import amazonLogo from "@/assets/images/logo/amazon.svg";
-import appleMusicLogo from "@/assets/images/logo/apple-music.svg";
+import appleMusicLogo from "@/assets/images/logo/apple-music-glyph.svg";
 import deezerLogo from "@/assets/images/logo/deezer.svg";
 import tiktokLogo from "@/assets/images/logo/tiktok.svg";
 
@@ -19,6 +19,9 @@ interface ReproductionData {
 
 interface PlatformsProps {
   reproductions?: ReproductionData[];
+  /** Variación del ingreso respecto al periodo anterior, si se conoce. */
+  trend?: number;
+  onViewBreakdown?: () => void;
 }
 
 interface PlatformDataItem {
@@ -34,68 +37,53 @@ interface PlatformDataItem {
 }
 
 type ChartView = "bar" | "donut" | "horizontal";
+type Metric = "income" | "streams";
 
+/**
+ * Cada plataforma con su color de marca: es como se reconocen de un vistazo,
+ * sin tener que leer el nombre. El color viaja de la porción de la dona al chip
+ * de la lista, así que también hace de leyenda.
+ */
 const platformConfig: Record<string, { color: string; letter: string; logo?: string }> = {
-  "Spotify": { color: "#22C55E", letter: "S", logo: spotifyLogo },
-  "Apple Music": { color: "#111827", letter: "A", logo: appleMusicLogo },
-  "YouTube Official Content": {
-    color: "#EF4444",
-    letter: "Y",
-    logo: youtubeLogo,
-  },
-  "YouTube UGC": { color: "#EF4444", letter: "Y", logo: youtubeLogo },
-  "Deezer": { color: "#6B7280", letter: "D", logo: deezerLogo },
-  "Amazon Premium": { color: "#00C7F2", letter: "A", logo: amazonLogo },
-  "Amazon Ad-Supported": { color: "#00A8E1", letter: "A", logo: amazonLogo },
+  "Spotify": { color: "#1DB954", letter: "S", logo: spotifyLogo },
+  "Apple Music": { color: "#FA243C", letter: "A", logo: appleMusicLogo },
+  "YouTube Official Content": { color: "#FF0000", letter: "Y", logo: youtubeLogo },
+  "YouTube UGC": { color: "#FF0000", letter: "Y", logo: youtubeLogo },
+  "Deezer": { color: "#A238FF", letter: "D", logo: deezerLogo },
+  "Amazon Premium": { color: "#00A8E1", letter: "A" },
+  "Amazon Ad-Supported": { color: "#00A8E1", letter: "A" },
   "Facebook / Instagram": { color: "#E4405F", letter: "F", logo: metaLogo },
   "iMusica": { color: "#FF6B35", letter: "I" },
   "Yandex": { color: "#FFCC00", letter: "Y" },
   "iTunes Match": { color: "#FA243C", letter: "I" },
-  "Audiomack": { color: "#FFA500", letter: "A" },
-  "TikTok": { color: "#000000", letter: "T", logo: tiktokLogo },
-  "Otros": { color: "#6366F1", letter: "O" },
+  "Audiomack": { color: "#FFA200", letter: "A" },
+  "TikTok": { color: "#010101", letter: "T", logo: tiktokLogo },
+  "Otros": { color: "#71757E", letter: "O" },
+};
+
+/** Sobre un chip claro (Yandex, Audiomack) el logo y la inicial van en tinta. */
+const isLight = (hex: string): boolean => {
+  const value = hex.replace("#", "");
+  const [r, g, b] = [0, 2, 4].map((offset) => parseInt(value.slice(offset, offset + 2), 16) / 255);
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.6;
 };
 
 const chartButtons: { view: ChartView; icon: JSX.Element; label: string }[] = [
-  { view: "bar", icon: <BarChart2 className="h-3.5 w-3.5" />, label: "Barras" },
-  { view: "donut", icon: <PieChart className="h-3.5 w-3.5" />, label: "Dona" },
+  { view: "donut", icon: <PieChart className="h-[14px] w-[14px]" />, label: "Dona" },
+  { view: "bar", icon: <BarChart2 className="h-[14px] w-[14px]" />, label: "Barras" },
   {
     view: "horizontal",
-    icon: <BarChartHorizontal className="h-3.5 w-3.5" />,
+    icon: <BarChartHorizontal className="h-[14px] w-[14px]" />,
     label: "Horizontal",
   },
 ];
 
-const flipStyles = `
-  .flip-zone-wrapper {
-    perspective: 1200px;
-  }
-  .flip-zone-inner {
-    position: relative;
-    width: 100%;
-    transition: transform 0.65s cubic-bezier(0.4, 0, 0.2, 1);
-    transform-style: preserve-3d;
-  }
-  .flip-zone-inner.flipped {
-    transform: rotateY(180deg);
-  }
-  .flip-zone-face {
-    width: 100%;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-  }
-  .flip-zone-face.back {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    transform: rotateY(180deg);
-  }
-`;
+const CHART_FONT = "Poppins, sans-serif";
 
-const Platforms = ({ reproductions = [] }: PlatformsProps) => {
+const Platforms = ({ reproductions = [], trend, onViewBreakdown }: PlatformsProps) => {
   const [chartView, setChartView] = useState<ChartView>("donut");
-  const [isFlipped, setIsFlipped] = useState(false);
+  const [metric, setMetric] = useState<Metric>("income");
+  const isIncome = metric === "income";
 
   const platformData = useMemo<PlatformDataItem[]>(() => {
     const totalStreams = reproductions.reduce((sum, item) => sum + (item.totalStreams || 0), 0);
@@ -128,7 +116,7 @@ const Platforms = ({ reproductions = [] }: PlatformsProps) => {
       const othersConfig = platformConfig.Otros;
       const othersStreams = platformsWithZero.reduce((sum, p) => sum + p.streams, 0);
       const othersIncome = platformsWithZero.reduce((sum, p) => sum + p.income, 0);
-      const othersData: PlatformDataItem = {
+      groupedData.push({
         name: "Otros",
         percentage: totalStreams > 0 ? Math.round((othersStreams / totalStreams) * 100) : 0,
         incomePercentage: totalIncome > 0 ? Math.round((othersIncome / totalIncome) * 100) : 0,
@@ -138,430 +126,364 @@ const Platforms = ({ reproductions = [] }: PlatformsProps) => {
         streams: othersStreams,
         income: othersIncome,
         releases: platformsWithZero.reduce((sum, p) => sum + p.releases, 0),
-      };
-      if (othersData.streams > 0 || platformsWithZero.length > 0) groupedData.push(othersData);
+      });
     }
 
     return groupedData;
   }, [reproductions]);
 
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-    return num.toLocaleString();
-  };
-
-  const formatCurrency = (num: number) => {
-    if (num >= 1000000) return `$${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `$${(num / 1000).toFixed(1)}K`;
-    return `$${num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  };
-
-  const visibleData = platformData.slice(0, 5);
-
-  const visibleDataByIncome = useMemo(
-    () => [...platformData].sort((a, b) => b.income - a.income).slice(0, 5),
-    [platformData],
+  /** Top 5 de la métrica activa. */
+  const data = useMemo(
+    () =>
+      [...platformData]
+        .sort((a, b) => (isIncome ? b.income - a.income : b.streams - a.streams))
+        .slice(0, 5),
+    [platformData, isIncome],
   );
 
-  // ── Opciones INGRESOS ────────────────────────────────────────────────────────
+  const totalIncome = platformData.reduce((sum, p) => sum + p.income, 0);
+  const totalStreams = platformData.reduce((sum, p) => sum + p.streams, 0);
+  const leader = data[0];
+  const leaderPct = leader ? (isIncome ? leader.incomePercentage : leader.percentage) : 0;
+  const colors = useMemo(() => data.map((platform) => platform.color), [data]);
 
-  const incomeBarOptions: ApexOptions = useMemo(
+  const values = data.map((p) => (isIncome ? p.income : p.streams));
+  const formatValue = useCallback(
+    (val: number) => (isIncome ? formatCurrency(val) : `${formatStreams(val)} streams`),
+    [isIncome],
+  );
+  const formatAxis = useCallback(
+    (val: number) => (isIncome ? formatCompactCurrency(val) : formatStreams(Math.round(val))),
+    [isIncome],
+  );
+
+  const baseOptions: ApexOptions = useMemo(
     () => ({
-      chart: { toolbar: { show: false }, background: "transparent" },
+      chart: { toolbar: { show: false }, background: "transparent", fontFamily: CHART_FONT },
+      colors,
+      dataLabels: { enabled: false },
+      legend: { show: false },
+      grid: { borderColor: "#E8E8EC", strokeDashArray: 4 },
+      states: { active: { filter: { type: "none" } } },
+      tooltip: {
+        theme: "light",
+        style: { fontSize: "11px", fontFamily: CHART_FONT },
+        y: { formatter: (val: number) => formatValue(val) },
+      },
+    }),
+    [colors, formatValue],
+  );
+
+  const donutOptions: ApexOptions = useMemo(
+    () => ({
+      ...baseOptions,
+      labels: data.map((p) => p.name),
+      // Apple Music y YouTube son casi el mismo rojo: sin una separación clara
+      // sus porciones se leen como una sola.
+      stroke: { width: 3, colors: ["#FFFFFF"] },
+      plotOptions: { pie: { donut: { size: "72%", labels: { show: false } }, expandOnClick: false } },
+    }),
+    [baseOptions, data],
+  );
+
+  const barOptions: ApexOptions = useMemo(
+    () => ({
+      ...baseOptions,
       plotOptions: {
         bar: {
-          borderRadius: 5,
-          columnWidth: "55%",
+          borderRadius: 6,
+          columnWidth: "52%",
           borderRadiusApplication: "end",
+          distributed: true,
         },
       },
-      dataLabels: { enabled: false },
-      colors: visibleDataByIncome.map((p) => p.color),
       xaxis: {
-        categories: visibleDataByIncome.map((p) => p.name.split(" ")[0]),
-        labels: { style: { fontSize: "10px", colors: "#9CA3AF" } },
+        categories: data.map((p) => p.name.split(" ")[0]),
+        labels: { style: { fontSize: "10px", colors: "#A6AAB2", fontFamily: CHART_FONT } },
         axisBorder: { show: false },
         axisTicks: { show: false },
       },
       yaxis: {
         labels: {
-          style: { colors: "#9CA3AF", fontSize: "10px" },
-          formatter: (val: number) => {
-            if (val >= 1_000_000) return `$${(val / 1_000_000).toFixed(1)}M`;
-            if (val >= 1_000) return `$${(val / 1_000).toFixed(1)}K`;
-            return `$${Math.round(val)}`;
-          },
+          style: { colors: "#A6AAB2", fontSize: "10px", fontFamily: CHART_FONT },
+          formatter: formatAxis,
         },
       },
-      grid: {
-        borderColor: "#F3F4F6",
-        yaxis: { lines: { show: true } },
-        xaxis: { lines: { show: false } },
-      },
-      legend: { show: false },
-      tooltip: {
-        theme: "light",
-        y: { formatter: (val: number) => formatCurrency(val) },
-      },
+      grid: { ...baseOptions.grid, yaxis: { lines: { show: true } }, xaxis: { lines: { show: false } } },
     }),
-    [visibleDataByIncome],
+    [baseOptions, data, formatAxis],
   );
 
-  const incomeDonutOptions: ApexOptions = useMemo(
+  const horizontalOptions: ApexOptions = useMemo(
     () => ({
-      chart: { toolbar: { show: false }, background: "transparent" },
-      labels: visibleDataByIncome.map((p) => p.name),
-      colors: visibleDataByIncome.map((p) => p.color),
-      dataLabels: { enabled: false },
-      plotOptions: { pie: { donut: { size: "62%" } } },
-      legend: {
-        position: "bottom",
-        fontSize: "10px",
-        labels: { colors: "#6B7280" },
-        markers: { size: 5 },
-        itemMargin: { horizontal: 6, vertical: 2 },
-      },
-      tooltip: {
-        theme: "light",
-        y: { formatter: (val: number) => formatCurrency(val) },
-      },
-    }),
-    [visibleDataByIncome],
-  );
-
-  const incomeHorizontalOptions: ApexOptions = useMemo(
-    () => ({
-      chart: { toolbar: { show: false }, background: "transparent" },
+      ...baseOptions,
       plotOptions: {
         bar: {
           horizontal: true,
-          borderRadius: 4,
-          barHeight: "55%",
-          borderRadiusApplication: "end",
-        },
-      },
-      dataLabels: { enabled: false },
-      colors: visibleDataByIncome.map((p) => p.color),
-      xaxis: {
-        labels: {
-          style: { fontSize: "10px", colors: "#9CA3AF" },
-          formatter: (val: string) => {
-            const num = Number(val);
-            if (num >= 1_000_000) return `$${(num / 1_000_000).toFixed(1)}M`;
-            if (num >= 1_000) return `$${(num / 1_000).toFixed(1)}K`;
-            return `$${Math.round(num)}`;
-          },
-        },
-        axisBorder: { show: false },
-        axisTicks: { show: false },
-      },
-      yaxis: { labels: { style: { colors: "#6B7280", fontSize: "10px" } } },
-      grid: {
-        borderColor: "#F3F4F6",
-        xaxis: { lines: { show: true } },
-        yaxis: { lines: { show: false } },
-      },
-      legend: { show: false },
-      tooltip: {
-        theme: "light",
-        y: { formatter: (val: number) => formatCurrency(val) },
-      },
-    }),
-    [visibleDataByIncome],
-  );
-
-  // ── Opciones STREAMS ─────────────────────────────────────────────────────────
-
-  const streamsBarOptions: ApexOptions = useMemo(
-    () => ({
-      chart: { toolbar: { show: false }, background: "transparent" },
-      plotOptions: {
-        bar: {
           borderRadius: 5,
-          columnWidth: "55%",
+          barHeight: "52%",
           borderRadiusApplication: "end",
+          distributed: true,
         },
       },
-      dataLabels: { enabled: false },
-      colors: visibleData.map((p) => p.color),
-      xaxis: {
-        categories: visibleData.map((p) => p.name.split(" ")[0]),
-        labels: { style: { fontSize: "10px", colors: "#9CA3AF" } },
-        axisBorder: { show: false },
-        axisTicks: { show: false },
-      },
-      yaxis: {
-        labels: {
-          style: { colors: "#9CA3AF", fontSize: "10px" },
-          formatter: (val: number) => {
-            if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M`;
-            if (val >= 1_000) return `${(val / 1_000).toFixed(1)}K`;
-            return String(Math.round(val));
-          },
-        },
-      },
-      grid: {
-        borderColor: "#F3F4F6",
-        yaxis: { lines: { show: true } },
-        xaxis: { lines: { show: false } },
-      },
-      legend: { show: false },
-      tooltip: {
-        theme: "light",
-        y: { formatter: (val: number) => `${formatNumber(val)} streams` },
-      },
-    }),
-    [visibleData],
-  );
-
-  const streamsDonutOptions: ApexOptions = useMemo(
-    () => ({
-      chart: { toolbar: { show: false }, background: "transparent" },
-      labels: visibleData.map((p) => p.name),
-      colors: visibleData.map((p) => p.color),
-      dataLabels: { enabled: false },
-      plotOptions: { pie: { donut: { size: "62%" } } },
-      legend: {
-        position: "bottom",
-        fontSize: "10px",
-        labels: { colors: "#6B7280" },
-        markers: { size: 5 },
-        itemMargin: { horizontal: 6, vertical: 2 },
-      },
-      tooltip: {
-        theme: "light",
-        y: { formatter: (val: number) => `${formatNumber(val)} streams` },
-      },
-    }),
-    [visibleData],
-  );
-
-  const streamsHorizontalOptions: ApexOptions = useMemo(
-    () => ({
-      chart: { toolbar: { show: false }, background: "transparent" },
-      plotOptions: {
-        bar: {
-          horizontal: true,
-          borderRadius: 4,
-          barHeight: "55%",
-          borderRadiusApplication: "end",
-        },
-      },
-      dataLabels: { enabled: false },
-      colors: visibleData.map((p) => p.color),
       xaxis: {
         labels: {
-          style: { fontSize: "10px", colors: "#9CA3AF" },
-          formatter: (val: string) => {
-            const num = Number(val);
-            if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`;
-            if (num >= 1_000) return `${(num / 1_000).toFixed(1)}K`;
-            return String(Math.round(num));
-          },
+          style: { fontSize: "10px", colors: "#A6AAB2", fontFamily: CHART_FONT },
+          formatter: (val: string) => formatAxis(Number(val)),
         },
         axisBorder: { show: false },
         axisTicks: { show: false },
       },
-      yaxis: { labels: { style: { colors: "#6B7280", fontSize: "10px" } } },
-      grid: {
-        borderColor: "#F3F4F6",
-        xaxis: { lines: { show: true } },
-        yaxis: { lines: { show: false } },
-      },
-      legend: { show: false },
-      tooltip: {
-        theme: "light",
-        y: { formatter: (val: number) => `${formatNumber(val)} streams` },
-      },
+      yaxis: { labels: { style: { colors: "#71757E", fontSize: "10px", fontFamily: CHART_FONT } } },
+      grid: { ...baseOptions.grid, xaxis: { lines: { show: true } }, yaxis: { lines: { show: false } } },
     }),
-    [visibleData],
+    [baseOptions, formatAxis],
   );
 
-  // ── Render de una cara ───────────────────────────────────────────────────────
+  const seriesName = isIncome ? "Ingresos" : "Streams";
 
-  const renderFace = (mode: "income" | "streams", isBackFace = false) => {
-    const isIncome = mode === "income";
-    const data = isIncome ? visibleDataByIncome : visibleData;
+  const trendChip = trend !== undefined && (
+    <span
+      className={`flex items-center gap-1.5 text-[11px] font-medium ${
+        trend >= 0 ? "text-[#2FB37E]" : "text-[#E5484D]"
+      }`}
+    >
+      <TrendingUp className={`h-[13px] w-[13px] ${trend < 0 ? "rotate-180" : ""}`} />
+      {trend >= 0 ? "+" : "−"}
+      {Math.abs(trend).toLocaleString("es-ES", { maximumFractionDigits: 1 })}% vs. mes anterior
+    </span>
+  );
 
-    const barOpts = isIncome ? incomeBarOptions : streamsBarOptions;
-    const donutOpts = isIncome ? incomeDonutOptions : streamsDonutOptions;
-    const horizontalOpts = isIncome ? incomeHorizontalOptions : streamsHorizontalOptions;
+  const metricLabel = isIncome ? "INGRESO NETO" : "STREAMS";
+  const metricTotal = isIncome ? formatCurrency(totalIncome) : formatStreams(totalStreams);
+  const metricSub = isIncome
+    ? `${formatStreams(totalStreams)} streams en total`
+    : `${formatCurrency(totalIncome)} de ingreso neto`;
 
-    const barSeries = isIncome
-      ? [{ name: "Ingresos", data: data.map((p) => p.income) }]
-      : [{ name: "Streams", data: data.map((p) => p.streams) }];
-    const donutSeries = isIncome ? data.map((p) => p.income) : data.map((p) => p.streams);
-    const horizontalSeries = isIncome
-      ? [
-          {
-            name: "Ingresos",
-            data: data.map((p) => ({ x: p.name.split(" ")[0], y: p.income })),
-          },
-        ]
-      : [
-          {
-            name: "Streams",
-            data: data.map((p) => ({ x: p.name.split(" ")[0], y: p.streams })),
-          },
-        ];
+  /** Junto a la dona el resumen cabe en columna; sobre las barras, en una lu00ednea. */
+  const renderSummary = (layout: "column" | "inline") =>
+    layout === "column" ? (
+      <div className="flex min-w-0 flex-1 flex-col gap-2.5">
+        <span className="text-[9.5px] font-semibold tracking-[0.9px] text-[#A6AAB2]">
+          {metricLabel}
+        </span>
+        <span className="flex flex-col gap-[3px]">
+          <span className="font-display text-2xl font-semibold text-[#1C1D22]">{metricTotal}</span>
+          <span className="text-[11px] text-[#71757E]">{metricSub}</span>
+        </span>
+        {trendChip && (
+          <>
+            <span className="h-px w-full bg-[#E8E8EC]" />
+            {trendChip}
+          </>
+        )}
+      </div>
+    ) : (
+      <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
+        <span className="font-display text-2xl font-semibold text-[#1C1D22]">{metricTotal}</span>
+        <span className="text-[11px] text-[#71757E]">{metricSub}</span>
+        {trendChip}
+      </div>
+    );
 
-    // La cara trasera está pre-rotada 180° en Y, lo que espejea las columnas.
-    // Intercambiamos el orden para que tras el flip la lista quede siempre a la derecha.
-    const chartOrder = isBackFace
-      ? "order-2 lg:border-l lg:border-gray-100 lg:pl-6"
-      : "order-1 lg:border-r lg:border-gray-100 lg:pr-6";
-    const listOrder = isBackFace ? "order-1" : "order-2";
+  return (
+    <section className="col-span-4 flex h-full flex-col gap-4 rounded-[26px] border border-[#E8E8EC] bg-white p-[26px] shadow-[0_10px_28px_-12px_rgba(255,92,0,0.15)]">
+      <div className="flex flex-col gap-0.5">
+        <h2 className="font-display text-lg font-semibold text-[#1C1D22]">De dónde vienen</h2>
+        <p className="text-[12.5px] text-[#71757E]">
+          {isIncome ? "Reparto del ingreso neto por plataforma" : "Reparto de los streams por plataforma"}
+        </p>
+      </div>
 
-    return (
-      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2 bg-[#F4F5F7]">
-        {/* Gráfica */}
-        <div className={chartOrder}>
-          {chartView === "bar" && (
-            <div className="h-[200px] lg:h-[230px]">
-              <ReactApexChart
-                options={barOpts}
-                series={barSeries}
-                type="bar"
-                height="100%"
-                width="100%"
-              />
-            </div>
-          )}
-          {chartView === "donut" && (
-            <div className="h-[220px] lg:h-[250px]">
-              <ReactApexChart
-                options={donutOpts}
-                series={donutSeries}
-                type="donut"
-                height="100%"
-                width="100%"
-              />
-            </div>
-          )}
-          {chartView === "horizontal" && (
-            <div className="h-[200px] lg:h-[230px]">
-              <ReactApexChart
-                options={horizontalOpts}
-                series={horizontalSeries}
-                type="bar"
-                height="100%"
-                width="100%"
-              />
-            </div>
-          )}
+      {/* Controles: qué se mide y cómo se dibuja */}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div
+          role="tablist"
+          aria-label="Métrica"
+          className="flex items-center gap-0.5 rounded-[20px] bg-[#F4F5F7] p-[3px]"
+        >
+          {([
+            ["income", "Ingresos"],
+            ["streams", "Streams"],
+          ] as const).map(([value, label]) => (
+            <button
+              key={value}
+              role="tab"
+              aria-selected={metric === value}
+              onClick={() => setMetric(value)}
+              className={`rounded-[16px] px-[13px] py-1.5 font-mono text-[11px] font-semibold transition-colors ${
+                metric === value
+                  ? "bg-[#FF5C00] text-white"
+                  : "text-[#71757E] hover:text-[#1C1D22]"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
-        {/* Lista de plataformas */}
-        <div className={listOrder}>
-          <div className="flex flex-col rounded-lg border border-gray-100 px-3">
-            {data.map((platform, index) => (
-              <div
-                key={platform.name}
-                className={`flex items-center justify-between py-2.5 ${
-                  index < data.length - 1 ? "border-b border-gray-100" : ""
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-lg"
-                    style={{
-                      backgroundColor: platform.logo ? "#F3F4F6" : platform.color,
-                    }}
+        <div
+          role="tablist"
+          aria-label="Tipo de gráfico"
+          className="flex items-center gap-0.5 rounded-[20px] bg-[#F4F5F7] p-[3px]"
+        >
+          {chartButtons.map(({ view, icon, label }) => (
+            <button
+              key={view}
+              role="tab"
+              title={label}
+              aria-label={label}
+              aria-selected={chartView === view}
+              onClick={() => setChartView(view)}
+              className={`flex h-[26px] w-8 items-center justify-center rounded-[14px] transition-colors ${
+                chartView === view
+                  ? "bg-white text-[#1C1D22] shadow-[0_1px_3px_rgba(28,29,34,0.08)]"
+                  : "text-[#A6AAB2] hover:text-[#71757E]"
+              }`}
+            >
+              {icon}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {data.length === 0 ? (
+        <div className="flex flex-1 flex-col items-center justify-center gap-1 py-10 text-center">
+          <p className="text-[12.5px] font-medium text-[#1C1D22]">
+            Todavía no hay datos por plataforma
+          </p>
+          <p className="text-[11px] text-[#A6AAB2]">
+            Aparecerán en cuanto llegue el primer reporte del distribuidor.
+          </p>
+        </div>
+      ) : (
+        <>
+          {chartView === "donut" ? (
+            <div className="flex items-center gap-[18px]">
+              <div className="relative h-[148px] w-[148px] flex-shrink-0">
+                <ReactApexChart
+                  options={donutOptions}
+                  series={values}
+                  type="donut"
+                  height="100%"
+                  width="100%"
+                />
+                {leader && (
+                  <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="font-display text-[22px] font-semibold leading-none text-[#1C1D22]">
+                      {leaderPct}%
+                    </span>
+                    <span className="mt-1 max-w-[92px] truncate text-[10.5px] font-medium text-[#71757E]">
+                      {leader.name}
+                    </span>
+                  </div>
+                )}
+              </div>
+              {renderSummary("column")}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {renderSummary("inline")}
+              <div className="h-[190px]">
+                <ReactApexChart
+                  options={chartView === "bar" ? barOptions : horizontalOptions}
+                  series={
+                    chartView === "bar"
+                      ? [{ name: seriesName, data: values }]
+                      : [
+                          {
+                            name: seriesName,
+                            data: data.map((p) => ({ x: p.name.split(" ")[0], y: isIncome ? p.income : p.streams })),
+                          },
+                        ]
+                  }
+                  type="bar"
+                  height="100%"
+                  width="100%"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* La lista es la leyenda: el chip lleva el color de su porción */}
+          <ul className="flex flex-col gap-2.5">
+            {data.map((platform) => {
+              const color = platform.color;
+              const onLight = isLight(color);
+              return (
+                <li key={platform.name} className="flex items-center gap-2.5">
+                  <span
+                    className="flex h-7 w-7 flex-shrink-0 items-center justify-center overflow-hidden rounded-[9px]"
+                    style={{ backgroundColor: color }}
                   >
                     {platform.logo ? (
                       <img
                         src={platform.logo}
-                        alt={platform.name}
-                        className="h-full w-full object-contain"
+                        alt=""
+                        aria-hidden="true"
+                        className="h-[17px] w-[17px] object-contain"
+                        style={{
+                          filter: onLight ? "brightness(0)" : "brightness(0) invert(1)",
+                        }}
                       />
                     ) : (
-                      <span className="text-xs font-bold text-white">{platform.letter}</span>
+                      <span
+                        className={`font-mono text-[12px] font-semibold ${
+                          onLight ? "text-[#1C1D22]" : "text-white"
+                        }`}
+                      >
+                        {platform.letter}
+                      </span>
                     )}
-                  </div>
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-[12px] font-semibold text-gray-900">{platform.name}</span>
-                    <span className="text-[11px] text-gray-400">
-                      {isIncome
-                        ? formatCurrency(platform.income)
-                        : `${formatNumber(platform.streams)} streams`}
+                  </span>
+
+                  <span className="flex min-w-0 flex-1 flex-col gap-px">
+                    <span className="truncate text-[12px] font-medium text-[#1C1D22]">
+                      {platform.name}
                     </span>
-                  </div>
-                </div>
-                <span className="text-[12px] font-semibold text-gray-900">
-                  {isIncome ? platform.incomePercentage : platform.percentage}%
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  };
+                    <span className="text-[10px] text-[#A6AAB2]">
+                      {isIncome
+                        ? `${formatStreams(platform.streams)} streams`
+                        : formatCurrency(platform.income)}
+                    </span>
+                  </span>
 
-  return (
-    <>
-      <style>{flipStyles}</style>
-      <div className="h-full min-h-[420px] rounded-xl border border-gray-200 bg-[#F4F5F7] p-6">
-        <div className="flex flex-col gap-4">
-          {/* ── HEADER FIJO: título + badge + botón flip ─────────────────────── */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <h2 className="text-base font-semibold text-gray-900">Plataformas</h2>
-              <span
-                className={`rounded-full px-2 py-0.5 text-[11px] font-medium transition-colors ${
-                  isFlipped ? "bg-indigo-50 text-indigo-600" : "bg-emerald-50 text-emerald-600"
-                }`}
-              >
-                {isFlipped ? "Streams" : "Ingresos"}
+                  <span className="flex-shrink-0 font-mono text-[12px] font-semibold text-[#1C1D22]">
+                    {isIncome ? formatCurrency(platform.income) : formatStreams(platform.streams)}
+                  </span>
+
+                  <span className="flex w-11 flex-shrink-0 justify-end">
+                    <span className="rounded-[9px] bg-[#F4F5F7] px-[7px] py-[3px] font-mono text-[11px] font-semibold text-[#1C1D22]">
+                      {isIncome ? platform.incomePercentage : platform.percentage}%
+                    </span>
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+
+          <div className="mt-auto flex flex-col gap-4">
+            <div className="h-px bg-[#E8E8EC]" />
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11.5px] text-[#71757E]">
+                {platformData.length === 1
+                  ? "1 plataforma con datos"
+                  : `${platformData.length} plataformas con datos`}
               </span>
+              {onViewBreakdown && (
+                <button
+                  onClick={onViewBreakdown}
+                  className="flex items-center gap-0.5 text-[11.5px] font-semibold text-[#FF5C00] transition-colors hover:text-[#EA580C]"
+                >
+                  Ver desglose
+                  <ChevronRight className="h-[13px] w-[13px]" />
+                </button>
+              )}
             </div>
-            <button
-              onClick={() => setIsFlipped((f) => !f)}
-              title={isFlipped ? "Ver ingresos" : "Ver streams"}
-              className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
-            >
-              <RefreshCw className="h-3.5 w-3.5" />
-              <span>{isFlipped ? "Ver ingresos" : "Ver streams"}</span>
-            </button>
           </div>
-
-          {/* ── TOGGLE TIPO DE GRÁFICA FIJO ──────────────────────────────────── */}
-          <div className="flex items-center justify-center rounded-lg bg-gray-100 p-0.5">
-            {chartButtons.map(({ view, icon, label }) => (
-              <button
-                key={view}
-                title={label}
-                onClick={() => setChartView(view)}
-                className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${
-                  chartView === view
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                {icon}
-              </button>
-            ))}
-          </div>
-
-          {/* ── ZONA QUE GIRA: solo gráfica + lista ──────────────────────────── */}
-          {platformData.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-2 py-8">
-              <p className="text-sm text-gray-400">Todavía no hay datos por plataforma</p>
-            </div>
-          ) : (
-            <div className="flip-zone-wrapper">
-              <div className={`flip-zone-inner ${isFlipped ? "flipped" : ""}`}>
-                {/* FRENTE — Ingresos */}
-                <div className="flip-zone-face front">{renderFace("income", false)}</div>
-                {/* REVERSO — Streams */}
-                <div className="flip-zone-face back">{renderFace("streams", true)}</div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </>
+        </>
+      )}
+    </section>
   );
 };
 

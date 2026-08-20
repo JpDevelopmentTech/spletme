@@ -1,7 +1,8 @@
 /** Formatea streams de forma compacta: 1.2M, 612K, 840 */
 export const formatStreams = (val: number): string => {
-  if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M`;
-  if (val >= 1_000) return `${(val / 1_000).toFixed(1)}K`;
+  const compact = (num: number) => num.toFixed(1).replace(/\.0$/, "");
+  if (val >= 1_000_000) return `${compact(val / 1_000_000)}M`;
+  if (val >= 1_000) return `${compact(val / 1_000)}K`;
   return val?.toLocaleString() ?? "0";
 };
 
@@ -22,9 +23,13 @@ export const currencySymbol = (currency?: string | null): string =>
   CURRENCY_SYMBOLS[currency ?? "USD"] ?? "$";
 
 /**
- * Como `formatCurrency`, pero respetando la moneda del distribuidor. Los importes
- * se guardan tal cual vienen en el reporte y no se convierten, así que un
- * distribuidor en euros tiene que leerse en euros.
+ * Como `formatCurrency`, pero con el símbolo de otra moneda.
+ *
+ * Ya no sirve para pintar importes guardados: todo el dinero del sistema vive en
+ * dólares desde que la ingesta convierte los reportes en moneda extranjera. Se
+ * usa para hablar del archivo ORIGEN —el ejemplo del tipo de cambio, el total en
+ * euros que quedó como rastro en el historial de cargas— y no debe volver a
+ * colgarse de `distributor.currency`, que hoy sólo dice en qué moneda reporta.
  */
 export const formatMoney = (val: number, currency?: string | null): string =>
   `${currencySymbol(currency)}${(val ?? 0).toLocaleString("en-US", {

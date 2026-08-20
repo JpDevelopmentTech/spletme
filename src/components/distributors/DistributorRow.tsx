@@ -8,7 +8,7 @@ import {
   Trash2,
   TriangleAlert,
 } from "lucide-react";
-import { formatStreams, formatMoney } from "@/utils/format.utils";
+import { formatStreams, formatCurrency } from "@/utils/format.utils";
 import { formatGaps, formatRelativeDate, isStale } from "@/utils/coverage.utils";
 import { formatUploadPeriod } from "@/utils/period.utils";
 import { CoverageStrip } from "./CoverageStrip";
@@ -87,9 +87,14 @@ export function DistributorRow({
         </div>
       </div>
 
-      {/* Moneda */}
+      {/* Moneda en la que reporta: los importes de la fila van siempre en USD. */}
       <div className={visibility("currency")}>
         <span
+          title={
+            distributor.currency === "USD"
+              ? "Reporta en dólares"
+              : "Reporta en euros; sus importes se convierten a dólares al subir cada archivo"
+          }
           className={`rounded-full px-2.5 py-1 font-mono text-[10.5px] font-semibold ${
             distributor.currency === "USD"
               ? "bg-[#E4F5EC] text-[#2FB37E]"
@@ -119,7 +124,7 @@ export function DistributorRow({
       <div className={`${visibility("income")} min-w-0 flex-col gap-1.5`}>
         <span className="flex items-baseline gap-1.5">
           <span className="font-mono text-[13px] font-semibold text-[#2FB37E]">
-            {formatMoney(kpi?.totalNetIncome ?? 0, distributor.currency)}
+            {formatCurrency(kpi?.totalNetIncome ?? 0)}
           </span>
           <span className="font-mono text-[10px] text-[#A6AAB2]">
             {item.shareOfTotal.toFixed(0)}%

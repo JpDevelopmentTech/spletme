@@ -1,10 +1,21 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
-/* Bricolage Grotesque para títulos y Fira Code para cifras: se usan con las
-   utilidades `font-display` y `font-mono`, el resto de la interfaz sigue en Poppins. */
-@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Fira+Code:wght@400;500;600&display=swap");
+/* Bricolage Grotesque para títulos y para cifras: se usa con las utilidades
+   `font-display` y `font-mono`, el resto de la interfaz sigue en Poppins. */
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  /* `font-mono` marca cifras: importes, contadores, columnas de tablas. Ya no la
+     sirve una fuente monoespaciada, y en Bricolage Grotesque el «1» mide menos
+     de la mitad que el «0», así que sin esto las columnas se descuadran y los
+     contadores en vivo bailan al actualizarse. La fuente trae cifras tabulares;
+     esto solo las pide. */
+  .font-mono {
+    font-variant-numeric: tabular-nums;
+  }
+}
 
 * {
   font-family: "Poppins", sans-serif;

@@ -62,6 +62,8 @@ export interface SongItem {
   labelNames?: unknown[];
   otherLabels?: unknown[];
   labelCount?: number;
+  /** En cuántos álbumes distintos aparece la canción, según la tabla de hechos. */
+  albumCount?: number;
   releaseDate?: string;
   release_date?: string;
   releasedAt?: string;
@@ -97,4 +99,19 @@ export interface AlbumItem extends Album {
   tracks: AlbumTrack[];
   split?: SplitData | null;
   ownerId?: { split?: SplitData | null } | null;
+}
+
+/**
+ * Un álbum en el que vive una canción, con lo que aporta.
+ *
+ * `albumId: null` es la parte del histórico que no sabe de qué lanzamiento
+ * viene: se muestra aparte, nunca repartida entre los álbumes conocidos.
+ */
+export interface SongAlbum {
+  albumId: string | null;
+  upc?: string;
+  albumTitle?: string;
+  totalTracks?: number;
+  streams: number;
+  netIncome: number;
 }

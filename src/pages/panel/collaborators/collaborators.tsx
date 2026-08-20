@@ -6,7 +6,6 @@ import { AttentionTray } from "@/components/collaborators/AttentionTray";
 import { CollaboratorsFilterBar } from "@/components/collaborators/CollaboratorsFilterBar";
 import { CollaboratorRow } from "@/components/collaborators/CollaboratorRow";
 import { BulkActionBar } from "@/components/collaborators/BulkActionBar";
-import { RecentPaymentsSection } from "@/components/collaborators/RecentPaymentsSection";
 import {
   FirstCollaboratorState,
   NoResultsState,
@@ -30,7 +29,6 @@ export default function Collaborators() {
   const library = useCollaboratorsLibrary();
   const {
     loading,
-    paymentsLoading,
     error,
     reload,
     refresh,
@@ -38,7 +36,6 @@ export default function Collaborators() {
     visible,
     payable,
     blocked,
-    payments,
     totals,
     catalogSize,
     search,
@@ -74,11 +71,6 @@ export default function Collaborators() {
     email: c.email,
     pending: c.amountPending,
   });
-
-  const remindBlocked = () => {
-    const emails = blocked.map((c) => c.email).filter(Boolean).join(",");
-    if (emails) window.open(`mailto:${emails}`, "_blank");
-  };
 
   const visiblePayable = visible.filter((c) => resolveCollaboratorState(c) === "can_pay");
   const allSelected =
@@ -173,10 +165,7 @@ export default function Collaborators() {
 
             <AttentionTray
               payable={payable}
-              blocked={blocked}
               onPayAll={() => setPayTargets(payable.map(toTarget))}
-              onRemind={remindBlocked}
-              onShowBlocked={() => library.setStateFilter("no_payout_data")}
             />
 
             <CollaboratorsFilterBar
@@ -246,8 +235,6 @@ export default function Collaborators() {
                 </div>
               </div>
             )}
-
-            <RecentPaymentsSection payments={payments} loading={paymentsLoading} />
           </>
         )}
       </div>

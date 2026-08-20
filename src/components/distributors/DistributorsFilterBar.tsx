@@ -45,9 +45,11 @@ export function DistributorsFilterBar({
 }: DistributorsFilterBarProps) {
   return (
     <div className="flex flex-wrap items-center gap-2.5">
-      <FilterFacet label="Moneda" value={currencyFilter === "all" ? "Todas" : currencyFilter}>
+      {/* Filtra por la moneda en la que el distribuidor emite sus reportes: los
+          importes que muestra la tabla están todos en dólares. */}
+      <FilterFacet label="Reporta en" value={currencyFilter === "all" ? "Todas" : currencyFilter}>
         <select
-          aria-label="Filtrar por moneda"
+          aria-label="Filtrar por la moneda en la que reporta el distribuidor"
           value={currencyFilter}
           onChange={(e) => onCurrencyFilterChange(e.target.value as CurrencyFilter)}
         >

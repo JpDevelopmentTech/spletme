@@ -1,13 +1,12 @@
 import { Link } from "react-router-dom";
 import { Music } from "lucide-react";
-import { formatStreams, formatMoney } from "@/utils/format.utils";
+import { formatStreams, formatCurrency } from "@/utils/format.utils";
 import type { DistributorDashboard } from "@/types/distributor.types";
 
 type TopSong = DistributorDashboard["topSongs"][number];
 
 interface DistributorTopSongsProps {
   songs: TopSong[];
-  currency: string;
 }
 
 /**
@@ -15,7 +14,7 @@ interface DistributorTopSongsProps {
  * compara contra la primera, que es lo que permite ver si el catálogo se
  * sostiene en un solo título o reparte.
  */
-export function DistributorTopSongs({ songs, currency }: DistributorTopSongsProps) {
+export function DistributorTopSongs({ songs }: DistributorTopSongsProps) {
   const max = Math.max(1, ...songs.map((song) => song.totalNetIncome ?? 0));
 
   return (
@@ -53,7 +52,7 @@ export function DistributorTopSongs({ songs, currency }: DistributorTopSongsProp
                 </div>
                 <div className="flex flex-shrink-0 flex-col items-end gap-px">
                   <span className="font-mono text-[11.5px] font-semibold text-[#2FB37E]">
-                    {formatMoney(song.totalNetIncome ?? 0, currency)}
+                    {formatCurrency(song.totalNetIncome ?? 0)}
                   </span>
                   <span className="font-mono text-[9.5px] text-[#A6AAB2]">
                     {formatStreams(song.totalStreams ?? 0)} str.

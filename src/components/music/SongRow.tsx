@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Music, Play, Tag, ChevronRight, Eye } from "lucide-react";
+import { Music, Play, Tag, ChevronRight, Eye, Disc3 } from "lucide-react";
 import { hasAnySplit } from "@/utils/music.utils";
 import { formatStreams, formatCurrency } from "@/utils/format.utils";
 import { CopyButton } from "@/components/ui/CopyButton";
@@ -61,6 +61,17 @@ export function SongRow({ song, onQuickView }: SongRowProps) {
                   <CopyButton value={song.isrc} title="Copiar ISRC" />
                 </span>
               </>
+            )}
+            {(song?.albumCount ?? 0) > 1 && (
+              <span
+                title={`Esta canción salió en ${song.albumCount} álbumes`}
+                className="flex flex-shrink-0 items-center gap-1 rounded-xl bg-[#F4F5F7] px-[7px] py-[3px]"
+              >
+                <Disc3 className="h-2.5 w-2.5 text-[#71757E]" />
+                <span className="text-[10.5px] font-semibold text-[#1C1D22]">
+                  {song.albumCount} álbumes
+                </span>
+              </span>
             )}
           </span>
         </div>

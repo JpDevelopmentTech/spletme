@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { FileText, Check, Loader, TriangleAlert, FileStack, Upload } from "lucide-react";
 import type { DistributorUpload, UploadStatus } from "@/types/distributor.types";
-import { formatMoney } from "@/utils/format.utils";
+import { currencySymbol, formatCurrency, formatMoney } from "@/utils/format.utils";
 import { formatUploadPeriod, MONTH_SHORT_NAMES, resolvePeriod } from "@/utils/period.utils";
 import { quarterColor } from "@/utils/coverage.utils";
 
@@ -9,7 +9,6 @@ type StatusFilter = "all" | UploadStatus;
 
 interface UploadHistoryListProps {
   uploads: DistributorUpload[];
-  currency: string;
   onUpload: () => void;
 }
 
@@ -32,7 +31,7 @@ const FILTERS: { value: StatusFilter; label: string }[] = [
  * `uploadedBy` y que la pantalla anterior descartaba— y traduce el estado, que
  * antes se imprimía crudo como «done».
  */
-export function UploadHistoryList({ uploads, currency, onUpload }: UploadHistoryListProps) {
+export function UploadHistoryList({ uploads, onUpload }: UploadHistoryListProps) {
   const [filter, setFilter] = useState<StatusFilter>("all");
 
   const visible = filter === "all" ? uploads : uploads.filter((u) => u.status === filter);
@@ -77,7 +76,7 @@ export function UploadHistoryList({ uploads, currency, onUpload }: UploadHistory
       ) : (
         <ul className="flex flex-col gap-2">
           {visible.map((upload) => (
-            <UploadRow key={upload._id} upload={upload} currency={currency} />
+            <UploadRow key={upload._id} upload={upload} />
           ))}
         </ul>
       )}
@@ -85,7 +84,7 @@ export function UploadHistoryList({ uploads, currency, onUpload }: UploadHistory
   );
 }
 
-function UploadRow({ upload, currency }: { upload: DistributorUpload; currency: string }) {
+function UploadRow({ upload }: { upload: DistributorUpload }) {
   const status = STATUS_META[upload.status] ?? STATUS_META.done;
   const period = resolvePeriod(upload);
   const badge = period ? MONTH_SHORT_NAMES[period.startMonth - 1] : "—";
@@ -128,8 +127,22 @@ function UploadRow({ upload, currency }: { upload: DistributorUpload; currency: 
         </span>
       </div>
 
-      <span className="w-[92px] text-right font-mono text-[13px] font-semibold text-[#2FB37E]">
-        {formatMoney(upload.totalNetIncome ?? 0, currency)}
+      {/* Siempre en dólares. Si el archivo llegó en otra moneda, debajo queda de
+          dónde salió la cifra: sin la tasa, un importe convertido es un número
+          del que nadie puede rendir cuentas. */}
+      <span className="flex w-[110px] flex-col items-end gap-0.5">
+        <span className="font-mono text-[13px] font-semibold text-[#2FB37E]">
+          {formatCurrency(upload.totalNetIncome ?? 0)}
+        </span>
+        {upload.exchangeRate !== null && upload.totalNetIncomeSource !== null && (
+          <span
+            className="font-mono text-[10px] text-[#A6AAB2]"
+            title={`Convertido a 1 ${currencySymbol(upload.sourceCurrency)} = $${upload.exchangeRate}`}
+          >
+            {formatMoney(upload.totalNetIncomeSource, upload.sourceCurrency)} ×{" "}
+            {upload.exchangeRate}
+          </span>
+        )}
       </span>
 
       <span

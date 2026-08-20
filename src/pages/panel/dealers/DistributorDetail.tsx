@@ -22,7 +22,7 @@ import type {
   UploadPeriodPayload,
 } from "@/types/distributor.types";
 import { distributorsService } from "@/services/distributorsService";
-import { formatStreams, formatMoney } from "@/utils/format.utils";
+import { formatStreams, formatCurrency } from "@/utils/format.utils";
 import {
   availableYears,
   countMissingMonths,
@@ -162,8 +162,13 @@ export default function DistributorDetail() {
                 <Chip
                   icon={<CircleDollarSign className="h-3 w-3" />}
                   tone={{ bg: "#E4F5EC", fg: "#2FB37E" }}
+                  title={
+                    distributor.currency === "USD"
+                      ? "Sus reportes llegan en dólares"
+                      : "Sus reportes llegan en euros y se convierten a dólares al subirlos"
+                  }
                 >
-                  {distributor.currency === "USD" ? "USD · Dólar" : "EUR · Euro"}
+                  {distributor.currency === "USD" ? "Reporta en USD" : "Reporta en EUR"}
                 </Chip>
                 <Chip icon={<FileStack className="h-3 w-3" />}>
                   {totals.uploadCount} {totals.uploadCount === 1 ? "carga" : "cargas"}
@@ -216,14 +221,13 @@ export default function DistributorDetail() {
           <Channel
             label="INGRESOS NETOS"
             icon={<DollarSign className="h-[13px] w-[13px] text-[#2FB37E]" />}
-            value={formatMoney(totals.totalNetIncome, distributor.currency)}
+            value={formatCurrency(totals.totalNetIncome)}
             valueClassName="text-[#2FB37E] text-[26px] sm:text-[30px]"
             className="lg:w-[300px] lg:flex-shrink-0"
           >
             {totals.totalGrossIncome > 0 && (
               <span className="text-[10.5px] text-[#A6AAB2]">
-                bruto {formatMoney(totals.totalGrossIncome, distributor.currency)} · {retained}%
-                retenido
+                bruto {formatCurrency(totals.totalGrossIncome)} · {retained}% retenido
               </span>
             )}
           </Channel>
@@ -263,11 +267,9 @@ export default function DistributorDetail() {
           <div className="flex min-w-0 flex-1 flex-col gap-5">
             <DistributorRevenueChart
               periods={revenueByPeriod}
-              currency={distributor.currency}
             />
             <UploadHistoryList
               uploads={sortedUploads}
-              currency={distributor.currency}
               onUpload={() => openUpload()}
             />
           </div>
@@ -282,7 +284,7 @@ export default function DistributorDetail() {
               upToMonth={upToMonth}
               onFillGap={openUpload}
             />
-            <DistributorTopSongs songs={topSongs} currency={distributor.currency} />
+            <DistributorTopSongs songs={topSongs} />
           </div>
         </div>
       </div>
@@ -291,18 +293,20 @@ export default function DistributorDetail() {
         <UploadSongsModal
           distributorName={distributor.name}
           distributorLogo={distributor.photoUrl}
+          distributorCurrency={distributor.currency}
           existingUploads={uploads}
           initialPeriod={presetPeriod}
           onClose={() => {
             setShowUpload(false);
             setPresetPeriod(undefined);
           }}
-          onConfirm={async (file, period, onProgress, onProcessingProgress) => {
+          onConfirm={async (file, period, currency, onProgress, onProcessingProgress) => {
             if (!id) return;
             const result = await distributorsService.uploadSongs(
               id,
               file,
               period,
+              currency,
               onProgress,
               onProcessingProgress,
             );
@@ -364,13 +368,17 @@ function Chip({
   icon,
   children,
   tone = { bg: "#F4F5F7", fg: "#71757E" },
+  title,
 }: {
   icon: React.ReactNode;
   children: React.ReactNode;
   tone?: { bg: string; fg: string };
+  /** Aclaración al pasar el cursor, para lo que la etiqueta no cabe a decir. */
+  title?: string;
 }) {
   return (
     <span
+      title={title}
       className="flex items-center gap-1.5 rounded-[14px] px-2.5 py-1"
       style={{ backgroundColor: tone.bg, color: tone.fg }}
     >

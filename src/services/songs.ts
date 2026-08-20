@@ -380,6 +380,16 @@ class SongService {
   }
 
   /** Obtiene métricas de pagos de una canción por período */
+  /** Álbumes en los que aparece la canción, de mayor a menor ingreso. */
+  async getSongAlbums(songId: string) {
+    try {
+      const response = await apiClient.get(`${this.BASE}/${songId}/albums`);
+      return response.data;
+    } catch {
+      return null;
+    }
+  }
+
   async getMetricPayments(songId: string, date: "month" | "day" | "year") {
     try {
       const response = await apiClient.get(`${this.BASE}/get-metric-payments/${songId}/${date}`);
