@@ -68,7 +68,7 @@ export default function EmailLogin() {
       setEmail(saved);
       setRemember(true);
     }
-  }, []);
+  }, [pendingInviteEmail]);
 
   const validateEmail = () => {
     if (email && !EMAIL_PATTERN.test(email)) {
