@@ -26,8 +26,6 @@ interface HistoryOfSplitsProps {
   isOwner?: boolean;
   /** Sirve para poner nombre al `userId` de cada versión. */
   collaborators?: SongCollaborator[];
-  /** Repartible de la canción, para traducir el porcentaje a dinero. */
-  distributable?: number;
 }
 
 /** Una versión del historial con el porcentaje que tenía esa misma persona antes. */
@@ -55,9 +53,6 @@ const formatDateTime = (value?: string) => {
   })}`;
 };
 
-const formatMoney = (value: number) =>
-  value.toLocaleString("es-CO", { style: "currency", currency: "USD", minimumFractionDigits: 2 });
-
 const ACTION_LABEL: Record<string, string> = {
   create: "creado",
   update: "modificado",
@@ -79,7 +74,6 @@ const Historyofsplits = ({
   songId,
   isOwner = false,
   collaborators = [],
-  distributable = 0,
 }: HistoryOfSplitsProps) => {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [historySplits, setHistorySplits] = useState<SplitHistoryItem[]>([]);
@@ -154,31 +148,11 @@ const Historyofsplits = ({
     return withDelta.reverse();
   }, [historySplits, isOwner, nameOf]);
 
-  /** Cómo queda el reparto hoy: la última versión viva de cada persona. */
-  const current = useMemo(() => {
-    const latest = new Map<string, SplitChange>();
-    // `changes` viene de más nuevo a más viejo, así que la primera que aparece es la vigente.
-    for (const change of changes) {
-      const person = String(change.item.userId ?? change.item.role);
-      if (!latest.has(person)) latest.set(person, change);
-    }
-    return [...latest.values()]
-      .filter((c) => !c.item.isDeleted && c.item.action !== "delete")
-      .map((c) => ({
-        name: c.item.role === "owner" ? "Tú (owner)" : c.subject,
-        percentage: c.item.percentage ?? 0,
-        isOwnerRow: c.item.role === "owner",
-        version: c.item.version,
-      }))
-      .sort((a, b) => b.percentage - a.percentage);
-  }, [changes]);
-
   const latestVersion = useMemo(
     () => changes.reduce((max, c) => Math.max(max, c.item.version ?? 0), 0),
     [changes],
   );
 
-  const assigned = current.reduce((sum, p) => sum + p.percentage, 0);
   const selected = changes.find((c) => c.key === selectedKey) || null;
   const oldestDate = changes.length ? formatDate(splitDate(changes[changes.length - 1].item)) : "—";
 

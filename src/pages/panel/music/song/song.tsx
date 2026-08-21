@@ -291,7 +291,6 @@ export default function Song() {
             songId={id}
             isOwner={isOwnerUser}
             collaborators={song?.collaborators ?? []}
-            distributable={money.repartible}
           />
         )}
 
