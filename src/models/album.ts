@@ -3,6 +3,7 @@ export type {
   AlbumTrack,
   Album,
   AlbumsPagination,
+  AlbumsListParams,
   AlbumsResponse,
   AlbumResponse,
   AlbumsError,

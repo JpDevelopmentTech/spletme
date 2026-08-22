@@ -1,5 +1,11 @@
 import { apiClient } from "@/infrastructure/http/axiosClient";
-import type { Album, AlbumsResponse, AlbumResponse, AlbumsError } from "../models/album";
+import type {
+  Album,
+  AlbumsResponse,
+  AlbumResponse,
+  AlbumsError,
+  AlbumsListParams,
+} from "../models/album";
 import type { AlbumBalance } from "../types/accounting.types";
 
 /** Lo que devuelve el servidor tras enviar una invitación de álbum. */
@@ -31,12 +37,19 @@ class AlbumService {
   private readonly BASE = "/albums";
 
   /**
-   * Obtiene todos los álbumes del usuario autenticado con paginación.
+   * Una página de los álbumes del usuario, con su búsqueda, sus filtros y su
+   * orden.
+   *
+   * Todo viaja al servidor: es él quien sabe cuántos álbumes hay detrás de la
+   * página y en qué orden van.
    */
-  async getAlbums(skip = 0, limit = 10, search = ""): Promise<AlbumsResponse | AlbumsError> {
+  async getAlbums(listParams: AlbumsListParams): Promise<AlbumsResponse | AlbumsError> {
     try {
-      const params = new URLSearchParams({ skip: String(skip), limit: String(limit) });
-      if (search.trim()) params.set("search", search.trim());
+      const params = new URLSearchParams();
+      Object.entries(listParams).forEach(([key, value]) => {
+        if (value === undefined || value === null || value === "") return;
+        params.set(key, String(value));
+      });
       const response = await apiClient.get(`${this.BASE}/albums?${params.toString()}`);
       return response.data as AlbumsResponse;
     } catch (error: unknown) {
@@ -98,7 +111,7 @@ class AlbumService {
    */
   async getAllAlbums(): Promise<Album[] | null> {
     try {
-      const response = await this.getAlbums(0, 1000);
+      const response = await this.getAlbums({ skip: 0, limit: 1000 });
       return response.success && "data" in response ? response.data : null;
     } catch {
       return null;

@@ -1,5 +1,6 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import SongService from "../services/songs";
+import type { SongsListParams, SongsListPagination } from "../services/songs";
 
 // Refleja exactamente lo que el backend persiste en `releases[]`. Los campos
 // del CSV que no se guardan (catalogNumber, streamingSubscriptionType,
@@ -34,124 +35,52 @@ interface Song {
   };
 }
 
-interface SongsPagination {
-  total: number | null;
-  page: number;
-  limit: number;
-  totalPages: number | null;
-  hasMore: boolean | null;
-}
-
-const UseSongs = (page: number, limit: number) => {
+/**
+ * Lee una página del catálogo desde el servidor.
+ *
+ * El hook no filtra ni ordena nada: `params` describe la página que se quiere y
+ * el servidor devuelve exactamente esa, junto con cuántas canciones hay detrás.
+ * Antes esto traía una página y la sección la recortaba y reordenaba en
+ * memoria, con lo que el orden solo valía dentro de la página y el contador
+ * decía cuántas filas se veían, no cuántas hay.
+ *
+ * `params` tiene que ser estable entre renders (memorízalo en quien llama): es
+ * lo que decide cuándo se vuelve a pedir.
+ */
+const UseSongs = (params: SongsListParams) => {
   const [songs, setSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
-  const [pagination, setPagination] = useState<SongsPagination | null>(null);
-  const [searchResults, setSearchResults] = useState<Song[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
+  const [pagination, setPagination] = useState<SongsListPagination | null>(null);
+
+  // Escribir la página que llega tarde encima de la que ya se está viendo deja
+  // la tabla enseñando la anterior. Solo se acepta la respuesta de la última
+  // petición lanzada.
+  const requestId = useRef(0);
 
   const getSongs = useCallback(async () => {
+    const current = ++requestId.current;
     setLoading(true);
+
     try {
-      const response = await SongService.getSongs(page, limit);
-      const data = Array.isArray(response?.data) ? response.data : [];
-      setSongs(data);
+      const response = await SongService.getSongs(params);
+      if (current !== requestId.current) return;
 
-      const rawPagination = response?.pagination ?? response?.meta?.pagination ?? null;
-
-      const resolvedPage = Number(rawPagination?.page ?? response?.page ?? page);
-      const resolvedLimit = Number(rawPagination?.limit ?? response?.limit ?? limit);
-
-      const rawTotal =
-        rawPagination?.total ??
-        response?.total ??
-        response?.totalCount ??
-        response?.totalItems ??
-        response?.count;
-      const numericTotal = Number(rawTotal);
-      const resolvedTotal = Number.isFinite(numericTotal) ? numericTotal : null;
-
-      const rawTotalPages = rawPagination?.totalPages ?? response?.totalPages;
-      const numericTotalPages = Number(rawTotalPages);
-      const resolvedTotalPages = Number.isFinite(numericTotalPages)
-        ? numericTotalPages
-        : resolvedTotal !== null
-          ? Math.max(1, Math.ceil(resolvedTotal / resolvedLimit))
-          : null;
-
-      const rawHasMore = rawPagination?.hasMore ?? response?.hasMore;
-      const resolvedHasMore =
-        typeof rawHasMore === "boolean"
-          ? rawHasMore
-          : resolvedTotalPages !== null
-            ? resolvedPage < resolvedTotalPages
-            : null;
-
-      setPagination({
-        total: resolvedTotal,
-        limit: resolvedLimit,
-        page: resolvedPage,
-        totalPages: resolvedTotalPages,
-        hasMore: resolvedHasMore,
-      });
+      const payload = response?.data;
+      setSongs(Array.isArray(payload?.songs) ? (payload.songs as Song[]) : []);
+      setPagination(payload?.pagination ?? null);
     } catch (error) {
+      if (current !== requestId.current) return;
       console.error(error);
       setSongs([]);
       setPagination(null);
     } finally {
-      setLoading(false);
-      setHasLoaded(true);
+      if (current === requestId.current) {
+        setLoading(false);
+        setHasLoaded(true);
+      }
     }
-  }, [page, limit]);
-
-  const searchSongs = useCallback(
-    async (query: string) => {
-      if (!query.trim()) {
-        setSearchResults([]);
-        setIsSearching(false);
-        return;
-      }
-
-      setIsSearching(true);
-      try {
-        const response = await SongService.searchSongs(query, 1, limit);
-        setSearchResults(Array.isArray(response?.data) ? response.data : []);
-      } catch (error) {
-        console.error(error);
-        setSearchResults([]);
-      } finally {
-        setIsSearching(false);
-      }
-    },
-    [limit],
-  );
-
-  const searchSongsByCode = useCallback(
-    async (code: string) => {
-      if (!code.trim()) {
-        setSearchResults([]);
-        setIsSearching(false);
-        return;
-      }
-
-      setIsSearching(true);
-      try {
-        const response = await SongService.searchSongsByCode(code, 1, limit);
-        setSearchResults(response?.data || []);
-      } catch (error) {
-        console.error(error);
-        setSearchResults([]);
-      } finally {
-        setIsSearching(false);
-      }
-    },
-    [limit],
-  );
-
-  const clearSearch = useCallback(() => {
-    setSearchResults([]);
-    setIsSearching(false);
-  }, []);
+  }, [params]);
 
   const uploadSongs = async (file: FormData) => {
     setLoading(true);
@@ -176,11 +105,6 @@ const UseSongs = (page: number, limit: number) => {
     pagination,
     getSongs,
     uploadSongs,
-    searchSongs,
-    searchResults,
-    isSearching,
-    clearSearch,
-    searchSongsByCode,
   };
 };
 

@@ -90,14 +90,23 @@ export function AddCollaboratorSidebar({
             );
           }
         } else {
-          const res = await SongService.getSongs(1, 100);
+          const res = await SongService.getSongs({ page: 1, limit: 100 });
+          const songs = res?.data?.songs;
           const data: {
             _id: string;
             trackTitle: string;
             artistName: string;
             isrc: string;
             collaborators?: unknown[];
-          }[] = Array.isArray(res?.data) ? res.data : [];
+          }[] = Array.isArray(songs)
+            ? (songs as {
+                _id: string;
+                trackTitle: string;
+                artistName: string;
+                isrc: string;
+                collaborators?: unknown[];
+              }[])
+            : [];
           if (alive) {
             setSongs(
               data.map((s) => ({

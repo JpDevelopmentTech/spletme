@@ -56,7 +56,7 @@ type TabKey = "resumen" | "pistas" | "costos";
 
 export default function AlbumDetail() {
   const { upc = "" } = useParams<{ upc: string }>();
-  const { getAlbumByUPC } = useAlbums(1, 1, false, "");
+  const { getAlbumByUPC } = useAlbums(null);
 
   const [album, setAlbum] = useState<Album | null>(null);
   const [loading, setLoading] = useState(true);

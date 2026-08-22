@@ -43,10 +43,31 @@ export interface Album {
 }
 
 export interface AlbumsPagination {
+  /** Cuántos álbumes hay en el conjunto filtrado, no cuántos vinieron. */
   total: number;
   skip: number;
   limit: number;
+  page: number;
+  totalPages: number;
   hasMore: boolean;
+}
+
+/** Lo que la tabla de música le pide al servidor para pintar una página. */
+export interface AlbumsListParams {
+  skip: number;
+  limit: number;
+  /** Texto libre: título, artistas, sello, UPC o ISRC de sus pistas. */
+  search?: string;
+  /** Clave de orden; la resuelve el servidor sobre todo el catálogo. */
+  sortBy?: string;
+  /** Junta los álbumes por número de pistas antes de ordenar. */
+  groupByTrackCount?: boolean;
+  artist?: string;
+  upc?: string;
+  country?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  hasSplits?: boolean;
 }
 
 export interface AlbumsResponse {

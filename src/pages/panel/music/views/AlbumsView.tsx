@@ -39,7 +39,6 @@ export function AlbumsView({
     searchQuery,
     setSearchQuery,
     displayAlbums,
-    currentData,
     loading,
     initialLoading,
     totalItemsForDisplay,
@@ -138,7 +137,7 @@ export function AlbumsView({
     />
   );
 
-  if (initialLoading || (loading && currentData.length === 0)) {
+  if (initialLoading || (loading && displayAlbums.length === 0)) {
     return (
       <>
         <AlbumsSkeleton />
@@ -147,7 +146,7 @@ export function AlbumsView({
     );
   }
 
-  if (currentData.length === 0) {
+  if (displayAlbums.length === 0) {
     return (
       <>
         <EmptyAlbums

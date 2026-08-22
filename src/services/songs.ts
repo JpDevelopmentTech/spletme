@@ -227,16 +227,62 @@ export const validatePayAllPayment = ({
   };
 };
 
+/** Lo que la tabla de música le pide al servidor para pintar una página. */
+export interface SongsListParams {
+  page: number;
+  limit: number;
+  /** Clave de orden; la resuelve el servidor sobre todo el catálogo. */
+  sortBy?: string;
+  /** Texto libre: título, artista, lanzamiento o sello. */
+  q?: string;
+  /** ISRC o UPC exacto, cuando lo tecleado tiene forma de código. */
+  code?: string;
+  artist?: string;
+  isrc?: string;
+  hasSplits?: boolean;
+  hasCollaborators?: boolean;
+  hasOwnerSplit?: boolean;
+  country?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  percentageMin?: number;
+  percentageMax?: number;
+}
+
+/** Cuántas hay en total, no cuántas vinieron en esta página. */
+export interface SongsListPagination {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasMore: boolean;
+}
+
+export interface SongsListResponse {
+  message?: string;
+  error?: boolean;
+  data?: {
+    songs?: unknown[];
+    pagination?: SongsListPagination;
+  };
+}
+
 // ── SongService ───────────────────────────────────────────────────────────────
 
 class SongService {
   private readonly BASE = "/songs";
 
-  /** Obtiene canciones del usuario con paginación */
-  async getSongs(page: number, limit: number) {
+  /**
+   * Una página del catálogo, con su búsqueda, sus filtros y su orden.
+   *
+   * Todo viaja al servidor: es él quien sabe cuántas canciones hay detrás de la
+   * página y en qué orden van. Filtrar u ordenar aquí solo reacomodaría las
+   * filas que ya están en pantalla.
+   */
+  async getSongs(params: SongsListParams) {
     try {
-      const response = await apiClient.get(`${this.BASE}/by-user?page=${page}&limit=${limit}`);
-      return response.data;
+      const response = await apiClient.get(`${this.BASE}/by-user`, { params });
+      return response.data as SongsListResponse;
     } catch {
       return null;
     }

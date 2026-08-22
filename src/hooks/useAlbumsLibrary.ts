@@ -1,16 +1,24 @@
 import { useState, useEffect, useMemo } from "react";
 import useAlbums from "@/hooks/useAlbums";
 import useDebounce from "@/hooks/useDebounce";
-import { hasAnySplit, looksLikeUPC } from "@/utils/music.utils";
+import { looksLikeUPC } from "@/utils/music.utils";
+import type { AlbumsListParams } from "@/models/album";
 import type { SortBy, SplitFilter, AlbumItem } from "@/types/music.types";
 
+/** Tamaño de página inicial; el usuario lo cambia desde la barra de paginación. */
+const DEFAULT_LIMIT = 12;
+
 /**
- * Centraliza el estado, efectos, filtros y paginación de la sección de álbumes.
- * Contiene únicamente la lógica de "albums", separada de la de canciones.
+ * Estado, búsqueda, filtros y paginación de la sección de álbumes.
+ *
+ * Todo lo que decide QUÉ se ve —el orden, los filtros, el trozo del catálogo—
+ * viaja al servidor y vuelve resuelto. Aquí no se filtra ni se ordena nada:
+ * hacerlo sobre la página recibida reacomodaba doce filas y dejaba el resto del
+ * catálogo como estaba.
  */
 export function useAlbumsLibrary() {
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState(DEFAULT_LIMIT);
   const [searchQuery, setSearchQuery] = useState("");
   const [albumSearchResult, setAlbumSearchResult] = useState<AlbumItem | null>(null);
   const [isAlbumSearching, setIsAlbumSearching] = useState(false);
@@ -24,193 +32,123 @@ export function useAlbumsLibrary() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [groupAlbumsByTrackCount, setGroupAlbumsByTrackCount] = useState(false);
-  const [showFilterPanel, setShowFilterPanel] = useState(false);
 
   const debouncedSearchQuery = useDebounce(searchQuery, 600);
   const trimmedSearchQuery = debouncedSearchQuery.trim();
-  // La búsqueda por UPC exacto se resuelve aparte (getAlbumByUPC); el resto de
-  // términos se envían al backend para que consulte la base de datos por
-  // cualquier atributo del álbum (título, artista, sello, UPC, ISRC), en vez
-  // de filtrar solo los álbumes ya cargados en memoria.
-  const serverSearchQuery = looksLikeUPC(trimmedSearchQuery) ? "" : trimmedSearchQuery;
+  // Un UPC exacto identifica un álbum concreto y se resuelve por su propia vía
+  // (getAlbumByUPC); el resto de términos van al listado como búsqueda libre.
+  const isUpcSearch = Boolean(trimmedSearchQuery) && looksLikeUPC(trimmedSearchQuery);
+
+  // Cualquier cambio de filtro, de orden o de tamaño de página cambia de qué
+  // conjunto se está mirando: se vuelve a la primera página.
+  //
+  // El reajuste ocurre durante el render y no en un efecto a propósito: en un
+  // efecto se llegaría a pedir la página 7 del conjunto nuevo antes de volver a
+  // la 1, es decir, una petición de más en cada pulsación del filtro.
+  const filtersKey = [
+    limit,
+    trimmedSearchQuery,
+    sortBy,
+    splitFilter,
+    artistFilter.trim(),
+    upcFilter.trim(),
+    countryFilter.trim(),
+    dateFrom,
+    dateTo,
+    groupAlbumsByTrackCount,
+  ].join("|");
+  const [appliedFiltersKey, setAppliedFiltersKey] = useState(filtersKey);
+
+  if (appliedFiltersKey !== filtersKey) {
+    setAppliedFiltersKey(filtersKey);
+    setPage(1);
+  }
+
+  /**
+   * La petición que describe la página. Se memoriza porque es la dependencia
+   * que dispara la lectura: un objeto nuevo en cada render pediría el catálogo
+   * en bucle.
+   */
+  const params = useMemo<AlbumsListParams | null>(() => {
+    // Buscar por UPC devuelve un álbum concreto por su propia vía; pedir además
+    // una página del listado sería traer un catálogo que nadie va a mirar.
+    if (isUpcSearch) return null;
+
+    const next: AlbumsListParams = {
+      skip: (page - 1) * limit,
+      limit,
+      sortBy,
+    };
+
+    if (trimmedSearchQuery) next.search = trimmedSearchQuery;
+    if (groupAlbumsByTrackCount) next.groupByTrackCount = true;
+    if (artistFilter.trim()) next.artist = artistFilter.trim();
+    if (upcFilter.trim()) next.upc = upcFilter.trim();
+    if (countryFilter.trim()) next.country = countryFilter.trim();
+    if (dateFrom) next.dateFrom = dateFrom;
+    if (dateTo) next.dateTo = dateTo;
+    if (splitFilter !== "all") next.hasSplits = splitFilter === "with_split";
+
+    return next;
+  }, [
+    page,
+    limit,
+    sortBy,
+    isUpcSearch,
+    trimmedSearchQuery,
+    groupAlbumsByTrackCount,
+    artistFilter,
+    upcFilter,
+    countryFilter,
+    dateFrom,
+    dateTo,
+    splitFilter,
+  ]);
 
   const {
     albums,
     loading: albumsLoading,
+    hasLoaded: albumsHasLoaded,
     pagination: albumsPagination,
     getAlbumByUPC,
     refreshAlbums,
-  } = useAlbums(page, limit, true, serverSearchQuery);
+  } = useAlbums(params);
 
-  // Detecta si hay filtros de cliente aplicados
-  const albumFiltersApplied = Boolean(
-    artistFilter.trim() ||
-    upcFilter.trim() ||
-    splitFilter !== "all" ||
-    countryFilter.trim() ||
-    dateFrom ||
-    dateTo ||
-    groupAlbumsByTrackCount,
-  );
-
-  // Búsqueda por UPC cuando el query luce como un código UPC
+  // Búsqueda por UPC: un álbum concreto, sin paginación que valga.
   useEffect(() => {
-    const q = debouncedSearchQuery.trim();
-    if (q && looksLikeUPC(q)) {
-      setIsAlbumSearching(true);
+    if (!isUpcSearch) {
       setAlbumSearchResult(null);
-      getAlbumByUPC(q.replace(/\s|-/g, "")).then((result) => {
-        setAlbumSearchResult(result as AlbumItem);
-        setIsAlbumSearching(false);
-      });
-    } else {
-      setAlbumSearchResult(null);
+      return;
     }
-  }, [debouncedSearchQuery, getAlbumByUPC]);
 
-  // Resetea la página al cambiar cualquier filtro
-  useEffect(() => {
-    setPage(1);
-  }, [
-    limit,
-    debouncedSearchQuery,
-    sortBy,
-    splitFilter,
-    artistFilter,
-    upcFilter,
-    countryFilter,
-    dateFrom,
-    dateTo,
-    groupAlbumsByTrackCount,
-  ]);
-
-  const normalize = (value: unknown) => String(value ?? "").toLowerCase();
-
-  const getAlbumDate = (a: AlbumItem) =>
-    (a as AlbumItem & { releaseDate?: string })?.releaseDate ?? "";
-
-  const filteredAlbums = useMemo<AlbumItem[]>(() => {
-    // El texto libre ya fue filtrado en el servidor (serverSearchQuery); aquí
-    // solo aplican los filtros adicionales de cliente y el ordenamiento.
-    let list: AlbumItem[] = albumSearchResult ? [albumSearchResult] : (albums as AlbumItem[]);
-    if (artistFilter.trim()) {
-      const artist = normalize(artistFilter.trim());
-      list = list.filter((a) => normalize(a.artistName).includes(artist));
-    }
-    if (upcFilter.trim()) {
-      const upc = normalize(upcFilter.trim());
-      list = list.filter((a) => normalize(a.upc).includes(upc));
-    }
-    if (countryFilter.trim()) {
-      const country = normalize(countryFilter.trim());
-      list = list.filter((a) =>
-        normalize((a as AlbumItem & { country?: string })?.country).includes(country),
-      );
-    }
-    if (dateFrom) {
-      const from = new Date(dateFrom).getTime();
-      list = list.filter((a) => {
-        const d = getAlbumDate(a);
-        return d ? new Date(d).getTime() >= from : true;
-      });
-    }
-    if (dateTo) {
-      const to = new Date(dateTo).getTime();
-      list = list.filter((a) => {
-        const d = getAlbumDate(a);
-        return d ? new Date(d).getTime() <= to : true;
-      });
-    }
-    if (splitFilter !== "all")
-      list = list.filter((a) => (splitFilter === "with_split" ? hasAnySplit(a) : !hasAnySplit(a)));
-    if (sortBy === "alpha")
-      list.sort((a, b) =>
-        String(a?.releaseTitle ?? a?.albumTitle ?? "").localeCompare(
-          String(b?.releaseTitle ?? b?.albumTitle ?? ""),
-        ),
-      );
-    else if (sortBy === "title_desc")
-      list.sort((a, b) =>
-        String(b?.releaseTitle ?? b?.albumTitle ?? "").localeCompare(
-          String(a?.releaseTitle ?? a?.albumTitle ?? ""),
-        ),
-      );
-    else if (sortBy === "revenue")
-      list.sort((a, b) => (b?.totalNetIncome ?? 0) - (a?.totalNetIncome ?? 0));
-    else if (sortBy === "streams")
-      list.sort((a, b) => (b?.totalStreams ?? 0) - (a?.totalStreams ?? 0));
-    else if (sortBy === "artist_asc")
-      list.sort((a, b) => String(a?.artistName ?? "").localeCompare(String(b?.artistName ?? "")));
-    else if (sortBy === "artist_desc")
-      list.sort((a, b) => String(b?.artistName ?? "").localeCompare(String(a?.artistName ?? "")));
-    else if (sortBy === "label_asc")
-      list.sort((a, b) =>
-        String(a?.artisticLabel ?? "").localeCompare(String(b?.artisticLabel ?? "")),
-      );
-    else if (sortBy === "label_desc")
-      list.sort((a, b) =>
-        String(b?.artisticLabel ?? "").localeCompare(String(a?.artisticLabel ?? "")),
-      );
-    else if (sortBy === "date_asc")
-      list.sort(
-        (a, b) =>
-          new Date(getAlbumDate(a) || 0).getTime() - new Date(getAlbumDate(b) || 0).getTime(),
-      );
-    else if (sortBy === "date_desc")
-      list.sort(
-        (a, b) =>
-          new Date(getAlbumDate(b) || 0).getTime() - new Date(getAlbumDate(a) || 0).getTime(),
-      );
-    if (groupAlbumsByTrackCount)
-      list.sort(
-        (a, b) =>
-          (b?.totalTracks ?? b?.tracks?.length ?? 0) - (a?.totalTracks ?? a?.tracks?.length ?? 0),
-      );
-    return list;
-  }, [
-    albumSearchResult,
-    albums,
-    artistFilter,
-    upcFilter,
-    countryFilter,
-    dateFrom,
-    dateTo,
-    splitFilter,
-    sortBy,
-    groupAlbumsByTrackCount,
-  ]);
-
-  // Paginación
-  const knownTotalItems = albumFiltersApplied ? filteredAlbums.length : albumsPagination?.total;
-  const knownTotalPages =
-    knownTotalItems != null ? Math.max(1, Math.ceil(knownTotalItems / limit)) : null;
-  const safePage = knownTotalPages ? Math.min(page, knownTotalPages) : page;
-  const pageStart = (safePage - 1) * limit;
-  const displayAlbums = useMemo(
-    () => filteredAlbums.slice(pageStart, pageStart + limit),
-    [filteredAlbums, pageStart, limit],
-  );
-  const groupedAlbums = useMemo(() => {
-    if (!groupAlbumsByTrackCount) return [] as [number, AlbumItem[]][];
-    const groups = new Map<number, AlbumItem[]>();
-    displayAlbums.forEach((album) => {
-      const count = album?.totalTracks ?? album?.tracks?.length ?? 0;
-      groups.set(count, [...(groups.get(count) ?? []), album]);
+    setIsAlbumSearching(true);
+    setAlbumSearchResult(null);
+    getAlbumByUPC(trimmedSearchQuery.replace(/\s|-/g, "")).then((result) => {
+      setAlbumSearchResult(result as AlbumItem);
+      setIsAlbumSearching(false);
     });
-    return Array.from(groups.entries()).sort((a, b) => b[0] - a[0]);
-  }, [groupAlbumsByTrackCount, displayAlbums]);
-  const currentData = displayAlbums;
-  const currentPageItems = currentData.length;
-  const pageEnd = pageStart + currentPageItems;
-  const hasMoreFromApi = albumsPagination?.hasMore;
-  const hasMoreFallback = !albumFiltersApplied && currentPageItems > 0;
-  const canGoNext = knownTotalPages
-    ? safePage < knownTotalPages
-    : (hasMoreFromApi ?? hasMoreFallback);
-  const totalItemsForDisplay =
-    knownTotalItems ?? Math.max(pageStart + currentPageItems, currentData.length);
+  }, [isUpcSearch, trimmedSearchQuery, getAlbumByUPC]);
 
-  // Handlers
+  const displayAlbums = useMemo<AlbumItem[]>(() => {
+    if (isUpcSearch) return albumSearchResult ? [albumSearchResult] : [];
+    return albums as AlbumItem[];
+  }, [isUpcSearch, albumSearchResult, albums]);
+
+  // Paginación: sale entera de la respuesta, salvo en la búsqueda por UPC, que
+  // devuelve como mucho un álbum y no tiene detrás un conjunto que paginar.
+  const totalItems = isUpcSearch ? displayAlbums.length : (albumsPagination?.total ?? 0);
+  const knownTotalPages = isUpcSearch ? 1 : (albumsPagination?.totalPages ?? null);
+  const safePage = isUpcSearch ? 1 : (albumsPagination?.page ?? page);
+  const pageStart = (safePage - 1) * limit;
+  const pageEnd = pageStart + displayAlbums.length;
+  const canGoNext = isUpcSearch ? false : (albumsPagination?.hasMore ?? false);
+
+  // Si el conjunto encogió por debajo de la página en la que estabas, se
+  // retrocede a la última que existe en lugar de dejar la tabla en blanco.
+  useEffect(() => {
+    if (knownTotalPages && page > knownTotalPages) setPage(knownTotalPages);
+  }, [knownTotalPages, page]);
+
   const handleOpenOwnerSplitModal = (album: AlbumItem) => {
     setSelectedAlbum(album);
     setIsOwnerSplitModalOpen(true);
@@ -238,8 +176,7 @@ export function useAlbumsLibrary() {
     groupAlbumsByTrackCount,
   ].filter(Boolean).length;
 
-  const loading = albumsLoading;
-  const initialLoading = albumsLoading && albums.length === 0 && !albumSearchResult;
+  const loading = albumsLoading || isAlbumSearching;
 
   return {
     // state
@@ -270,21 +207,16 @@ export function useAlbumsLibrary() {
     setDateTo,
     groupAlbumsByTrackCount,
     setGroupAlbumsByTrackCount,
-    showFilterPanel,
-    setShowFilterPanel,
     // computed
-    initialLoading,
+    initialLoading: isUpcSearch ? isAlbumSearching : !albumsHasLoaded,
     loading,
-    filteredAlbums,
     displayAlbums,
-    groupedAlbums,
-    currentData,
     safePage,
     pageStart,
     pageEnd,
     canGoNext,
     knownTotalPages,
-    totalItemsForDisplay,
+    totalItemsForDisplay: totalItems,
     activeFilterCount,
     // handlers
     handleOpenOwnerSplitModal,

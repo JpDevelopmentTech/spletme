@@ -26,7 +26,7 @@ export function useMusicSummary(): MusicSummary {
   useEffect(() => {
     let active = true;
 
-    AlbumService.getAlbums(0, 1)
+    AlbumService.getAlbums({ skip: 0, limit: 1 })
       .then((response) => {
         if (!active) return;
         const total =

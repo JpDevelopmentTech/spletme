@@ -45,8 +45,7 @@ export function SongsView({
   const {
     searchQuery,
     setSearchQuery,
-    filteredSongs,
-    currentData,
+    songs,
     loading,
     initialLoading,
     totalItemsForDisplay,
@@ -137,7 +136,7 @@ export function SongsView({
     />
   );
 
-  if (initialLoading || (loading && currentData.length === 0)) {
+  if (initialLoading || (loading && songs.length === 0)) {
     return (
       <>
         <SongsSkeleton />
@@ -146,7 +145,7 @@ export function SongsView({
     );
   }
 
-  if (currentData.length === 0) {
+  if (songs.length === 0) {
     return (
       <>
         <EmptySongs
@@ -165,7 +164,7 @@ export function SongsView({
     return (
       <div className="flex flex-col gap-5">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6 xl:grid-cols-6">
-          {filteredSongs.map((song) => (
+          {songs.map((song) => (
             <SongCard key={song._id} song={song} onQuickView={library.handleOpenSongDetails} />
           ))}
         </div>
@@ -210,7 +209,7 @@ export function SongsView({
       </div>
       <div className="h-px bg-[#E8E8EC]" />
       <div className="flex flex-col divide-y divide-[#E8E8EC]">
-        {filteredSongs.map((song) => (
+        {songs.map((song) => (
           <SongRow key={song._id} song={song} onQuickView={library.handleOpenSongDetails} />
         ))}
       </div>

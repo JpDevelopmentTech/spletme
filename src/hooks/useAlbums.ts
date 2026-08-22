@@ -1,73 +1,75 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import AlbumService from "../services/albums";
-import type { Album, AlbumsPagination } from "../models/album";
+import type { Album, AlbumsPagination, AlbumsListParams } from "../models/album";
 
 interface UseAlbumsReturn {
-  // State
   albums: Album[];
   loading: boolean;
+  /** Falso hasta que vuelve la primera respuesta: distingue «vacío» de «aún no sé». */
+  hasLoaded: boolean;
   error: string | null;
   pagination: AlbumsPagination | null;
-
-  // Actions
-  getAlbums: (skip?: number, limit?: number, search?: string) => Promise<void>;
   getAlbumByUPC: (upc: string) => Promise<Album | null>;
-  loadMoreAlbums: () => Promise<void>;
   refreshAlbums: () => Promise<void>;
   clearError: () => void;
-
-  // Computed
-  hasMoreAlbums: boolean;
 }
 
-export const useAlbums = (
-  page: number,
-  limit: number,
-  autoLoad: boolean = true,
-  search: string = "",
-): UseAlbumsReturn => {
-  const currentSkip = Math.max(0, (page - 1) * limit);
-  const initialSkip = currentSkip;
-  const initialLimit = limit;
-
-  // State
+/**
+ * Lee una página del catálogo de álbumes desde el servidor.
+ *
+ * El hook no filtra ni ordena nada: `params` describe la página que se quiere y
+ * el servidor devuelve exactamente esa, junto con cuántos álbumes hay detrás.
+ * Antes esto traía una página y la sección volvía a recortarla con `slice`
+ * usando el desplazamiento global, así que a partir de la segunda página el
+ * recorte caía fuera del array y la tabla salía vacía.
+ *
+ * `params` tiene que ser estable entre renders (memorízalo en quien llama): es
+ * lo que decide cuándo se vuelve a pedir. Con `null` no se pide ningún listado:
+ * es lo que usa el detalle de un álbum, que solo necesita `getAlbumByUPC`.
+ */
+export const useAlbums = (params: AlbumsListParams | null): UseAlbumsReturn => {
   const [albums, setAlbums] = useState<Album[]>([]);
   const [loading, setLoading] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState<AlbumsPagination | null>(null);
 
-  // Get albums with pagination
-  const getAlbums = useCallback(
-    async (skip: number = initialSkip, limit: number = initialLimit, searchQuery: string = search) => {
-      setLoading(true);
-      setError(null);
+  // Solo se acepta la respuesta de la última petición lanzada: escribir la
+  // página que llega tarde encima de la actual deja la tabla en la anterior.
+  const requestId = useRef(0);
 
-      try {
-        const response = await AlbumService.getAlbums(skip, limit, searchQuery);
+  const getAlbums = useCallback(async () => {
+    if (!params) return;
 
-        if (response.success && "data" in response) {
-          if (skip === 0) {
-            // Replace albums if starting from beginning
-            setAlbums(response.data);
-          } else {
-            // Append albums if loading more
-            setAlbums((prev) => [...prev, ...response.data]);
-          }
-          setPagination(response.pagination);
-        } else if ("message" in response) {
-          setError(response.message);
-        }
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Error loading albums";
-        setError(errorMessage);
-      } finally {
-        setLoading(false);
+    const current = ++requestId.current;
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await AlbumService.getAlbums(params);
+      if (current !== requestId.current) return;
+
+      if (response.success && "data" in response) {
+        setAlbums(response.data);
+        setPagination(response.pagination);
+      } else if ("message" in response) {
+        setAlbums([]);
+        setPagination(null);
+        setError(response.message);
       }
-    },
-    [initialSkip, initialLimit, search],
-  );
+    } catch (err) {
+      if (current !== requestId.current) return;
+      setAlbums([]);
+      setPagination(null);
+      setError(err instanceof Error ? err.message : "Error loading albums");
+    } finally {
+      if (current === requestId.current) {
+        setLoading(false);
+        setHasLoaded(true);
+      }
+    }
+  }, [params]);
 
-  // Get specific album by UPC
   const getAlbumByUPC = useCallback(async (upc: string): Promise<Album | null> => {
     setLoading(true);
     setError(null);
@@ -75,67 +77,33 @@ export const useAlbums = (
     try {
       const response = await AlbumService.getAlbumByUPC(upc);
 
-      if (response.success && "data" in response) {
-        return response.data;
-      } else if ("message" in response) {
-        setError(response.message);
-        return null;
-      }
+      if (response.success && "data" in response) return response.data;
+      if ("message" in response) setError(response.message);
 
       return null;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Error loading album";
-      setError(errorMessage);
+      setError(err instanceof Error ? err.message : "Error loading album");
       return null;
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Load more albums (pagination)
-  const loadMoreAlbums = useCallback(async () => {
-    if (!pagination || loading) return;
+  const clearError = useCallback(() => setError(null), []);
 
-    const nextSkip = pagination.skip + pagination.limit;
-    await getAlbums(nextSkip, pagination.limit);
-  }, [pagination, loading, getAlbums]);
-
-  // Refresh albums (reload from beginning)
-  const refreshAlbums = useCallback(async () => {
-    await getAlbums(0, initialLimit, search);
-  }, [getAlbums, initialLimit, search]);
-
-  // Clear error
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
-
-  // Computed values
-  const hasMoreAlbums = pagination?.hasMore ?? false;
-
-  // Auto-load albums on mount
   useEffect(() => {
-    if (autoLoad) {
-      getAlbums(currentSkip, limit, search);
-    }
-  }, [autoLoad, getAlbums, currentSkip, limit, search]);
+    getAlbums();
+  }, [getAlbums]);
 
   return {
-    // State
     albums,
     loading,
+    hasLoaded,
     error,
     pagination,
-
-    // Actions
-    getAlbums,
     getAlbumByUPC,
-    loadMoreAlbums,
-    refreshAlbums,
+    refreshAlbums: getAlbums,
     clearError,
-
-    // Computed
-    hasMoreAlbums,
   };
 };
 

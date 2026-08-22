@@ -18,17 +18,15 @@ export const AlbumsUsageExample: React.FC = () => {
     error,
     pagination,
     getAlbumByUPC,
-    loadMoreAlbums,
     refreshAlbums,
-    hasMoreAlbums,
     clearError,
-  } = useAlbums(0, 5);
+  } = useAlbums({ skip: 0, limit: 5 });
 
   // Direct service usage (alternative approach)
   const handleDirectServiceCall = async () => {
     try {
       // Get albums with pagination
-      const response = await AlbumService.getAlbums(0, 10);
+      const response = await AlbumService.getAlbums({ skip: 0, limit: 10 });
       if (response.success && "data" in response) {
         console.log("Albums:", response.data);
         console.log("Pagination:", response.pagination);
@@ -92,16 +90,6 @@ export const AlbumsUsageExample: React.FC = () => {
         >
           Refresh
         </button>
-
-        {hasMoreAlbums && (
-          <button
-            onClick={loadMoreAlbums}
-            disabled={loading}
-            className="rounded bg-blue-500 px-4 py-2 text-white disabled:opacity-50"
-          >
-            Load More
-          </button>
-        )}
 
         <button
           onClick={handleDirectServiceCall}
