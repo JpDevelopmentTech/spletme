@@ -14,7 +14,7 @@ import type {
 } from "@/types/music.types";
 
 /** Tamaño de página inicial; el usuario lo cambia desde la barra de paginación. */
-const DEFAULT_LIMIT = 12;
+const DEFAULT_LIMIT = 10;
 
 /**
  * Estado, búsqueda, filtros y paginación de la sección de canciones.
@@ -132,7 +132,7 @@ export function useSongsLibrary() {
   const { songs, loading, pagination, hasLoaded, getSongs, uploadSongs } = UseSongs(params);
 
   // Paginación: sale entera de la respuesta. El cliente no puede deducirla —una
-  // página de doce no dice cuántas hay detrás—, y cuando lo intentaba dejaba el
+  // página de diez no dice cuántas hay detrás—, y cuando lo intentaba dejaba el
   // «siguiente» habilitado hasta chocar con una página vacía.
   const totalItems = pagination?.total ?? 0;
   const knownTotalPages = pagination?.totalPages ?? null;

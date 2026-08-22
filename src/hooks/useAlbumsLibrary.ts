@@ -6,14 +6,14 @@ import type { AlbumsListParams } from "@/models/album";
 import type { SortBy, SplitFilter, AlbumItem } from "@/types/music.types";
 
 /** Tamaño de página inicial; el usuario lo cambia desde la barra de paginación. */
-const DEFAULT_LIMIT = 12;
+const DEFAULT_LIMIT = 10;
 
 /**
  * Estado, búsqueda, filtros y paginación de la sección de álbumes.
  *
  * Todo lo que decide QUÉ se ve —el orden, los filtros, el trozo del catálogo—
  * viaja al servidor y vuelve resuelto. Aquí no se filtra ni se ordena nada:
- * hacerlo sobre la página recibida reacomodaba doce filas y dejaba el resto del
+ * hacerlo sobre la página recibida reacomodaba diez filas y dejaba el resto del
  * catálogo como estaba.
  */
 export function useAlbumsLibrary() {

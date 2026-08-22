@@ -14,7 +14,7 @@ interface MusicPaginationProps {
   noun: string;
 }
 
-const PAGE_SIZES = [12, 24, 48, 96];
+const PAGE_SIZES = [10, 20, 50, 100];
 
 /** Rango mostrado, tamaño de página y paso entre páginas. */
 export function MusicPagination({
