@@ -154,7 +154,7 @@ export default function Collaborators() {
               people={totals.people}
               labels={totals.labels}
               activeSplits={totals.activeSplits}
-              songsWithSplits={catalogSize}
+              songsWithSplits={totals.songsWithActiveSplits}
               totalPaid={totals.totalPaid}
               totalPending={totals.totalPending}
               waitingCount={payable.length + blocked.length}
@@ -229,8 +229,8 @@ export default function Collaborators() {
                   <span className="text-[12px] text-[#71757E]">
                     {visible.length}
                     {visible.length === collaborators.length ? "" : ` de ${collaborators.length}`}{" "}
-                    {visible.length === 1 ? "colaborador" : "colaboradores"} · {catalogSize}{" "}
-                    canciones con split
+                    {visible.length === 1 ? "colaborador" : "colaboradores"} ·{" "}
+                    {totals.songsWithActiveSplits.toLocaleString()} canciones con split
                   </span>
                 </div>
               </div>

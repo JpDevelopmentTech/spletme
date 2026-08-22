@@ -287,7 +287,7 @@ const Platforms = ({ reproductions = [], trend, onViewBreakdown }: PlatformsProp
     );
 
   return (
-    <section className="col-span-4 flex h-full flex-col gap-4 rounded-[26px] border border-[#E8E8EC] bg-white p-[26px] shadow-[0_10px_28px_-12px_rgba(255,92,0,0.15)]">
+    <section className="col-span-12 flex h-full min-w-0 flex-col gap-4 rounded-[26px] border border-[#E8E8EC] bg-white p-[26px] shadow-[0_10px_28px_-12px_rgba(255,92,0,0.15)] xl:col-span-4">
       <div className="flex flex-col gap-0.5">
         <h2 className="font-display text-lg font-semibold text-[#1C1D22]">De dónde vienen</h2>
         <p className="text-[12.5px] text-[#71757E]">

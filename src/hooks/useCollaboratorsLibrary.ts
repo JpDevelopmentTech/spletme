@@ -32,7 +32,11 @@ interface ApiSummary {
   totalCollaborators: number;
   totalLabels: number;
   byRole: { collaborator: number; label: number };
+  /** Canciones del catálogo del owner: el denominador de la presencia. */
+  ownerTotalSongs: number;
   activeSplits: number;
+  /** Canciones distintas que tienen algún split activo. */
+  songsWithActiveSplits: number;
   totalAmountSent: number;
   totalPending: number;
   totalAmountReceived: number;
@@ -192,16 +196,30 @@ export function useCollaboratorsLibrary() {
       // El resumen del API es la fuente para lo que él calcula; el resto se
       // deriva de la lista para que cuadre siempre con lo que se ve en la tabla.
       activeSplits: summary?.activeSplits ?? 0,
+      songsWithActiveSplits: summary?.songsWithActiveSplits ?? 0,
       people: summary?.byRole?.collaborator ?? collaborators.length,
       labels: summary?.byRole?.label ?? 0,
       totalCollaborators: summary?.totalCollaborators ?? collaborators.length,
     };
   }, [collaborators, summary]);
 
-  /** Canciones distintas con split, para leer la presencia como fracción. */
+  /**
+   * El catálogo del owner, que es contra lo que se lee la presencia de cada
+   * colaborador.
+   *
+   * Lo dice el servidor. Antes se tomaba aquí el máximo de canciones entre los
+   * colaboradores, así que quien encabezaba la lista salía siempre como «N de
+   * N» —parecía estar en todo el catálogo— y la fracción no cuadraba con el
+   * porcentaje de su lado, que sí se calcula sobre el catálogo real.
+   *
+   * Si el servidor no lo manda se cae al máximo anterior: enseñar una fracción
+   * contra cero sería peor que enseñar una imprecisa.
+   */
   const catalogSize = useMemo(
-    () => collaborators.reduce((max, c) => Math.max(max, c.songs), 0),
-    [collaborators],
+    () =>
+      summary?.ownerTotalSongs ??
+      collaborators.reduce((max, c) => Math.max(max, c.songs), 0),
+    [summary, collaborators],
   );
 
   const hasFilters = stateFilter !== "all" || roleFilter !== "all";

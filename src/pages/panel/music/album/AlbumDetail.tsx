@@ -338,9 +338,6 @@ export default function AlbumDetail() {
               </span>
             </>
           }
-          highlightLabel={pending > 0 ? "SIN REPARTIR" : "TODO REPARTIDO"}
-          highlightValue={pending > 0 ? `${pending} pistas` : "Al día"}
-          highlightColor={pending > 0 ? "#FF5C00" : "#2FB37E"}
           actions={
             <>
               {/* Invitar es reversible y previo al reparto, así que va en
@@ -383,47 +380,46 @@ export default function AlbumDetail() {
         <DetailTabs tabs={TABS} active={activeTab} onChange={setActiveTab} />
 
         {activeTab === "resumen" && (
-          <div className="flex flex-col gap-5 xl:flex-row">
-            <div className="min-w-0 flex-1">
-              <MoneyWaterfall
-                steps={steps}
-                shares={shares}
-                distributable={repartible}
-                subtitle={`De lo que entra por las ${coverage.total} pistas hasta lo que le toca a cada uno`}
-                onEditSplits={isOwnerUser ? () => setCollabSplitOpen(true) : undefined}
-                footnote={
-                  shares.length > 0
-                    ? "Los porcentajes son el promedio ponderado de las pistas que ya reparten; cada pista puede tener el suyo."
-                    : undefined
-                }
-                notice={
-                  pending > 0 ? (
-                    <div className="flex flex-wrap items-center gap-3 rounded-[16px] bg-[#FFEADD] px-3.5 py-3">
-                      <CircleAlert className="h-[15px] w-[15px] flex-shrink-0 text-[#FF5C00]" />
-                      <span className="flex min-w-[200px] flex-1 flex-col gap-0.5">
-                        <span className="text-[12px] font-semibold text-[#EA580C]">
-                          {pending} {pending === 1 ? "pista todavía no reparte" : "pistas todavía no reparten"}
-                        </span>
-                        <span className="text-[11px] text-[#EA580C]">
-                          Sus {formatCurrency(unassignedIncome)} van enteros a ti hasta que les
-                          asignes un split.
-                        </span>
+          // El mismo grid de doce columnas que el detalle de canción: el reparto
+          // y las plataformas comparten fila, y el rendimiento va debajo de
+          // ancho completo porque es una serie temporal y necesita el espacio.
+          <div className="grid grid-cols-12 gap-5">
+            <MoneyWaterfall
+              steps={steps}
+              shares={shares}
+              distributable={repartible}
+              subtitle={`De lo que entra por las ${coverage.total} pistas hasta lo que le toca a cada uno`}
+              onEditSplits={isOwnerUser ? () => setCollabSplitOpen(true) : undefined}
+              footnote={
+                shares.length > 0
+                  ? "Los porcentajes son el promedio ponderado de las pistas que ya reparten; cada pista puede tener el suyo."
+                  : undefined
+              }
+              notice={
+                pending > 0 ? (
+                  <div className="flex flex-wrap items-center gap-3 rounded-[16px] bg-[#FFEADD] px-3.5 py-3">
+                    <CircleAlert className="h-[15px] w-[15px] flex-shrink-0 text-[#FF5C00]" />
+                    <span className="flex min-w-[200px] flex-1 flex-col gap-0.5">
+                      <span className="text-[12px] font-semibold text-[#EA580C]">
+                        {pending} {pending === 1 ? "pista todavía no reparte" : "pistas todavía no reparten"}
                       </span>
-                      <button
-                        onClick={() => setSplitModalOpen(true)}
-                        className="rounded-[14px] bg-[#FF5C00] px-3.5 py-2 text-[11.5px] font-semibold text-white transition-colors hover:bg-[#EA580C]"
-                      >
-                        Asignar
-                      </button>
-                    </div>
-                  ) : undefined
-                }
-              />
-            </div>
-            <div className="flex flex-col gap-5 xl:w-[400px] xl:flex-shrink-0">
-              <Platforms reproductions={reproductions} />
-              {monthly.length > 0 && <MonthlyChart data={monthly} />}
-            </div>
+                      <span className="text-[11px] text-[#EA580C]">
+                        Sus {formatCurrency(unassignedIncome)} van enteros a ti hasta que les
+                        asignes un split.
+                      </span>
+                    </span>
+                    <button
+                      onClick={() => setSplitModalOpen(true)}
+                      className="rounded-[14px] bg-[#FF5C00] px-3.5 py-2 text-[11.5px] font-semibold text-white transition-colors hover:bg-[#EA580C]"
+                    >
+                      Asignar
+                    </button>
+                  </div>
+                ) : undefined
+              }
+            />
+            <Platforms reproductions={reproductions} />
+            {monthly.length > 0 && <MonthlyChart data={monthly} />}
           </div>
         )}
 
@@ -666,7 +662,7 @@ function MonthlyChart({ data }: { data: MonthlyMetric[] }) {
   const max = Math.max(1, ...data.map((entry) => entry.revenue));
 
   return (
-    <section className="flex flex-col gap-4 rounded-[26px] border border-[#E8E8EC] bg-white p-6 shadow-[0_10px_28px_-12px_rgba(255,92,0,0.15)]">
+    <section className="col-span-12 flex min-w-0 flex-col gap-4 rounded-[26px] border border-[#E8E8EC] bg-white p-6 shadow-[0_10px_28px_-12px_rgba(255,92,0,0.15)]">
       <div className="flex flex-col gap-0.5">
         <h2 className="font-display text-base font-semibold text-[#1C1D22]">Rendimiento</h2>
         <p className="text-[11.5px] text-[#71757E]">Ingresos del álbum, mes a mes</p>

@@ -23,6 +23,19 @@ interface CollaboratorRowProps {
 const visibility = (key: string) =>
   COLLABORATOR_COLUMNS.find((c) => c.key === key)!.visibility;
 
+/**
+ * La presencia en el catálogo, sin redondearla hasta hacerla desaparecer.
+ *
+ * En un catálogo de miles de canciones, estar en once es un 0,4 %: redondeado a
+ * entero sale «0 %» y contradice la fracción que hay justo encima. Por debajo
+ * del 1 % se enseña un decimal, y solo el cero de verdad se lee como cero.
+ */
+const formatPresence = (presence: number): string => {
+  if (presence <= 0) return "0%";
+  if (presence < 1) return `${presence.toFixed(1)}%`;
+  return `${Math.round(presence)}%`;
+};
+
 const STATE_ICON: Record<CollaboratorState, React.ReactNode> = {
   can_pay: <CircleCheck className="h-3 w-3" />,
   no_payout_data: <Wallet className="h-3 w-3" />,
@@ -115,7 +128,8 @@ export function CollaboratorRow({
       {/* En tu catálogo */}
       <div className={`${visibility("catalog")} min-w-0 flex-col gap-1`}>
         <span className="text-[12.5px] font-semibold text-[#1C1D22]">
-          {collaborator.songs} de {catalogSize || collaborator.songs}
+          {collaborator.songs.toLocaleString()} de{" "}
+          {(catalogSize || collaborator.songs).toLocaleString()}
         </span>
         <span className="flex items-center gap-1.5">
           <span className="h-1 w-16 overflow-hidden rounded-full bg-[#F4F5F7]">
@@ -124,7 +138,7 @@ export function CollaboratorRow({
               style={{ width: `${Math.min(100, Math.max(3, presence))}%` }}
             />
           </span>
-          <span className="font-mono text-[10px] text-[#A6AAB2]">{Math.round(presence)}%</span>
+          <span className="font-mono text-[10px] text-[#A6AAB2]">{formatPresence(presence)}</span>
         </span>
       </div>
 
