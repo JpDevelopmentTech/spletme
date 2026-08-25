@@ -427,6 +427,17 @@ class SongService {
 
   /** Obtiene métricas de pagos de una canción por período */
   /** Álbumes en los que aparece la canción, de mayor a menor ingreso. */
+  /**
+   * Quita a un colaborador de una canción. No borra a la persona: deshace el
+   * vínculo (la canción, su acceso y el split que tuviera).
+   */
+  async removeCollaborator(songId: string, collaboratorId: string) {
+    const response = await apiClient.delete(
+      `${this.BASE}/${songId}/collaborators/${collaboratorId}`,
+    );
+    return response.data;
+  }
+
   async getSongAlbums(songId: string) {
     try {
       const response = await apiClient.get(`${this.BASE}/${songId}/albums`);

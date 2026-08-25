@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { songSplitsService } from "@/services/songSplits";
+// FUNCIONALIDAD TEMPORAL — perfiles sin cuenta. Ver docs/PERFILES_TEMPORALES.md.
+import { placeholdersService, type PlaceholderProfile } from "@/services/placeholders";
 import { useReleaseFiltersForSongs } from "@/hooks/useReleaseFiltersForSongs";
 import type { OwnerFormData, CreationProgress } from "@/types/album-owner-split.types";
 
@@ -32,6 +34,12 @@ export interface BulkCollaborator {
   tracks: BulkSplitTrack[];
   /** Canciones suyas que aún no tienen split del owner. */
   blockedTracks: BulkSplitTrack[];
+  /**
+   * FUNCIONALIDAD TEMPORAL — perfiles sin cuenta: el `_id` del perfil, presente
+   * solo cuando esta persona todavía no se ha registrado. Hace falta para
+   * meterla en las canciones justo antes de repartir.
+   */
+  placeholderId?: string;
 }
 
 /**
@@ -51,6 +59,9 @@ export function useBulkCollaboratorSplit(
   onSplitsCreated?: () => void,
 ) {
   const [collaboratorId, setCollaboratorId] = useState("");
+  // FUNCIONALIDAD TEMPORAL — perfiles sin cuenta: se ofrecen junto a quienes ya
+  // colaboran, para poder repartirle a alguien que aún no está en ninguna.
+  const [placeholders, setPlaceholders] = useState<PlaceholderProfile[]>([]);
   const [form, setForm] = useState<OwnerFormData>(DEFAULT_FORM);
   const [isLoading, setIsLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -89,8 +100,28 @@ export function useBulkCollaboratorSplit(
       }
     }
 
-    return [...porId.values()].sort((a, b) => b.tracks.length - a.tracks.length);
-  }, [tracks]);
+    const yaColaboran = [...porId.values()].sort((a, b) => b.tracks.length - a.tracks.length);
+
+    /*
+     * Un perfil sin cuenta todavía no figura en ninguna canción, así que no sale
+     * del recorrido de arriba. Se le ofrece el conjunto entero: al repartir se
+     * le mete en las canciones destino y ahí pasa a figurar como cualquiera.
+     * Los que ya estaban (porque se les repartió antes) no se duplican.
+     */
+    const todas = tracks ?? [];
+    const bloqueadas = todas.filter((track) => !track.hasOwnerSplit);
+    const sinCuenta = placeholders
+      .filter((profile) => !porId.has(profile.id))
+      .map<BulkCollaborator>((profile) => ({
+        id: profile.id,
+        name: profile.name,
+        tracks: todas,
+        blockedTracks: bloqueadas,
+        placeholderId: profile._id,
+      }));
+
+    return [...yaColaboran, ...sinCuenta];
+  }, [tracks, placeholders]);
 
   const selected = collaborators.find((c) => c.id === collaboratorId) ?? null;
 
@@ -109,6 +140,18 @@ export function useBulkCollaboratorSplit(
     setMounted(true);
     return () => setMounted(false);
   }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let alive = true;
+    placeholdersService
+      .list()
+      .then((data) => alive && setPlaceholders(data))
+      .catch(() => alive && setPlaceholders([]));
+    return () => {
+      alive = false;
+    };
+  }, [isOpen]);
 
   // Al abrir de nuevo, el modal empieza limpio: un porcentaje heredado de la
   // persona anterior se aplicaría a otra sin que nadie lo note.
@@ -183,6 +226,32 @@ export function useBulkCollaboratorSplit(
     setIsLoading(true);
     setError(null);
     setShowResults(false);
+
+    /*
+     * FUNCIONALIDAD TEMPORAL — perfiles sin cuenta: hay que meterlo en las
+     * canciones antes de crearle el split, porque el endpoint de splits exige
+     * que la persona ya figure en ellas. Se hace en una sola llamada para todo
+     * el conjunto; si falla, no se reparte nada y se dice por qué.
+     */
+    if (selected.placeholderId) {
+      try {
+        await placeholdersService.attachToSongs(
+          selected.placeholderId,
+          targetTracks.map((track) => track._id),
+          "collaborator",
+        );
+      } catch (err: unknown) {
+        const axiosErr = err as { response?: { data?: { message?: string } }; message?: string };
+        setIsLoading(false);
+        setError(
+          axiosErr.response?.data?.message ??
+            axiosErr.message ??
+            "No se pudo añadir a esa persona a las canciones.",
+        );
+        return;
+      }
+    }
+
     setProgress({
       total: targetTracks.length,
       completed: 0,

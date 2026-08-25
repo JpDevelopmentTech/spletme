@@ -18,6 +18,7 @@ import { songSplitsService } from "@/services/songSplits";
 import { formatCurrency, formatStreams } from "@/utils/format.utils";
 import {
   STATE_META,
+  describeRoles,
   initialsOf,
   resolveCollaboratorState,
   settledPercentage,
@@ -57,6 +58,14 @@ interface ApiCollaboratorDetail {
   invitedBy: { _id: string; name: string; email: string } | null;
   createdAt: string;
   songs: ApiSong[];
+  /** Sólo llega cuando quien consulta es el owner del catálogo. */
+  participation?: {
+    songCount: number;
+    ownerTotalSongs: number;
+    /** Qué parte del catálogo del owner comparte con esta persona. */
+    presencePercentage: number;
+    avgSplitPercentage: number | null;
+  };
 }
 
 interface PlatformEntry {
@@ -188,11 +197,14 @@ export function CollaboratorDetailModal({
   const state = resolveCollaboratorState(collaborator);
   const meta = STATE_META[state];
 
-  const averageShare = useMemo(() => {
-    const withSplit = songs.filter((s) => s.split);
-    if (withSplit.length === 0) return 0;
-    return withSplit.reduce((sum, s) => sum + (s.split!.percentage ?? 0), 0) / withSplit.length;
-  }, [songs]);
+  /**
+   * Qué parte del catálogo se comparte con esta persona: 200 de 1.000 canciones
+   * son un 20%. No es el % de split —ese varía canción a canción y se ve en cada
+   * una—, sino el alcance del colaborador dentro del repertorio propio.
+   * El backend sólo lo calcula para el owner; a un participante no le consta el
+   * tamaño del catálogo ajeno.
+   */
+  const participation = detail?.participation ?? null;
 
   /** Primero las canciones que deben dinero: son las que se vienen a mirar. */
   const sortedSongs = useMemo(
@@ -228,12 +240,14 @@ export function CollaboratorDetailModal({
       subtitle={
         <span className="flex flex-wrap items-center gap-2">
           <span>{collaborator.email}</span>
-          {(collaborator.roles ?? []).slice(0, 1).map((role) => (
+          {describeRoles(collaborator.roles).map((badge) => (
             <span
-              key={role}
-              className="rounded-xl bg-[#FFEADD] px-2 py-0.5 text-[10.5px] font-semibold text-[#FF5C00]"
+              key={badge.role}
+              className={`rounded-xl px-2 py-0.5 text-[10.5px] font-semibold ${
+                badge.isLabel ? "bg-[#F4F5F7] text-[#71757E]" : "bg-[#FFEADD] text-[#FF5C00]"
+              }`}
             >
-              {role}
+              {badge.long}
             </span>
           ))}
           <span
@@ -286,7 +300,14 @@ export function CollaboratorDetailModal({
             <Metric label="CANCIONES" value={loading ? "—" : String(songs.length)} />
             <Metric
               label="PARTICIPACIÓN"
-              value={loading ? "—" : `${averageShare.toFixed(0)}%`}
+              value={
+                loading || !participation ? "—" : `${Math.round(participation.presencePercentage)}%`
+              }
+              hint={
+                participation
+                  ? `${participation.songCount} de ${participation.ownerTotalSongs} canciones`
+                  : undefined
+              }
             />
             <Metric
               label="YA PAGADO"
@@ -407,7 +428,12 @@ function SongView({
   const streams = metrics?.totalStreams ?? song.totalStreams;
   const net = metrics?.totalNetIncome ?? song.totalNetIncome;
   const split = metrics?.split ?? song.split;
-  const platforms = metrics?.byPlatform ?? [];
+  // La plataforma que más paga va primero: la lista se lee como un ranking,
+  // no como el orden en que el backend haya agrupado los hechos.
+  const platforms = useMemo(
+    () => [...(metrics?.byPlatform ?? [])].sort((a, b) => b.netIncome - a.netIncome),
+    [metrics],
+  );
   const maxNet = Math.max(1, ...platforms.map((p) => p.netIncome));
 
   return (
@@ -564,7 +590,18 @@ function formatDate(iso: string): string {
   return date.toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-function Metric({ label, value, color }: { label: string; value: string; color?: string }) {
+function Metric({
+  label,
+  value,
+  color,
+  hint,
+}: {
+  label: string;
+  value: string;
+  color?: string;
+  /** Cómo se llega a la cifra, cuando el número solo no se explica. */
+  hint?: string;
+}) {
   return (
     <div className="flex flex-col gap-1.5 rounded-[16px] bg-[#F4F5F7] px-3.5 py-3">
       <span className="font-mono text-[9.5px] font-medium tracking-[1px] text-[#A6AAB2]">
@@ -576,6 +613,7 @@ function Metric({ label, value, color }: { label: string; value: string; color?:
       >
         {value}
       </span>
+      {hint && <span className="truncate text-[10.5px] text-[#A6AAB2]">{hint}</span>}
     </div>
   );
 }

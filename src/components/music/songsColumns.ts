@@ -8,11 +8,14 @@ import type { SortBy } from "@/types/music.types";
  * de datos mantienen su tamaño. Las columnas ocultas (`display: none`) no ocupan
  * celda, así que cada breakpoint declara solo las que se ven:
  * móvil = canción + ingresos + acciones; md suma streams; lg, todas.
+ *
+ * La columna de acciones es más ancha en `lg` porque ahí el botón de split
+ * enseña su texto; por debajo se queda en el icono y ocupa menos.
  */
 export const SONGS_GRID =
-  "grid items-center gap-3.5 grid-cols-[minmax(0,1fr)_120px_72px] " +
-  "md:grid-cols-[minmax(0,1fr)_104px_120px_72px] " +
-  "lg:grid-cols-[minmax(0,1fr)_112px_104px_120px_124px_120px_72px]";
+  "grid items-center gap-3.5 grid-cols-[minmax(0,1fr)_120px_108px] " +
+  "md:grid-cols-[minmax(0,1fr)_104px_120px_108px] " +
+  "lg:grid-cols-[minmax(0,1fr)_112px_104px_120px_124px_120px_148px]";
 
 export interface SongColumn {
   key: string;

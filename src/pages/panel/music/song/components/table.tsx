@@ -9,6 +9,10 @@ import {
   type RemoveSplitTarget,
 } from "../../../../../components/modal/RemoveSplitModal";
 import {
+  RemoveCollaboratorModal,
+  type RemoveCollaboratorTarget,
+} from "../../../../../components/modal/RemoveCollaboratorModal";
+import {
   DollarSign,
   Plus,
   History,
@@ -19,12 +23,15 @@ import {
   CalendarRange,
   Pencil,
   Trash2,
+  UserMinus,
   CircleCheck,
   Clock3,
   AlertCircle,
+  UserPlus,
 } from "lucide-react";
 import { User as UserType } from "../../../../../models/user";
 import PaymentsService from "@/services/payments";
+import SongService from "@/services/songs";
 import { songSplitsService } from "@/services/songSplits";
 import type {
   SongSplitDistribution,
@@ -39,6 +46,10 @@ import ValidationToastQueue, {
 } from "../../../../../components/alert/ValidationToastQueue";
 import type { Collaborator } from "@/types";
 import { describeSplitScope } from "@/utils/music.utils";
+// FUNCIONALIDAD TEMPORAL — perfiles sin cuenta. Ver docs/PERFILES_TEMPORALES.md.
+import { PlaceholderProfileModal } from "@/components/collaborators/PlaceholderProfileModal";
+import { PlaceholderAvatar, PlaceholderChip } from "@/components/collaborators/PlaceholderAvatar";
+import { isPlaceholderUser } from "@/services/placeholders";
 
 interface Song {
   id?: string;
@@ -113,6 +124,8 @@ interface Row {
   scope: { label: string; worldwide: boolean } | null;
   /** Tramos de vigencia del split, vacío cuando aplica siempre. */
   periods: SplitPeriod[];
+  /** FUNCIONALIDAD TEMPORAL — perfiles sin cuenta. */
+  isPlaceholder: boolean;
   raw?: UserType;
   index: number;
 }
@@ -152,6 +165,8 @@ export default function Table({
   headerAction,
 }: TableProps) {
   const [isSplitsModalOpen, setIsSplitsModalOpen] = useState(false);
+  // FUNCIONALIDAD TEMPORAL — perfiles sin cuenta.
+  const [isPlaceholderModalOpen, setIsPlaceholderModalOpen] = useState(false);
   const [isOwnerSplitModalOpen, setIsOwnerSplitModalOpen] = useState(false);
   const [isPaymentConfirmationOpen, setIsPaymentConfirmationOpen] = useState(false);
   const [distribution, setDistribution] = useState<SongSplitDistribution | null>(null);
@@ -171,6 +186,7 @@ export default function Table({
   const [toasts, setToasts] = useState<ValidationToastItem[]>([]);
   const [detailCollaborator, setDetailCollaborator] = useState<Collaborator | null>(null);
   const [removeTarget, setRemoveTarget] = useState<RemoveSplitTarget | null>(null);
+  const [unlinkTarget, setUnlinkTarget] = useState<RemoveCollaboratorTarget | null>(null);
 
   const currentUser = LocalStorageService.getItem("user");
   const rawUserType = String(
@@ -239,6 +255,27 @@ export default function Table({
     await songSplitsService.deleteSplit(splitId);
     addToast("success", "Split retirado. Queda registrado en el historial.");
     setTimeout(() => window.location.reload(), 600);
+  };
+
+  /**
+   * Desvincula a un colaborador de la canción. El backend deshace de una vez el
+   * vínculo, su acceso y el split; aquí solo hay que releer la página, porque
+   * cambian tanto la tabla como los montos de arriba.
+   */
+  const handleRemoveCollaborator = async (collaboratorId: string) => {
+    await SongService.removeCollaborator(songId || "", collaboratorId);
+    addToast("success", "Colaborador quitado de la canción.");
+    setTimeout(() => window.location.reload(), 600);
+  };
+
+  const openRemoveCollaborator = (row: Row) => {
+    setUnlinkTarget({
+      collaboratorId: row.userId,
+      name: row.name,
+      email: row.email,
+      percentage: row.percentage,
+      pending: row.pending,
+    });
   };
 
   const openRemoveSplit = (row: Row) => {
@@ -342,6 +379,7 @@ export default function Table({
             pending: 0,
             scope: scopeOf(ownerEntry),
             periods: ownerEntry.periods ?? [],
+            isPlaceholder: false,
             index: -1,
           },
         ]
@@ -366,6 +404,7 @@ export default function Table({
         pending,
         scope: scopeOf(entry),
         periods: entry?.periods ?? [],
+        isPlaceholder: isPlaceholderUser(collaborator),
         raw: collaborator,
         index,
       };
@@ -407,6 +446,15 @@ export default function Table({
         />
       )}
 
+      {unlinkTarget && (
+        <RemoveCollaboratorModal
+          target={unlinkTarget}
+          songTitle={song?.trackTitle}
+          onClose={() => setUnlinkTarget(null)}
+          onConfirm={handleRemoveCollaborator}
+        />
+      )}
+
       {removeTarget && (
         <RemoveSplitModal
           target={removeTarget}
@@ -415,6 +463,17 @@ export default function Table({
           onConfirm={handleRemoveSplit}
         />
       )}
+
+      <PlaceholderProfileModal
+        isOpen={isPlaceholderModalOpen}
+        songId={songId || ""}
+        songTitle={song?.trackTitle}
+        onClose={() => setIsPlaceholderModalOpen(false)}
+        onAttached={() => {
+          setIsPlaceholderModalOpen(false);
+          window.location.reload();
+        }}
+      />
 
       <SplitsModal
         collaborators={collaborators}
@@ -490,6 +549,16 @@ export default function Table({
                 Mi split
               </button>
             )}
+            {isOwner && song?.requesterRole === "admin" && (
+              <button
+                type="button"
+                onClick={() => setIsPlaceholderModalOpen(true)}
+                className="inline-flex items-center gap-[7px] rounded-[20px] border border-dashed border-[#C9CCD2] bg-white px-4 py-2.5 text-[12px] font-semibold text-[#71757E] transition-colors hover:text-[#1C1D22]"
+              >
+                <UserPlus className="h-3.5 w-3.5" />
+                Sin cuenta
+              </button>
+            )}
             {canManageSplits && (
               <button
                 type="button"
@@ -544,7 +613,7 @@ export default function Table({
               <span className="w-[148px] font-mono text-[9.5px] font-medium tracking-[1.2px] text-[#A6AAB2]">
                 ESTADO
               </span>
-              <span className="w-[150px]" />
+              <span className="w-[186px]" />
             </div>
 
             <div className="h-px bg-[#E8E8EC]" />
@@ -566,19 +635,26 @@ export default function Table({
                       disabled={row.isOwnerRow}
                       className="flex min-w-[200px] flex-1 items-center gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C00] disabled:cursor-default"
                     >
-                      <span
-                        className={`grid h-[38px] w-[38px] shrink-0 place-items-center rounded-full text-[11.5px] font-semibold text-white ${
-                          row.isOwnerRow ? "bg-[#FF5C00]" : "bg-[#1C1D22]"
-                        }`}
-                      >
-                        {getInitials(row.name)}
-                      </span>
+                      {row.isPlaceholder ? (
+                        <PlaceholderAvatar name={row.name} />
+                      ) : (
+                        <span
+                          className={`grid h-[38px] w-[38px] shrink-0 place-items-center rounded-full text-[11.5px] font-semibold text-white ${
+                            row.isOwnerRow ? "bg-[#FF5C00]" : "bg-[#1C1D22]"
+                          }`}
+                        >
+                          {getInitials(row.name)}
+                        </span>
+                      )}
                       <span className="flex min-w-0 flex-col gap-0.5">
-                        <span className="truncate text-[13px] font-semibold text-[#1C1D22]">
-                          {row.name}
+                        <span className="flex min-w-0 items-center gap-2">
+                          <span className="truncate text-[13px] font-semibold text-[#1C1D22]">
+                            {row.name}
+                          </span>
+                          {row.isPlaceholder && <PlaceholderChip />}
                         </span>
                         <span className="truncate text-[11px] text-[#A6AAB2]">
-                          {row.email || "—"}
+                          {row.isPlaceholder ? "Todavía no se ha registrado" : row.email || "—"}
                         </span>
                       </span>
                     </button>
@@ -651,7 +727,7 @@ export default function Table({
                       <StatusChip row={row} />
                     </span>
 
-                    <span className="flex w-[150px] items-center justify-end gap-1.5">
+                    <span className="flex w-[186px] items-center justify-end gap-1.5">
                       {!row.isOwnerRow && (
                         <>
                           <IconButton
@@ -698,6 +774,15 @@ export default function Table({
                               onClick={() => openRemoveSplit(row)}
                             >
                               <Trash2 className="h-3.5 w-3.5" />
+                            </IconButton>
+                          )}
+                          {canManageSplits && (
+                            <IconButton
+                              label="Quitar de la canción"
+                              danger
+                              onClick={() => openRemoveCollaborator(row)}
+                            >
+                              <UserMinus className="h-3.5 w-3.5" />
                             </IconButton>
                           )}
                         </>

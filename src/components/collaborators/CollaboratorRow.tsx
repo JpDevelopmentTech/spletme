@@ -2,6 +2,7 @@ import { CircleCheck, Wallet, Check, Minus } from "lucide-react";
 import type { Collaborator } from "@/types";
 import {
   STATE_META,
+  describeRoles,
   initialsOf,
   resolveCollaboratorState,
   type CollaboratorState,
@@ -57,6 +58,7 @@ export function CollaboratorRow({
   onPay,
 }: CollaboratorRowProps) {
   const state = resolveCollaboratorState(collaborator);
+  const badges = describeRoles(collaborator.roles);
   const meta = STATE_META[state];
   const canPay = state === "can_pay";
   const presence = collaborator.songPresencePercentage ?? 0;
@@ -98,28 +100,39 @@ export function CollaboratorRow({
           >
             {collaborator.name}
           </span>
-          <span className="truncate text-[11px] text-[#A6AAB2]" title={collaborator.email}>
-            {collaborator.email}
+          <span className="flex min-w-0 items-center gap-1.5">
+            <span className="truncate text-[11px] text-[#A6AAB2]" title={collaborator.email}>
+              {collaborator.email}
+            </span>
+            {/* La columna ROL solo existe a partir de lg; por debajo, el rol
+                viaja con la identidad en lugar de desaparecer. */}
+            {badges.slice(0, 2).map((badge) => (
+              <span
+                key={badge.role}
+                className={`flex-shrink-0 rounded-lg px-1.5 py-[1px] text-[9.5px] font-semibold lg:hidden ${
+                  badge.isLabel ? "bg-[#F4F5F7] text-[#71757E]" : "bg-[#FFEADD] text-[#FF5C00]"
+                }`}
+              >
+                {badge.short}
+              </span>
+            ))}
           </span>
         </span>
       </div>
 
       {/* Rol */}
       <div className={`${visibility("role")} flex-wrap items-center gap-1.5`}>
-        {(collaborator.roles ?? []).length > 0 ? (
-          collaborator.roles!.slice(0, 2).map((role) => {
-            const isLabel = role.toLowerCase().includes("label") || role.toLowerCase().includes("sello");
-            return (
-              <span
-                key={role}
-                className={`rounded-xl px-2 py-1 text-[10.5px] font-semibold ${
-                  isLabel ? "bg-[#F4F5F7] text-[#71757E]" : "bg-[#FFEADD] text-[#FF5C00]"
-                }`}
-              >
-                {isLabel ? "Sello" : "Colab."}
-              </span>
-            );
-          })
+        {badges.length > 0 ? (
+          badges.slice(0, 2).map((badge) => (
+            <span
+              key={badge.role}
+              className={`rounded-xl px-2 py-1 text-[10.5px] font-semibold ${
+                badge.isLabel ? "bg-[#F4F5F7] text-[#71757E]" : "bg-[#FFEADD] text-[#FF5C00]"
+              }`}
+            >
+              {badge.short}
+            </span>
+          ))
         ) : (
           <span className="text-[12px] text-[#A6AAB2]">—</span>
         )}

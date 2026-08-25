@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
-import { Globe, Bell, ChevronDown, User, Users, LogOut } from "lucide-react";
+import { Globe, Bell, ChevronDown, User, Users, UserPlus, LogOut } from "lucide-react";
 import LocalStorageService from "../../services/localstorage";
 import { AuthService } from "@/services/auth";
 import GlobalSearch from "./GlobalSearch";
@@ -95,6 +95,17 @@ export default function Navbar({ onSwitchUser }: NavbarProps) {
             >
               <User className="h-[17px] w-[17px] text-[#71757E]" />
               Mi perfil
+            </button>
+            {/* FUNCIONALIDAD TEMPORAL — perfiles sin cuenta. */}
+            <button
+              onClick={() => {
+                setOpen(false);
+                navigate("/panel/placeholder-profiles");
+              }}
+              className="flex w-full items-center gap-3 rounded-[16px] px-2.5 py-2.5 text-[13px] font-medium text-[#1C1D22] transition-colors hover:bg-[#F4F5F7]"
+            >
+              <UserPlus className="h-[17px] w-[17px] text-[#71757E]" />
+              Personas sin cuenta
             </button>
             {onSwitchUser && (
               <button

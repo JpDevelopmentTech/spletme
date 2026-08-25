@@ -1,7 +1,13 @@
 import { Users, TriangleAlert, Crown, UserPlus, Check } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useBulkCollaboratorSplit, type BulkSplitTrack } from "@/hooks/useBulkCollaboratorSplit";
 import { ModalShell, PrimaryButton, SecondaryButton } from "@/components/ui/ModalShell";
 import { FieldLabel, Progress, Results, Scope } from "./bulkSplitPieces";
+// FUNCIONALIDAD TEMPORAL — perfiles sin cuenta. Ver docs/PERFILES_TEMPORALES.md.
+import {
+  PlaceholderAvatar,
+  PlaceholderChip,
+} from "@/components/collaborators/PlaceholderAvatar";
 
 interface Props {
   isOpen: boolean;
@@ -171,16 +177,23 @@ export default function BulkCollaboratorSplitModal({
                         : "border border-[#E8E8EC] bg-white hover:border-[#D9DAE0]"
                     }`}
                   >
-                    <span
-                      className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-[12px] font-semibold ${
-                        active ? "bg-[#FF5C00] text-white" : "bg-[#F4F5F7] text-[#71757E]"
-                      }`}
-                    >
-                      {person.name.charAt(0).toUpperCase()}
-                    </span>
+                    {person.placeholderId ? (
+                      <PlaceholderAvatar name={person.name} size={32} />
+                    ) : (
+                      <span
+                        className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-[12px] font-semibold ${
+                          active ? "bg-[#FF5C00] text-white" : "bg-[#F4F5F7] text-[#71757E]"
+                        }`}
+                      >
+                        {person.name.charAt(0).toUpperCase()}
+                      </span>
+                    )}
                     <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                      <span className="truncate text-[12.5px] font-semibold text-[#1C1D22]">
-                        {person.name}
+                      <span className="flex min-w-0 items-center gap-1.5">
+                        <span className="truncate text-[12.5px] font-semibold text-[#1C1D22]">
+                          {person.name}
+                        </span>
+                        {person.placeholderId && <PlaceholderChip />}
                       </span>
                       {/* En cuántas está: es el alcance real de su reparto. */}
                       <span
@@ -427,6 +440,14 @@ function EmptyState({ onInvite, scopeNoun }: { onInvite?: () => void; scopeNoun:
           Invitar al {scopeNoun}
         </button>
       )}
+      {/* FUNCIONALIDAD TEMPORAL — perfiles sin cuenta: la salida cuando la
+          persona todavía no está en Splitme y no se la puede invitar. */}
+      <Link
+        to="/panel/placeholder-profiles"
+        className="text-[11.5px] font-semibold text-[#71757E] underline decoration-dashed underline-offset-4 transition-colors hover:text-[#1C1D22]"
+      >
+        O crea a alguien sin cuenta
+      </Link>
     </div>
   );
 }

@@ -10,8 +10,8 @@ interface MusicModeSwitchProps {
 }
 
 const MODES = [
-  { value: "songs", label: "Por canción", Icon: Music },
-  { value: "albums", label: "Por álbum", Icon: Disc3 },
+  { value: "songs", label: "Canción", Icon: Music },
+  { value: "albums", label: "Álbum", Icon: Disc3 },
 ] as const;
 
 /**

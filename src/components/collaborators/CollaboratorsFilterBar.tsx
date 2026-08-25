@@ -2,6 +2,7 @@ import { ArrowUpDown, CircleX } from "lucide-react";
 import { FilterFacet } from "@/components/ui/FilterFacet";
 import { SORT_LABELS, type CollaboratorSortBy } from "./collaboratorsColumns";
 import type { StateFilter } from "@/hooks/useCollaboratorsLibrary";
+import { describeRole } from "@/utils/collaborators.utils";
 
 interface CollaboratorsFilterBarProps {
   stateFilter: StateFilter;
@@ -56,7 +57,7 @@ export function CollaboratorsFilterBar({
       {roles.length > 0 && (
         <FilterFacet
           label="Rol"
-          value={roleFilter === "all" ? "Todos" : roleFilter}
+          value={roleFilter === "all" ? "Todos" : describeRole(roleFilter).long}
           highlighted={roleFilter !== "all"}
         >
           <select
@@ -65,9 +66,11 @@ export function CollaboratorsFilterBar({
             onChange={(e) => onRoleFilterChange(e.target.value)}
           >
             <option value="all">Todos</option>
+            {/* El valor sigue siendo el rol crudo del backend; lo que cambia es
+                cómo se lee. */}
             {roles.map((role) => (
               <option key={role} value={role}>
-                {role}
+                {describeRole(role).long}
               </option>
             ))}
           </select>

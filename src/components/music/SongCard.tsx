@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Music, Play, Eye, Tag, ChevronRight } from "lucide-react";
-import { hasAnySplit } from "@/utils/music.utils";
+import { Music, Play, Eye, Tag, ChevronRight, Crown } from "lucide-react";
+import { hasAnySplit, hasOwnerSplit } from "@/utils/music.utils";
 import { viewerOwnsSong, viewerSplitPercentage, viewerAmount } from "@/utils/ownerVisibility";
 import { formatStreams, formatCurrency } from "@/utils/format.utils";
 import { CopyButton } from "@/components/ui/CopyButton";
@@ -10,6 +10,8 @@ import type { SongItem } from "@/types/music.types";
 interface SongCardProps {
   song: SongItem;
   onQuickView: (song: SongItem) => void;
+  /** Abre el reparto de esta canción sin salir del listado. */
+  onOwnerSplit: (song: SongItem) => void;
   /** Igual que en `SongRow`: el neto solo se enseña al dueño. */
   showsIncome?: boolean;
 }
@@ -18,13 +20,21 @@ interface SongCardProps {
  * Tarjeta de canción para la vista de cuadrícula. Lleva los mismos datos que la
  * fila de la tabla; la portada tiñe de naranja cuando la canción no tiene split.
  */
-export function SongCard({ song, onQuickView, showsIncome = false }: SongCardProps) {
+export function SongCard({
+  song,
+  onQuickView,
+  onOwnerSplit,
+  showsIncome = false,
+}: SongCardProps) {
   const navigate = useNavigate();
   const cover = song?.spotifyData?.album?.images?.[0]?.url;
   const split = hasAnySplit(song);
   const to = `/panel/song/${song._id}`;
   const myPercentage = viewerSplitPercentage(song);
   const percentage = myPercentage !== null ? `${myPercentage}%` : "—";
+  // Igual que en la fila: el split del owner solo lo fija su dueño.
+  const isOwnerView = viewerOwnsSong(song);
+  const ownerSplitDone = hasOwnerSplit(song);
   const money =
     showsIncome && viewerOwnsSong(song)
       ? Number(song?.totalNetIncome ?? song?.netIncome ?? 0)
@@ -117,9 +127,24 @@ export function SongCard({ song, onQuickView, showsIncome = false }: SongCardPro
 
         <div className="h-px bg-[#E8E8EC]" />
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           <CollaboratorAvatars collaborators={song?.collaborators} emptyLabel="Sin colaboradores" />
-          <ChevronRight className="h-4 w-4 text-[#A6AAB2]" />
+          {isOwnerView && !ownerSplitDone ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onOwnerSplit(song);
+              }}
+              title="Asignar tu parte de esta canción"
+              aria-label={`Asignar split a ${song.trackTitle}`}
+              className="flex flex-shrink-0 items-center gap-1.5 rounded-[14px] bg-[#FFEADD] px-2.5 py-1.5 text-[11px] font-semibold text-[#FF5C00] transition-colors hover:bg-[#FFDCC7] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF5C00]"
+            >
+              <Crown className="h-3.5 w-3.5" />
+              Split
+            </button>
+          ) : (
+            <ChevronRight className="h-4 w-4 flex-shrink-0 text-[#A6AAB2]" />
+          )}
         </div>
       </div>
     </div>

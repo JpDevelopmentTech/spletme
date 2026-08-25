@@ -1,16 +1,19 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Music, Play, Tag, ChevronRight, Eye, Disc3 } from "lucide-react";
-import { hasAnySplit } from "@/utils/music.utils";
+import { Music, Play, Tag, ChevronRight, Eye, Crown } from "lucide-react";
+import { hasAnySplit, hasOwnerSplit } from "@/utils/music.utils";
 import { viewerOwnsSong, viewerSplitPercentage, viewerAmount } from "@/utils/ownerVisibility";
 import { formatStreams, formatCurrency } from "@/utils/format.utils";
 import { CopyButton } from "@/components/ui/CopyButton";
 import { CollaboratorAvatars } from "./CollaboratorAvatars";
+import { SongAlbumsBadge } from "./SongAlbumsBadge";
 import { SONG_COLUMNS, SONGS_GRID } from "./songsColumns";
 import type { SongItem } from "@/types/music.types";
 
 interface SongRowProps {
   song: SongItem;
   onQuickView: (song: SongItem) => void;
+  /** Abre el reparto de esta canción sin salir del listado. */
+  onOwnerSplit: (song: SongItem) => void;
   /**
    * Si la columna de dinero puede enseñar el ingreso de la canción. Solo cuando
    * quien mira es dueño de todo lo que hay en pantalla: para un colaborador, el
@@ -26,12 +29,16 @@ const visibility = (key: string) => SONG_COLUMNS.find((c) => c.key === key)!.vis
  * Fila de la tabla de canciones. La fila entera lleva al detalle: los controles
  * que hacen de por sí otra cosa (copiar ISRC, vista rápida) detienen el clic.
  */
-export function SongRow({ song, onQuickView, showsIncome = false }: SongRowProps) {
+export function SongRow({ song, onQuickView, onOwnerSplit, showsIncome = false }: SongRowProps) {
   const navigate = useNavigate();
   const cover = song?.spotifyData?.album?.images?.[0]?.url;
   const split = hasAnySplit(song);
   const to = `/panel/song/${song._id}`;
   const myPercentage = viewerSplitPercentage(song);
+  // El split del owner solo lo fija su dueño; a un colaborador el botón le
+  // daría un 401 y nada que hacer con él.
+  const isOwnerView = viewerOwnsSong(song);
+  const ownerSplitDone = hasOwnerSplit(song);
   const money =
     showsIncome && viewerOwnsSong(song)
       ? Number(song?.totalNetIncome ?? song?.netIncome ?? 0)
@@ -76,15 +83,7 @@ export function SongRow({ song, onQuickView, showsIncome = false }: SongRowProps
               </>
             )}
             {(song?.albumCount ?? 0) > 1 && (
-              <span
-                title={`Esta canción salió en ${song.albumCount} álbumes`}
-                className="flex flex-shrink-0 items-center gap-1 rounded-xl bg-[#F4F5F7] px-[7px] py-[3px]"
-              >
-                <Disc3 className="h-2.5 w-2.5 text-[#71757E]" />
-                <span className="text-[10.5px] font-semibold text-[#1C1D22]">
-                  {song.albumCount} álbumes
-                </span>
-              </span>
+              <SongAlbumsBadge songId={song._id} count={song.albumCount ?? 0} />
             )}
           </span>
         </div>
@@ -146,6 +145,33 @@ export function SongRow({ song, onQuickView, showsIncome = false }: SongRowProps
 
       {/* Acciones */}
       <div className="flex items-center justify-end gap-1">
+        {isOwnerView && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onOwnerSplit(song);
+            }}
+            disabled={ownerSplitDone}
+            title={
+              ownerSplitDone
+                ? "Esta canción ya tiene tu parte asignada"
+                : "Asignar tu parte de esta canción"
+            }
+            aria-label={
+              ownerSplitDone
+                ? `${song.trackTitle} ya tiene split`
+                : `Asignar split a ${song.trackTitle}`
+            }
+            className={`flex flex-shrink-0 items-center gap-1.5 rounded-[15px] px-2 py-1.5 text-[11.5px] font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF5C00] lg:px-3 ${
+              ownerSplitDone
+                ? "cursor-not-allowed bg-[#F4F5F7] text-[#A6AAB2]"
+                : "bg-[#FFEADD] text-[#FF5C00] hover:bg-[#FFDCC7]"
+            }`}
+          >
+            <Crown className="h-3.5 w-3.5 flex-shrink-0" />
+            <span className="hidden lg:inline">{ownerSplitDone ? "Listo" : "Split"}</span>
+          </button>
+        )}
         <button
           onClick={(e) => {
             e.stopPropagation();

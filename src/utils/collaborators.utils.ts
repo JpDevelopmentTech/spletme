@@ -120,3 +120,25 @@ export function initialsOf(name: string): string {
     .map((word) => word[0]?.toUpperCase() ?? "")
     .join("");
 }
+
+/**
+ * Cómo se lee un rol de membresía en pantalla.
+ *
+ * El sello y el colaborador se reparten igual; la diferencia es que un sello
+ * además puede configurar splits, así que distinguirlos de un vistazo importa a
+ * la hora de dar acceso. El backend los manda en crudo (`collaborator`,
+ * `label`), que no es algo que se pueda enseñar tal cual.
+ */
+export const describeRole = (role: string): { role: string; isLabel: boolean; short: string; long: string } => {
+  const normalized = role.toLowerCase();
+  const isLabel = normalized.includes("label") || normalized.includes("sello");
+  return {
+    role,
+    isLabel,
+    short: isLabel ? "Sello" : "Colab.",
+    long: isLabel ? "Sello" : "Colaborador",
+  };
+};
+
+/** Los roles de un colaborador, ya traducidos y sin repetir. */
+export const describeRoles = (roles: string[] = []) => roles.map(describeRole);

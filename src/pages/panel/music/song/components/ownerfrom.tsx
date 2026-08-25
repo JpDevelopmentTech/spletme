@@ -6,11 +6,16 @@ import { FilterSegment } from "@/components/ui/FilterSegment";
 import { selectStyles } from "@/components/ui/selectStyles";
 import { useReleaseFilters } from "@/hooks/useReleaseFilters";
 import { songSplitsService } from "@/services/songSplits";
-import type { FilterType, SelectOption, SongSplit } from "@/types";
+import type { FilterType, SelectOption, SplitData } from "@/types";
 
 interface OwnerSplitModalSong {
   trackTitle?: string;
-  ownerId?: { split?: SongSplit | null } | string;
+  /**
+   * Poblado cuando el backend adjunta el split del owner; string cuando solo
+   * viene la referencia, y null en las canciones que aún no tienen dueño
+   * resuelto. El modal solo lee el split, si lo hay.
+   */
+  ownerId?: { split?: SplitData | null } | string | null;
 }
 
 interface OwnerSplitModalProps {

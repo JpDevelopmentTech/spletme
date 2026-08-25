@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { CopyButton } from "@/components/ui/CopyButton";
 
@@ -17,6 +17,7 @@ interface DetailHeaderProps {
   highlightValue?: string;
   highlightColor?: string;
   actions?: React.ReactNode;
+  /** Destino de reserva cuando no hay página anterior dentro de la app. */
   backTo?: string;
 }
 
@@ -41,12 +42,24 @@ export function DetailHeader({
   backTo = "/panel/music",
 }: DetailHeaderProps) {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  /**
+   * "Atrás" debe deshacer el último paso, no saltar a un sitio fijo: se puede
+   * llegar aquí desde el listado, desde una canción o desde una búsqueda.
+   * React Router marca con key "default" la primera entrada del historial, así
+   * que sólo ahí (enlace directo o recarga) hace falta el destino de reserva.
+   */
+  const goBack = () => {
+    if (location.key !== "default") navigate(-1);
+    else navigate(backTo);
+  };
 
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
       <div className="flex min-w-0 flex-1 items-center gap-4">
         <button
-          onClick={() => navigate(backTo)}
+          onClick={goBack}
           aria-label="Volver"
           className="flex h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-full border border-[#E8E8EC] bg-white text-[#71757E] transition-colors hover:text-[#1C1D22]"
         >

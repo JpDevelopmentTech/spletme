@@ -1,14 +1,15 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ArrowUp, ArrowDown, SearchX, Music as MusicIcon, Disc3, CircleX } from "lucide-react";
 import { SongRow } from "@/components/music/SongRow";
 import { SongCard } from "@/components/music/SongCard";
 import { SongDetailsModal } from "@/components/music/SongDetailsModal";
+import OwnerSplitModal from "@/pages/panel/music/song/components/ownerfrom";
 import { MusicPagination } from "@/components/music/MusicPagination";
 import { MusicFilterDrawer } from "@/components/music/MusicFilterDrawer";
 import { SONG_COLUMNS, SONGS_GRID, isDescending } from "@/components/music/songsColumns";
 import { useSongsLibrary } from "@/hooks/useSongsLibrary";
 import { viewerOwnsSong } from "@/utils/ownerVisibility";
-import type { MusicLayout, SortBy } from "@/types/music.types";
+import type { MusicLayout, SongItem, SortBy } from "@/types/music.types";
 
 interface SongsViewProps {
   query: string;
@@ -54,6 +55,9 @@ export function SongsView({
     sortBy,
     setSortBy,
   } = library;
+
+  // Canción cuyo split se está fijando desde el listado, sin abrir el detalle.
+  const [splitSong, setSplitSong] = useState<SongItem | null>(null);
 
   // La búsqueda vive en la página para que sobreviva al cambio de agrupación.
   useEffect(() => {
@@ -126,6 +130,21 @@ export function SongsView({
     />
   );
 
+  const splitModal = splitSong && (
+    <OwnerSplitModal
+      isOpen
+      onClose={() => setSplitSong(null)}
+      songId={splitSong._id}
+      song={splitSong}
+      onSplitCreated={() => {
+        setSplitSong(null);
+        // El listado enseña el estado del split y el porcentaje: sin releer, la
+        // fila seguiría diciendo "sin asignar" después de asignarlo.
+        library.refresh();
+      }}
+    />
+  );
+
   const pagination = (
     <MusicPagination
       pageStart={library.pageStart}
@@ -178,6 +197,7 @@ export function SongsView({
               key={song._id}
               song={song}
               onQuickView={library.handleOpenSongDetails}
+              onOwnerSplit={setSplitSong}
               showsIncome={showsIncome}
             />
           ))}
@@ -185,6 +205,7 @@ export function SongsView({
         <div className="px-1">{pagination}</div>
         {drawer}
         {detailsModal}
+        {splitModal}
       </div>
     );
   }
@@ -230,6 +251,7 @@ export function SongsView({
             key={song._id}
             song={song}
             onQuickView={library.handleOpenSongDetails}
+            onOwnerSplit={setSplitSong}
             showsIncome={showsIncome}
           />
         ))}
@@ -239,6 +261,7 @@ export function SongsView({
 
       {drawer}
       {detailsModal}
+      {splitModal}
     </div>
   );
 }

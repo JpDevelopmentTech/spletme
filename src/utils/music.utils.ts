@@ -142,3 +142,7 @@ export function describeSplitScope(
     split.platformsType === "all" ? "todas las plataformas" : split.selectedPlatforms?.join(", ");
   return { label: [countries, platforms].filter(Boolean).join(" · ") || "—", worldwide: false };
 }
+
+/** Enlace al detalle de un álbum por su UPC. */
+export const albumHref = (upc?: string): string =>
+  `/panel/album/upc/${encodeURIComponent(upc ?? "")}`;

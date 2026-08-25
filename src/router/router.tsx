@@ -25,6 +25,8 @@ import AcceptAlbumCollaboration from "../pages/collabotarion/acceptAlbumCollabor
 import LabelsTable from "../pages/panel/labels/labelsTable";
 import LabelDetail from "../pages/panel/labels/labelDetail";
 import CustomLabelDetail from "../pages/panel/labels/customLabelDetail";
+// FUNCIONALIDAD TEMPORAL — perfiles sin cuenta. Ver docs/PERFILES_TEMPORALES.md.
+import PlaceholderProfiles from "../pages/panel/placeholders/PlaceholderProfiles";
 import ChangePasswordPage from "@/pages/panel/profile/change-password";
 import Analytics from "../pages/panel/analytics/analytics";
 import DistributorDetail from "../pages/panel/dealers/DistributorDetail";
@@ -168,6 +170,11 @@ const routes = [
       {
         path: "labels/:label",
         element: <LabelDetail />,
+      },
+      {
+        // FUNCIONALIDAD TEMPORAL — perfiles sin cuenta.
+        path: "placeholder-profiles",
+        element: <PlaceholderProfiles />,
       },
     ],
   },
