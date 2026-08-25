@@ -5,6 +5,10 @@ import PaymentConfirmationModal from "../../../../../components/modal/PaymentCon
 import CollaboratorPaymentHistoryModal from "../../../../../components/modal/CollaboratorPaymentHistoryModal";
 import { CollaboratorDetailModal } from "../../../../../components/collaborators/CollaboratorDetailModal";
 import {
+  RemoveSplitModal,
+  type RemoveSplitTarget,
+} from "../../../../../components/modal/RemoveSplitModal";
+import {
   DollarSign,
   Plus,
   History,
@@ -12,7 +16,9 @@ import {
   Music,
   Globe,
   Radio,
+  CalendarRange,
   Pencil,
+  Trash2,
   CircleCheck,
   Clock3,
   AlertCircle,
@@ -20,13 +26,19 @@ import {
 import { User as UserType } from "../../../../../models/user";
 import PaymentsService from "@/services/payments";
 import { songSplitsService } from "@/services/songSplits";
-import type { SongSplitDistribution, SplitDistributionEntry } from "@/types/song-split.types";
+import type {
+  SongSplitDistribution,
+  SplitDistributionEntry,
+  SplitPeriod,
+} from "@/types/song-split.types";
+import { formatPeriodRange } from "@/utils/splitPeriods.utils";
 import LocalStorageService from "@/services/localstorage";
 import ValidationToastQueue, {
   ValidationToastItem,
   ValidationToastType,
 } from "../../../../../components/alert/ValidationToastQueue";
 import type { Collaborator } from "@/types";
+import { describeSplitScope } from "@/utils/music.utils";
 
 interface Song {
   id?: string;
@@ -89,6 +101,8 @@ const collaboratorId = (collaborator: UserType): string =>
 interface Row {
   key: string;
   userId: string;
+  /** Split activo de esta fila; null cuando la persona aún no tiene ninguno. */
+  splitId: string | null;
   name: string;
   email: string;
   isOwnerRow: boolean;
@@ -97,9 +111,18 @@ interface Row {
   paid: number;
   pending: number;
   scope: { label: string; worldwide: boolean } | null;
+  /** Tramos de vigencia del split, vacío cuando aplica siempre. */
+  periods: SplitPeriod[];
   raw?: UserType;
   index: number;
 }
+
+/** Desglose de los tramos y del porcentaje de fuera de ellos, para el tooltip. */
+const periodsTitle = (periods: SplitPeriod[], fallback: number | null) => {
+  const lines = periods.map((period) => `${formatPeriodRange(period)}: ${period.percentage}%`);
+  if (fallback != null) lines.push(`Fuera de los tramos: ${fallback}%`);
+  return lines.join("\n");
+};
 
 const formatMoney = (value: number) =>
   value.toLocaleString("es-CO", { style: "currency", currency: "USD", minimumFractionDigits: 2 });
@@ -119,16 +142,7 @@ const idOf = (ref: SplitDistributionEntry["userId"]): string =>
   typeof ref === "string" ? ref : String(ref?._id ?? ref?.id ?? "");
 
 /** Traduce el alcance del split a una frase corta. */
-const scopeOf = (entry?: SplitDistributionEntry | null) => {
-  if (!entry) return null;
-  const everywhere = entry.countriesType === "all" && entry.platformsType === "all";
-  if (everywhere) return { label: "Todos los países y plataformas", worldwide: true };
-  const countries =
-    entry.countriesType === "all" ? "Todos los países" : entry.selectedCountries?.join(", ");
-  const platforms =
-    entry.platformsType === "all" ? "todas las plataformas" : entry.selectedPlatforms?.join(", ");
-  return { label: [countries, platforms].filter(Boolean).join(" · ") || "—", worldwide: false };
-};
+const scopeOf = (entry?: SplitDistributionEntry | null) => describeSplitScope(entry);
 
 export default function Table({
   collaborators,
@@ -156,6 +170,7 @@ export default function Table({
   } | null>(null);
   const [toasts, setToasts] = useState<ValidationToastItem[]>([]);
   const [detailCollaborator, setDetailCollaborator] = useState<Collaborator | null>(null);
+  const [removeTarget, setRemoveTarget] = useState<RemoveSplitTarget | null>(null);
 
   const currentUser = LocalStorageService.getItem("user");
   const rawUserType = String(
@@ -204,7 +219,7 @@ export default function Table({
 
   const handleOpenSplitsModal = () => {
     if (isLabelUser && !hasOwnerSplit) {
-      addToast("error", "No puedes crear splits hasta que el owner cree el suyo.");
+      addToast("error", "Todavía no se pueden repartir splits en esta canción.");
       return;
     }
     setIsSplitsModalOpen(true);
@@ -213,6 +228,29 @@ export default function Table({
   const handleSplitSaved = () => {
     // El backend recalcula la distribución al guardar; la página se relee entera.
     setTimeout(() => window.location.reload(), 500);
+  };
+
+  /**
+   * Suelta el split de la fila. El backend hace soft delete y deja el rastro en
+   * el historial; la página se relee entera porque los montos de arriba salen
+   * del mismo reparto que acaba de cambiar.
+   */
+  const handleRemoveSplit = async (splitId: string) => {
+    await songSplitsService.deleteSplit(splitId);
+    addToast("success", "Split retirado. Queda registrado en el historial.");
+    setTimeout(() => window.location.reload(), 600);
+  };
+
+  const openRemoveSplit = (row: Row) => {
+    if (!row.splitId) return;
+    setRemoveTarget({
+      splitId: row.splitId,
+      name: row.isOwnerRow ? "El owner" : row.name,
+      isOwnerSplit: row.isOwnerRow,
+      percentage: row.percentage,
+      scope: row.scope,
+      pending: row.pending,
+    });
   };
 
   const handleOwnerSplitCreated = () => {
@@ -286,12 +324,15 @@ export default function Table({
       if (id) byUser.set(id, entry);
     }
 
-    const ownerEntry = distribution?.owner ?? null;
+    // Para quien no es el dueño, el owner no existe en esta tabla: ni su fila,
+    // ni su porcentaje, ni su monto. Ver `utils/ownerVisibility.ts`.
+    const ownerEntry = isOwner ? (distribution?.owner ?? null) : null;
     const ownerRow: Row[] = ownerEntry
       ? [
           {
             key: "owner",
             userId: idOf(ownerEntry.userId),
+            splitId: ownerEntry.splitId ? String(ownerEntry.splitId) : null,
             name: isOwner ? "Tú (owner)" : song?.owner?.name || "El owner",
             email: song?.owner?.email || "",
             isOwnerRow: true,
@@ -300,6 +341,7 @@ export default function Table({
             paid: 0,
             pending: 0,
             scope: scopeOf(ownerEntry),
+            periods: ownerEntry.periods ?? [],
             index: -1,
           },
         ]
@@ -312,6 +354,7 @@ export default function Table({
       return {
         key: id || `collaborator-${index}`,
         userId: id,
+        splitId: entry?.splitId ? String(entry.splitId) : null,
         name: collaborator.name || "—",
         email: collaborator.email || "",
         isOwnerRow: false,
@@ -322,6 +365,7 @@ export default function Table({
         paid: Number(extras(collaborator).amountPaid ?? 0) || 0,
         pending,
         scope: scopeOf(entry),
+        periods: entry?.periods ?? [],
         raw: collaborator,
         index,
       };
@@ -330,9 +374,25 @@ export default function Table({
     return [...ownerRow, ...collaboratorRows];
   }, [collaborators, distribution, isOwner, song]);
 
-  const assigned = rows.reduce((sum, row) => sum + (row.percentage ?? 0), 0);
+  // El split del owner no compite con el de los colaboradores: sale antes. De
+  // $1.000 con un owner al 20%, el owner cobra $200 y los colaboradores se
+  // reparten los $800 restantes, que son su 100%. Por eso `assigned` mide solo
+  // el pool: sumar ambas bases daba lecturas imposibles como "120% asignado".
+  const ownerPct = rows.find((row) => row.isOwnerRow)?.percentage ?? 0;
+  const assigned = rows
+    .filter((row) => !row.isOwnerRow)
+    .reduce((sum, row) => sum + (row.percentage ?? 0), 0);
+  const hasCollaboratorRows = rows.some((row) => !row.isOwnerRow);
+  // Mientras alguien del pool conserve su split, quitar el del owner les subiría
+  // lo devengado: el backend lo rechaza y aquí el botón sale apagado.
+  const poolSplitsActive = rows.filter((row) => !row.isOwnerRow && row.splitId).length;
   const distributable = distribution?.collaboratorsPool ?? 0;
+  // Con tramos de vigencia en juego, sumar los porcentajes deja de describir el
+  // reparto: dos personas al 80% no se pisan si cobran en meses distintos. El
+  // encabezado y el pie dejan entonces de anunciar un total que no se cumple.
+  const hasPeriods = rows.some((row) => row.periods.length > 0);
   const balanced = Math.round(assigned) === 100;
+  const overflow = Math.round(assigned) > 100;
 
   const canManageSplits = song?.requesterRole === "admin" || song?.requesterRole === "label";
 
@@ -347,11 +407,21 @@ export default function Table({
         />
       )}
 
+      {removeTarget && (
+        <RemoveSplitModal
+          target={removeTarget}
+          songTitle={song?.trackTitle}
+          onClose={() => setRemoveTarget(null)}
+          onConfirm={handleRemoveSplit}
+        />
+      )}
+
       <SplitsModal
         collaborators={collaborators}
         isOpen={isSplitsModalOpen}
         onClose={() => setIsSplitsModalOpen(false)}
         songId={songId || ""}
+        showOwnerContext={isOwner}
         onSplitSaved={handleSplitSaved}
       />
       <OwnerSplitModal
@@ -391,13 +461,21 @@ export default function Table({
               Quién cobra de esta canción
             </h3>
             <p
-              className={`text-[12.5px] font-medium ${balanced ? "text-[#2FB37E]" : "text-[#EA580C]"}`}
+              className={`text-[12.5px] font-medium ${
+                hasPeriods ? "text-[#71757E]" : balanced ? "text-[#2FB37E]" : "text-[#EA580C]"
+              }`}
             >
               {rows.length === 0
                 ? "Todavía no hay nadie asignado"
-                : balanced
-                  ? "El 100% está asignado · no queda nada suelto"
-                  : `Falta repartir ${Math.max(0, 100 - Math.round(assigned))}%`}
+                : !hasCollaboratorRows
+                  ? "Solo cobras tú · aún no reparte con nadie"
+                  : hasPeriods
+                    ? "El reparto cambia según el mes · hay splits con tramos por fechas"
+                    : overflow
+                      ? `Los colaboradores suman ${Math.round(assigned)}%: se pasan del 100%`
+                      : balanced
+                        ? "El 100% está repartido · no sobra nada"
+                        : `Falta repartir ${Math.max(0, 100 - Math.round(assigned))}%`}
             </p>
           </div>
 
@@ -458,7 +536,7 @@ export default function Table({
                 ALCANCE
               </span>
               <span className="w-[70px] font-mono text-[9.5px] font-medium tracking-[1.2px] text-[#A6AAB2]">
-                %
+                {ownerPct > 0 ? "% SOBRE" : "%"}
               </span>
               <span className="w-[130px] font-mono text-[9.5px] font-medium tracking-[1.2px] text-[#A6AAB2]">
                 LE CORRESPONDE
@@ -466,7 +544,7 @@ export default function Table({
               <span className="w-[148px] font-mono text-[9.5px] font-medium tracking-[1.2px] text-[#A6AAB2]">
                 ESTADO
               </span>
-              <span className="w-[110px]" />
+              <span className="w-[150px]" />
             </div>
 
             <div className="h-px bg-[#E8E8EC]" />
@@ -505,25 +583,64 @@ export default function Table({
                       </span>
                     </button>
 
-                    <span className="flex w-[152px] items-center gap-1.5">
-                      {row.scope ? (
-                        <>
-                          {row.scope.worldwide ? (
-                            <Globe className="h-3 w-3 shrink-0 text-[#A6AAB2]" />
-                          ) : (
-                            <Radio className="h-3 w-3 shrink-0 text-[#A6AAB2]" />
-                          )}
-                          <span className="truncate text-[11px] text-[#71757E]">
-                            {row.scope.label}
+                    <span className="flex w-[152px] flex-col gap-0.5">
+                      <span className="flex items-center gap-1.5">
+                        {row.scope ? (
+                          <>
+                            {row.scope.worldwide ? (
+                              <Globe className="h-3 w-3 shrink-0 text-[#A6AAB2]" />
+                            ) : (
+                              <Radio className="h-3 w-3 shrink-0 text-[#A6AAB2]" />
+                            )}
+                            <span className="truncate text-[11px] text-[#71757E]">
+                              {row.scope.label}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-[11px] text-[#A6AAB2]">Sin split</span>
+                        )}
+                      </span>
+                      {row.periods.length > 0 && (
+                        <span
+                          title={periodsTitle(row.periods, row.percentage)}
+                          className="flex cursor-help items-center gap-1.5"
+                        >
+                          <CalendarRange className="h-3 w-3 shrink-0 text-[#FF5C00]" />
+                          <span className="truncate text-[10.5px] text-[#FF5C00]">
+                            {row.periods.length === 1
+                              ? formatPeriodRange(row.periods[0])
+                              : `${row.periods.length} tramos por fechas`}
                           </span>
-                        </>
-                      ) : (
-                        <span className="text-[11px] text-[#A6AAB2]">Sin split</span>
+                        </span>
                       )}
                     </span>
 
-                    <span className="w-[70px] font-mono text-[14px] font-semibold text-[#1C1D22]">
-                      {row.percentage != null ? `${row.percentage}%` : "—"}
+                    <span className="flex w-[70px] flex-col">
+                      <span
+                        className="font-mono text-[14px] font-semibold text-[#1C1D22]"
+                        title={
+                          row.periods.length > 0
+                            ? periodsTitle(row.periods, row.percentage)
+                            : undefined
+                        }
+                      >
+                        {row.periods.length > 0 ? (
+                          <span className="cursor-help text-[12px] text-[#FF5C00]">varía</span>
+                        ) : row.percentage != null ? (
+                          `${row.percentage}%`
+                        ) : (
+                          "—"
+                        )}
+                      </span>
+                      {row.percentage != null && (row.periods.length > 0 || ownerPct > 0) && (
+                        <span className="font-mono text-[9.5px] leading-tight text-[#A6AAB2]">
+                          {row.periods.length > 0
+                            ? "según el mes"
+                            : row.isOwnerRow
+                              ? "del total"
+                              : "de lo que queda"}
+                        </span>
+                      )}
                     </span>
 
                     <span className="w-[130px] font-mono text-[13px] font-semibold text-[#2FB37E]">
@@ -534,7 +651,7 @@ export default function Table({
                       <StatusChip row={row} />
                     </span>
 
-                    <span className="flex w-[110px] items-center justify-end gap-1.5">
+                    <span className="flex w-[150px] items-center justify-end gap-1.5">
                       {!row.isOwnerRow && (
                         <>
                           <IconButton
@@ -574,15 +691,40 @@ export default function Table({
                               <DollarSign className="h-3.5 w-3.5" />
                             </IconButton>
                           )}
+                          {row.splitId && canManageSplits && (
+                            <IconButton
+                              label="Quitar su split de esta canción"
+                              danger
+                              onClick={() => openRemoveSplit(row)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </IconButton>
+                          )}
                         </>
                       )}
                       {row.isOwnerRow && isOwner && song?.requesterRole === "admin" && (
-                        <IconButton
-                          label="Editar mi split"
-                          onClick={() => setIsOwnerSplitModalOpen(true)}
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </IconButton>
+                        <>
+                          <IconButton
+                            label="Editar mi split"
+                            onClick={() => setIsOwnerSplitModalOpen(true)}
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </IconButton>
+                          {row.splitId && (
+                            <IconButton
+                              label={
+                                poolSplitsActive > 0
+                                  ? "Quita antes los splits de los colaboradores"
+                                  : "Quitar mi split de esta canción"
+                              }
+                              danger
+                              disabled={poolSplitsActive > 0}
+                              onClick={() => openRemoveSplit(row)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </IconButton>
+                          )}
+                        </>
                       )}
                     </span>
                   </div>
@@ -594,26 +736,43 @@ export default function Table({
 
             <footer className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5">
               <span className="flex items-center gap-2.5">
-                {balanced ? (
+                {hasPeriods ? (
+                  <CalendarRange className="h-3.5 w-3.5 text-[#FF5C00]" />
+                ) : balanced ? (
                   <CircleCheck className="h-3.5 w-3.5 text-[#2FB37E]" />
                 ) : (
                   <AlertCircle className="h-3.5 w-3.5 text-[#EA580C]" />
                 )}
                 <span
-                  className={`text-[12px] font-semibold ${balanced ? "text-[#2FB37E]" : "text-[#EA580C]"}`}
+                  className={`text-[12px] font-semibold ${
+                    hasPeriods ? "text-[#71757E]" : balanced ? "text-[#2FB37E]" : "text-[#EA580C]"
+                  }`}
                 >
-                  {Math.round(assigned)}% asignado
+                  {hasPeriods
+                    ? "El reparto varía por mes"
+                    : `${Math.round(assigned)}% repartido entre colaboradores`}
                 </span>
                 <span className="text-[12px] text-[#A6AAB2]">·</span>
                 <span className="text-[12px] text-[#71757E]">
                   {rows.length} {rows.length === 1 ? "participante" : "participantes"}
-                  {distributable > 0 ? ` sobre ${formatMoney(distributable)} repartibles` : ""}
+                  {isOwner && distributable > 0
+                    ? ` sobre ${formatMoney(distributable)} repartibles`
+                    : ""}
                 </span>
               </span>
               <span className="text-[11px] text-[#A6AAB2]">
                 El alcance limita en qué países o plataformas aplica cada split
               </span>
             </footer>
+
+            {ownerPct > 0 && (
+              <p className="px-5 pb-3.5 text-[11px] leading-relaxed text-[#A6AAB2]">
+                Tu {ownerPct}% de owner se descuenta primero y no ocupa sitio en el reparto: los
+                colaboradores se reparten
+                {distributable > 0 ? ` los ${formatMoney(distributable)} ` : " lo "}que quedan
+                después, y ese es el 100% que se mide arriba.
+              </p>
+            )}
           </>
         )}
       </section>
@@ -657,12 +816,15 @@ const IconButton = ({
   children,
   label,
   accent,
+  danger,
   disabled,
   onClick,
 }: {
   children: ReactNode;
   label: string;
   accent?: boolean;
+  /** Acción que retira algo: se tiñe de rojo solo al pasar por encima. */
+  danger?: boolean;
   disabled?: boolean;
   onClick: () => void;
 }) => (
@@ -675,7 +837,9 @@ const IconButton = ({
     className={`grid h-[30px] w-[30px] place-items-center rounded-full border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C00] disabled:opacity-40 ${
       accent
         ? "border-[#2FB37E] bg-[#2FB37E] text-white hover:brightness-95"
-        : "border-[#E8E8EC] bg-white text-[#71757E] hover:bg-[#F4F5F7]"
+        : danger
+          ? "border-[#E8E8EC] bg-white text-[#71757E] enabled:hover:border-[#E5484D] enabled:hover:bg-[#FDECEC] enabled:hover:text-[#E5484D]"
+          : "border-[#E8E8EC] bg-white text-[#71757E] hover:bg-[#F4F5F7]"
     }`}
   >
     {children}

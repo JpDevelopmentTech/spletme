@@ -6,6 +6,7 @@ import {
   Hash,
   User,
   Calendar,
+  CalendarRange,
   CheckCircle2,
   ArrowRight,
   Clock3,
@@ -19,6 +20,7 @@ import {
 } from "@/components/ui/ModalShell";
 import { songSplitsService } from "../../../../../services/songSplits";
 import type { SplitHistoryItem } from "../../../../../types/song-split.types";
+import { formatPeriodRange } from "@/utils/splitPeriods.utils";
 import type { SongCollaborator } from "../../../../../types/music.types";
 
 interface HistoryOfSplitsProps {
@@ -281,14 +283,25 @@ const Historyofsplits = ({
                       <span className="truncate text-[11px] text-[#71757E]">{scope.text}</span>
                     </span>
 
-                    <span className="flex w-[120px] items-center gap-2">
-                      <span className="font-mono text-[12.5px] font-medium text-[#A6AAB2]">
-                        {change.previousPercentage === null ? "—" : `${change.previousPercentage}%`}
+                    <span className="flex w-[120px] flex-col gap-0.5">
+                      <span className="flex items-center gap-2">
+                        <span className="font-mono text-[12.5px] font-medium text-[#A6AAB2]">
+                          {change.previousPercentage === null
+                            ? "—"
+                            : `${change.previousPercentage}%`}
+                        </span>
+                        <ArrowRight className="h-3 w-3 text-[#A6AAB2]" />
+                        <span className="font-mono text-[14px] font-semibold text-[#1C1D22]">
+                          {item.percentage ?? 0}%
+                        </span>
                       </span>
-                      <ArrowRight className="h-3 w-3 text-[#A6AAB2]" />
-                      <span className="font-mono text-[14px] font-semibold text-[#1C1D22]">
-                        {item.percentage ?? 0}%
-                      </span>
+                      {(item.periods?.length ?? 0) > 0 && (
+                        <span className="flex items-center gap-1 text-[10px] font-semibold text-[#FF5C00]">
+                          <CalendarRange className="h-2.5 w-2.5 shrink-0" />
+                          {item.periods?.length}{" "}
+                          {item.periods?.length === 1 ? "tramo" : "tramos"} · fuera de ellos
+                        </span>
+                      )}
                     </span>
 
                     <span className="flex w-[96px] items-center justify-end gap-1.5 text-[11.5px] font-semibold text-[#FF5C00]">
@@ -425,6 +438,33 @@ const VersionDetailModal = ({
             : `El alcance aplicado fue: ${scope.text.toLowerCase()}.`}
         </p>
       </div>
+
+      {(item.periods?.length ?? 0) > 0 && (
+        <div className="flex flex-col gap-2 rounded-[18px] border border-[#E8E8EC] p-4">
+          <span className="flex items-center gap-1.5 font-mono text-[9.5px] font-medium tracking-[1.2px] text-[#A6AAB2]">
+            <CalendarRange className="h-3 w-3" />
+            TRAMOS DE ESTA VERSIÓN
+          </span>
+          <ul className="flex flex-col gap-1.5">
+            {item.periods?.map((period) => (
+              <li
+                key={`${period.from}-${period.to}`}
+                className="flex items-center justify-between gap-3 rounded-[12px] bg-[#F4F5F7] px-3 py-2"
+              >
+                <span className="truncate font-mono text-[11.5px] text-[#71757E]">
+                  {formatPeriodRange(period)}
+                </span>
+                <span className="shrink-0 font-mono text-[12.5px] font-semibold text-[#1C1D22]">
+                  {period.percentage}%
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p className="text-[11px] leading-[1.45] text-[#A6AAB2]">
+            Fuera de esos tramos se aplicaba el {after}%.
+          </p>
+        </div>
+      )}
 
       <div className="overflow-hidden rounded-[18px] border border-[#E8E8EC]">
         {rows.map((row, i) => (

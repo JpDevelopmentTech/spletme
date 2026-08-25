@@ -18,7 +18,7 @@ import {
 import PaymentsService, { type PaymentReadiness } from "@/services/payments";
 import RoyaltiesService, { type RoyaltyRequest } from "@/services/royalties";
 import LocalStorageService from "@/services/localstorage";
-import { resolveIsOwner } from "@/utils/music.utils";
+import { resolveIsOwner, describeSplitScope } from "@/utils/music.utils";
 import useSong from "@/hooks/useSong";
 import useSongAlbums from "@/hooks/useSongAlbums";
 import { useSongMoney } from "@/hooks/useSongMoney";
@@ -27,6 +27,7 @@ import { formatCurrency, formatStreams } from "@/utils/format.utils";
 import { DetailHeader } from "@/components/music/DetailHeader";
 import { DetailTabs, type DetailTab } from "@/components/music/DetailTabs";
 import { MoneyWaterfall } from "@/components/music/MoneyWaterfall";
+import { MyShareCard } from "@/components/music/MyShareCard";
 import { SongAlbumsChip } from "@/components/music/SongAlbumsChip";
 import { MetricConsole, type MetricChannel } from "@/components/ui/MetricConsole";
 import Loading from "@/components/loading/loading";
@@ -51,9 +52,8 @@ export default function Song() {
   const { id = "" } = useParams();
   const { song, loading, getOwnerPercentage, getOwnerTotalOwed } = useSong({ id });
   const songAlbums = useSongAlbums(id);
-  const { getCurrentUserPercentage, getCurrentUserAmount } = useCurrentCollaborator({
-    collaborators: song?.collaborators || [],
-  });
+  const { getCurrentUserPercentage, getCurrentUserAmount, currentCollaborator } =
+    useCurrentCollaborator({ collaborators: song?.collaborators || [] });
 
   const [activeTab, setActiveTab] = useState<TabKey>("resumen");
   const [showStripeLoginModal, setShowStripeLoginModal] = useState(false);
@@ -106,6 +106,10 @@ export default function Song() {
     ? myRoyaltyRequest.calculatedAmount
     : Number(getCurrentUserAmount() || 0);
 
+  // Lo suyo y solo lo suyo: alcance del split propio y lo ya cobrado.
+  const myPaid = Number(currentCollaborator?.amountPaid ?? 0) || 0;
+  const myScope = describeSplitScope(currentCollaborator?.split);
+
   const collaboratorCount = (song?.collaborators ?? []).length;
   const blocked = readiness !== null && !readiness.canPay;
 
@@ -135,6 +139,9 @@ export default function Song() {
     { key: "documentos", label: "Documentos", icon: <FolderOpen className="h-[15px] w-[15px]" /> },
   ];
 
+  // El ingreso de la canción solo lo ve su dueño: junto al split propio, la
+  // resta delataría que hay un descuento antes del reparto. Ver
+  // `utils/ownerVisibility.ts`.
   const channels: MetricChannel[] = [
     {
       key: "streams",
@@ -142,15 +149,20 @@ export default function Song() {
       icon: <Play className="h-[13px] w-[13px] text-[#71757E]" />,
       value: formatStreams(song?.totalStreams ?? 0),
     },
-    {
-      key: "net",
-      label: "INGRESO NETO",
-      icon: <DollarSign className="h-[13px] w-[13px] text-[#2FB37E]" />,
-      value: formatCurrency(money.netIncome),
-      valueColor: "#2FB37E",
-      width: 300,
-      caption: money.grossIncome > 0 ? `bruto ${formatCurrency(money.grossIncome)}` : undefined,
-    },
+    ...(isOwnerUser
+      ? [
+          {
+            key: "net",
+            label: "INGRESO NETO",
+            icon: <DollarSign className="h-[13px] w-[13px] text-[#2FB37E]" />,
+            value: formatCurrency(money.netIncome),
+            valueColor: "#2FB37E",
+            width: 300,
+            caption:
+              money.grossIncome > 0 ? `bruto ${formatCurrency(money.grossIncome)}` : undefined,
+          } as MetricChannel,
+        ]
+      : []),
     {
       key: "share",
       label: isOwnerUser ? "TU PARTE" : "TU SPLIT",
@@ -245,15 +257,26 @@ export default function Song() {
 
         {activeTab === "resumen" && (
           <div className="grid grid-cols-12 gap-5">
-            <MoneyWaterfall
-                  steps={money.steps}
-                  shares={money.shares}
-                  distributable={money.repartible}
-                  subtitle="De lo que entra por esta canción hasta lo que le toca a cada uno"
-                  onEditSplits={() => setActiveTab("colaboradores")}
-                />
-                <Platforms reproductions={song?.reproductions ?? []} />
-                <Performance songId={id} />
+            {isOwnerUser ? (
+              <MoneyWaterfall
+                steps={money.steps}
+                shares={money.shares}
+                distributable={money.repartible}
+                subtitle="De lo que entra por esta canción hasta lo que le toca a cada uno"
+                onEditSplits={() => setActiveTab("colaboradores")}
+              />
+            ) : (
+              <MyShareCard
+                percentage={myPercentage || 0}
+                amount={myAmount}
+                paid={myPaid}
+                scope={myScope}
+                requestPending={myRoyaltyRequest?.status === "pending"}
+                onRequest={handleRequestRoyalties}
+              />
+            )}
+            <Platforms reproductions={song?.reproductions ?? []} />
+            <Performance songId={id} />
           </div>
         )}
 
@@ -270,9 +293,12 @@ export default function Song() {
         {activeTab === "pagos" && (
           <div className="flex flex-col gap-5 xl:flex-row xl:items-start">
             <div className="min-w-0 flex-1">
+              {/* El repartible es el neto menos costos: enseñárselo a quien cobra
+                  del pool equivale a enseñarle el ingreso. Los costos sí los ve:
+                  le afectan y no delatan nada. Ver `utils/ownerVisibility.ts`. */}
               <Extraordinarycosts
                 songId={id}
-                distributable={money.repartible}
+                distributable={isOwnerUser ? money.repartible : undefined}
                 songTitle={song?.trackTitle}
               />
             </div>
@@ -280,7 +306,7 @@ export default function Song() {
               <SongPaymentsHistory
                 songId={id}
                 refreshTrigger={refreshKey}
-                pendingAmount={totalToPay}
+                pendingAmount={isOwnerUser ? totalToPay : Math.max(0, myAmount - myPaid)}
               />
             </div>
           </div>

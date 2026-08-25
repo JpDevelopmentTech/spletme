@@ -137,6 +137,7 @@ export default function OwnerSplitModal({
   if (!mounted || !isOpen) return null;
 
   const percentage = parseFloat(form.percentage) || 0;
+  // Tu parte sale primero; lo que queda es el 100% que se reparten los demás.
   const restForOthers = Math.max(0, 100 - percentage);
 
   return createPortal(
@@ -176,8 +177,8 @@ export default function OwnerSplitModal({
 
         <div className="h-px shrink-0 bg-[#E8E8EC]" />
 
-        <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-[22px] pb-5 pt-[18px]">
-          <div className="flex flex-col gap-2">
+        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-[22px] pb-5 pt-[18px]">
+          <div className="flex shrink-0 flex-col gap-2">
             <span className="font-mono text-[9.5px] font-medium tracking-[1.2px] text-[#71757E]">
               TU PORCENTAJE *
             </span>
@@ -200,17 +201,18 @@ export default function OwnerSplitModal({
               {percentage > 0 && (
                 <div className="flex min-w-[180px] flex-1 flex-col gap-1">
                   <span className="font-mono text-[15px] font-semibold text-[#1C1D22]">
-                    {restForOthers}% para los demás
+                    {restForOthers}% queda para repartir
                   </span>
                   <span className="text-[11px] leading-[1.4] text-[#A6AAB2]">
-                    Es lo que quedará por repartir entre los colaboradores de esta canción.
+                    Tu parte se descuenta primero. Ese resto es el 100% que se reparten los
+                    colaboradores: sus porcentajes no compiten con el tuyo.
                   </span>
                 </div>
               )}
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex shrink-0 flex-col gap-2">
             <span className="flex items-center gap-1.5 font-mono text-[9.5px] font-medium tracking-[1.2px] text-[#71757E]">
               <Globe className="h-3 w-3" />
               EN QUÉ PAÍSES APLICA
@@ -237,7 +239,7 @@ export default function OwnerSplitModal({
             )}
           </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex shrink-0 flex-col gap-2">
             <span className="flex items-center gap-1.5 font-mono text-[9.5px] font-medium tracking-[1.2px] text-[#71757E]">
               <Radio className="h-3 w-3" />
               EN QUÉ PLATAFORMAS APLICA

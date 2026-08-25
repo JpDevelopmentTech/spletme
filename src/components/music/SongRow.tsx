@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Music, Play, Tag, ChevronRight, Eye, Disc3 } from "lucide-react";
 import { hasAnySplit } from "@/utils/music.utils";
+import { viewerOwnsSong, viewerSplitPercentage, viewerAmount } from "@/utils/ownerVisibility";
 import { formatStreams, formatCurrency } from "@/utils/format.utils";
 import { CopyButton } from "@/components/ui/CopyButton";
 import { CollaboratorAvatars } from "./CollaboratorAvatars";
@@ -10,6 +11,13 @@ import type { SongItem } from "@/types/music.types";
 interface SongRowProps {
   song: SongItem;
   onQuickView: (song: SongItem) => void;
+  /**
+   * Si la columna de dinero puede enseñar el ingreso de la canción. Solo cuando
+   * quien mira es dueño de todo lo que hay en pantalla: para un colaborador, el
+   * neto junto a su porcentaje delata el descuento del owner. Ver
+   * `utils/ownerVisibility.ts`.
+   */
+  showsIncome?: boolean;
 }
 
 const visibility = (key: string) => SONG_COLUMNS.find((c) => c.key === key)!.visibility;
@@ -18,11 +26,16 @@ const visibility = (key: string) => SONG_COLUMNS.find((c) => c.key === key)!.vis
  * Fila de la tabla de canciones. La fila entera lleva al detalle: los controles
  * que hacen de por sí otra cosa (copiar ISRC, vista rápida) detienen el clic.
  */
-export function SongRow({ song, onQuickView }: SongRowProps) {
+export function SongRow({ song, onQuickView, showsIncome = false }: SongRowProps) {
   const navigate = useNavigate();
   const cover = song?.spotifyData?.album?.images?.[0]?.url;
   const split = hasAnySplit(song);
   const to = `/panel/song/${song._id}`;
+  const myPercentage = viewerSplitPercentage(song);
+  const money =
+    showsIncome && viewerOwnsSong(song)
+      ? Number(song?.totalNetIncome ?? song?.netIncome ?? 0)
+      : viewerAmount(song);
 
   return (
     <div
@@ -107,7 +120,7 @@ export function SongRow({ song, onQuickView }: SongRowProps) {
       {/* Ingresos */}
       <div className={visibility("income")}>
         <span className="font-mono text-[13px] font-semibold text-[#2FB37E]">
-          {formatCurrency(song?.totalNetIncome ?? song?.netIncome ?? 0)}
+          {formatCurrency(money)}
         </span>
       </div>
 
@@ -119,9 +132,9 @@ export function SongRow({ song, onQuickView }: SongRowProps) {
       {/* % · Sello */}
       <div className={`${visibility("percentage")} items-center gap-2`}>
         <span
-          className={`font-mono text-[12.5px] font-semibold ${typeof song?.percetaje === "number" ? "text-[#1C1D22]" : "text-[#A6AAB2]"}`}
+          className={`font-mono text-[12.5px] font-semibold ${myPercentage !== null ? "text-[#1C1D22]" : "text-[#A6AAB2]"}`}
         >
-          {typeof song?.percetaje === "number" ? `${song.percetaje}%` : "—"}
+          {myPercentage !== null ? `${myPercentage}%` : "—"}
         </span>
         {(song?.labelCount ?? 0) > 0 && (
           <span className="inline-flex items-center gap-1 rounded-full bg-[#FFEADD] px-2 py-0.5 font-mono text-[10px] font-semibold text-[#FF5C00]">

@@ -7,6 +7,7 @@ import { MusicPagination } from "@/components/music/MusicPagination";
 import { MusicFilterDrawer } from "@/components/music/MusicFilterDrawer";
 import { SONG_COLUMNS, SONGS_GRID, isDescending } from "@/components/music/songsColumns";
 import { useSongsLibrary } from "@/hooks/useSongsLibrary";
+import { viewerOwnsSong } from "@/utils/ownerVisibility";
 import type { MusicLayout, SortBy } from "@/types/music.types";
 
 interface SongsViewProps {
@@ -72,6 +73,14 @@ export function SongsView({
   useEffect(() => {
     onActiveFiltersChange?.(activeFilterCount);
   }, [activeFilterCount, onActiveFiltersChange]);
+
+  /**
+   * La columna de dinero solo puede decir «ingresos» si todo lo que se lista es
+   * del propio dueño. En cuanto aparece una canción ajena pasa a decir «tu
+   * parte» en todas: enseñarle a un colaborador el neto junto a su porcentaje
+   * contaría lo que hay descontado antes. Ver `utils/ownerVisibility.ts`.
+   */
+  const showsIncome = songs.length > 0 && songs.every((song) => viewerOwnsSong(song));
 
   const drawer = (
     <MusicFilterDrawer
@@ -165,7 +174,12 @@ export function SongsView({
       <div className="flex flex-col gap-5">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6 xl:grid-cols-6">
           {songs.map((song) => (
-            <SongCard key={song._id} song={song} onQuickView={library.handleOpenSongDetails} />
+            <SongCard
+              key={song._id}
+              song={song}
+              onQuickView={library.handleOpenSongDetails}
+              showsIncome={showsIncome}
+            />
           ))}
         </div>
         <div className="px-1">{pagination}</div>
@@ -190,17 +204,19 @@ export function SongsView({
         </div>
         {SONG_COLUMNS.map((column) => {
           const active = Boolean(column.sortKeys?.includes(sortBy));
+          const label =
+            column.key === "income" && !showsIncome ? "TU PARTE" : column.label;
           return (
             <div key={column.key} className={column.visibility}>
               {column.sortKeys ? (
                 <ColumnButton
-                  label={column.label}
+                  label={label}
                   active={active}
                   descending={isDescending(sortBy)}
                   onClick={() => setSortBy(NEXT_SORT[column.key](sortBy))}
                 />
               ) : (
-                <ColumnLabel>{column.label}</ColumnLabel>
+                <ColumnLabel>{label}</ColumnLabel>
               )}
             </div>
           );
@@ -210,7 +226,12 @@ export function SongsView({
       <div className="h-px bg-[#E8E8EC]" />
       <div className="flex flex-col divide-y divide-[#E8E8EC]">
         {songs.map((song) => (
-          <SongRow key={song._id} song={song} onQuickView={library.handleOpenSongDetails} />
+          <SongRow
+            key={song._id}
+            song={song}
+            onQuickView={library.handleOpenSongDetails}
+            showsIncome={showsIncome}
+          />
         ))}
       </div>
       <div className="h-px bg-[#E8E8EC]" />

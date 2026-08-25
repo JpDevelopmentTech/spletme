@@ -131,11 +131,55 @@ export interface Share {
   pending?: number;
 }
 
-/** Suma de porcentajes asignados; lo que falte hasta 100 queda sin repartir. */
-export function assignedPercentage(shares: Share[]): number {
-  return shares.reduce((total, share) => total + (share.percentage || 0), 0);
+/**
+ * El porcentaje del owner NO compite con el de los colaboradores.
+ *
+ * El owner se lleva su `ownerPct%` de lo repartible antes que nadie; lo que
+ * queda (el pool) es el 100% que se reparten los colaboradores. Por eso un owner
+ * al 20% y un colaborador al 100% no suman 120%: son dos bases distintas. De
+ * $1.000, el owner cobra $200 y el colaborador el 100% de los $800 restantes.
+ *
+ * Las funciones de abajo mantienen esa separación: `assignedPercentage` mide
+ * solo el pool, y `effectivePercentage` traduce ambas bases a una común cuando
+ * hay que pintarlas juntas en una misma barra.
+ */
+
+/** El porcentaje que se lleva el owner de lo repartible, antes del pool. */
+export function ownerPercentage(shares: Share[]): number {
+  return shares.find((share) => share.isOwner)?.percentage || 0;
 }
 
+/**
+ * Cuánto del pool de colaboradores está repartido. El owner queda fuera a
+ * propósito: su parte no sale de este 100%, sale de antes.
+ */
+export function assignedPercentage(shares: Share[]): number {
+  return shares
+    .filter((share) => !share.isOwner)
+    .reduce((total, share) => total + (share.percentage || 0), 0);
+}
+
+/** Lo que queda del pool sin repartir; ese resto se lo queda el owner. */
 export function unassignedPercentage(shares: Share[]): number {
   return Math.max(0, 100 - assignedPercentage(shares));
+}
+
+/** El dinero del pool: lo repartible menos la parte del owner. */
+export function collaboratorPool(distributableAmount: number, ownerPct: number): number {
+  const pct = Math.min(100, Math.max(0, ownerPct));
+  return toCents(Math.max(0, distributableAmount) * (1 - pct / 100));
+}
+
+/**
+ * El porcentaje de un split llevado a una base común: el total repartible.
+ *
+ * El del owner ya está en esa base; el de un colaborador es un porcentaje del
+ * pool, así que hay que encogerlo por lo que se llevó el owner. Sirve para que
+ * una barra apilada nunca pase del 100%.
+ */
+export function effectivePercentage(share: Share, ownerPct: number): number {
+  const pct = share.percentage || 0;
+  if (share.isOwner) return pct;
+  const owner = Math.min(100, Math.max(0, ownerPct));
+  return (pct * (100 - owner)) / 100;
 }

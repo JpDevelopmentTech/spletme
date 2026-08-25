@@ -2,7 +2,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { accountingApi, type SongBalance } from "@/services/accounting";
 import { collaboratorColor } from "@/utils/collaborators.utils";
-import { buildWaterfall, distributable, type Share } from "@/utils/money.utils";
+import { viewerOwnsSong } from "@/utils/ownerVisibility";
+import {
+  buildWaterfall,
+  collaboratorPool,
+  distributable,
+  type Share,
+} from "@/utils/money.utils";
 
 interface UseSongMoneyOptions {
   songId: string;
@@ -63,21 +69,29 @@ export function useSongMoney({ songId, song, refreshKey = 0 }: UseSongMoneyOptio
   /**
    * El owner y los colaboradores, en el orden en que se leen. Los importes salen
    * de `amountOwed`, que el backend calcula en vivo; el porcentaje, del split.
+   *
+   * Las dos bases no son la misma: el owner cobra su porcentaje de lo repartible
+   * y los colaboradores el suyo del pool que queda después. El cálculo de
+   * respaldo (cuando el backend no manda `amountOwed`) respeta ese orden.
    */
   const shares = useMemo<Share[]>(() => {
     const list: Share[] = [];
 
-    const ownerPercentage = Number(song?.ownerId?.split?.percentage ?? 0);
-    if (ownerPercentage > 0) {
+    // Segunda barrera: aunque la cascada solo se pinta para el dueño, si un día
+    // se montara para otro, el owner no entraría en la lista igualmente.
+    const ownerPct = viewerOwnsSong(song) ? Number(song?.ownerId?.split?.percentage ?? 0) : 0;
+    if (ownerPct > 0) {
       list.push({
         id: "owner",
         name: "Tú (owner)",
-        percentage: ownerPercentage,
-        amount: Number(song?.ownerId?.amountOwed ?? (repartible * ownerPercentage) / 100),
+        percentage: ownerPct,
+        amount: Number(song?.ownerId?.amountOwed ?? (repartible * ownerPct) / 100),
         color: collaboratorColor(0),
         isOwner: true,
       });
     }
+
+    const pool = collaboratorPool(repartible, ownerPct);
 
     (song?.collaborators ?? []).forEach((collaborator: any, index: number) => {
       const percentage = Number(collaborator?.split?.percentage ?? 0);
@@ -87,7 +101,7 @@ export function useSongMoney({ songId, song, refreshKey = 0 }: UseSongMoneyOptio
         name: collaborator?.name ?? collaborator?.username ?? "Colaborador",
         role: resolveRole(collaborator),
         percentage,
-        amount: Number(collaborator?.amountOwed ?? (repartible * percentage) / 100),
+        amount: Number(collaborator?.amountOwed ?? (pool * percentage) / 100),
         pending: Number(collaborator?.amountPending ?? collaborator?.amountOwed ?? 0),
         color: collaboratorColor(index + 1),
       });

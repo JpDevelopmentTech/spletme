@@ -21,6 +21,12 @@ interface Props {
   onSplitsCreated?: () => void;
   /** Abre la asignación del split del owner, requisito para repartir. */
   onAssignOwnerSplit?: () => void;
+  /**
+   * Si quien reparte es el dueño de las canciones. Solo entonces se nombra su
+   * split: es el único que puede asignarlo y el único que puede saber que
+   * existe. Ver `utils/ownerVisibility.ts`.
+   */
+  showOwnerContext?: boolean;
   /** Abre la invitación, para sumar a alguien a las canciones que le faltan. */
   onInvite?: () => void;
 }
@@ -47,6 +53,7 @@ export default function BulkCollaboratorSplitModal({
   onSplitsCreated,
   onAssignOwnerSplit,
   onInvite,
+  showOwnerContext = false,
 }: Props) {
   const {
     mounted,
@@ -198,7 +205,7 @@ export default function BulkCollaboratorSplitModal({
             ) : (
               <>
                 {/* Lo que el reparto no puede cubrir, dicho antes de empezar. */}
-                {blocked > 0 && (
+                {showOwnerContext && blocked > 0 && (
                   <Blocker
                     tone="danger"
                     icon={<Crown className="h-[17px] w-[17px] text-[#E5484D]" />}
@@ -270,7 +277,9 @@ export default function BulkCollaboratorSplitModal({
                     </span>
                   </div>
                   <p className="text-[11px] leading-relaxed text-[#A6AAB2]">
-                    Se calcula sobre lo que queda tras la parte del owner, y es el mismo en cada{" "}
+                    {showOwnerContext
+                      ? "Se calcula sobre lo que queda tras la parte del owner, y es el mismo en cada "
+                      : "Es el mismo en cada "}
                     {unit.one}. Entre todos los colaboradores no puede pasar del 100%.
                   </p>
                 </div>

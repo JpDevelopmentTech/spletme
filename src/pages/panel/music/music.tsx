@@ -158,7 +158,7 @@ export default function Music() {
 
           <button
             onClick={() => setFiltersOpen(true)}
-            className={`relative flex flex-shrink-0 items-center gap-2 rounded-full px-3.5 py-2 text-[12.5px] font-semibold transition-colors ${
+            className={`relative flex min-h-[44px] flex-shrink-0 items-center gap-2 rounded-full px-3.5 text-[12.5px] font-semibold transition-colors ${
               activeFilters > 0
                 ? "bg-[#FFEADD] text-[#FF5C00]"
                 : "border border-[#E8E8EC] bg-white text-[#1C1D22] hover:bg-[#F4F5F7]"
@@ -182,19 +182,23 @@ export default function Music() {
           </span>
         </div>
 
-        {mode === "songs" ? (
-          <SongsView
-            {...viewProps}
-            onCountChange={setSongsCount}
-            onSwitchToAlbums={() => setMode("albums")}
-          />
-        ) : (
-          <AlbumsView
-            {...viewProps}
-            onCountChange={setAlbumsCount}
-            onSwitchToSongs={() => setMode("songs")}
-          />
-        )}
+        {/* El panel que anuncia el conmutador: sin este id, su `aria-controls`
+            apuntaría al vacío y un lector de pantalla no sabría qué cambió. */}
+        <div id="music-panel" role="tabpanel" aria-labelledby={`music-tab-${mode}`}>
+          {mode === "songs" ? (
+            <SongsView
+              {...viewProps}
+              onCountChange={setSongsCount}
+              onSwitchToAlbums={() => setMode("albums")}
+            />
+          ) : (
+            <AlbumsView
+              {...viewProps}
+              onCountChange={setAlbumsCount}
+              onSwitchToSongs={() => setMode("songs")}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

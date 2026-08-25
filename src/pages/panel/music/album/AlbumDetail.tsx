@@ -25,16 +25,23 @@ import { formatCurrency, formatStreams } from "@/utils/format.utils";
 import { albumSplitCoverage, resolveIsOwner } from "@/utils/music.utils";
 import { collaboratorColor } from "@/utils/collaborators.utils";
 import LocalStorageService from "@/services/localstorage";
-import { buildWaterfall, distributable, type Share } from "@/utils/money.utils";
+import {
+  buildWaterfall,
+  collaboratorPool,
+  distributable,
+  type Share,
+} from "@/utils/money.utils";
 import { DetailHeader } from "@/components/music/DetailHeader";
 import { DetailTabs, type DetailTab } from "@/components/music/DetailTabs";
 import { MoneyWaterfall } from "@/components/music/MoneyWaterfall";
+import { MyShareCard } from "@/components/music/MyShareCard";
 import { MetricConsole, type MetricChannel } from "@/components/ui/MetricConsole";
 import Loading from "@/components/loading/loading";
 import Platforms from "../song/components/platforms";
 import AlbumOwnerSplitModal from "./components/AlbumOwnerSplitModal";
 import { InviteAlbumCollaboratorModal } from "./components/InviteAlbumCollaboratorModal";
 import BulkCollaboratorSplitModal from "@/components/splits/BulkCollaboratorSplitModal";
+import { viewerOwnsSong } from "@/utils/ownerVisibility";
 import AlbumExtraordinaryCosts from "./components/AlbumExtraordinaryCosts";
 import type { Album, AlbumTrack } from "@/models/album";
 import type { AlbumItem } from "@/types/music.types";
@@ -195,12 +202,16 @@ export default function AlbumDetail() {
 
     for (const track of tracks) {
       const income = Number(track.totalNetIncome ?? 0);
+      // El owner cobra su parte de la pista antes del reparto; lo que reciben
+      // los colaboradores es su porcentaje del pool que queda, no del neto.
+      const ownerPct = Number((track as any)?.ownerId?.split?.percentage ?? 0);
+      const pool = collaboratorPool(income, ownerPct);
       for (const collaborator of ((track as any)?.collaborators ?? []) as any[]) {
         const percentage = Number(collaborator?.split?.percentage ?? 0);
         if (percentage <= 0) continue;
         const key = String(collaborator?._id ?? collaborator?.name ?? "?");
         const previous = byPerson.get(key);
-        const amount = (income * percentage) / 100;
+        const amount = (pool * percentage) / 100;
         byPerson.set(key, {
           name: collaborator?.name ?? "Colaborador",
           role: collaborator?.roles?.[0],
@@ -219,6 +230,13 @@ export default function AlbumDetail() {
       color: collaboratorColor(index + 1),
     }));
   }, [album, repartible]);
+
+  /** Lo agregado de quien mira, cuando no es el dueño: su parte del álbum. */
+  const myIds = [currentUser?.id, currentUser?._id, currentUser?.userId]
+    .filter(Boolean)
+    .map(String);
+  const mine = shares.find((share) => myIds.includes(String(share.id)));
+  const myAlbumShare = { percentage: mine?.percentage ?? 0, amount: mine?.amount ?? 0 };
 
   if (loading) return <Loading />;
 
@@ -285,15 +303,22 @@ export default function AlbumDetail() {
       icon: <Play className="h-[13px] w-[13px] text-[#71757E]" />,
       value: formatStreams(album.totalStreams ?? 0),
     },
-    {
-      key: "net",
-      label: "INGRESO NETO",
-      icon: <DollarSign className="h-[13px] w-[13px] text-[#2FB37E]" />,
-      value: formatCurrency(netIncome),
-      valueColor: "#2FB37E",
-      width: 300,
-      caption: grossIncome > 0 ? `bruto ${formatCurrency(grossIncome)}` : undefined,
-    },
+    // El ingreso del álbum y lo que queda sin repartir son cuentas del dueño:
+    // junto al porcentaje propio delatan lo que se descuenta antes del reparto.
+    // Ver `utils/ownerVisibility.ts`.
+    ...(isOwnerUser
+      ? [
+          {
+            key: "net",
+            label: "INGRESO NETO",
+            icon: <DollarSign className="h-[13px] w-[13px] text-[#2FB37E]" />,
+            value: formatCurrency(netIncome),
+            valueColor: "#2FB37E",
+            width: 300,
+            caption: grossIncome > 0 ? `bruto ${formatCurrency(grossIncome)}` : undefined,
+          } as MetricChannel,
+        ]
+      : []),
     {
       key: "coverage",
       label: "SPLIT ASIGNADO",
@@ -301,18 +326,22 @@ export default function AlbumDetail() {
       value: coverage.total > 0 ? `${Math.round((coverage.withSplit / coverage.total) * 100)}%` : "—",
       caption: `${coverage.withSplit} de ${coverage.total} pistas`,
     },
-    {
-      key: "unassigned",
-      label: "SIN REPARTIR",
-      icon: <CircleAlert className="h-[13px] w-[13px] text-[#FF5C00]" />,
-      value: pending > 0 ? formatCurrency(unassignedIncome) : "Al día",
-      highlight: true,
-      width: 270,
-      caption:
-        pending > 0
-          ? `${pending} ${pending === 1 ? "pista va entera" : "pistas van enteras"} a ti`
-          : "todas las pistas reparten",
-    },
+    ...(isOwnerUser
+      ? [
+          {
+            key: "unassigned",
+            label: "SIN REPARTIR",
+            icon: <CircleAlert className="h-[13px] w-[13px] text-[#FF5C00]" />,
+            value: pending > 0 ? formatCurrency(unassignedIncome) : "Al día",
+            highlight: true,
+            width: 270,
+            caption:
+              pending > 0
+                ? `${pending} ${pending === 1 ? "pista va entera" : "pistas van enteras"} a ti`
+                : "todas las pistas reparten",
+          } as MetricChannel,
+        ]
+      : []),
   ];
 
   const visibleTracks = onlyWithoutSplit
@@ -384,6 +413,7 @@ export default function AlbumDetail() {
           // y las plataformas comparten fila, y el rendimiento va debajo de
           // ancho completo porque es una serie temporal y necesita el espacio.
           <div className="grid grid-cols-12 gap-5">
+            {isOwnerUser ? (
             <MoneyWaterfall
               steps={steps}
               shares={shares}
@@ -418,6 +448,9 @@ export default function AlbumDetail() {
                 ) : undefined
               }
             />
+            ) : (
+              <MyShareCard percentage={myAlbumShare.percentage} amount={myAlbumShare.amount} />
+            )}
             <Platforms reproductions={reproductions} />
             {monthly.length > 0 && <MonthlyChart data={monthly} />}
           </div>
@@ -458,6 +491,7 @@ export default function AlbumDetail() {
       {collabSplitOpen && (
         <BulkCollaboratorSplitModal
           isOpen={collabSplitOpen}
+          showOwnerContext={(album?.tracks ?? []).some((track) => viewerOwnsSong(track))}
           onClose={() => setCollabSplitOpen(false)}
           name={album.albumTitle}
           context={album.artistName}

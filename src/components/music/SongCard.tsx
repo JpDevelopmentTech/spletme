@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Music, Play, Eye, Tag, ChevronRight } from "lucide-react";
 import { hasAnySplit } from "@/utils/music.utils";
+import { viewerOwnsSong, viewerSplitPercentage, viewerAmount } from "@/utils/ownerVisibility";
 import { formatStreams, formatCurrency } from "@/utils/format.utils";
 import { CopyButton } from "@/components/ui/CopyButton";
 import { CollaboratorAvatars } from "./CollaboratorAvatars";
@@ -9,18 +10,25 @@ import type { SongItem } from "@/types/music.types";
 interface SongCardProps {
   song: SongItem;
   onQuickView: (song: SongItem) => void;
+  /** Igual que en `SongRow`: el neto solo se enseña al dueño. */
+  showsIncome?: boolean;
 }
 
 /**
  * Tarjeta de canción para la vista de cuadrícula. Lleva los mismos datos que la
  * fila de la tabla; la portada tiñe de naranja cuando la canción no tiene split.
  */
-export function SongCard({ song, onQuickView }: SongCardProps) {
+export function SongCard({ song, onQuickView, showsIncome = false }: SongCardProps) {
   const navigate = useNavigate();
   const cover = song?.spotifyData?.album?.images?.[0]?.url;
   const split = hasAnySplit(song);
   const to = `/panel/song/${song._id}`;
-  const percentage = typeof song?.percetaje === "number" ? `${song.percetaje}%` : "—";
+  const myPercentage = viewerSplitPercentage(song);
+  const percentage = myPercentage !== null ? `${myPercentage}%` : "—";
+  const money =
+    showsIncome && viewerOwnsSong(song)
+      ? Number(song?.totalNetIncome ?? song?.netIncome ?? 0)
+      : viewerAmount(song);
 
   return (
     <div
@@ -81,7 +89,7 @@ export function SongCard({ song, onQuickView }: SongCardProps) {
             {formatStreams(song?.totalStreams ?? 0)}
           </span>
           <span className="font-mono text-[14px] font-semibold text-[#2FB37E]">
-            {formatCurrency(song?.totalNetIncome ?? song?.netIncome ?? 0)}
+            {formatCurrency(money)}
           </span>
         </div>
 
@@ -94,7 +102,7 @@ export function SongCard({ song, onQuickView }: SongCardProps) {
           </span>
           <span className="flex flex-shrink-0 items-center gap-2">
             <span
-              className={`font-mono text-[11.5px] font-semibold ${typeof song?.percetaje === "number" ? "text-[#1C1D22]" : "text-[#A6AAB2]"}`}
+              className={`font-mono text-[11.5px] font-semibold ${myPercentage !== null ? "text-[#1C1D22]" : "text-[#A6AAB2]"}`}
             >
               {percentage}
             </span>

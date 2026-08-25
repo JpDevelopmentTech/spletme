@@ -1,6 +1,9 @@
 import { formatCurrency } from "@/utils/format.utils";
 import {
   assignedPercentage,
+  collaboratorPool,
+  effectivePercentage,
+  ownerPercentage,
   unassignedPercentage,
   type Share,
   type WaterfallStep,
@@ -43,8 +46,12 @@ export function MoneyWaterfall({
   footnote,
   onEditSplits,
 }: MoneyWaterfallProps) {
+  // El owner cobra su parte antes del reparto: el 100% que se mide aquí es el
+  // del pool que queda después de él, no el de lo repartible entero.
+  const ownerPct = ownerPercentage(shares);
   const unassigned = unassignedPercentage(shares);
   const assigned = assignedPercentage(shares);
+  const pool = collaboratorPool(distributable, ownerPct);
 
   return (
     <section className="col-span-12 flex min-w-0 flex-col gap-4 rounded-[26px] border border-[#E8E8EC] bg-white p-[26px] shadow-[0_10px_28px_-12px_rgba(255,92,0,0.15)] xl:col-span-8">
@@ -129,20 +136,29 @@ export function MoneyWaterfall({
 
         {shares.length > 0 && (
           <>
+            {/* Anchos en base común (% de lo repartible): el del colaborador se
+                encoge por lo que ya se llevó el owner, para que la barra sume 100. */}
             <span className="flex h-4 w-full gap-[2px] overflow-hidden rounded-lg">
               {shares.map((share) => (
                 <span
                   key={share.id}
-                  title={`${share.name}: ${share.percentage}%`}
+                  title={
+                    share.isOwner
+                      ? `${share.name}: ${share.percentage}% de lo repartible`
+                      : `${share.name}: ${share.percentage}% de lo que queda tras el owner`
+                  }
                   className="h-full min-w-[3px]"
-                  style={{ width: `${share.percentage}%`, backgroundColor: share.color }}
+                  style={{
+                    width: `${effectivePercentage(share, ownerPct)}%`,
+                    backgroundColor: share.color,
+                  }}
                 />
               ))}
               {unassigned > 0 && (
                 <span
-                  title={`Sin asignar: ${unassigned.toFixed(0)}%`}
+                  title={`Sin repartir: ${unassigned.toFixed(0)}% del pool`}
                   className="h-full bg-[#E8E8EC]"
-                  style={{ width: `${unassigned}%` }}
+                  style={{ width: `${(unassigned * (100 - ownerPct)) / 100}%` }}
                 />
               )}
             </span>
@@ -175,8 +191,15 @@ export function MoneyWaterfall({
                     )}
                   </span>
 
-                  <span className="flex-shrink-0 font-mono text-[11.5px] font-semibold text-[#71757E]">
-                    {share.percentage}%
+                  <span className="flex flex-shrink-0 flex-col items-end">
+                    <span className="font-mono text-[11.5px] font-semibold text-[#71757E]">
+                      {share.percentage}%
+                    </span>
+                    {!share.isOwner && ownerPct > 0 && (
+                      <span className="font-mono text-[9.5px] text-[#A6AAB2]">
+                        de lo que queda
+                      </span>
+                    )}
                   </span>
                   <span className="w-[96px] flex-shrink-0 text-right font-mono text-[13px] font-semibold text-[#1C1D22]">
                     {formatCurrency(share.amount)}
@@ -189,17 +212,25 @@ export function MoneyWaterfall({
 
         {notice}
 
+        {ownerPct > 0 && (
+          <p className="text-[11px] leading-relaxed text-[#A6AAB2]">
+            Tu {ownerPct}% de owner sale primero de {formatCurrency(distributable)} repartibles. Los
+            colaboradores se reparten los {formatCurrency(pool)} restantes, y ese es el 100% que se
+            mide aquí.
+          </p>
+        )}
+
         {unassigned > 0 && shares.length > 0 && (
           <p className="text-[11px] leading-relaxed text-[#A6AAB2]">
-            Hay un {unassigned.toFixed(unassigned % 1 === 0 ? 0 : 1)}% sin asignar sobre{" "}
-            {formatCurrency(distributable)} repartibles: ese resto se queda contigo.
+            Queda un {unassigned.toFixed(unassigned % 1 === 0 ? 0 : 1)}% sin repartir de{" "}
+            {formatCurrency(ownerPct > 0 ? pool : distributable)}: ese resto se queda contigo.
           </p>
         )}
 
         {assigned > 100 && (
           <p className="rounded-[14px] bg-[#FDECEC] px-3.5 py-3 text-[11.5px] font-medium text-[#E5484D]">
-            Los splits suman {assigned.toFixed(1)}%, más del 100%. Hay que corregirlo antes de
-            poder pagar.
+            Los colaboradores suman {assigned.toFixed(1)}% de lo que queda tras tu parte de owner,
+            más del 100%. Hay que corregirlo antes de poder pagar.
           </p>
         )}
 

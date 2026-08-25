@@ -1,7 +1,13 @@
 import { useState, useEffect } from "react";
 import { songSplitsService } from "@/services/songSplits";
 import { useReleaseFilters } from "@/hooks/useReleaseFilters";
-import type { CollaboratorFormData, CollaboratorWithSplit, SelectOption } from "@/types";
+import { validatePeriods, toPayloadPeriods } from "@/utils/splitPeriods.utils";
+import type {
+  CollaboratorFormData,
+  CollaboratorWithSplit,
+  SelectOption,
+  SplitPeriodFormData,
+} from "@/types";
 
 interface UseSplitsModalParams {
   isOpen: boolean;
@@ -19,12 +25,34 @@ const defaultFormData = (): CollaboratorFormData => ({
   selectedCountries: [],
   platformsType: "all",
   selectedPlatforms: [],
+  periods: [],
 });
+
+/** Contador de claves de React para los tramos recién añadidos. */
+let periodKey = 0;
+
+const emptyPeriod = (): SplitPeriodFormData => {
+  periodKey += 1;
+  return {
+    id: `period-${periodKey}`,
+    from: "",
+    to: "",
+    percentage: "",
+    countriesType: "all",
+    selectedCountries: [],
+    platformsType: "all",
+    selectedPlatforms: [],
+  };
+};
 
 /**
  * Gestiona el estado y la lógica del modal de configuración de splits de
- * colaborador. Cada colaborador tiene una sola regla: un porcentaje obligatorio
- * y filtros opcionales de país y plataforma.
+ * colaborador. Cada colaborador tiene un porcentaje obligatorio, filtros
+ * opcionales de país y plataforma y, si su parte cambia con el tiempo, tramos
+ * de vigencia con su propio porcentaje y sus propios filtros.
+ *
+ * Con tramos, el porcentaje de arriba deja de ser lo que cobra siempre y pasa
+ * a ser lo que cobra fuera de ellos.
  */
 export function useSplitsModal({ isOpen, collaborators, songId }: UseSplitsModalParams) {
   const [collaboratorForms, setCollaboratorForms] = useState<Record<string, CollaboratorFormData>>(
@@ -58,6 +86,19 @@ export function useSplitsModal({ isOpen, collaborators, songId }: UseSplitsModal
         selectedCountries: toSelectOptions(split.selectedCountries ?? []),
         platformsType: split.platformsType ?? "all",
         selectedPlatforms: toSelectOptions(split.selectedPlatforms ?? []),
+        periods: (split.periods ?? []).map((period) => {
+          periodKey += 1;
+          return {
+            id: `period-${periodKey}`,
+            from: period.from ?? "",
+            to: period.to ?? "",
+            percentage: String(period.percentage ?? ""),
+            countriesType: period.countriesType ?? "all",
+            selectedCountries: toSelectOptions(period.selectedCountries ?? []),
+            platformsType: period.platformsType ?? "all",
+            selectedPlatforms: toSelectOptions(period.selectedPlatforms ?? []),
+          };
+        }),
       };
     }
 
@@ -85,18 +126,70 @@ export function useSplitsModal({ isOpen, collaborators, songId }: UseSplitsModal
     }));
   };
 
+  const addPeriod = (collaboratorId: string) => {
+    const form = getForm(collaboratorId);
+    setCollaboratorForms((prev) => ({
+      ...prev,
+      [collaboratorId]: { ...form, periods: [...form.periods, emptyPeriod()] },
+    }));
+  };
+
+  const removePeriod = (collaboratorId: string, periodId: string) => {
+    const form = getForm(collaboratorId);
+    setCollaboratorForms((prev) => ({
+      ...prev,
+      [collaboratorId]: {
+        ...form,
+        periods: form.periods.filter((period) => period.id !== periodId),
+      },
+    }));
+  };
+
+  const updatePeriod = (
+    collaboratorId: string,
+    periodId: string,
+    field: keyof SplitPeriodFormData,
+    value: string | readonly SelectOption[],
+  ) => {
+    const form = getForm(collaboratorId);
+    setCollaboratorForms((prev) => ({
+      ...prev,
+      [collaboratorId]: {
+        ...form,
+        periods: form.periods.map((period) =>
+          period.id === periodId ? { ...period, [field]: value } : period,
+        ),
+      },
+    }));
+  };
+
   const saveSplit = async () => {
     setErrorMessage(null);
     setIsLoading(true);
 
     try {
+      // Con tramos, un porcentaje base de 0 es una configuración legítima
+      // ("cuando acabe su tramo, deja de cobrar"), así que también se guarda.
       const pending = Object.entries(collaboratorForms).filter(
-        ([, form]) => form.percentage && parseFloat(form.percentage) > 0,
+        ([, form]) =>
+          form.percentage !== "" &&
+          (parseFloat(form.percentage) > 0 || form.periods.length > 0),
       );
 
       if (pending.length === 0) {
         setErrorMessage("Configura al menos un colaborador con un porcentaje válido.");
         return;
+      }
+
+      // Los tramos se comprueban antes de mandar nada: si el segundo colaborador
+      // los tiene mal, el primero ya se habría guardado y el reparto quedaría a
+      // medias sin que nadie lo haya pedido.
+      for (const [, form] of pending) {
+        const problem = validatePeriods(form.periods);
+        if (problem) {
+          setErrorMessage(problem);
+          return;
+        }
       }
 
       for (const [collaboratorId, form] of pending) {
@@ -108,6 +201,7 @@ export function useSplitsModal({ isOpen, collaborators, songId }: UseSplitsModal
           selectedCountries: form.selectedCountries.map((c) => c.value),
           platformsType: form.platformsType,
           selectedPlatforms: form.selectedPlatforms.map((p) => p.value),
+          periods: toPayloadPeriods(form.periods),
         });
       }
 
@@ -143,6 +237,13 @@ export function useSplitsModal({ isOpen, collaborators, songId }: UseSplitsModal
 
   const hasAnySavedSplit = collaborators.some((c) => Boolean(c.split));
 
+  /**
+   * Con tramos, sumar los porcentajes de todos deja de significar nada: dos
+   * personas al 80% no se pisan si cobran en meses distintos. La cabecera lo
+   * usa para dejar de anunciar un total que no se cumple en ningún mes.
+   */
+  const hasAnyPeriod = Object.values(collaboratorForms).some((f) => f.periods.length > 0);
+
   return {
     mounted,
     isLoading,
@@ -155,9 +256,13 @@ export function useSplitsModal({ isOpen, collaborators, songId }: UseSplitsModal
     configuredCount,
     totalAssignedPercentage,
     hasAnySavedSplit,
+    hasAnyPeriod,
     getForm,
     toggleExpanded,
     updateForm,
+    addPeriod,
+    removePeriod,
+    updatePeriod,
     saveSplit,
   };
 }

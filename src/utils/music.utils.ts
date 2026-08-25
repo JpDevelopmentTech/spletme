@@ -120,3 +120,25 @@ export function resolveIsOwner(song: any, currentUser: any): boolean {
   const isSubuser = Boolean(currentUser?.parentUserId);
   return !isSubuser && !hasIdentity && ids.some((value) => ownerIds.includes(value));
 }
+
+/**
+ * El alcance de un split en una frase corta. Vive aquí porque lo leen tanto la
+ * tabla de reparto como la tarjeta de «tu parte», y son la misma frase.
+ */
+export function describeSplitScope(
+  split?: {
+    countriesType?: string;
+    selectedCountries?: string[];
+    platformsType?: string;
+    selectedPlatforms?: string[];
+  } | null,
+): { label: string; worldwide: boolean } | null {
+  if (!split) return null;
+  const everywhere = split.countriesType === "all" && split.platformsType === "all";
+  if (everywhere) return { label: "Todos los países y plataformas", worldwide: true };
+  const countries =
+    split.countriesType === "all" ? "Todos los países" : split.selectedCountries?.join(", ");
+  const platforms =
+    split.platformsType === "all" ? "todas las plataformas" : split.selectedPlatforms?.join(", ");
+  return { label: [countries, platforms].filter(Boolean).join(" · ") || "—", worldwide: false };
+}

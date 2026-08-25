@@ -4,6 +4,7 @@ import {
   Radio,
   Users,
   ChevronDown,
+  CalendarRange,
   Check,
   AlertCircle,
   CircleCheck,
@@ -13,6 +14,7 @@ import { createPortal } from "react-dom";
 import { FilterSegment } from "@/components/ui/FilterSegment";
 import { selectStyles } from "@/components/ui/selectStyles";
 import { useSplitsModal } from "@/hooks/useSplitsModal";
+import { SplitPeriodsEditor } from "@/components/splits/SplitPeriodsEditor";
 import type { SplitsModalProps } from "@/types";
 
 function getInitials(name: string) {
@@ -32,7 +34,13 @@ const fmtPct = (n: number) => {
   return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2);
 };
 
-export default function SplitsModal({ collaborators, isOpen, onClose, songId }: SplitsModalProps) {
+export default function SplitsModal({
+  collaborators,
+  isOpen,
+  onClose,
+  songId,
+  showOwnerContext = false,
+}: SplitsModalProps) {
   const {
     mounted,
     isLoading,
@@ -44,14 +52,20 @@ export default function SplitsModal({ collaborators, isOpen, onClose, songId }: 
     configuredCount,
     totalAssignedPercentage,
     hasAnySavedSplit,
+    hasAnyPeriod,
     getForm,
     toggleExpanded,
     updateForm,
+    addPeriod,
+    removePeriod,
+    updatePeriod,
     saveSplit,
   } = useSplitsModal({ isOpen, collaborators, songId });
 
   if (!mounted || !isOpen) return null;
 
+  // El 100% que se reparte aquí es el del pool: lo que queda una vez descontado
+  // el split del owner, que se cobra antes y no ocupa sitio en este reparto.
   const remaining = 100 - totalAssignedPercentage;
   const overflow = remaining < 0;
   const balanced = Math.round(remaining * 100) / 100 === 0;
@@ -94,7 +108,7 @@ export default function SplitsModal({ collaborators, isOpen, onClose, songId }: 
 
         <div className="h-px shrink-0 bg-[#E8E8EC]" />
 
-        <div className="flex flex-1 flex-col gap-3 overflow-y-auto px-[22px] pb-5 pt-[18px]">
+        <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-[22px] pb-5 pt-[18px]">
           {collaborators.length === 0 ? (
             <div className="flex flex-col items-center gap-2.5 py-12 text-center">
               <span className="grid h-[52px] w-[52px] place-items-center rounded-[18px] bg-[#FFEADD]">
@@ -111,15 +125,19 @@ export default function SplitsModal({ collaborators, isOpen, onClose, songId }: 
             <>
               {/* Cuánto queda por repartir, siempre a la vista */}
               <div
-                className={`flex items-center gap-2.5 rounded-[14px] px-3 py-2.5 ${
-                  overflow
-                    ? "bg-[#FDECEC]"
-                    : balanced
-                      ? "bg-[#E4F5EC]"
-                      : "bg-[#F4F5F7]"
+                className={`flex shrink-0 items-center gap-2.5 rounded-[14px] px-3 py-2.5 ${
+                  hasAnyPeriod
+                    ? "bg-[#F4F5F7]"
+                    : overflow
+                      ? "bg-[#FDECEC]"
+                      : balanced
+                        ? "bg-[#E4F5EC]"
+                        : "bg-[#F4F5F7]"
                 }`}
               >
-                {overflow ? (
+                {hasAnyPeriod ? (
+                  <CalendarRange className="h-3.5 w-3.5 shrink-0 text-[#71757E]" />
+                ) : overflow ? (
                   <AlertCircle className="h-3.5 w-3.5 shrink-0 text-[#E5484D]" />
                 ) : balanced ? (
                   <CircleCheck className="h-3.5 w-3.5 shrink-0 text-[#2FB37E]" />
@@ -128,16 +146,31 @@ export default function SplitsModal({ collaborators, isOpen, onClose, songId }: 
                 )}
                 <span
                   className={`text-[11.5px] font-semibold leading-[1.4] ${
-                    overflow ? "text-[#E5484D]" : balanced ? "text-[#2FB37E]" : "text-[#71757E]"
+                    hasAnyPeriod
+                      ? "text-[#71757E]"
+                      : overflow
+                        ? "text-[#E5484D]"
+                        : balanced
+                          ? "text-[#2FB37E]"
+                          : "text-[#71757E]"
                   }`}
                 >
-                  {overflow
-                    ? `Te has pasado ${fmtPct(Math.abs(remaining))} puntos del 100% disponible`
-                    : balanced
-                      ? "El 100% está repartido: no queda nada suelto"
-                      : `Llevas ${fmtPct(totalAssignedPercentage)}% repartido · quedan ${fmtPct(remaining)}% sin asignar`}
+                  {hasAnyPeriod
+                    ? "Con tramos por fechas el reparto cambia según el mes; se comprueba mes a mes al guardar"
+                    : overflow
+                      ? `Te has pasado ${fmtPct(Math.abs(remaining))} puntos del 100% disponible`
+                      : balanced
+                        ? "El 100% está repartido: no queda nada suelto"
+                        : `Llevas ${fmtPct(totalAssignedPercentage)}% repartido · quedan ${fmtPct(remaining)}% sin asignar`}
                 </span>
               </div>
+
+              {showOwnerContext && (
+                <p className="shrink-0 px-1 text-[11px] leading-relaxed text-[#A6AAB2]">
+                  Tu parte de owner se descuenta antes y no entra en esta cuenta: este 100% es el
+                  del dinero que queda después de ella.
+                </p>
+              )}
 
               {collaborators.map((collaborator) => {
                 const form = getForm(collaborator.id);
@@ -149,7 +182,7 @@ export default function SplitsModal({ collaborators, isOpen, onClose, songId }: 
                 return (
                   <div
                     key={collaborator.id}
-                    className="overflow-hidden rounded-[18px] border border-[#E8E8EC]"
+                    className="shrink-0 overflow-hidden rounded-[18px] border border-[#E8E8EC]"
                   >
                     <button
                       type="button"
@@ -173,10 +206,18 @@ export default function SplitsModal({ collaborators, isOpen, onClose, songId }: 
                           Ya tiene split
                         </span>
                       )}
-                      {hasPercentage && (
-                        <span className="shrink-0 rounded-[12px] bg-[#FFEADD] px-[9px] py-1 font-mono text-[11px] font-semibold text-[#FF5C00]">
-                          {fmtPct(percentage)}%
+                      {form.periods.length > 0 ? (
+                        <span className="flex shrink-0 items-center gap-1 rounded-[12px] bg-[#FFEADD] px-[9px] py-1 text-[10px] font-semibold text-[#FF5C00]">
+                          <CalendarRange className="h-2.5 w-2.5" />
+                          {form.periods.length}{" "}
+                          {form.periods.length === 1 ? "tramo" : "tramos"}
                         </span>
+                      ) : (
+                        hasPercentage && (
+                          <span className="shrink-0 rounded-[12px] bg-[#FFEADD] px-[9px] py-1 font-mono text-[11px] font-semibold text-[#FF5C00]">
+                            {fmtPct(percentage)}%
+                          </span>
+                        )
                       )}
                       <ChevronDown
                         className={`h-4 w-4 shrink-0 text-[#A6AAB2] transition-transform ${
@@ -191,7 +232,11 @@ export default function SplitsModal({ collaborators, isOpen, onClose, songId }: 
                         <div className="flex flex-col gap-4 bg-[#FBFBFC] px-4 py-4">
                           <div className="flex flex-col gap-2">
                             <span className="font-mono text-[9.5px] font-medium tracking-[1.2px] text-[#71757E]">
-                              PORCENTAJE DEL REPARTIBLE *
+                              {form.periods.length > 0
+                                ? "PORCENTAJE FUERA DE LOS TRAMOS *"
+                                : showOwnerContext
+                                  ? "PORCENTAJE DE LO QUE QUEDA *"
+                                  : "PORCENTAJE DEL REPARTO *"}
                             </span>
                             <div className="flex flex-wrap items-center gap-3">
                               <div className="relative w-[140px]">
@@ -218,10 +263,16 @@ export default function SplitsModal({ collaborators, isOpen, onClose, songId }: 
                                       Con esto el reparto suma {fmtPct(totalAssignedPercentage)}%:
                                       hay que bajar {fmtPct(Math.abs(remaining))} puntos.
                                     </span>
+                                  ) : form.periods.length > 0 ? (
+                                    <>
+                                      Es lo que cobra en los meses que no cubre ningún tramo. Puede
+                                      ser 0 si al terminar deja de cobrar.
+                                    </>
                                   ) : (
                                     <>
-                                      Es la parte que le toca de lo que quede por repartir tras los
-                                      costos.
+                                      {showOwnerContext
+                                        ? "Es la parte que le toca de lo que quede tras los costos y tu split de owner."
+                                        : "Es la parte que le toca de lo que quede por repartir."}
                                     </>
                                   )}
                                 </p>
@@ -286,6 +337,20 @@ export default function SplitsModal({ collaborators, isOpen, onClose, songId }: 
                               />
                             )}
                           </div>
+
+                          <SplitPeriodsEditor
+                            ownerKey={collaborator.id}
+                            periods={form.periods}
+                            fallbackPercentage={form.percentage}
+                            countryOptions={countryOptions}
+                            platformOptions={platformOptions}
+                            isLoadingFilters={isLoadingFilters}
+                            onAdd={() => addPeriod(collaborator.id)}
+                            onRemove={(periodId) => removePeriod(collaborator.id, periodId)}
+                            onChange={(periodId, field, value) =>
+                              updatePeriod(collaborator.id, periodId, field, value)
+                            }
+                          />
                         </div>
                       </>
                     )}

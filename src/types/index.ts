@@ -39,6 +39,7 @@ export type {
 export type {
   FilterType,
   CollaboratorFormData,
+  SplitPeriodFormData,
   SplitsModalProps,
   CollaboratorWithSplit,
 } from "./splits-modal.types";
@@ -58,6 +59,7 @@ export type {
   SplitRole,
   SplitUserRef,
   SongSplit,
+  SplitPeriod,
   SplitFilterPayload,
   CreateOwnerSplitPayload,
   CreateCollaboratorSplitPayload,

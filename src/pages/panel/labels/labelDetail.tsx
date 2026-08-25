@@ -26,6 +26,7 @@ import type { LabelSong } from "@/services/labels";
 import CreateSplitsByLabelModal from "@/components/modal/CreateSplitsByLabelModal";
 import InviteCollaboratorToLabelModal from "@/components/labels/InviteCollaboratorToLabelModal";
 import BulkCollaboratorSplitModal from "@/components/splits/BulkCollaboratorSplitModal";
+import { viewerOwnsSong } from "@/utils/ownerVisibility";
 
 type SongSortBy = "income_desc" | "income_asc" | "title_asc" | "streams_desc" | "owner_desc";
 
@@ -411,6 +412,7 @@ export default function LabelDetail() {
       {collabSplitOpen && (
         <BulkCollaboratorSplitModal
           isOpen={collabSplitOpen}
+          showOwnerContext={splitTracks.some((track) => viewerOwnsSong(track))}
           onClose={() => setCollabSplitOpen(false)}
           name={decodedLabel}
           context="Sello artístico"

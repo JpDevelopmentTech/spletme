@@ -18,6 +18,7 @@ import { collaboratorColor, initialsOf } from "@/utils/collaborators.utils";
 import { CopyButton } from "@/components/ui/CopyButton";
 import { ModalShell, PrimaryButton, SecondaryButton } from "@/components/ui/ModalShell";
 import type { SongItem } from "@/types/music.types";
+import { viewerOwnsSong, viewerSplitPercentage } from "@/utils/ownerVisibility";
 
 interface SongDetailsModalProps {
   song: SongItem;
@@ -31,9 +32,12 @@ interface SongDetailsModalProps {
 /**
  * Vista rápida de una canción.
  *
- * Además de sus cifras, enseña el reparto completo en una sola barra —tú, los
- * colaboradores y el sello— y el álbum al que pertenece, que es el salto que
- * antes obligaba a cambiar de página y buscarlo a mano.
+ * Además de sus cifras, enseña el reparto en una sola barra y el álbum al que
+ * pertenece, que es el salto que antes obligaba a cambiar de página y buscarlo
+ * a mano.
+ *
+ * Quien no es el dueño de la canción ve el reparto sin la parte del owner y sin
+ * el ingreso de la canción: ver `utils/ownerVisibility.ts`.
  */
 export function SongDetailsModal({
   song,
@@ -69,7 +73,9 @@ export function SongDetailsModal({
   const releasesCount = countReleases(source);
   const streams = source?.totalStreams ?? source?.streams ?? 0;
   const income = source?.totalNetIncome ?? source?.netIncome ?? 0;
-  const ownerShare = typeof source?.percetaje === "number" ? source.percetaje : null;
+  const isOwnerView = viewerOwnsSong(source);
+  const ownerShare =
+    isOwnerView && typeof source?.percetaje === "number" ? source.percetaje : null;
 
   const collaborators = (source?.collaborators ?? []).filter(
     (c) => Number(c?.split?.percentage ?? 0) > 0,
@@ -78,6 +84,9 @@ export function SongDetailsModal({
     (sum, c) => sum + Number(c?.split?.percentage ?? 0),
     0,
   );
+  // Lo que cobra quien mira, venga de su split de owner o del suyo del pool.
+  const myShare = viewerSplitPercentage(source);
+
   const assigned = (ownerShare ?? 0) + collaboratorsShare;
   const unassigned = Math.max(0, 100 - assigned);
 
@@ -137,11 +146,13 @@ export function SongDetailsModal({
         <>
           <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
             <Metric label="STREAMS" value={formatStreams(streams)} />
-            <Metric label="INGRESO NETO" value={formatCurrency(income)} color="#2FB37E" />
+            {isOwnerView && (
+              <Metric label="INGRESO NETO" value={formatCurrency(income)} color="#2FB37E" />
+            )}
             <Metric
               label="TU PARTE"
-              value={ownerShare === null ? "—" : `${ownerShare}%`}
-              color={ownerShare === null ? undefined : "#FF5C00"}
+              value={myShare === null ? "—" : `${myShare}%`}
+              color={myShare === null ? undefined : "#FF5C00"}
             />
             <Metric label="COLABS" value={String(collaborators.length)} />
           </div>
