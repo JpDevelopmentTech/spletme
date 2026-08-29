@@ -5,6 +5,7 @@ import {
   Users,
   ChevronDown,
   CalendarRange,
+  Crown,
   Check,
   AlertCircle,
   CircleCheck,
@@ -167,8 +168,8 @@ export default function SplitsModal({
 
               {showOwnerContext && (
                 <p className="shrink-0 px-1 text-[11px] leading-relaxed text-[#A6AAB2]">
-                  Tu parte de owner se descuenta antes y no entra en esta cuenta: este 100% es el
-                  del dinero que queda después de ella.
+                  Aquí repartes la canción entera. Tu retención no sale de este 100%: sale después,
+                  de la parte de cada uno, y puedes fijarla distinta para cada persona.
                 </p>
               )}
 
@@ -235,7 +236,7 @@ export default function SplitsModal({
                               {form.periods.length > 0
                                 ? "PORCENTAJE FUERA DE LOS TRAMOS *"
                                 : showOwnerContext
-                                  ? "PORCENTAJE DE LO QUE QUEDA *"
+                                  ? "PORCENTAJE DE LA CANCIÓN *"
                                   : "PORCENTAJE DEL REPARTO *"}
                             </span>
                             <div className="flex flex-wrap items-center gap-3">
@@ -271,7 +272,7 @@ export default function SplitsModal({
                                   ) : (
                                     <>
                                       {showOwnerContext
-                                        ? "Es la parte que le toca de lo que quede tras los costos y tu split de owner."
+                                        ? "Es la parte de la canción que le asignas. De ahí sale tu retención, y él cobra el resto."
                                         : "Es la parte que le toca de lo que quede por repartir."}
                                     </>
                                   )}
@@ -279,6 +280,50 @@ export default function SplitsModal({
                               )}
                             </div>
                           </div>
+
+                          {showOwnerContext && (
+                            <div className="flex flex-col gap-2">
+                              <span className="flex items-center gap-1.5 font-mono text-[9.5px] font-medium tracking-[1.2px] text-[#71757E]">
+                                <Crown className="h-3 w-3" />
+                                TU RETENCIÓN CON ESTA PERSONA
+                              </span>
+                              <div className="flex flex-wrap items-center gap-3">
+                                <div className="relative w-[140px]">
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    step="0.01"
+                                    placeholder="La tuya"
+                                    value={form.ownerRate}
+                                    onChange={(e) =>
+                                      updateForm(collaborator.id, "ownerRate", e.target.value)
+                                    }
+                                    className="w-full rounded-[16px] border border-[#E8E8EC] bg-white py-3 pl-4 pr-9 font-mono text-[18px] font-semibold text-[#1C1D22] outline-none transition-colors focus:border-[#FF5C00] focus:ring-2 focus:ring-[#FF5C00]/25"
+                                  />
+                                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 font-mono text-[13px] text-[#A6AAB2]">
+                                    %
+                                  </span>
+                                </div>
+                                <p className="flex-1 text-[11.5px] leading-[1.4] text-[#71757E]">
+                                  {form.ownerRate.trim() === "" ? (
+                                    <>
+                                      Déjalo vacío y le aplicas tu porcentaje de owner, el mismo que
+                                      a todos. Rellénalo solo si con esta persona pactaste otro.
+                                    </>
+                                  ) : hasPercentage ? (
+                                    <>
+                                      De cada dólar que le toque por su{" "}
+                                      {fmtPct(percentage)}%, te quedas{" "}
+                                      {fmtPct(parseFloat(form.ownerRate) || 0)}% y cobra el resto.
+                                    </>
+                                  ) : (
+                                    <>Te quedas ese porcentaje de la parte que le toque.</>
+                                  )}
+                                </p>
+                              </div>
+                            </div>
+                          )}
 
                           <div className="flex flex-col gap-2">
                             <span className="flex items-center gap-1.5 font-mono text-[9.5px] font-medium tracking-[1.2px] text-[#71757E]">

@@ -63,6 +63,13 @@ export function useBulkCollaboratorSplit(
   // colaboran, para poder repartirle a alguien que aún no está en ninguna.
   const [placeholders, setPlaceholders] = useState<PlaceholderProfile[]>([]);
   const [form, setForm] = useState<OwnerFormData>(DEFAULT_FORM);
+  /**
+   * Retención que el owner le cobra a esta persona sobre su parte, como texto
+   * del input. Vacío = la de su split de owner, igual que para todos. Vive
+   * aparte de `form` porque `OwnerFormData` lo comparte el modal del owner,
+   * donde este campo no pinta nada.
+   */
+  const [ownerRate, setOwnerRate] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [progress, setProgress] = useState<CreationProgress | null>(null);
@@ -159,6 +166,7 @@ export function useBulkCollaboratorSplit(
     if (isOpen) return;
     setCollaboratorId("");
     setForm(DEFAULT_FORM);
+    setOwnerRate("");
     setProgress(null);
     setShowResults(false);
     setAutoCloseCountdown(null);
@@ -214,6 +222,12 @@ export function useBulkCollaboratorSplit(
       return;
     }
 
+    const rate = ownerRate.trim() === "" ? null : parseFloat(ownerRate);
+    if (rate !== null && (Number.isNaN(rate) || rate < 0 || rate > 100)) {
+      setError("La retención del owner tiene que estar entre 0 y 100.");
+      return;
+    }
+
     const payloadBase = {
       collaboratorId: selected.id,
       percentage,
@@ -221,6 +235,8 @@ export function useBulkCollaboratorSplit(
       selectedCountries: form.selectedCountries.map((c) => c.value),
       platformsType: form.platformsType,
       selectedPlatforms: form.selectedPlatforms.map((p) => p.value),
+      // null = sin retención propia: el backend le aplica la del owner.
+      ownerRate: rate,
     };
 
     setIsLoading(true);
@@ -299,6 +315,8 @@ export function useBulkCollaboratorSplit(
     selected,
     targetTracks,
     form,
+    ownerRate,
+    setOwnerRate,
     isLoading,
     isLoadingFilters,
     countryOptions,

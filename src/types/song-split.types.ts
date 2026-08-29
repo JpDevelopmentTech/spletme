@@ -41,6 +41,12 @@ export interface SongSplit {
   version: number;
   /** Vacío = el split aplica siempre; con tramos, `percentage` es el fallback. */
   periods?: SplitPeriod[];
+  /**
+   * Retención que el owner le cobra a ESTE participante sobre su parte.
+   * `null` = hereda la del split del owner. Dato del owner: no se le enseña a
+   * quien cobra del pool (ver `utils/ownerVisibility.ts`).
+   */
+  ownerRate?: number | null;
 }
 
 /** Campos de porcentaje + filtros que comparten owner y colaborador. */
@@ -61,6 +67,8 @@ export interface CreateCollaboratorSplitPayload extends SplitFilterPayload {
   collaboratorId: string;
   /** Tramos de vigencia; con ellos, `percentage` es lo que cobra fuera de ellos. */
   periods?: SplitPeriod[];
+  /** Retención del owner solo para este participante; `null` = hereda la suya. */
+  ownerRate?: number | null;
 }
 
 /** Entrada del desglose de distribución calculada en vivo por el backend. */
@@ -73,6 +81,13 @@ export interface SplitDistributionEntry {
   platformsType: FilterType;
   selectedPlatforms: string[];
   periods?: SplitPeriod[];
+  /** Retención pactada con este participante; `null` = hereda la del owner. */
+  ownerRate?: number | null;
+  /** Su parte antes de la retención del owner. Dato del owner. */
+  grossAmount?: number;
+  /** Lo que el owner le retiene de esa parte. Dato del owner. */
+  ownerCut?: number;
+  /** Lo que cobra: `grossAmount - ownerCut`. */
   amount: number;
 }
 

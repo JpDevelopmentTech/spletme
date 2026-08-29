@@ -26,6 +26,7 @@ const defaultFormData = (): CollaboratorFormData => ({
   platformsType: "all",
   selectedPlatforms: [],
   periods: [],
+  ownerRate: "",
 });
 
 /** Contador de claves de React para los tramos recién añadidos. */
@@ -53,6 +54,10 @@ const emptyPeriod = (): SplitPeriodFormData => {
  *
  * Con tramos, el porcentaje de arriba deja de ser lo que cobra siempre y pasa
  * a ser lo que cobra fuera de ellos.
+ *
+ * El dueño de la canción puede además fijar por colaborador la retención que
+ * le cobra sobre su parte (`ownerRate`). Dejarla vacía mantiene la de siempre:
+ * la del split del owner, igual para todos.
  */
 export function useSplitsModal({ isOpen, collaborators, songId }: UseSplitsModalParams) {
   const [collaboratorForms, setCollaboratorForms] = useState<Record<string, CollaboratorFormData>>(
@@ -81,6 +86,11 @@ export function useSplitsModal({ isOpen, collaborators, songId }: UseSplitsModal
       if (!split) continue;
 
       initialForms[collaborator.id] = {
+        // Vacío cuando no hay retención propia: el input queda en blanco y el
+        // colaborador sigue heredando la del owner.
+        ownerRate: split.ownerRate === null || split.ownerRate === undefined
+          ? ""
+          : String(split.ownerRate),
         percentage: String(split.percentage ?? ""),
         countriesType: split.countriesType ?? "all",
         selectedCountries: toSelectOptions(split.selectedCountries ?? []),
@@ -190,6 +200,17 @@ export function useSplitsModal({ isOpen, collaborators, songId }: UseSplitsModal
           setErrorMessage(problem);
           return;
         }
+
+        // Se comprueba aquí y no al teclear porque el input admite estados
+        // intermedios ("0.", "-") mientras se escribe; lo que no puede es
+        // llegar así al backend y guardarse como una retención sin sentido.
+        if (form.ownerRate.trim() !== "") {
+          const rate = parseFloat(form.ownerRate);
+          if (Number.isNaN(rate) || rate < 0 || rate > 100) {
+            setErrorMessage("La retención del owner tiene que estar entre 0 y 100.");
+            return;
+          }
+        }
       }
 
       for (const [collaboratorId, form] of pending) {
@@ -202,6 +223,9 @@ export function useSplitsModal({ isOpen, collaborators, songId }: UseSplitsModal
           platformsType: form.platformsType,
           selectedPlatforms: form.selectedPlatforms.map((p) => p.value),
           periods: toPayloadPeriods(form.periods),
+          // Input vacío = sin retención propia: el backend le aplica la del
+          // split del owner, igual que antes de que esto fuera configurable.
+          ownerRate: form.ownerRate.trim() === "" ? null : parseFloat(form.ownerRate),
         });
       }
 

@@ -27,7 +27,7 @@ import { collaboratorColor } from "@/utils/collaborators.utils";
 import LocalStorageService from "@/services/localstorage";
 import {
   buildWaterfall,
-  collaboratorPool,
+  shareOwnerRate,
   distributable,
   type Share,
 } from "@/utils/money.utils";
@@ -202,16 +202,17 @@ export default function AlbumDetail() {
 
     for (const track of tracks) {
       const income = Number(track.totalNetIncome ?? 0);
-      // El owner cobra su parte de la pista antes del reparto; lo que reciben
-      // los colaboradores es su porcentaje del pool que queda, no del neto.
+      // Cada colaborador tiene su parte de la pista y el owner le retiene un
+      // porcentaje de ella, que puede haber pactado distinto con cada uno; sin
+      // pacto propio se le aplica el del split del owner.
       const ownerPct = Number((track as any)?.ownerId?.split?.percentage ?? 0);
-      const pool = collaboratorPool(income, ownerPct);
       for (const collaborator of ((track as any)?.collaborators ?? []) as any[]) {
         const percentage = Number(collaborator?.split?.percentage ?? 0);
         if (percentage <= 0) continue;
         const key = String(collaborator?._id ?? collaborator?.name ?? "?");
         const previous = byPerson.get(key);
-        const amount = (pool * percentage) / 100;
+        const rate = shareOwnerRate({ ownerRate: collaborator?.split?.ownerRate ?? null }, ownerPct);
+        const amount = ((income * percentage) / 100) * (1 - rate / 100);
         byPerson.set(key, {
           name: collaborator?.name ?? "Colaborador",
           role: collaborator?.roles?.[0],

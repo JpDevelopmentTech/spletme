@@ -70,9 +70,11 @@ export function useSongMoney({ songId, song, refreshKey = 0 }: UseSongMoneyOptio
    * El owner y los colaboradores, en el orden en que se leen. Los importes salen
    * de `amountOwed`, que el backend calcula en vivo; el porcentaje, del split.
    *
-   * Las dos bases no son la misma: el owner cobra su porcentaje de lo repartible
-   * y los colaboradores el suyo del pool que queda después. El cálculo de
-   * respaldo (cuando el backend no manda `amountOwed`) respeta ese orden.
+   * Las dos bases no son la misma: cada colaborador tiene su parte de lo
+   * repartible y el owner retiene un porcentaje de esa parte, que puede haber
+   * pactado distinto con cada uno. El cálculo de respaldo (cuando el backend no
+   * manda `amountOwed`) usa la retención única, que es lo más parecido que se
+   * puede reconstruir sin los montos del servidor.
    */
   const shares = useMemo<Share[]>(() => {
     const list: Share[] = [];
@@ -101,6 +103,8 @@ export function useSongMoney({ songId, song, refreshKey = 0 }: UseSongMoneyOptio
         name: collaborator?.name ?? collaborator?.username ?? "Colaborador",
         role: resolveRole(collaborator),
         percentage,
+        // Su retención pactada; sin ella paga la del owner, como todos.
+        ownerRate: collaborator?.split?.ownerRate ?? null,
         amount: Number(collaborator?.amountOwed ?? (pool * percentage) / 100),
         pending: Number(collaborator?.amountPending ?? collaborator?.amountOwed ?? 0),
         color: collaboratorColor(index + 1),

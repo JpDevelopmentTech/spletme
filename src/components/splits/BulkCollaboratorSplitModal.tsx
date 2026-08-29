@@ -68,6 +68,8 @@ export default function BulkCollaboratorSplitModal({
     selected,
     targetTracks,
     form,
+    ownerRate,
+    setOwnerRate,
     isLoading,
     isLoadingFilters,
     countryOptions,
@@ -291,11 +293,51 @@ export default function BulkCollaboratorSplitModal({
                   </div>
                   <p className="text-[11px] leading-relaxed text-[#A6AAB2]">
                     {showOwnerContext
-                      ? "Se calcula sobre lo que queda tras la parte del owner, y es el mismo en cada "
+                      ? "Es la parte de cada "
                       : "Es el mismo en cada "}
-                    {unit.one}. Entre todos los colaboradores no puede pasar del 100%.
+                    {unit.one}
+                    {showOwnerContext ? " que le asignas, y es la misma en todas" : ""}. Entre todos
+                    los colaboradores no puede pasar del 100%.
                   </p>
                 </div>
+
+                {/* Retención del owner con esta persona. Solo la ve el dueño. */}
+                {showOwnerContext && (
+                  <div className="flex flex-col gap-2.5">
+                    <FieldLabel>TU RETENCIÓN CON ESTA PERSONA</FieldLabel>
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`flex w-[136px] flex-shrink-0 items-center gap-1.5 rounded-2xl px-4 py-2.5 ${
+                          ownerRate.trim() === ""
+                            ? "border border-[#E8E8EC]"
+                            : "border-[1.5px] border-[#FF5C00]"
+                        }`}
+                      >
+                        <input
+                          type="number"
+                          min={0}
+                          max={100}
+                          step="0.01"
+                          value={ownerRate}
+                          onChange={(e) => setOwnerRate(e.target.value)}
+                          placeholder="La tuya"
+                          aria-label="Retención del owner para este colaborador"
+                          className="w-full bg-transparent font-mono text-[20px] font-semibold text-[#1C1D22] focus:outline-none"
+                        />
+                        <span className="font-mono text-[15px] font-semibold text-[#A6AAB2]">
+                          %
+                        </span>
+                      </span>
+                      <p className="min-w-0 flex-1 text-[11px] leading-relaxed text-[#A6AAB2]">
+                        {ownerRate.trim() === ""
+                          ? "Vacío = le aplicas tu porcentaje de owner, el mismo que a todos. Rellénalo solo si con esta persona pactaste otro."
+                          : "De la parte que le toque en cada " +
+                            unit.one +
+                            ", te quedas ese porcentaje y ella cobra el resto."}
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 <Scope
                   label="PAÍSES"

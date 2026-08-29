@@ -3,6 +3,7 @@ import {
   assignedPercentage,
   collaboratorPool,
   effectivePercentage,
+  ownerEffectivePercentage,
   ownerPercentage,
   unassignedPercentage,
   type Share,
@@ -46,12 +47,16 @@ export function MoneyWaterfall({
   footnote,
   onEditSplits,
 }: MoneyWaterfallProps) {
-  // El owner cobra su parte antes del reparto: el 100% que se mide aquí es el
-  // del pool que queda después de él, no el de lo repartible entero.
+  // El owner retiene un porcentaje de la parte de cada uno, y puede haberlo
+  // pactado distinto con cada persona: el 100% que se mide aquí es el del
+  // reparto entre colaboradores, del que el owner no ocupa sitio.
   const ownerPct = ownerPercentage(shares);
   const unassigned = unassignedPercentage(shares);
   const assigned = assignedPercentage(shares);
   const pool = collaboratorPool(distributable, ownerPct);
+  // Ancho del bloque del owner en la barra: la suma de todo lo que retiene, no
+  // su porcentaje suelto. Con una retención única para todos, coincide con él.
+  const ownerWidth = ownerEffectivePercentage(shares, ownerPct);
 
   return (
     <section className="col-span-12 flex min-w-0 flex-col gap-4 rounded-[26px] border border-[#E8E8EC] bg-white p-[26px] shadow-[0_10px_28px_-12px_rgba(255,92,0,0.15)] xl:col-span-8">
@@ -144,19 +149,24 @@ export function MoneyWaterfall({
                   key={share.id}
                   title={
                     share.isOwner
-                      ? `${share.name}: ${share.percentage}% de lo repartible`
-                      : `${share.name}: ${share.percentage}% de lo que queda tras el owner`
+                      ? `${share.name}: lo que retienes del reparto`
+                      : `${share.name}: ${share.percentage}% del reparto` +
+                        (share.ownerRate === null || share.ownerRate === undefined
+                          ? ""
+                          : `, con una retención del ${share.ownerRate}%`)
                   }
                   className="h-full min-w-[3px]"
                   style={{
-                    width: `${effectivePercentage(share, ownerPct)}%`,
+                    width: `${
+                      share.isOwner ? ownerWidth : effectivePercentage(share, ownerPct)
+                    }%`,
                     backgroundColor: share.color,
                   }}
                 />
               ))}
               {unassigned > 0 && (
                 <span
-                  title={`Sin repartir: ${unassigned.toFixed(0)}% del pool`}
+                  title={`Sin repartir: ${unassigned.toFixed(0)}% del reparto`}
                   className="h-full bg-[#E8E8EC]"
                   style={{ width: `${(unassigned * (100 - ownerPct)) / 100}%` }}
                 />

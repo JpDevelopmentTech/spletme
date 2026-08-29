@@ -127,6 +127,11 @@ export interface Share {
   amount: number;
   color: string;
   isOwner?: boolean;
+  /**
+   * Retención que el owner le cobra a ESTE participante sobre su parte.
+   * `null`/ausente = la misma que a todos (la de su split de owner).
+   */
+  ownerRate?: number | null;
   /** Lo que aún no ha cobrado. Solo tiene sentido en colaboradores. */
   pending?: number;
 }
@@ -134,14 +139,18 @@ export interface Share {
 /**
  * El porcentaje del owner NO compite con el de los colaboradores.
  *
- * El owner se lleva su `ownerPct%` de lo repartible antes que nadie; lo que
- * queda (el pool) es el 100% que se reparten los colaboradores. Por eso un owner
- * al 20% y un colaborador al 100% no suman 120%: son dos bases distintas. De
- * $1.000, el owner cobra $200 y el colaborador el 100% de los $800 restantes.
+ * El reparto asigna a cada participante su parte de la canción, y el owner
+ * retiene un porcentaje DE ESA PARTE. Por eso un owner al 20% y un colaborador
+ * al 100% no suman 120%: son dos bases distintas. De $1.000, el colaborador
+ * tiene el 100% y el owner le retiene $200, así que cobra $800.
+ *
+ * La retención puede pactarse distinta con cada persona (`Share.ownerRate`);
+ * quien no tenga una propia paga la del split del owner, que es como funcionaba
+ * cuando la retención era única para toda la canción.
  *
  * Las funciones de abajo mantienen esa separación: `assignedPercentage` mide
- * solo el pool, y `effectivePercentage` traduce ambas bases a una común cuando
- * hay que pintarlas juntas en una misma barra.
+ * solo lo repartido entre colaboradores, y `effectivePercentage` traduce ambas
+ * bases a una común cuando hay que pintarlas juntas en una misma barra.
  */
 
 /** El porcentaje que se lleva el owner de lo repartible, antes del pool. */
@@ -171,15 +180,44 @@ export function collaboratorPool(distributableAmount: number, ownerPct: number):
 }
 
 /**
+ * La retención que se le aplica a un participante: la pactada con él o, si no
+ * pactó ninguna, la del split del owner.
+ */
+export function shareOwnerRate(share: Pick<Share, "ownerRate">, ownerPct: number): number {
+  const rate = share.ownerRate === null || share.ownerRate === undefined ? ownerPct : share.ownerRate;
+  return Math.min(100, Math.max(0, rate));
+}
+
+/**
  * El porcentaje de un split llevado a una base común: el total repartible.
  *
- * El del owner ya está en esa base; el de un colaborador es un porcentaje del
- * pool, así que hay que encogerlo por lo que se llevó el owner. Sirve para que
- * una barra apilada nunca pase del 100%.
+ * A un colaborador hay que encogerlo por la retención que el owner le aplica a
+ * él —que puede no ser la misma que a los demás—. Sirve para que una barra
+ * apilada nunca pase del 100%. Para el owner no vale: lo suyo no es un
+ * porcentaje suelto sino la suma de todas sus retenciones, y eso lo calcula
+ * `ownerEffectivePercentage`, que necesita ver el reparto entero.
  */
 export function effectivePercentage(share: Share, ownerPct: number): number {
   const pct = share.percentage || 0;
   if (share.isOwner) return pct;
+  return (pct * (100 - shareOwnerRate(share, ownerPct))) / 100;
+}
+
+/**
+ * Lo que el owner se lleva del total repartible, en la misma base que
+ * `effectivePercentage`: la retención que le cobra a cada participante sobre su
+ * parte, más la que le rinde la parte que no está asignada a nadie.
+ *
+ * Con una retención única para todos esto da exactamente `ownerPct`, que es lo
+ * que se pintaba antes de que la retención pudiera variar persona a persona.
+ */
+export function ownerEffectivePercentage(shares: Share[], ownerPct: number): number {
+  const retained = shares
+    .filter((share) => !share.isOwner)
+    .reduce(
+      (total, share) => total + ((share.percentage || 0) * shareOwnerRate(share, ownerPct)) / 100,
+      0,
+    );
   const owner = Math.min(100, Math.max(0, ownerPct));
-  return (pct * (100 - owner)) / 100;
+  return retained + (unassignedPercentage(shares) * owner) / 100;
 }

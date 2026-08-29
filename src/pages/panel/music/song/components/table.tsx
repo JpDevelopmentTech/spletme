@@ -124,6 +124,12 @@ interface Row {
   scope: { label: string; worldwide: boolean } | null;
   /** Tramos de vigencia del split, vacío cuando aplica siempre. */
   periods: SplitPeriod[];
+  /**
+   * Retención que el owner le cobra a esta persona, cuando pactó una distinta
+   * de la suya general. `null` = paga la de siempre. Dato del owner: la fila
+   * solo lo pinta cuando quien mira es el dueño.
+   */
+  ownerRate: number | null;
   /** FUNCIONALIDAD TEMPORAL — perfiles sin cuenta. */
   isPlaceholder: boolean;
   raw?: UserType;
@@ -379,6 +385,7 @@ export default function Table({
             pending: 0,
             scope: scopeOf(ownerEntry),
             periods: ownerEntry.periods ?? [],
+            ownerRate: null,
             isPlaceholder: false,
             index: -1,
           },
@@ -404,6 +411,9 @@ export default function Table({
         pending,
         scope: scopeOf(entry),
         periods: entry?.periods ?? [],
+        // Solo el dueño ve lo que retiene: para el resto ni llega a la fila,
+        // así el render no puede enseñarlo por descuido.
+        ownerRate: isOwner ? (entry?.ownerRate ?? null) : null,
         isPlaceholder: isPlaceholderUser(collaborator),
         raw: collaborator,
         index,
@@ -714,7 +724,9 @@ export default function Table({
                             ? "según el mes"
                             : row.isOwnerRow
                               ? "del total"
-                              : "de lo que queda"}
+                              : row.ownerRate != null
+                                ? `del reparto · te queda el ${row.ownerRate}%`
+                                : "del reparto"}
                         </span>
                       )}
                     </span>
@@ -852,10 +864,12 @@ export default function Table({
 
             {ownerPct > 0 && (
               <p className="px-5 pb-3.5 text-[11px] leading-relaxed text-[#A6AAB2]">
-                Tu {ownerPct}% de owner se descuenta primero y no ocupa sitio en el reparto: los
-                colaboradores se reparten
-                {distributable > 0 ? ` los ${formatMoney(distributable)} ` : " lo "}que quedan
-                después, y ese es el 100% que se mide arriba.
+                Tu {ownerPct}% de owner se retiene de la parte de cada uno y no ocupa sitio en el
+                reparto: el 100% que se mide arriba es el de la canción entera
+                {distributable > 0 ? `, y a repartir quedan ${formatMoney(distributable)}` : ""}.
+                {rows.some((row) => row.ownerRate != null)
+                  ? " Con quien pactaste otra retención se le aplica la suya, marcada en su fila."
+                  : ""}
               </p>
             )}
           </>

@@ -31,6 +31,12 @@ export interface CollaboratorFormData {
   platformsType: FilterType;
   selectedPlatforms: SelectOption[];
   periods: SplitPeriodFormData[];
+  /**
+   * Retención que el owner le cobra a este colaborador, como texto del input.
+   * Vacío = hereda la del split del owner, que es lo que pasaba siempre antes
+   * de poder pactarla persona a persona. Solo lo edita el dueño de la canción.
+   */
+  ownerRate: string;
 }
 
 export interface SplitsModalProps {
