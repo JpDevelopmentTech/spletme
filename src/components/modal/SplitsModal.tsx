@@ -231,55 +231,53 @@ export default function SplitsModal({
                       <>
                         <div className="h-px bg-[#E8E8EC]" />
                         <div className="flex flex-col gap-4 bg-[#FBFBFC] px-4 py-4">
-                          <div className="flex flex-col gap-2">
-                            <span className="font-mono text-[9.5px] font-medium tracking-[1.2px] text-[#71757E]">
-                              {form.periods.length > 0
-                                ? "PORCENTAJE FUERA DE LOS TRAMOS *"
-                                : showOwnerContext
+                          {/* Con tramos este campo se muda a la fila del tramo final,
+                              dentro del editor: es el mismo dato y no puede haber dos
+                              sitios que lo escriban. */}
+                          {form.periods.length === 0 && (
+                            <div className="flex flex-col gap-2">
+                              <span className="font-mono text-[9.5px] font-medium tracking-[1.2px] text-[#71757E]">
+                                {showOwnerContext
                                   ? "PORCENTAJE DE LA CANCIÓN *"
                                   : "PORCENTAJE DEL REPARTO *"}
-                            </span>
-                            <div className="flex flex-wrap items-center gap-3">
-                              <div className="relative w-[140px]">
-                                <input
-                                  type="number"
-                                  min="0"
-                                  max="100"
-                                  step="0.01"
-                                  placeholder="0.00"
-                                  value={form.percentage}
-                                  onChange={(e) =>
-                                    updateForm(collaborator.id, "percentage", e.target.value)
-                                  }
-                                  className="w-full rounded-[16px] border border-[#E8E8EC] bg-white py-3 pl-4 pr-9 font-mono text-[18px] font-semibold text-[#1C1D22] outline-none transition-colors focus:border-[#FF5C00] focus:ring-2 focus:ring-[#FF5C00]/25"
-                                />
-                                <span className="absolute right-3.5 top-1/2 -translate-y-1/2 font-mono text-[13px] text-[#A6AAB2]">
-                                  %
-                                </span>
+                              </span>
+                              <div className="flex flex-wrap items-center gap-3">
+                                <div className="relative w-[140px]">
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    step="0.01"
+                                    placeholder="0.00"
+                                    value={form.percentage}
+                                    onChange={(e) =>
+                                      updateForm(collaborator.id, "percentage", e.target.value)
+                                    }
+                                    className="w-full rounded-[16px] border border-[#E8E8EC] bg-white py-3 pl-4 pr-9 font-mono text-[18px] font-semibold text-[#1C1D22] outline-none transition-colors focus:border-[#FF5C00] focus:ring-2 focus:ring-[#FF5C00]/25"
+                                  />
+                                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 font-mono text-[13px] text-[#A6AAB2]">
+                                    %
+                                  </span>
+                                </div>
+                                {hasPercentage && (
+                                  <p className="flex-1 text-[11.5px] leading-[1.4] text-[#71757E]">
+                                    {overflow ? (
+                                      <span className="font-semibold text-[#E5484D]">
+                                        Con esto el reparto suma {fmtPct(totalAssignedPercentage)}%:
+                                        hay que bajar {fmtPct(Math.abs(remaining))} puntos.
+                                      </span>
+                                    ) : (
+                                      <>
+                                        {showOwnerContext
+                                          ? "Es la parte de la canción que le asignas. De ahí sale tu retención, y él cobra el resto."
+                                          : "Es la parte que le toca de lo que quede por repartir."}
+                                      </>
+                                    )}
+                                  </p>
+                                )}
                               </div>
-                              {hasPercentage && (
-                                <p className="flex-1 text-[11.5px] leading-[1.4] text-[#71757E]">
-                                  {overflow ? (
-                                    <span className="font-semibold text-[#E5484D]">
-                                      Con esto el reparto suma {fmtPct(totalAssignedPercentage)}%:
-                                      hay que bajar {fmtPct(Math.abs(remaining))} puntos.
-                                    </span>
-                                  ) : form.periods.length > 0 ? (
-                                    <>
-                                      Es lo que cobra en los meses que no cubre ningún tramo. Puede
-                                      ser 0 si al terminar deja de cobrar.
-                                    </>
-                                  ) : (
-                                    <>
-                                      {showOwnerContext
-                                        ? "Es la parte de la canción que le asignas. De ahí sale tu retención, y él cobra el resto."
-                                        : "Es la parte que le toca de lo que quede por repartir."}
-                                    </>
-                                  )}
-                                </p>
-                              )}
                             </div>
-                          </div>
+                          )}
 
                           {showOwnerContext && (
                             <div className="flex flex-col gap-2">
@@ -387,6 +385,14 @@ export default function SplitsModal({
                             ownerKey={collaborator.id}
                             periods={form.periods}
                             fallbackPercentage={form.percentage}
+                            fallbackWarning={
+                              overflow
+                                ? `Con esto el reparto suma ${fmtPct(totalAssignedPercentage)}%: hay que bajar ${fmtPct(Math.abs(remaining))} puntos.`
+                                : null
+                            }
+                            onFallbackChange={(value) =>
+                              updateForm(collaborator.id, "percentage", value)
+                            }
                             countryOptions={countryOptions}
                             platformOptions={platformOptions}
                             isLoadingFilters={isLoadingFilters}

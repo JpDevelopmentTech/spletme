@@ -53,7 +53,8 @@ const emptyPeriod = (): SplitPeriodFormData => {
  * de vigencia con su propio porcentaje y sus propios filtros.
  *
  * Con tramos, el porcentaje de arriba deja de ser lo que cobra siempre y pasa
- * a ser lo que cobra fuera de ellos.
+ * a ser el del tramo final: rige desde que acaba el último tramo y ya no
+ * termina. Los meses que no cubre ningún tramo no le pagan nada.
  *
  * El dueño de la canción puede además fijar por colaborador la retención que
  * le cobra sobre su parte (`ownerRate`). Dejarla vacía mantiene la de siempre:

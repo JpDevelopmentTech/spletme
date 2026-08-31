@@ -38,7 +38,7 @@ import type {
   SplitDistributionEntry,
   SplitPeriod,
 } from "@/types/song-split.types";
-import { formatPeriodRange } from "@/utils/splitPeriods.utils";
+import { formatPeriodRange, formatMonth, finalPeriodStart } from "@/utils/splitPeriods.utils";
 import LocalStorageService from "@/services/localstorage";
 import ValidationToastQueue, {
   ValidationToastItem,
@@ -136,10 +136,14 @@ interface Row {
   index: number;
 }
 
-/** Desglose de los tramos y del porcentaje de fuera de ellos, para el tooltip. */
+/** Desglose de los tramos, incluido el final, para el tooltip. */
 const periodsTitle = (periods: SplitPeriod[], fallback: number | null) => {
   const lines = periods.map((period) => `${formatPeriodRange(period)}: ${period.percentage}%`);
-  if (fallback != null) lines.push(`Fuera de los tramos: ${fallback}%`);
+  const finalStart = finalPeriodStart(periods);
+  if (fallback != null && finalStart) {
+    lines.push(`${formatMonth(finalStart)} → siempre: ${fallback}%`);
+  }
+  lines.push("Los meses sin tramo no pagan nada.");
   return lines.join("\n");
 };
 

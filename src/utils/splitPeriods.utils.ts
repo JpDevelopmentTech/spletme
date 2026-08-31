@@ -30,6 +30,38 @@ export const formatPeriodRange = (period: { from: string; to: string }): string 
     ? formatMonth(period.from)
     : `${formatMonth(period.from)} → ${formatMonth(period.to)}`;
 
+/** `"2026-12"` → `"2027-01"`. Devuelve el crudo si no tiene esa forma. */
+export const nextMonth = (value: string): string => {
+  const [year, month] = (value ?? "").split("-").map(Number);
+  if (!year || !month || month < 1 || month > 12) return value;
+  return month === 12
+    ? `${year + 1}-01`
+    : `${year}-${String(month + 1).padStart(2, "0")}`;
+};
+
+/** Mes más tardío cubierto por un conjunto de tramos, o null si no hay ninguno. */
+export const latestMonth = (periods: { to: string }[]): string | null =>
+  periods.reduce<string | null>(
+    (latest, period) => (!latest || (period.to && period.to > latest) ? period.to : latest),
+    null,
+  );
+
+/**
+ * Mes en que arranca el tramo final: el que paga el porcentaje base y ya no
+ * termina nunca. Es el mes siguiente al último que cubre un tramo, para no
+ * pisar el mes de cierre de este.
+ *
+ * `null` cuando no hay ningún tramo completo: sin tramos el porcentaje base se
+ * cobra siempre, sin fecha de inicio que enseñar.
+ */
+export const finalPeriodStart = (
+  periods: { from: string; to: string }[],
+): string | null => {
+  const complete = periods.filter((period) => period.from && period.to && period.from <= period.to);
+  const last = latestMonth(complete);
+  return last ? nextMonth(last) : null;
+};
+
 /** Mes más temprano de un conjunto de tramos, o null si no hay ninguno. */
 export const earliestMonth = (periods: { from: string }[]): string | null =>
   periods.reduce<string | null>(

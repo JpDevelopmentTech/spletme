@@ -39,7 +39,7 @@ export interface SongSplit {
   selectedPlatforms: string[];
   status: "active" | "superseded" | "deleted";
   version: number;
-  /** Vacío = el split aplica siempre; con tramos, `percentage` es el fallback. */
+  /** Vacío = el split aplica siempre; con tramos, `percentage` es el tramo final. */
   periods?: SplitPeriod[];
   /**
    * Retención que el owner le cobra a ESTE participante sobre su parte.
@@ -65,7 +65,7 @@ export interface CreateOwnerSplitPayload extends SplitFilterPayload {
 export interface CreateCollaboratorSplitPayload extends SplitFilterPayload {
   songId: string;
   collaboratorId: string;
-  /** Tramos de vigencia; con ellos, `percentage` es lo que cobra fuera de ellos. */
+  /** Tramos de vigencia; con ellos, `percentage` es el del tramo final. */
   periods?: SplitPeriod[];
   /** Retención del owner solo para este participante; `null` = hereda la suya. */
   ownerRate?: number | null;

@@ -1,17 +1,24 @@
-import { CalendarRange, Globe, Radio, Plus, Trash2, ChevronDown } from "lucide-react";
+import { CalendarRange, Globe, Radio, Plus, Trash2, ChevronDown, Infinity } from "lucide-react";
 import { useState } from "react";
 import Select from "react-select";
 import { FilterSegment } from "@/components/ui/FilterSegment";
 import { selectStyles } from "@/components/ui/selectStyles";
-import { formatMonth, formatPeriodRange, earliestMonth } from "@/utils/splitPeriods.utils";
+import {
+  formatMonth,
+  formatPeriodRange,
+  earliestMonth,
+  finalPeriodStart,
+} from "@/utils/splitPeriods.utils";
 import type { SelectOption, SplitPeriodFormData } from "@/types";
 
 interface SplitPeriodsEditorProps {
   /** Identifica los inputs del colaborador dentro del modal. */
   ownerKey: string;
   periods: SplitPeriodFormData[];
-  /** Porcentaje base del split: lo que cobra fuera de los tramos. */
+  /** Porcentaje del tramo final, el que rige cuando se acaban los demás. */
   fallbackPercentage: string;
+  /** Avisa del exceso sobre el 100% cuando lo hay; se pinta bajo su input. */
+  fallbackWarning?: string | null;
   countryOptions: SelectOption[];
   platformOptions: SelectOption[];
   isLoadingFilters: boolean;
@@ -22,6 +29,8 @@ interface SplitPeriodsEditorProps {
     field: keyof SplitPeriodFormData,
     value: string | readonly SelectOption[],
   ) => void;
+  /** Edita el porcentaje del tramo final, que vive en el split, no en un tramo. */
+  onFallbackChange: (value: string) => void;
 }
 
 /** `"2025-03"` → 24303, para poder medir distancias en meses. */
@@ -41,25 +50,33 @@ const fmtPct = (value: string) => {
 
 /**
  * Tramos de vigencia de un split: los periodos en los que el colaborador cobra
- * un porcentaje distinto del suyo habitual.
+ * un porcentaje concreto.
  *
- * La línea de tiempo de arriba no es decoración: los huecos que deja son
- * exactamente los meses que paga el porcentaje de fuera de los tramos, que es
- * la parte de la regla que no se ve leyendo una lista de fechas.
+ * El porcentaje base no es una regla de fondo que rellene cualquier hueco: es
+ * UN TRAMO MÁS, el último, que arranca cuando termina el anterior y ya no
+ * acaba. Se pinta como tal —fila propia y bloque en la línea de tiempo— porque
+ * antes era una regla invisible que solo se entendía leyendo la letra pequeña.
+ *
+ * Lo que queda fuera de los tramos dibujados no se paga. Por eso la línea de
+ * tiempo no es decoración: sus huecos son exactamente los meses a 0.
  */
 export function SplitPeriodsEditor({
   ownerKey,
   periods,
   fallbackPercentage,
+  fallbackWarning,
   countryOptions,
   platformOptions,
   isLoadingFilters,
   onAdd,
   onRemove,
   onChange,
+  onFallbackChange,
 }: SplitPeriodsEditorProps) {
   const complete = periods.filter((p) => p.from && p.to && p.from <= p.to);
   const first = earliestMonth(complete);
+  // Desde cuándo rige el porcentaje base, ya como tramo final abierto.
+  const finalStart = finalPeriodStart(complete);
 
   return (
     <div className="flex flex-col gap-3 rounded-[16px] bg-white p-3.5 ring-1 ring-[#E8E8EC]">
@@ -85,7 +102,10 @@ export function SplitPeriodsEditor({
         </p>
       ) : (
         <>
-          {complete.length >= 2 && <PeriodsTimeline periods={complete} />}
+          {/* Con un solo tramo ya hay dos bloques que leer: ese y el final. */}
+          {complete.length >= 1 && (
+            <PeriodsTimeline periods={complete} fallbackPercentage={fallbackPercentage} />
+          )}
 
           <ul className="flex flex-col gap-2.5">
             {periods.map((period, index) => (
@@ -103,15 +123,19 @@ export function SplitPeriodsEditor({
             ))}
           </ul>
 
+          <FinalPeriodRow
+            from={finalStart}
+            percentage={fallbackPercentage}
+            warning={fallbackWarning}
+            onChange={onFallbackChange}
+          />
+
           <p className="rounded-[12px] bg-[#F4F5F7] px-3 py-2.5 text-[11px] leading-[1.5] text-[#71757E]">
             {first ? (
               <>
-                Antes de <strong className="font-semibold text-[#1C1D22]">{formatMonth(first)}</strong>{" "}
-                no cobra nada. Fuera de los tramos cobra el{" "}
-                <strong className="font-semibold text-[#1C1D22]">
-                  {fmtPct(fallbackPercentage)}%
-                </strong>{" "}
-                de arriba.
+                Los meses que no cubre ningún tramo no le pagan nada, ni antes de{" "}
+                <strong className="font-semibold text-[#1C1D22]">{formatMonth(first)}</strong> ni en
+                los huecos que queden entre medias.
               </>
             ) : (
               "Completa las fechas de cada tramo para ver cuándo cobra cada porcentaje."
@@ -124,10 +148,17 @@ export function SplitPeriodsEditor({
 }
 
 /**
- * Los tramos dibujados sobre el periodo que abarcan, de su primer mes al
- * último. Lo naranja son los tramos; lo gris, los meses que paga el fallback.
+ * Los tramos dibujados sobre el periodo que abarcan, más la cola del tramo
+ * final. Lo naranja fuerte son los tramos; lo naranja claro de la derecha, el
+ * tramo final que ya no acaba; lo gris, los meses que no le pagan nada.
  */
-function PeriodsTimeline({ periods }: { periods: SplitPeriodFormData[] }) {
+function PeriodsTimeline({
+  periods,
+  fallbackPercentage,
+}: {
+  periods: SplitPeriodFormData[];
+  fallbackPercentage: string;
+}) {
   const bounds = periods.reduce<{ start: number; end: number } | null>((acc, period) => {
     const from = monthIndex(period.from);
     const to = monthIndex(period.to);
@@ -138,7 +169,12 @@ function PeriodsTimeline({ periods }: { periods: SplitPeriodFormData[] }) {
 
   if (!bounds) return null;
 
-  const total = bounds.end - bounds.start + 1;
+  const covered = bounds.end - bounds.start + 1;
+  // El tramo final no tiene fin, así que no hay ancho que le corresponda: se le
+  // reserva un trozo proporcional para poder enseñarlo sin fingir una fecha.
+  const tail = Math.max(2, Math.round(covered * 0.35));
+  const total = covered + tail;
+  const finalFrom = finalPeriodStart(periods) ?? "";
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -159,11 +195,96 @@ function PeriodsTimeline({ periods }: { periods: SplitPeriodFormData[] }) {
             />
           );
         })}
+        <span
+          title={`Desde ${formatMonth(finalFrom)}, para siempre · ${fmtPct(fallbackPercentage)}%`}
+          className="absolute top-0 h-full rounded-r-[6px] bg-[#FFC7A3]"
+          style={{ left: `${(covered / total) * 100}%`, width: `${(tail / total) * 100}%` }}
+        />
       </span>
       <span className="flex justify-between font-mono text-[9px] text-[#A6AAB2]">
         <span>{formatMonth(periods[0].from)}</span>
-        <span>lo gris lo paga el porcentaje de fuera de los tramos</span>
+        <span>lo gris no le paga nada</span>
+        <span>{formatMonth(finalFrom)} → siempre</span>
       </span>
+    </div>
+  );
+}
+
+/**
+ * El tramo final: el que empieza cuando acaba el último y ya no termina.
+ *
+ * Se lee como los demás —mismas columnas DESDE / HASTA / COBRA— porque es un
+ * tramo más, pero sus fechas no se editan: el inicio lo marca el tramo anterior
+ * y el fin no existe. Por eso la fila no se cierra por la derecha, se desvanece.
+ *
+ * Su porcentaje sí se edita aquí, y es el mismo dato que el split guarda como
+ * `percentage`: cuando hay tramos, este es el único sitio donde se escribe.
+ */
+function FinalPeriodRow({
+  from,
+  percentage,
+  warning,
+  onChange,
+}: {
+  /** Mes en que arranca, o null si los tramos aún no tienen fechas. */
+  from: string | null;
+  percentage: string;
+  warning?: string | null;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-2 rounded-l-[14px] border border-r-0 border-dashed border-[#FFD0AF] bg-gradient-to-r from-[#FFF7F2] via-[#FFF7F2] to-transparent py-3 pl-3 pr-10">
+      <div className="flex flex-wrap items-end gap-2.5">
+        <span className="flex flex-col gap-1">
+          <span className="font-mono text-[9px] tracking-[1px] text-[#A6AAB2]">DESDE</span>
+          <span className="flex h-[37px] items-center rounded-[12px] bg-white px-2.5 font-mono text-[12px] font-semibold text-[#1C1D22] ring-1 ring-[#F2DFD2]">
+            {from ? formatMonth(from) : "al acabar el último"}
+          </span>
+        </span>
+
+        <span className="flex flex-col gap-1">
+          <span className="font-mono text-[9px] tracking-[1px] text-[#A6AAB2]">HASTA</span>
+          <span
+            title="Este tramo no tiene fecha de fin"
+            className="flex h-[37px] items-center gap-1.5 rounded-[12px] bg-white px-2.5 font-mono text-[12px] font-semibold text-[#FF5C00] ring-1 ring-[#F2DFD2]"
+          >
+            <Infinity className="h-3.5 w-3.5" aria-hidden="true" />
+            Por siempre
+          </span>
+        </span>
+
+        <label className="flex flex-col gap-1">
+          <span className="font-mono text-[9px] tracking-[1px] text-[#A6AAB2]">COBRA *</span>
+          <span className="relative w-[92px]">
+            <input
+              type="number"
+              min="0"
+              max="100"
+              step="0.01"
+              placeholder="0.00"
+              value={percentage}
+              onChange={(e) => onChange(e.target.value)}
+              aria-label={
+                from
+                  ? `Porcentaje del tramo final, desde ${formatMonth(from)}`
+                  : "Porcentaje del tramo final"
+              }
+              className="w-full rounded-[12px] border border-[#E8E8EC] bg-white py-2 pl-2.5 pr-7 font-mono text-[13px] font-semibold text-[#1C1D22] outline-none transition-colors focus:border-[#FF5C00] focus:ring-2 focus:ring-[#FF5C00]/25"
+            />
+            <span className="absolute right-2.5 top-1/2 -translate-y-1/2 font-mono text-[11px] text-[#A6AAB2]">
+              %
+            </span>
+          </span>
+        </label>
+      </div>
+
+      <p className="max-w-[380px] text-[10.5px] leading-[1.45] text-[#71757E]">
+        {warning ? (
+          <span className="font-semibold text-[#E5484D]">{warning}</span>
+        ) : (
+          <>Cuando se acaben los tramos cobra esto, sin fecha de fin. Puede ser 0.</>
+        )}
+      </p>
     </div>
   );
 }

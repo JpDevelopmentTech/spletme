@@ -22,7 +22,8 @@ export interface SplitPeriodFormData {
 /**
  * Estado del formulario de split de un colaborador: un porcentaje con sus
  * filtros y, opcionalmente, tramos de vigencia. Con tramos, `percentage` deja
- * de ser lo que cobra siempre y pasa a ser lo que cobra fuera de ellos.
+ * de ser lo que cobra siempre y pasa a ser el porcentaje del tramo final: el
+ * que rige desde que acaba el último tramo y ya no termina.
  */
 export interface CollaboratorFormData {
   percentage: string;

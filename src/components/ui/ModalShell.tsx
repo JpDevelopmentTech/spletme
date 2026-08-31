@@ -33,22 +33,38 @@ export function ModalShell({
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
 
+  /**
+   * Al abrir: el foco entra en el panel y la página de detrás deja de
+   * desplazarse. Las dos cosas van SOLO al montar, con la lista de
+   * dependencias vacía a propósito.
+   *
+   * Estaban junto al listener de Escape, en un efecto que depende de `locked`
+   * y `onClose`. Como `onClose` suele llegar como función nueva en cada render
+   * (`onClose={() => setOpen(false)}`, o un `closeWithReset` sin `useCallback`),
+   * ese efecto se repetía en cada tecleo y `focus()` le robaba el foco al campo
+   * que se estaba rellenando: había que volver a hacer clic para escribir cada
+   * dígito. De paso, al repetirse, `previousOverflow` acababa capturando
+   * "hidden" y el scroll del fondo se quedaba bloqueado al cerrar.
+   */
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    panelRef.current?.focus();
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // El Escape sí necesita los valores frescos, y volver a registrar el listener
+  // no tiene efectos visibles.
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && !locked) onClose();
     };
     document.addEventListener("keydown", onKeyDown);
-
-    // Sin esto, la página de detrás sigue desplazándose bajo el modal.
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    panelRef.current?.focus();
-
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = previousOverflow;
-    };
+    return () => document.removeEventListener("keydown", onKeyDown);
   }, [locked, onClose]);
 
   return (

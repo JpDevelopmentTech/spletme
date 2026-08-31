@@ -1,11 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
-import { UserPlus, Plus, Loader, TriangleAlert, Check } from "lucide-react";
-import {
-  ModalShell,
-  FieldLabel,
-  PrimaryButton,
-  SecondaryButton,
-} from "@/components/ui/ModalShell";
+import { useEffect, useState } from "react";
+import { UserPlus, Loader, TriangleAlert, Check, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ModalShell, FieldLabel, SecondaryButton } from "@/components/ui/ModalShell";
 import {
   placeholdersService,
   type PlaceholderProfile,
@@ -30,13 +26,14 @@ const ROLES: { value: PlaceholderRole; label: string; detail: string }[] = [
 /**
  * FUNCIONALIDAD TEMPORAL — perfiles sin cuenta.
  *
- * Da de alta a alguien que todavía no se ha registrado y lo deja listo para
- * cobrar en esta canción. Se pide solo el nombre: es lo único que hace falta
- * para que aparezca en el reparto, y pedir más sería pedirlo en balde mientras
- * la persona no exista de verdad.
+ * Añade a esta canción a alguien que todavía no se ha registrado, eligiéndolo
+ * entre los perfiles que el owner ya tiene creados.
  *
- * Crear va primero porque es el caso habitual; reutilizar un perfil ya creado
- * queda debajo, que es lo que se hace cuando la misma persona canta en varias.
+ * Aquí NO se crea a nadie: dar de alta un perfil ocurre en un solo sitio,
+ * «Personas sin cuenta» (el desplegable del usuario). Tenerlo también aquí
+ * repartía la misma alta entre dos pantallas y hacía fácil crear duplicados de
+ * la misma persona sin verlos, porque desde la canción no se ve la lista
+ * completa. Cuando no hay ninguno, este modal lleva allí.
  */
 export function PlaceholderProfileModal({
   isOpen,
@@ -45,12 +42,10 @@ export function PlaceholderProfileModal({
   onClose,
   onAttached,
 }: PlaceholderProfileModalProps) {
-  const [name, setName] = useState("");
   const [role, setRole] = useState<PlaceholderRole>("collaborator");
   const [profiles, setProfiles] = useState<PlaceholderProfile[]>([]);
   const [loading, setLoading] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -67,32 +62,10 @@ export function PlaceholderProfileModal({
     };
   }, [isOpen]);
 
-  const trimmed = name.trim();
-  const canCreate = trimmed.length > 0 && !creating;
-
-  /** Los que ya cobran en esta canción no se pueden volver a añadir. */
-  const reusable = useMemo(() => profiles, [profiles]);
-
   const messageFrom = (err: unknown, fallback: string): string => {
     const response = (err as { response?: { data?: { message?: string; error?: string } } })
       ?.response;
     return response?.data?.message ?? response?.data?.error ?? fallback;
-  };
-
-  const createAndAttach = async () => {
-    if (!canCreate) return;
-    setCreating(true);
-    setError("");
-    try {
-      const profile = await placeholdersService.create(trimmed);
-      await placeholdersService.attachToSong(profile._id, songId, role);
-      onAttached(profile);
-      setName("");
-    } catch (err) {
-      setError(messageFrom(err, "No se pudo crear el perfil."));
-    } finally {
-      setCreating(false);
-    }
   };
 
   const attachExisting = async (profile: PlaceholderProfile) => {
@@ -114,7 +87,7 @@ export function PlaceholderProfileModal({
     <ModalShell
       title="Añadir a alguien sin cuenta"
       subtitle={songTitle ?? "Esta canción"}
-      locked={creating || busyId !== null}
+      locked={busyId !== null}
       onClose={onClose}
       logo={
         <span className="flex h-[42px] w-[42px] flex-shrink-0 items-center justify-center rounded-[14px] border-[1.5px] border-dashed border-[#A6AAB2] bg-[#F4F5F7]">
@@ -137,7 +110,8 @@ export function PlaceholderProfileModal({
         </p>
       )}
 
-      {/* Qué papel tendrá */}
+      {/* El papel solo se elige si hay a quién asignárselo. */}
+      {!loading && profiles.length > 0 && (
       <div className="flex flex-col gap-2.5">
         <FieldLabel>QUÉ PAPEL TIENE</FieldLabel>
         <div className="grid grid-cols-2 gap-2.5">
@@ -166,76 +140,63 @@ export function PlaceholderProfileModal({
           })}
         </div>
       </div>
-
-      {/* Crear uno nuevo */}
-      <div className="flex flex-col gap-2.5">
-        <FieldLabel required>NOMBRE DE LA PERSONA</FieldLabel>
-        <div className="flex flex-wrap items-center gap-2.5">
-          <input
-            type="text"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            onKeyDown={(event) => event.key === "Enter" && createAndAttach()}
-            placeholder="Como quieras verlo en el reparto"
-            maxLength={80}
-            className="min-w-[200px] flex-1 rounded-[16px] border border-[#E8E8EC] bg-white px-4 py-3 text-[13px] text-[#1C1D22] placeholder:text-[#A6AAB2] focus:border-[#FF5C00] focus:outline-none focus:ring-[3px] focus:ring-[#FF5C00]/15"
-          />
-          <PrimaryButton
-            onClick={createAndAttach}
-            disabled={!canCreate}
-            icon={
-              creating ? (
-                <Loader className="h-[15px] w-[15px] animate-spin" />
-              ) : (
-                <Plus className="h-[15px] w-[15px]" />
-              )
-            }
-          >
-            {creating ? "Creando…" : "Crear y añadir"}
-          </PrimaryButton>
-        </div>
-      </div>
-
-      {/* Reutilizar uno ya creado */}
-      {(loading || reusable.length > 0) && (
-        <div className="flex flex-col gap-2.5">
-          <FieldLabel>O ALGUIEN QUE YA CREASTE</FieldLabel>
-
-          {loading ? (
-            <p className="flex items-center gap-2.5 px-1 text-[12px] text-[#A6AAB2]">
-              <Loader className="h-3.5 w-3.5 animate-spin" />
-              Buscando…
-            </p>
-          ) : (
-            <ul className="flex max-h-[210px] flex-col gap-1.5 overflow-y-auto">
-              {reusable.map((profile) => (
-                <li
-                  key={profile._id}
-                  className="flex items-center gap-3 rounded-[16px] border border-[#E8E8EC] px-3.5 py-2.5"
-                >
-                  <PlaceholderAvatar name={profile.name} />
-                  <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium text-[#1C1D22]">
-                    {profile.name}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => attachExisting(profile)}
-                    disabled={busyId !== null}
-                    className="flex flex-shrink-0 items-center gap-1.5 rounded-[14px] bg-[#F4F5F7] px-3 py-2 text-[11.5px] font-semibold text-[#1C1D22] transition-colors hover:bg-[#E8E8EC] disabled:cursor-not-allowed disabled:text-[#A6AAB2]"
-                  >
-                    {busyId === profile._id ? (
-                      <Loader className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <Check className="h-3.5 w-3.5" />
-                    )}
-                    Añadir
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
       )}
+
+      {/* A quién añades: solo perfiles que ya existen. */}
+      <div className="flex flex-col gap-2.5">
+        {(loading || profiles.length > 0) && <FieldLabel>A QUIÉN AÑADES</FieldLabel>}
+
+        {loading ? (
+          <p className="flex items-center gap-2.5 px-1 text-[12px] text-[#A6AAB2]">
+            <Loader className="h-3.5 w-3.5 animate-spin" />
+            Buscando…
+          </p>
+        ) : profiles.length === 0 ? (
+          <div className="flex flex-col items-start gap-3 rounded-[16px] border border-dashed border-[#E8E8EC] bg-[#FAFAFB] px-4 py-5">
+            <span className="text-[12.5px] font-semibold text-[#1C1D22]">
+              Todavía no has creado a nadie sin cuenta
+            </span>
+            <span className="text-[11.5px] leading-relaxed text-[#71757E]">
+              Las personas sin cuenta se dan de alta en su propia pantalla, y desde aquí las
+              añades a la canción.
+            </span>
+            <Link
+              to="/panel/placeholder-profiles"
+              className="inline-flex items-center gap-1.5 rounded-[18px] bg-[#1C1D22] px-3.5 py-2.5 text-[12px] font-semibold text-white transition-colors hover:bg-black"
+            >
+              Ir a Personas sin cuenta
+              <ArrowRight className="h-[15px] w-[15px]" />
+            </Link>
+          </div>
+        ) : (
+          <ul className="flex max-h-[260px] flex-col gap-1.5 overflow-y-auto">
+            {profiles.map((profile) => (
+              <li
+                key={profile._id}
+                className="flex items-center gap-3 rounded-[16px] border border-[#E8E8EC] px-3.5 py-2.5"
+              >
+                <PlaceholderAvatar name={profile.name} />
+                <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium text-[#1C1D22]">
+                  {profile.name}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => attachExisting(profile)}
+                  disabled={busyId !== null}
+                  className="flex flex-shrink-0 items-center gap-1.5 rounded-[14px] bg-[#F4F5F7] px-3 py-2 text-[11.5px] font-semibold text-[#1C1D22] transition-colors hover:bg-[#E8E8EC] disabled:cursor-not-allowed disabled:text-[#A6AAB2]"
+                >
+                  {busyId === profile._id ? (
+                    <Loader className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Check className="h-3.5 w-3.5" />
+                  )}
+                  Añadir
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </ModalShell>
   );
 }
