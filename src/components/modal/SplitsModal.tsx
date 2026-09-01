@@ -9,6 +9,7 @@ import {
   Check,
   AlertCircle,
   CircleCheck,
+  Rocket,
 } from "lucide-react";
 import Select from "react-select";
 import { createPortal } from "react-dom";
@@ -16,6 +17,7 @@ import { FilterSegment } from "@/components/ui/FilterSegment";
 import { selectStyles } from "@/components/ui/selectStyles";
 import { useSplitsModal } from "@/hooks/useSplitsModal";
 import { SplitPeriodsEditor } from "@/components/splits/SplitPeriodsEditor";
+import { formatMonth } from "@/utils/splitPeriods.utils";
 import type { SplitsModalProps } from "@/types";
 
 function getInitials(name: string) {
@@ -93,9 +95,30 @@ export default function SplitsModal({
             <p className="truncate font-display text-[17px] font-semibold text-[#1C1D22]">
               Repartir los splits
             </p>
-            <p className="truncate text-[11.5px] text-[#71757E]">
-              {collaborators.length} {collaborators.length === 1 ? "persona" : "personas"} pueden
-              cobrar de esta canción
+            <p className="flex items-center gap-1.5 text-[11.5px] text-[#71757E]">
+              <span className="truncate">
+                {collaborators.length} {collaborators.length === 1 ? "persona" : "personas"} pueden
+                cobrar de esta canción
+              </span>
+              <span aria-hidden="true" className="text-[#D5D6DB]">
+                ·
+              </span>
+              {/* La fecha de lanzamiento se enseña AQUÍ y una sola vez. Es de la
+                  canción, no de cada colaborador, y es donde arranca la línea de
+                  tiempo de todos los tramos: repetirla en cada fila la
+                  convertiría en ruido y en cada tarjeta de colaborador, en una
+                  fecha que parece editable. */}
+              <span
+                title={
+                  releaseMonth
+                    ? "Aquí arrancan los tramos de todos los splits de esta canción"
+                    : "No sabemos cuándo salió: los tramos arrancan igual, cubriendo todo lo anterior"
+                }
+                className="flex shrink-0 items-center gap-1 font-medium text-[#1C1D22]"
+              >
+                <Rocket className="h-3 w-3 shrink-0 text-[#FF5C00]" aria-hidden="true" />
+                {releaseMonth ? `Lanzada en ${formatMonth(releaseMonth)}` : "Sin fecha de lanzamiento"}
+              </span>
             </p>
           </div>
           <button
