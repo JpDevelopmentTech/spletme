@@ -41,6 +41,7 @@ export default function SplitsModal({
   onClose,
   songId,
   showOwnerContext = false,
+  releaseMonth = null,
 }: SplitsModalProps) {
   const {
     mounted,
@@ -61,7 +62,7 @@ export default function SplitsModal({
     removePeriod,
     updatePeriod,
     saveSplit,
-  } = useSplitsModal({ isOpen, collaborators, songId });
+  } = useSplitsModal({ isOpen, collaborators, songId, releaseMonth });
 
   if (!mounted || !isOpen) return null;
 
@@ -384,6 +385,7 @@ export default function SplitsModal({
                           <SplitPeriodsEditor
                             ownerKey={collaborator.id}
                             periods={form.periods}
+                            releaseMonth={releaseMonth}
                             fallbackPercentage={form.percentage}
                             fallbackWarning={
                               overflow

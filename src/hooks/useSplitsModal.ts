@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
 import { songSplitsService } from "@/services/songSplits";
 import { useReleaseFilters } from "@/hooks/useReleaseFilters";
-import { validatePeriods, toPayloadPeriods } from "@/utils/splitPeriods.utils";
+import {
+  validatePeriods,
+  toPayloadPeriods,
+  reconcilePeriods,
+} from "@/utils/splitPeriods.utils";
 import type {
   CollaboratorFormData,
   CollaboratorWithSplit,
@@ -13,6 +17,13 @@ interface UseSplitsModalParams {
   isOpen: boolean;
   collaborators: CollaboratorWithSplit[];
   songId: string;
+  /**
+   * Mes (`YYYY-MM`) en que sale la canción, que es donde arranca la línea de
+   * tiempo de los tramos. `null` cuando no se sabe: entonces el primer tramo se
+   * enseña como "desde su lanzamiento" sin fecha, y sigue cubriendo todo lo
+   * anterior porque va abierto por la izquierda.
+   */
+  releaseMonth?: string | null;
 }
 
 /** Convierte strings crudos de la BD en opciones para react-select. */
@@ -60,7 +71,12 @@ const emptyPeriod = (): SplitPeriodFormData => {
  * le cobra sobre su parte (`ownerRate`). Dejarla vacía mantiene la de siempre:
  * la del split del owner, igual para todos.
  */
-export function useSplitsModal({ isOpen, collaborators, songId }: UseSplitsModalParams) {
+export function useSplitsModal({
+  isOpen,
+  collaborators,
+  songId,
+  releaseMonth = null,
+}: UseSplitsModalParams) {
   const [collaboratorForms, setCollaboratorForms] = useState<Record<string, CollaboratorFormData>>(
     {},
   );
@@ -97,24 +113,79 @@ export function useSplitsModal({ isOpen, collaborators, songId }: UseSplitsModal
         selectedCountries: toSelectOptions(split.selectedCountries ?? []),
         platformsType: split.platformsType ?? "all",
         selectedPlatforms: toSelectOptions(split.selectedPlatforms ?? []),
-        periods: (split.periods ?? []).map((period) => {
-          periodKey += 1;
-          return {
-            id: `period-${periodKey}`,
-            from: period.from ?? "",
-            to: period.to ?? "",
-            percentage: String(period.percentage ?? ""),
-            countriesType: period.countriesType ?? "all",
-            selectedCountries: toSelectOptions(period.selectedCountries ?? []),
-            platformsType: period.platformsType ?? "all",
-            selectedPlatforms: toSelectOptions(period.selectedPlatforms ?? []),
-          };
-        }),
+        // Se reconcilian al cargar, no solo al editar: los splits guardados
+        // antes de que la cobertura fuese continua tienen huecos, y verlos ya
+        // tapados al 0% es exactamente lo que el reparto lleva pagando por
+        // ellos desde siempre.
+        periods: reconcilePeriods(
+          (split.periods ?? []).map((period) => {
+            periodKey += 1;
+            return {
+              id: period.autoFilled
+                ? `gap-${period.from}-${period.to}`
+                : `period-${periodKey}`,
+              from: period.from ?? "",
+              to: period.to ?? "",
+              percentage: String(period.percentage ?? ""),
+              countriesType: period.countriesType ?? "all",
+              selectedCountries: toSelectOptions(period.selectedCountries ?? []),
+              platformsType: period.platformsType ?? "all",
+              selectedPlatforms: toSelectOptions(period.selectedPlatforms ?? []),
+              autoFilled: Boolean(period.autoFilled),
+              openStart: Boolean(period.openStart),
+            };
+          }),
+          releaseMonth,
+        ),
       };
     }
 
     setCollaboratorForms(initialForms);
+    // `releaseMonth` NO está en las dependencias a propósito: llega de una
+    // petición aparte y puede aterrizar con el modal ya abierto. Reinicializar
+    // aquí borraría lo que se estuviera escribiendo; el efecto de abajo se
+    // encarga de recolocar los tramos cuando por fin se sabe la fecha.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, collaborators]);
+
+  /**
+   * Recoloca los tramos cuando la fecha de lanzamiento llega después de abrir
+   * el modal: el hueco inicial pasa a arrancar en el mes real en lugar de en el
+   * mes de antes del primer tramo. Solo toca `periods`, así que no se pierde
+   * nada de lo que se estuviera escribiendo.
+   */
+  useEffect(() => {
+    if (!isOpen || !releaseMonth) return;
+
+    setCollaboratorForms((prev) => {
+      const next: Record<string, CollaboratorFormData> = {};
+      let changed = false;
+
+      for (const [id, form] of Object.entries(prev)) {
+        const periods = reconcilePeriods(form.periods, releaseMonth);
+        // Comparar por contenido y no por identidad: reconcilePeriods devuelve
+        // objetos nuevos siempre, y guardarlos sin más dejaría este efecto
+        // reprogramándose a sí mismo en bucle.
+        const same =
+          periods.length === form.periods.length &&
+          periods.every((period, i) => {
+            const before = form.periods[i];
+            return (
+              before &&
+              period.id === before.id &&
+              period.from === before.from &&
+              period.to === before.to &&
+              period.openStart === before.openStart
+            );
+          });
+
+        next[id] = same ? form : { ...form, periods };
+        if (!same) changed = true;
+      }
+
+      return changed ? next : prev;
+    });
+  }, [isOpen, releaseMonth]);
 
   const getForm = (collaboratorId: string): CollaboratorFormData =>
     collaboratorForms[collaboratorId] ?? defaultFormData();
@@ -145,14 +216,40 @@ export function useSplitsModal({ isOpen, collaborators, songId }: UseSplitsModal
     }));
   };
 
+  /**
+   * Quita un tramo sin romper la línea de tiempo, que tiene que seguir cubriendo
+   * desde el lanzamiento hasta el tramo final.
+   *
+   * Un tramo escrito a mano no desaparece del calendario: se borra de la lista y
+   * la reconciliación vuelve a cubrir sus meses con un hueco al 0%. Se deja de
+   * cobrar en ellos, que es lo que se ha pedido, pero se ve.
+   *
+   * Un hueco sí desaparece: sus meses se los queda el tramo de al lado —el
+   * anterior, o el siguiente si era el primero—. Si no tenía vecinos era lo
+   * único que quedaba, y la lista se vacía: el tramo final vuelve a cubrirlo
+   * todo desde el lanzamiento. Sin esto, borrar un tramo dejaría un hueco
+   * imposible de quitar.
+   */
   const removePeriod = (collaboratorId: string, periodId: string) => {
     const form = getForm(collaboratorId);
+    const index = form.periods.findIndex((period) => period.id === periodId);
+    if (index === -1) return;
+
+    const target = form.periods[index];
+    const before = target.autoFilled ? form.periods[index - 1] : undefined;
+    const after = target.autoFilled ? form.periods[index + 1] : undefined;
+
+    const periods = form.periods
+      .map((period) => {
+        if (before && period.id === before.id) return { ...period, to: target.to };
+        if (!before && after && period.id === after.id) return { ...period, from: target.from };
+        return period;
+      })
+      .filter((period) => period.id !== periodId);
+
     setCollaboratorForms((prev) => ({
       ...prev,
-      [collaboratorId]: {
-        ...form,
-        periods: form.periods.filter((period) => period.id !== periodId),
-      },
+      [collaboratorId]: { ...form, periods: reconcilePeriods(periods, releaseMonth) },
     }));
   };
 
@@ -167,8 +264,15 @@ export function useSplitsModal({ isOpen, collaborators, songId }: UseSplitsModal
       ...prev,
       [collaboratorId]: {
         ...form,
-        periods: form.periods.map((period) =>
-          period.id === periodId ? { ...period, [field]: value } : period,
+        // Reconciliar en cada cambio es lo que hace que el hueco aparezca en el
+        // mismo momento en que se crea, y no al guardar: escribir "desde enero"
+        // cuando la canción salió en noviembre deja dos meses sin regla, y el
+        // sitio donde eso se entiende es la propia lista de tramos.
+        periods: reconcilePeriods(
+          form.periods.map((period) =>
+            period.id === periodId ? { ...period, [field]: value } : period,
+          ),
+          releaseMonth,
         ),
       },
     }));

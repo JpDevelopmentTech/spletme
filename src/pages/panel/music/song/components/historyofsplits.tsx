@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/ModalShell";
 import { songSplitsService } from "../../../../../services/songSplits";
 import type { SplitHistoryItem } from "../../../../../types/song-split.types";
-import { formatPeriodRange } from "@/utils/splitPeriods.utils";
+import { formatMonth, formatPeriodRange } from "@/utils/splitPeriods.utils";
 import type { SongCollaborator } from "../../../../../types/music.types";
 
 interface HistoryOfSplitsProps {
@@ -299,7 +299,7 @@ const Historyofsplits = ({
                         <span className="flex items-center gap-1 text-[10px] font-semibold text-[#FF5C00]">
                           <CalendarRange className="h-2.5 w-2.5 shrink-0" />
                           {item.periods?.length}{" "}
-                          {item.periods?.length === 1 ? "tramo" : "tramos"} · fuera de ellos
+                          {item.periods?.length === 1 ? "tramo" : "tramos"} · y después
                         </span>
                       )}
                     </span>
@@ -452,7 +452,9 @@ const VersionDetailModal = ({
                 className="flex items-center justify-between gap-3 rounded-[12px] bg-[#F4F5F7] px-3 py-2"
               >
                 <span className="truncate font-mono text-[11.5px] text-[#71757E]">
-                  {formatPeriodRange(period)}
+                  {period.openStart
+                    ? `desde su lanzamiento → ${formatMonth(period.to)}`
+                    : formatPeriodRange(period)}
                 </span>
                 <span className="shrink-0 font-mono text-[12.5px] font-semibold text-[#1C1D22]">
                   {period.percentage}%
@@ -461,7 +463,7 @@ const VersionDetailModal = ({
             ))}
           </ul>
           <p className="text-[11px] leading-[1.45] text-[#A6AAB2]">
-            Fuera de esos tramos se aplicaba el {after}%.
+            Al acabar el último tramo se aplicaba el {after}%, ya sin fecha de fin.
           </p>
         </div>
       )}

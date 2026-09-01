@@ -495,6 +495,7 @@ export default function Table({
         onClose={() => setIsSplitsModalOpen(false)}
         songId={songId || ""}
         showOwnerContext={isOwner}
+        releaseMonth={distribution?.releaseAnchorMonth ?? null}
         onSplitSaved={handleSplitSaved}
       />
       <OwnerSplitModal

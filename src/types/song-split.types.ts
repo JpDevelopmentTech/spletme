@@ -21,6 +21,10 @@ export interface SplitPeriod {
   from: string;
   to: string;
   percentage: number;
+  /** Arranca "desde su lanzamiento": cubre también los meses previos a `from`. */
+  openStart?: boolean;
+  /** Lo creó el editor para tapar un hueco, no lo escribió nadie a mano. */
+  autoFilled?: boolean;
   countriesType: FilterType;
   selectedCountries: string[];
   platformsType: FilterType;
@@ -96,6 +100,12 @@ export interface SongSplitDistribution {
   collaborators: SplitDistributionEntry[];
   songTotalNetIncome: number;
   collaboratorsPool: number;
+  /**
+   * Mes (`YYYY-MM`) en que arranca la línea de tiempo de los tramos. El backend
+   * lo saca de la fecha que declara el distribuidor o, si no la hay, del primer
+   * mes con ventas reportadas. `null` = no se sabe cuándo salió la canción.
+   */
+  releaseAnchorMonth?: string | null;
 }
 
 export interface SplitHistoryItem {

@@ -17,6 +17,17 @@ export interface SplitPeriodFormData {
   selectedCountries: SelectOption[];
   platformsType: FilterType;
   selectedPlatforms: SelectOption[];
+  /**
+   * El tramo se creó solo, para tapar el hueco que quedaba entre dos tramos
+   * escritos a mano. Su porcentaje se edita como el de cualquier otro; sus
+   * fechas no, porque las fijan sus vecinos.
+   */
+  autoFilled?: boolean;
+  /**
+   * Es el tramo que arranca "desde su lanzamiento": absorbe todos los meses
+   * anteriores a su `from`. Lo lleva siempre el primero, y solo él.
+   */
+  openStart?: boolean;
 }
 
 /**
@@ -52,6 +63,13 @@ export interface SplitsModalProps {
    * se enseña: ver `utils/ownerVisibility.ts`.
    */
   showOwnerContext?: boolean;
+  /**
+   * Mes (`YYYY-MM`) en que sale la canción: donde arranca la línea de tiempo de
+   * los tramos. Lo calcula el backend y viaja con la distribución, porque
+   * mezcla la fecha que declara el distribuidor con el primer mes con ventas
+   * reportadas. `null` = no se sabe cuándo salió.
+   */
+  releaseMonth?: string | null;
 }
 
 /** Colaborador con el split activo que devuelve el backend por canción. */
